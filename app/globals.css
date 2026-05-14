@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 251 248 242; /* mesa-50 */
+  --foreground: 35 21 16;    /* mesa-900 */
+}
+
+html, body {
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+}
+
+body {
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Refined prose for lessons */
+.prose-mesa {
+  max-width: 68ch;
+  line-height: 1.75;
+  font-size: 1.0625rem;
+}
+.prose-mesa p { margin-bottom: 1.1em; }
+.prose-mesa h2 {
+  font-family: Georgia, serif;
+  font-size: 1.6rem;
+  color: #5C3A2E;
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+}
+.prose-mesa h3 {
+  font-family: Georgia, serif;
+  font-size: 1.25rem;
+  color: #3E5C3A;
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+.prose-mesa blockquote {
+  border-left: 3px solid #C8A876;
+  padding-left: 1.25rem;
+  font-style: italic;
+  color: #5C3A2E;
+  margin: 1.5em 0;
+}
+.prose-mesa ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.1em; }
+.prose-mesa ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1.1em; }
+.prose-mesa li { margin-bottom: 0.4em; }
+.prose-mesa a { color: #5C3A2E; text-decoration: underline; text-decoration-color: #C8A876; }
