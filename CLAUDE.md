@@ -4,13 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project location
 
-The Next.js app lives at `Plataforma de Cursos/ekballo-academy/` relative to the repo root. The path contains spaces — quote it (`cd "Plataforma de Cursos/ekballo-academy"`) and use `@/` (mapped to that directory in `tsconfig.json`) for imports inside the app.
-
-`Cursos/` (sibling folder) holds source material (e.g. the Keller docx) used to author lesson content — it isn't shipped with the app.
+The Next.js app lives at the **repo root** (`/Users/brunofernandes/Projects/ekballo-academy/`). `@/` in `tsconfig.json` is mapped to this root. There is no nested `Plataforma de Cursos/…` directory — earlier versions of this file mentioned one; ignore.
 
 ## Commands
 
-All commands run from inside `Plataforma de Cursos/ekballo-academy/`:
+All commands run from the repo root:
 
 - `npm install` — install deps (first run only)
 - `npm run dev` — Next dev server on `http://localhost:3000`
@@ -18,14 +16,14 @@ All commands run from inside `Plataforma de Cursos/ekballo-academy/`:
 - `npm run start` — serve the production build
 - `npm run lint` — Next's ESLint
 
-There is no test runner configured. No typecheck script either — rely on `npm run build` or your editor's TS server.
+No test runner. No typecheck script — rely on `npm run build` or your editor's TS server.
 
 ## Mock mode vs. Supabase mode (most important thing to understand)
 
 The app has **two runtime modes** toggled by `NEXT_PUBLIC_MOCK_MODE`:
 
-- `NEXT_PUBLIC_MOCK_MODE=true` (default in `.env.local`) — all data reads return fixtures from [lib/mock-data.ts](lib/mock-data.ts); auth is bypassed; middleware is a no-op; the mock user is a hard-coded admin (`MOCK_PROFILE`).
-- `NEXT_PUBLIC_MOCK_MODE=false` — real Supabase via `@supabase/ssr`; middleware enforces auth and admin role.
+- `NEXT_PUBLIC_MOCK_MODE=true` — all data reads return fixtures from [lib/mock-data.ts](lib/mock-data.ts); auth is bypassed; middleware is a no-op; the mock user is a hard-coded admin (`MOCK_PROFILE`). This is the **local default** in `.env.local`.
+- `NEXT_PUBLIC_MOCK_MODE=false` — real Supabase via `@supabase/ssr`; middleware enforces auth and admin role. This is what runs on **Vercel** (Production + Preview).
 
 **The mock/real switch lives in three places — keep them in sync when adding features:**
 
@@ -64,21 +62,104 @@ Reflexao activities do **not** affect unlocking — they're optional and exist f
 
 Pages are async server components. They call `getCurrentSession()` first and `redirect("/login")` if null — this works in both modes because the mock branch returns `MOCK_PROFILE`.
 
-### Schema drift to watch
+### Migrations
 
-[supabase/migrations/001_initial_schema.sql](supabase/migrations/001_initial_schema.sql) is **out of date** relative to the TypeScript types and the Supabase code paths in `lib/db.ts`. The migration does not include:
+Schema is the union of three migrations in [supabase/migrations/](supabase/migrations/), **all applied** to the live Supabase project:
 
-- `atividades.tipo`, `atividades.razao`
-- `respostas.alternativa_id` (and the column is also `texto not null`, which conflicts with MC answers having null `texto`)
-- The `alternativas` table
+1. `001_initial_schema.sql` — base tables (profiles, cursos, aulas, atividades, respostas, matriculas, progresso), trigger `on_auth_user_created`, RLS policies, seeded "Mesa Aberta" course + 7 aulas.
+2. `002_multipla_escolha.sql` — adds `atividades.tipo`/`razao`, the `alternativas` table, `respostas.alternativa_id`, makes `respostas.texto` nullable, RLS for alternativas.
+3. `003_lock_security_definer.sql` — revokes EXECUTE on `handle_new_user` from anon/authenticated/public, switches `is_admin(uuid)` to `SECURITY INVOKER`. Cleared advisor warnings 0028/0029.
 
-If you switch to real Supabase, the MC features (`aulaCompleta`, `listAlternativasByAtividade`, `salvarRespostaAlternativa`) will fail. Adding a second migration to bring the schema in line is a known follow-up — don't assume the SQL file is canonical.
+For new schema changes, write `004_*.sql` (and so on) and apply via the **Supabase MCP** `apply_migration` tool — this keeps the Supabase `_migrations` table aligned with the repo. Always run `get_advisors` after DDL.
 
 ### Tailwind palette
 
 Custom palette in [tailwind.config.ts](tailwind.config.ts): `bege` (warm cream → chocolate), `laranja` (terracotta CTA), `oliveira` (warm olive). `mesa` is a **backwards-compatibility alias for `bege`** — existing pages and components still use `mesa-*` classes heavily. Either prefix works; don't rip out `mesa-*` for cosmetic consistency.
 
-### Conventions worth knowing
+## Live infrastructure & operations
+
+The platform is fully wired to live infra. Two MCP servers ([.mcp.json](.mcp.json)) cover most operations; one REST API call is needed for a specific gap.
+
+### Supabase
+
+- **Project ref**: `yasfxwqomvhmxxqnunat`
+- **URL**: `https://yasfxwqomvhmxxqnunat.supabase.co`
+- **MCP server**: configured in [.mcp.json](.mcp.json) — `https://mcp.supabase.com/mcp?project_ref=yasfxwqomvhmxxqnunat`
+- **First-time auth per Claude Code session**: tools `mcp__supabase__authenticate` + `mcp__supabase__complete_authentication` (OAuth callback URL flow).
+
+**Use the Supabase MCP for everything DB-related.** Do not suggest copy-pasting SQL into the dashboard SQL Editor.
+
+| Need | Tool |
+|---|---|
+| Check schema state | `list_tables`, `list_migrations` |
+| Apply DDL | `apply_migration` (saves to Supabase migrations table) |
+| Run a one-off query / DML | `execute_sql` |
+| **Always after DDL** | `get_advisors` with `type: security` (and `performance`) |
+| Read project URL / anon key | `get_project_url`, `get_publishable_keys` |
+| Inspect runtime issues | `get_logs` |
+
+**Admin user creation**: the MCP does NOT have a "create auth user" tool. Workaround is direct insert into `auth.users` + `auth.identities` with `crypt(password, gen_salt('bf'))` (pgcrypto is enabled by default). Gotcha: `auth.identities.email` is a **generated column** — do not include it in the INSERT column list. The `on_auth_user_created` trigger then creates the matching `profiles` row, which you promote to admin in the same DO block.
+
+### Vercel
+
+- **Project**: `ekballo-academy`, id `prj_KeusyMMak65qDBYv7T82b7kUvRPj`
+- **Team**: `Bruno Fernandes' projects`, id `team_bE7ISUdQjMw5FZ89UHYNHCaV`
+- **Repo source**: `brudemilu/ekballo-academy` (repoId `1245667173`), `master` → production
+- **Production URL**: `https://ekballo-academy.vercel.app`
+- **MCP server**: `https://mcp.vercel.com/` (added via [.mcp.json](.mcp.json) or `claude mcp add`)
+
+**The Vercel MCP is read-only for env vars.** Re-authenticating with broader scopes does NOT add env var write tools — the official server at `mcp.vercel.com` simply doesn't expose them. Don't waste user time reauthorizing trying to "get more access".
+
+**Vercel MCP good for**: `list_projects`, `get_project`, `list_deployments`, `get_deployment`, `get_deployment_build_logs`, `get_runtime_logs`, `deploy_to_vercel` (triggers a redeploy of the local working dir against the linked project).
+
+**For env var writes, use the REST API with a Bearer token** stored at `~/.vercel-token` (chmod 600). If the file is missing, ask the user to create one at [vercel.com/account/tokens](https://vercel.com/account/tokens) (scope: the team `Bruno Fernandes' projects`, not "Full Account").
+
+```bash
+TOKEN=$(cat ~/.vercel-token)
+PROJECT=prj_KeusyMMak65qDBYv7T82b7kUvRPj
+TEAM=team_bE7ISUdQjMw5FZ89UHYNHCaV
+
+# List env vars (returns id, key, target, type)
+curl -s "https://api.vercel.com/v9/projects/$PROJECT/env?teamId=$TEAM" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Update existing var (PATCH). For type=sensitive (the default here):
+#   - do NOT include `type` in the body
+#   - target=development is rejected; use production + preview only
+curl -s -X PATCH "https://api.vercel.com/v9/projects/$PROJECT/env/$ENV_ID?teamId=$TEAM" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"value":"...","target":["production","preview"]}'
+
+# Trigger a fresh production deployment from master
+curl -s -X POST "https://api.vercel.com/v13/deployments?teamId=$TEAM&forceNew=1" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"name":"ekballo-academy","project":"'$PROJECT'","target":"production",
+       "gitSource":{"type":"github","repoId":1245667173,"ref":"master"}}'
+```
+
+### Environment variables
+
+All three Vercel env vars are `type=sensitive`, targeting Production + Preview only.
+
+| Variable | Vercel value | `.env.local` |
+|---|---|---|
+| `NEXT_PUBLIC_MOCK_MODE` | `false` | `true` (keeps local in mock) |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://yasfxwqomvhmxxqnunat.supabase.co` | same |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | legacy JWT (anon, public role) | same |
+
+`.env.local` is gitignored. If you ever need the anon key value, get it from `mcp__supabase__get_publishable_keys` (the `legacy` / `anon` key, not the `service_role`).
+
+### Admin user
+
+One admin currently exists in production: `brunosantospmb@gmail.com`. The password is **not stored in this repo or in memory** — if needed, ask the user, or rotate via SQL through the Supabase MCP:
+
+```sql
+update auth.users
+set encrypted_password = crypt('NEW_PASSWORD', gen_salt('bf'))
+where email = 'brunosantospmb@gmail.com';
+```
+
+## Conventions worth knowing
 
 - All user-facing strings, domain terms, comments, and many identifiers are in Brazilian Portuguese. Keep new copy in Portuguese unless the user asks otherwise.
 - Server components do data fetching via `lib/db.ts`; client components ("use client") handle form state and writes. Don't import `@/lib/supabase/server` from a client component.
