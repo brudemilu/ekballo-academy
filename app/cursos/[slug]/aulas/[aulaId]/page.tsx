@@ -9,6 +9,7 @@ import {
   getCurrentSession,
   getCursoBySlug,
   getAula,
+  isMatriculado,
   listAtividadesByAula,
   listRespostasByAluno,
   listAulasComStatus,
@@ -29,6 +30,12 @@ export default async function AulaPage({
 
   const curso = await getCursoBySlug(slug);
   if (!curso) notFound();
+
+  // Sem matrícula, sem acesso. Admin tem acesso livre.
+  if (!session.profile?.is_admin) {
+    const matriculado = await isMatriculado(session.userId, curso.id);
+    if (!matriculado) redirect("/dashboard");
+  }
 
   const aula = await getAula(aulaId, curso.id);
   if (!aula) notFound();
@@ -64,8 +71,10 @@ export default async function AulaPage({
     })
   );
 
-  const aulaConcluidaMC = await aulaCompleta(session.userId, aula.id);
+  const aulaConcluida = await aulaCompleta(session.userId, aula.id);
   const temMCs = atividades.some((a) => a.tipo === "multipla_escolha");
+  const temReflexoes = atividades.some((a) => a.tipo === "reflexao");
+  const temAtividades = atividades.length > 0;
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -124,10 +133,14 @@ export default async function AulaPage({
           <div className="mb-12 space-y-5">
             <div className="mb-2">
               <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-                {temMCs ? "Questões da aula" : "Atividades de reflexão"}
+                {temMCs && temReflexoes
+                  ? "Questões e reflexões"
+                  : temMCs
+                    ? "Questões da aula"
+                    : "Reflexões da aula"}
               </p>
               <h2 className="font-serif text-2xl font-semibold text-mesa-800">
-                {temMCs ? "Responda para liberar a próxima aula." : "Sua resposta importa."}
+                Responda todas as questões para liberar a próxima aula.
               </h2>
             </div>
             {atividadesEnriquecidas.map(({ atividade, alternativas, alternativaSalvaId }, idx) => {
@@ -177,10 +190,16 @@ export default async function AulaPage({
               </Link>
             )}
             {proxima && (
-              temMCs && !aulaConcluidaMC ? (
+              temAtividades && !aulaConcluida ? (
                 <span
                   className="rounded-full border border-mesa-200 bg-mesa-100/60 px-5 py-2.5 text-sm font-medium text-mesa-500"
-                  title="Acerte todas as questões para liberar"
+                  title={
+                    temMCs && temReflexoes
+                      ? "Acerte as questões de múltipla escolha e responda todas as reflexões para liberar"
+                      : temMCs
+                        ? "Acerte todas as questões para liberar"
+                        : "Responda todas as reflexões para liberar"
+                  }
                 >
                   🔒 Próxima aula bloqueada
                 </span>

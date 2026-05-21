@@ -16,12 +16,16 @@ export default async function DashboardPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  const [cursos, matriculas] = await Promise.all([
+  const [todosCursos, matriculas] = await Promise.all([
     listCursosPublicados(),
     listMatriculasByAluno(session.userId),
   ]);
 
   const matriculasMap = new Map(matriculas.map((m) => [m.curso_id, m]));
+  // Admin vê todos os cursos publicados; aluno comum só os que foi matriculado.
+  const cursos = session.profile?.is_admin
+    ? todosCursos
+    : todosCursos.filter((c) => matriculasMap.has(c.id));
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -55,10 +59,10 @@ export default async function DashboardPage() {
         {cursos.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-20 text-center">
             <p className="font-serif text-xl text-mesa-500">
-              Os cursos estão sendo preparados.
+              Sua matrícula ainda não foi liberada.
             </p>
-            <p className="mt-2 text-sm text-mesa-400">
-              Volte em breve — a mesa está sendo posta.
+            <p className="mt-2 mx-auto max-w-md text-sm text-mesa-500">
+              Seu líder pastoral vai te matricular nos cursos da sua trilha. Quando isso acontecer, eles aparecem aqui.
             </p>
           </div>
         ) : (

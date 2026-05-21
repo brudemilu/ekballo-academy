@@ -5,7 +5,7 @@ import { UserMenu } from "@/components/UserMenu";
 import {
   getCurrentSession,
   getCursoBySlug,
-  ensureMatricula,
+  isMatriculado,
   listAulasComStatus,
   listProgressoByAluno,
 } from "@/lib/db";
@@ -22,8 +22,10 @@ export default async function CursoPage({
   const curso = await getCursoBySlug(slug);
   if (!curso) notFound();
 
-  if (!curso.is_pago) {
-    await ensureMatricula(session.userId, curso.id);
+  // Acesso ao curso é gated por matrícula. Admin tem acesso livre para revisar conteúdo.
+  if (!session.profile?.is_admin) {
+    const matriculado = await isMatriculado(session.userId, curso.id);
+    if (!matriculado) redirect("/dashboard");
   }
 
   const [aulas, progresso] = await Promise.all([

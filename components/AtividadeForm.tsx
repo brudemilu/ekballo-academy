@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
@@ -22,6 +23,7 @@ export function AtividadeForm({
   respostaInicial,
   comentarioLider,
 }: Props) {
+  const router = useRouter();
   const [texto, setTexto] = useState(respostaInicial || "");
   const [salvando, startTransition] = useTransition();
   const [salvo, setSalvo] = useState<"idle" | "ok" | "erro">(
@@ -29,11 +31,22 @@ export function AtividadeForm({
   );
 
   function handleSalvar() {
-    if (!texto.trim()) return;
+    const conteudo = texto.trim();
+    if (!conteudo) return;
     startTransition(async () => {
       if (MOCK) {
-        await new Promise((r) => setTimeout(r, 400));
-        setSalvo("ok");
+        try {
+          const res = await fetch("/api/mock/salvar-reflexao", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ atividadeId, alunoId, texto: conteudo }),
+          });
+          if (!res.ok) throw new Error("Falha ao salvar (mock).");
+          setSalvo("ok");
+          router.refresh();
+        } catch {
+          setSalvo("erro");
+        }
         return;
       }
       const supabase = createClient();
@@ -43,20 +56,30 @@ export function AtividadeForm({
           {
             atividade_id: atividadeId,
             aluno_id: alunoId,
-            texto: texto.trim(),
+            texto: conteudo,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "atividade_id,aluno_id" }
         );
-      setSalvo(error ? "erro" : "ok");
+      if (error) {
+        setSalvo("erro");
+      } else {
+        setSalvo("ok");
+        router.refresh();
+      }
     });
   }
 
   return (
     <div className="rounded-2xl border border-mesa-200 bg-white p-6 sm:p-8">
-      <p className="mb-2 text-xs font-medium uppercase tracking-wider text-mesa-500">
-        Reflexão {String(perguntaIndex + 1).padStart(2, "0")}
-      </p>
+      <div className="mb-2 flex items-center gap-2">
+        <p className="text-xs font-medium uppercase tracking-wider text-mesa-500">
+          Reflexão {String(perguntaIndex + 1).padStart(2, "0")}
+        </p>
+        <span className="rounded-full bg-laranja-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-laranja-700">
+          Obrigatória
+        </span>
+      </div>
       <h3 className="mb-5 font-serif text-xl font-semibold leading-snug text-mesa-800">
         {pergunta}
       </h3>
@@ -75,12 +98,12 @@ export function AtividadeForm({
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-mesa-500">
           {salvo === "ok"
-            ? MOCK ? "✓ Salvo (modo demo — não persiste após recarregar)" : "✓ Sua resposta está salva. O líder vai ler."
+            ? "✓ Sua resposta está salva. O líder vai ler."
             : salvando
               ? "Salvando..."
               : salvo === "erro"
                 ? "Erro ao salvar — tente novamente."
-                : "Sua resposta fica salva e o líder pode te responder depois."}
+                : "Resposta necessária para liberar a próxima aula."}
         </p>
         <button
           onClick={handleSalvar}

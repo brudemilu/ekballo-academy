@@ -30,19 +30,6 @@ export const MOCK_ALUNOS: Profile[] = [
 
 export const MOCK_CURSOS: Curso[] = [
   {
-    id: "curso-1",
-    slug: "mesa-aberta",
-    titulo: "Mesa Aberta",
-    descricao:
-      "O curso âncora da Ekballo Academy. Sete aulas curtas para entender o coração do discipulado relacional, da formação à mesa, do envio à multiplicação. Para todo discípulo que está começando a caminhada.",
-    imagem_url: null,
-    is_pago: false,
-    preco_centavos: 0,
-    ordem: 1,
-    publicado: true,
-    created_at: "2026-04-01T00:00:00Z",
-  },
-  {
     id: "curso-2",
     slug: "fundamentos-do-discipulado",
     titulo: "Fundamentos do Discipulado",
@@ -84,14 +71,6 @@ export const MOCK_CURSOS: Curso[] = [
 ];
 
 export const MOCK_AULAS: Aula[] = [
-  // Mesa Aberta (7 aulas)
-  { id: "aula-1", curso_id: "curso-1", titulo: "A mesa antes da palavra", ordem: 1, video_url: null, conteudo: `Antes do sermão, do estudo, da pregação — a mesa. Jesus discipulou andando, comendo, conversando. A mesa é o método anterior à fala. Quando a comunhão é real, a Palavra encontra solo preparado.\n\nNo evangelho de Lucas, mais de dez encontros transformadores acontecem ao redor de uma mesa. Não foi por acaso. A mesa derruba muros: hierarquia, formalidade, distância. Na mesa, todos comem o mesmo pão. Todos compartilham o mesmo cálice. Todos olham nos olhos.\n\nA primeira pergunta da formação Ekballo não é "o que você sabe?" mas "com quem você come?". Porque é ali, na mesa, que se vê a verdade da vida — e onde ela pode ser transformada.`, created_at: "2026-04-01T00:00:00Z" },
-  { id: "aula-2", curso_id: "curso-1", titulo: "Discípulo, não aluno", ordem: 2, video_url: null, conteudo: `Aluno aprende conteúdo. Discípulo aprende vida. A diferença entre os dois define se a transformação é cosmética ou raiz.\n\nO aluno termina o curso. O discípulo entra numa caminhada. O aluno é avaliado pela prova. O discípulo é formado pela presença. Aqui, nesta plataforma, você não estuda sobre Jesus — você aprende a andar com Ele, em comunidade, debaixo de uma liderança que te conhece.\n\nA Ekballo Academy é uma ferramenta. Não é o método. O método é a mesa. O Mestre é o Espírito. Esta plataforma só serve quando aproxima você desses dois.`, created_at: "2026-04-01T00:00:00Z" },
-  { id: "aula-3", curso_id: "curso-1", titulo: "Famílias como solo", ordem: 3, video_url: null, conteudo: `A primeira eclésia é a casa. Se o discipulado não chega na cozinha, na conversa de casal, na oração antes de dormir, ele não chegou em lugar nenhum. Famílias fortes são solo. Sem solo bom, a semente morre.\n\nNeste módulo a pergunta principal é simples: o que da sua vida espiritual fica no domingo de manhã e o que chega na quarta-feira à noite? Onde o discipulado precisa atravessar a porta da sua casa?`, created_at: "2026-04-01T00:00:00Z" },
-  { id: "aula-4", curso_id: "curso-1", titulo: "O Espírito como Mestre", ordem: 4, video_url: null, conteudo: `Não somos formados por cursos. Somos formados pelo Espírito. Cursos são instrumentos — Ele é o Mestre.\n\nEsta é uma plataforma honesta sobre seus limites. Ela ajuda você a refletir, organizar pensamentos, manter ritmo. Mas a transformação real acontece no encontro pessoal com o Espírito Santo, na oração, na adoração, na obediência ao texto bíblico.\n\nUse esta ferramenta como degrau, nunca como destino.`, created_at: "2026-04-01T00:00:00Z" },
-  { id: "aula-5", curso_id: "curso-1", titulo: "Maturidade como envio", ordem: 5, video_url: null, conteudo: `A maturidade cristã não é um destino, é um envio. O sinal de que alguém amadureceu é que ele começa a derramar. Quem foi formado, forma. Quem foi servido, serve. Quem foi enviado, envia.\n\nA palavra "Ekballo" no grego do Novo Testamento significa "lançar para fora", "expulsar", "enviar". Jesus usa essa palavra ao mandar discípulos para a seara. A maturidade nunca foi para reter — sempre foi para enviar.`, created_at: "2026-04-01T00:00:00Z" },
-  { id: "aula-6", curso_id: "curso-1", titulo: "Comunidade que se compromete", ordem: 6, video_url: null, conteudo: `Não é grupo que se reúne — é família que se compromete. A diferença está no nível de exposição, vulnerabilidade e responsabilidade mútua. Comunidade rasa ensina pouco. Comunidade comprometida transforma.\n\nNo Ekballo, comunidade é quando alguém pode te ligar às 23h porque está em crise. É quando você sabe o nome dos filhos da outra família. É quando há discordância dita na cara, com amor, sem se desfazer.`, created_at: "2026-04-01T00:00:00Z" },
-  { id: "aula-7", curso_id: "curso-1", titulo: "A mesa continua", ordem: 7, video_url: null, conteudo: `Este curso termina, mas a mesa não. Você foi convidado a continuar — em outra trilha, em outro encontro, em outra família. O Espírito te chamou para mais. Aceite o próximo passo.\n\nQuando você terminar este curso, sugiro que entre no "Fundamentos do Discipulado" — doze encontros mais profundos, com atividades semanais de reflexão. E continue na sua mesa local, presencialmente. A plataforma é extensão, nunca substituto.`, created_at: "2026-04-01T00:00:00Z" },
   // Fundamentos do Discipulado (12 aulas) — só os títulos para o índice
   { id: "aula-8", curso_id: "curso-2", titulo: "Identidade em Cristo: filho antes de servo", ordem: 1, video_url: null, conteudo: "Conteúdo desta aula em construção. Em breve.", created_at: "2026-04-05T00:00:00Z" },
   { id: "aula-9", curso_id: "curso-2", titulo: "Vida no Espírito: dependência diária", ordem: 2, video_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
@@ -107,18 +86,6 @@ export const MOCK_AULAS: Aula[] = [
 ];
 
 export const MOCK_ATIVIDADES: Atividade[] = [
-  // Aula 1 - Mesa antes da palavra
-  { id: "atv-1", aula_id: "aula-1", pergunta: "Em qual mesa você foi mais transformado(a) na vida? Descreva a cena: quem estava, o que se conversava, o que aconteceu em você.", ordem: 1, tipo: "reflexao", razao: null, created_at: "2026-04-01T00:00:00Z" },
-  { id: "atv-2", aula_id: "aula-1", pergunta: "Hoje, onde está a mesa que te forma? Se não há uma, o que está te impedindo de criá-la?", ordem: 2, tipo: "reflexao", razao: null, created_at: "2026-04-01T00:00:00Z" },
-  // Aula 3 - Famílias como solo
-  { id: "atv-3", aula_id: "aula-3", pergunta: "Como o discipulado tem chegado (ou não chegado) na sua casa? O que da sua família precisa ser orado, conversado, restaurado?", ordem: 1, tipo: "reflexao", razao: null, created_at: "2026-04-01T00:00:00Z" },
-  // Aula 5 - Maturidade como envio
-  { id: "atv-4", aula_id: "aula-5", pergunta: "Quem você está discipulando hoje? Se ninguém, por quê? E quem o Espírito está colocando no seu coração para começar?", ordem: 1, tipo: "reflexao", razao: null, created_at: "2026-04-01T00:00:00Z" },
-  { id: "atv-5", aula_id: "aula-5", pergunta: "Maturidade como envio: que passo concreto de envio você se sente desafiado(a) a dar nas próximas quatro semanas?", ordem: 2, tipo: "reflexao", razao: null, created_at: "2026-04-01T00:00:00Z" },
-  // Aula 6 - Comunidade
-  { id: "atv-6", aula_id: "aula-6", pergunta: "Olhando a sua comunidade hoje, ela é mais 'grupo que se reúne' ou 'família que se compromete'? Onde está o próximo passo de aprofundamento?", ordem: 1, tipo: "reflexao", razao: null, created_at: "2026-04-01T00:00:00Z" },
-  // Aula 7 - A mesa continua
-  { id: "atv-7", aula_id: "aula-7", pergunta: "Qual o próximo passo da sua caminhada? Escreva uma palavra-síntese que você quer levar deste curso para o resto do ano.", ordem: 1, tipo: "reflexao", razao: null, created_at: "2026-04-01T00:00:00Z" },
   // Aula 8 - Fundamentos
   { id: "atv-8", aula_id: "aula-8", pergunta: "O que muda quando você se entende primeiro filho, depois servo? Onde isso ainda não desceu na sua vida prática?", ordem: 1, tipo: "reflexao", razao: null, created_at: "2026-04-05T00:00:00Z" },
 
@@ -137,6 +104,16 @@ export const MOCK_ATIVIDADES: Atividade[] = [
   // Aula K4 - Como alcançar
   { id: "k-atv-9", aula_id: "k-aula-4", ordem: 1, tipo: "multipla_escolha", razao: "Keller: \"é somente no evangelho de Jesus Cristo que o veredicto é dado antes de desempenharmos nossas ações\". Em todas as outras formas de identidade, é o desempenho que leva ao veredicto.", pergunta: "O que torna o evangelho cristão radicalmente diferente de toda outra forma de identidade, segundo Keller?", created_at: "2026-05-14T00:00:00Z" },
   { id: "k-atv-10", aula_id: "k-aula-4", ordem: 2, tipo: "multipla_escolha", razao: "Keller: \"temos de reviver o evangelho cada vez que orarmos. Temos de revivê-lo sempre que vamos à igreja. Temos de reviver o evangelho a todo instante e perguntar a nós mesmos por que estamos no tribunal. Ali não é mais o nosso lugar.\"", pergunta: "Para alguém que já crê mas todos os dias se vê \"arrastado de volta para o tribunal\", qual a orientação prática de Keller?", created_at: "2026-05-14T00:00:00Z" },
+
+  // ====== REFLEXÕES (Ego Transformado) — 2 por capítulo, obrigatórias ======
+  { id: "k-ref-1a", aula_id: "k-aula-1", ordem: 3, tipo: "reflexao", razao: null, pergunta: "Que pergunta este capítulo deixou no seu coração?", created_at: "2026-05-21T00:00:00Z" },
+  { id: "k-ref-1b", aula_id: "k-aula-1", ordem: 4, tipo: "reflexao", razao: null, pergunta: "Onde você tem buscado se sentir alguém de valor?", created_at: "2026-05-21T00:00:00Z" },
+  { id: "k-ref-2a", aula_id: "k-aula-2", ordem: 4, tipo: "reflexao", razao: null, pergunta: "Das quatro marcas — vazio, dolorido, atarefado, frágil — qual você reconhece mais em você hoje?", created_at: "2026-05-21T00:00:00Z" },
+  { id: "k-ref-2b", aula_id: "k-aula-2", ordem: 5, tipo: "reflexao", razao: null, pergunta: "Em que momento da sua semana o seu ego doeu?", created_at: "2026-05-21T00:00:00Z" },
+  { id: "k-ref-3a", aula_id: "k-aula-3", ordem: 4, tipo: "reflexao", razao: null, pergunta: "Em que parte da sua vida você ainda está tentando provar quem você é?", created_at: "2026-05-21T00:00:00Z" },
+  { id: "k-ref-3b", aula_id: "k-aula-3", ordem: 5, tipo: "reflexao", razao: null, pergunta: "Como você costuma reagir quando recebe uma crítica?", created_at: "2026-05-21T00:00:00Z" },
+  { id: "k-ref-4a", aula_id: "k-aula-4", ordem: 3, tipo: "reflexao", razao: null, pergunta: "Onde você ainda performa para se sentir aceito?", created_at: "2026-05-21T00:00:00Z" },
+  { id: "k-ref-4b", aula_id: "k-aula-4", ordem: 4, tipo: "reflexao", razao: null, pergunta: "O que você quer praticar essa semana para lembrar que Deus já se pronunciou sobre você?", created_at: "2026-05-21T00:00:00Z" },
 ];
 
 // ============== ALTERNATIVAS para o curso Keller ==============
@@ -214,89 +191,11 @@ export type MockResposta = {
 
 export const MOCK_RESPOSTAS: MockResposta[] = [
   {
-    id: "r-1", atividade_id: "atv-1", aluno_id: "aluno-2",
-    texto: "A mesa que mais me transformou foi a da casa dos meus avós, num domingo de Páscoa. Tinha eu, meus pais, meus tios, primos, e meu avô que naquele ano estava com câncer terminal. Ele orou pela família com uma paz que eu nunca tinha visto. Falou de Jesus de um jeito que doeu de tão real. Naquela noite eu entendi que evangelho não é discurso, é vida vivida. Foi ali que decidi que queria ser discípulo, não só frequentador.",
-    comentario_lider: "Maria, sua resposta me emocionou. Esse tipo de mesa — onde a fé encontra a fragilidade humana — é exatamente o que a Ekballo quer recuperar. Pergunta para você nesta semana: existe alguém na sua vida hoje que precisa de uma mesa assim, e que pode estar esperando você convidar?",
-    comentario_lider_em: "2026-05-10T19:30:00Z",
-    created_at: "2026-05-08T22:14:00Z", updated_at: "2026-05-08T22:14:00Z",
-  },
-  {
-    id: "r-2", atividade_id: "atv-2", aluno_id: "aluno-2",
-    texto: "Hoje minha mesa de formação é meu grupo pequeno na quinta à noite. Mas confesso que tem virado mais reunião do que mesa. Falamos de coisas, mas não nos abrimos de verdade. Acho que o que me impede de criar uma mesa mais profunda é medo de me expor.",
-    comentario_lider: "O nome do que você descreveu é importante: medo de se expor. Quase todo mundo na comunidade sente isso. A mesa só vira mesa quando alguém quebra o silêncio primeiro. Eu desafio você nesta semana: na próxima quinta, conta uma vulnerabilidade real, mesmo que pequena. Vai ver o efeito.",
-    comentario_lider_em: "2026-05-11T08:00:00Z",
-    created_at: "2026-05-09T20:00:00Z", updated_at: "2026-05-09T20:00:00Z",
-  },
-  {
-    id: "r-3", atividade_id: "atv-1", aluno_id: "aluno-3",
-    texto: "A mesa que mais me transformou foi durante o luto do meu irmão, há dois anos. Foram três pessoas da igreja que vieram comer comigo todos os domingos por seis meses. Não me deram conselhos. Só comeram, choraram quando eu chorei, riram quando eu ri. Foi ali que entendi que a igreja não é programa, é presença.",
-    comentario_lider: null, comentario_lider_em: null,
-    created_at: "2026-05-12T21:15:00Z", updated_at: "2026-05-12T21:15:00Z",
-  },
-  {
-    id: "r-4", atividade_id: "atv-3", aluno_id: "aluno-3",
-    texto: "Em casa o discipulado ainda não chegou de verdade. Minha esposa e eu lemos a Bíblia individualmente, mas raramente oramos juntos. Os filhos veem a gente indo na igreja, mas não veem a gente vivendo Jesus na semana. Preciso começar a oração da família antes de dormir.",
-    comentario_lider: null, comentario_lider_em: null,
-    created_at: "2026-05-13T22:45:00Z", updated_at: "2026-05-13T22:45:00Z",
-  },
-  {
-    id: "r-5", atividade_id: "atv-3", aluno_id: "aluno-4",
-    texto: "Solteira, morando sozinha. A 'família' aqui pra mim é a comunidade Mesa 02 mesmo. E o discipulado tem chegado sim — através do meu líder, da Camila, e das duas com quem divido apartamento. Mas vejo que precisei reaprender que minha 'casa' espiritual não é só onde durmo, é onde sou conhecida.",
-    comentario_lider: "Beatriz, isso é maturidade. Casa não é endereço, é vínculo. Continue investindo nessas relações com profundidade — sua geração precisa de testemunhas de que solteiros também formam famílias espirituais profundas.",
-    comentario_lider_em: "2026-05-12T10:20:00Z",
-    created_at: "2026-05-10T18:00:00Z", updated_at: "2026-05-10T18:00:00Z",
-  },
-  {
-    id: "r-6", atividade_id: "atv-4", aluno_id: "aluno-5",
-    texto: "Hoje não estou discipulando ninguém de forma intencional. Tenho amizades na igreja, mas nada estruturado. O Espírito tem colocado no meu coração o nome do Mateus, um cara da minha célula que tá engatinhando na fé. Acho que vou convidar pra um café semanal.",
-    comentario_lider: "Pedro, esse 'café semanal' é exatamente onde Jesus começou. Antes de planejar, comece. Faça o convite essa semana mesmo. Me conta como foi.",
-    comentario_lider_em: "2026-05-13T07:30:00Z",
-    created_at: "2026-05-11T14:00:00Z", updated_at: "2026-05-11T14:00:00Z",
-  },
-  {
-    id: "r-7", atividade_id: "atv-5", aluno_id: "aluno-5",
-    texto: "Passo concreto: começar o discipulado com o Mateus. Outro passo: estudar para liderar a próxima Mesa Aberta da nossa célula em julho.",
-    comentario_lider: null, comentario_lider_em: null,
-    created_at: "2026-05-11T14:05:00Z", updated_at: "2026-05-11T14:05:00Z",
-  },
-  {
-    id: "r-8", atividade_id: "atv-1", aluno_id: "aluno-6",
-    texto: "Foi numa retiro de jovens em 2018. A mesa era literalmente um café da manhã longo, na beira do lago, com 8 pessoas. Lembro que falamos por três horas sobre vocação. Sai dali sabendo que ia largar o emprego e ir para o seminário. E foi.",
-    comentario_lider: "Camila, esse café da manhã virou uma virada vocacional inteira. Histórias assim mostram por que insistimos no método da mesa. Pergunta provocadora: quem precisa de uma mesa dessas, hoje, para tomar uma decisão grande, e está esperando alguém marcar?",
-    comentario_lider_em: "2026-05-09T08:30:00Z",
-    created_at: "2026-05-07T09:15:00Z", updated_at: "2026-05-07T09:15:00Z",
-  },
-  {
-    id: "r-9", atividade_id: "atv-6", aluno_id: "aluno-6",
-    texto: "Minha comunidade hoje é família que se compromete. Mas teve um custo: três anos de presença consistente, perdoar duas crises grandes, abrir mão de uma promoção que ia me tirar da cidade. Comprometimento não é sentimento, é decisão acumulada.",
-    comentario_lider: "Frase pra emoldurar: 'comprometimento não é sentimento, é decisão acumulada'. Posso citar essa em uma das aulas? Quero que mais gente ouça.",
-    comentario_lider_em: "2026-05-10T11:00:00Z",
-    created_at: "2026-05-08T15:30:00Z", updated_at: "2026-05-08T15:30:00Z",
-  },
-  {
-    id: "r-10", atividade_id: "atv-7", aluno_id: "aluno-2",
-    texto: "Palavra-síntese: COMEÇAR. Tenho adiado começar a discipular alguém porque acho que preciso estar pronta. Esse curso me mostrou que ninguém começa pronto. A gente começa porque é chamado, e amadurece andando.",
-    comentario_lider: null, comentario_lider_em: null,
-    created_at: "2026-05-13T19:50:00Z", updated_at: "2026-05-13T19:50:00Z",
-  },
-  {
-    id: "r-11", atividade_id: "atv-2", aluno_id: "aluno-7",
-    texto: "Acho que ainda não tenho uma mesa de formação real. Faço parte de um grupo, mas é mais social. O que me impede é não saber por onde começar a aprofundar.",
-    comentario_lider: null, comentario_lider_em: null,
-    created_at: "2026-05-13T08:30:00Z", updated_at: "2026-05-13T08:30:00Z",
-  },
-  {
     id: "r-12", atividade_id: "atv-8", aluno_id: "aluno-4",
     texto: "Quando entendo que sou filha primeiro, paro de tentar 'merecer' aprovação. O lugar onde isso ainda não desceu é no trabalho — continuo me esforçando demais para provar que sou competente. A insegurança da identidade aparece ali.",
     comentario_lider: "Beatriz, esse é um dos discernimentos mais importantes da vida cristã. Quando o trabalho deixa de ser palco de aprovação e vira lugar de serviço, muita coisa muda. Sugestão: ore essa semana especificamente sobre o trabalho. Veja o que muda.",
     comentario_lider_em: "2026-05-13T11:00:00Z",
     created_at: "2026-05-12T22:00:00Z", updated_at: "2026-05-12T22:00:00Z",
-  },
-  {
-    id: "r-13", atividade_id: "atv-1", aluno_id: "aluno-8",
-    texto: "Acabei de me cadastrar. Vou refletir essa semana e respondo até domingo!",
-    comentario_lider: null, comentario_lider_em: null,
-    created_at: "2026-05-13T18:20:00Z", updated_at: "2026-05-13T18:20:00Z",
   },
 ];
 
@@ -305,16 +204,11 @@ export type MockMatricula = {
   matriculado_em: string; concluido_em: string | null;
 };
 
+// Mutable array — server actions de matrícula/desmatrícula adicionam/removem entradas em mock mode.
 export const MOCK_MATRICULAS: MockMatricula[] = [
-  // Mesa Aberta — todos
-  { aluno_id: "aluno-2", curso_id: "curso-1", matriculado_em: "2026-04-08T14:21:00Z", concluido_em: "2026-05-13T19:50:00Z" },
-  { aluno_id: "aluno-3", curso_id: "curso-1", matriculado_em: "2026-04-10T09:05:00Z", concluido_em: null },
-  { aluno_id: "aluno-4", curso_id: "curso-1", matriculado_em: "2026-04-15T20:30:00Z", concluido_em: null },
-  { aluno_id: "aluno-5", curso_id: "curso-1", matriculado_em: "2026-04-18T07:14:00Z", concluido_em: null },
-  { aluno_id: "aluno-6", curso_id: "curso-1", matriculado_em: "2026-04-20T16:42:00Z", concluido_em: "2026-05-08T15:30:00Z" },
-  { aluno_id: "aluno-7", curso_id: "curso-1", matriculado_em: "2026-05-02T11:30:00Z", concluido_em: null },
-  { aluno_id: "aluno-8", curso_id: "curso-1", matriculado_em: "2026-05-09T08:00:00Z", concluido_em: null },
-  // Fundamentos
+  // Curso de partida — mock user já matriculado para o dashboard local não abrir vazio.
+  { aluno_id: MOCK_USER_ID, curso_id: "curso-4", matriculado_em: "2026-05-21T10:00:00Z", concluido_em: null },
+  // Demos legadas (cursos placeholder)
   { aluno_id: "aluno-2", curso_id: "curso-2", matriculado_em: "2026-05-13T20:00:00Z", concluido_em: null },
   { aluno_id: "aluno-4", curso_id: "curso-2", matriculado_em: "2026-05-12T22:00:00Z", concluido_em: null },
   { aluno_id: "aluno-6", curso_id: "curso-2", matriculado_em: "2026-05-08T15:35:00Z", concluido_em: null },
@@ -322,28 +216,23 @@ export const MOCK_MATRICULAS: MockMatricula[] = [
   { aluno_id: "aluno-6", curso_id: "curso-3", matriculado_em: "2026-04-25T10:00:00Z", concluido_em: null },
 ];
 
-export const MOCK_PROGRESSO: { aluno_id: string; aula_id: string; concluido_em: string }[] = [
-  // aluno-2 (Maria) concluiu todas de Mesa Aberta
-  { aluno_id: "aluno-2", aula_id: "aula-1", concluido_em: "2026-05-08T22:30:00Z" },
-  { aluno_id: "aluno-2", aula_id: "aula-2", concluido_em: "2026-05-09T19:00:00Z" },
-  { aluno_id: "aluno-2", aula_id: "aula-3", concluido_em: "2026-05-10T20:00:00Z" },
-  { aluno_id: "aluno-2", aula_id: "aula-4", concluido_em: "2026-05-11T19:00:00Z" },
-  { aluno_id: "aluno-2", aula_id: "aula-5", concluido_em: "2026-05-12T20:00:00Z" },
-  { aluno_id: "aluno-2", aula_id: "aula-6", concluido_em: "2026-05-13T18:00:00Z" },
-  { aluno_id: "aluno-2", aula_id: "aula-7", concluido_em: "2026-05-13T19:50:00Z" },
-  // aluno-3 está na 4
-  { aluno_id: "aluno-3", aula_id: "aula-1", concluido_em: "2026-05-12T22:00:00Z" },
-  { aluno_id: "aluno-3", aula_id: "aula-2", concluido_em: "2026-05-13T22:00:00Z" },
-  { aluno_id: "aluno-3", aula_id: "aula-3", concluido_em: "2026-05-13T23:00:00Z" },
-  // aluno-6 (Camila) concluiu Mesa Aberta inteira
-  { aluno_id: "aluno-6", aula_id: "aula-1", concluido_em: "2026-05-07T10:00:00Z" },
-  { aluno_id: "aluno-6", aula_id: "aula-2", concluido_em: "2026-05-07T18:00:00Z" },
-  { aluno_id: "aluno-6", aula_id: "aula-3", concluido_em: "2026-05-08T08:00:00Z" },
-  { aluno_id: "aluno-6", aula_id: "aula-4", concluido_em: "2026-05-08T12:00:00Z" },
-  { aluno_id: "aluno-6", aula_id: "aula-5", concluido_em: "2026-05-08T14:00:00Z" },
-  { aluno_id: "aluno-6", aula_id: "aula-6", concluido_em: "2026-05-08T15:30:00Z" },
-  { aluno_id: "aluno-6", aula_id: "aula-7", concluido_em: "2026-05-08T16:00:00Z" },
-];
+export function addMockMatricula(alunoId: string, cursoId: string) {
+  const existe = MOCK_MATRICULAS.some((m) => m.aluno_id === alunoId && m.curso_id === cursoId);
+  if (existe) return;
+  MOCK_MATRICULAS.push({
+    aluno_id: alunoId,
+    curso_id: cursoId,
+    matriculado_em: new Date().toISOString(),
+    concluido_em: null,
+  });
+}
+
+export function removeMockMatricula(alunoId: string, cursoId: string) {
+  const idx = MOCK_MATRICULAS.findIndex((m) => m.aluno_id === alunoId && m.curso_id === cursoId);
+  if (idx >= 0) MOCK_MATRICULAS.splice(idx, 1);
+}
+
+export const MOCK_PROGRESSO: { aluno_id: string; aula_id: string; concluido_em: string }[] = [];
 
 // ============== Helpers ==============
 
@@ -399,15 +288,47 @@ export function alternativasByAtividade(atividadeId: string): Alternativa[] {
   return MOCK_ALTERNATIVAS.filter((a) => a.atividade_id === atividadeId).sort((a, b) => a.ordem - b.ordem);
 }
 
-// Retorna true se TODAS as MC da aula foram respondidas corretamente pelo aluno
-export function aulaCompletaMC(alunoId: string, aulaId: string): boolean {
-  const mcs = MOCK_ATIVIDADES.filter((a) => a.aula_id === aulaId && a.tipo === "multipla_escolha");
-  if (mcs.length === 0) return true; // aulas sem MC não bloqueiam
-  for (const atv of mcs) {
-    const altSelId = MOCK_MC_ANSWERS.get(`${alunoId}::${atv.id}`);
-    if (!altSelId) return false;
-    const alt = MOCK_ALTERNATIVAS.find((a) => a.id === altSelId);
-    if (!alt || !alt.correta) return false;
+// Persiste resposta de reflexão no mock: faz upsert em MOCK_RESPOSTAS
+// para que listRespostasByAluno enxergue e aulaCompleta reconheça como respondida.
+export function setMockReflexao(alunoId: string, atividadeId: string, texto: string) {
+  const idx = MOCK_RESPOSTAS.findIndex(
+    (r) => r.aluno_id === alunoId && r.atividade_id === atividadeId
+  );
+  const agora = new Date().toISOString();
+  if (idx >= 0) {
+    MOCK_RESPOSTAS[idx].texto = texto;
+    MOCK_RESPOSTAS[idx].updated_at = agora;
+  } else {
+    MOCK_RESPOSTAS.push({
+      id: `mock-r-${Date.now()}`,
+      atividade_id: atividadeId,
+      aluno_id: alunoId,
+      texto,
+      comentario_lider: null,
+      comentario_lider_em: null,
+      created_at: agora,
+      updated_at: agora,
+    });
+  }
+}
+
+// Aula completa = todas as MCs corretas E todas as reflexões respondidas (texto não vazio)
+export function aulaCompleta(alunoId: string, aulaId: string): boolean {
+  const atividades = MOCK_ATIVIDADES.filter((a) => a.aula_id === aulaId);
+  if (atividades.length === 0) return true;
+  for (const atv of atividades) {
+    if (atv.tipo === "multipla_escolha") {
+      const altSelId = MOCK_MC_ANSWERS.get(`${alunoId}::${atv.id}`);
+      if (!altSelId) return false;
+      const alt = MOCK_ALTERNATIVAS.find((a) => a.id === altSelId);
+      if (!alt || !alt.correta) return false;
+    } else {
+      // reflexao
+      const r = MOCK_RESPOSTAS.find(
+        (x) => x.aluno_id === alunoId && x.atividade_id === atv.id
+      );
+      if (!r?.texto?.trim()) return false;
+    }
   }
   return true;
 }

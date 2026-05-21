@@ -16,7 +16,7 @@ node --version
 ## 2. Cole estes 3 comandos no Terminal (um de cada vez)
 
 ```bash
-cd "/Users/brunofernandes/Documents/Claude/Projects/Ekballo Academy/Plataforma de Cursos/ekballo-academy"
+cd /Users/brunofernandes/Projects/ekballo-academy
 ```
 
 ```bash
@@ -46,15 +46,15 @@ A plataforma vem com **modo demonstração ativo** — não precisa de Supabase,
 ### Como aluno
 1. Clique em **Comece agora** ou **Entrar** na landing
 2. Em **Login**, basta clicar em "Entrar" (já vem com seu e-mail preenchido)
-3. Você cai no **Dashboard** com 3 cursos
-4. Abra **Mesa Aberta** → veja as 7 aulas com progresso
-5. Abra qualquer aula → leia o conteúdo, responda as atividades, marque como concluída
+3. Você cai no **Dashboard** com a lista de cursos
+4. Abra **Ego Transformado** → veja as 4 aulas com questões de múltipla escolha
+5. Abra qualquer aula → leia o conteúdo, responda as questões; cada aula só libera a próxima quando todas as MCs forem respondidas corretamente
 6. Cada resposta "salva" (em modo demo, sem persistir após reload)
 
 ### Como admin
 1. No canto superior direito, clique em **Painel admin** (botão verde)
-2. Veja as 4 estatísticas (8 alunos, 3 cursos, 13 respostas, 7 aguardando devolutiva)
-3. Entre em **Respostas** → veja todas as 13 reflexões dos alunos mockados
+2. Veja o painel com alunos, cursos e respostas
+3. Entre em **Respostas** → veja as reflexões registradas no mock
 4. Filtre por "Aguardando devolutiva" ou por curso
 5. Clique numa resposta → leia a reflexão completa, escreva uma devolutiva
 6. Veja **outras reflexões deste discípulo** no fim da página

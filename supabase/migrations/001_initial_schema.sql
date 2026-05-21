@@ -234,46 +234,50 @@ create policy "progresso_aluno_write_own" on progresso
   for all using (auth.uid() = aluno_id) with check (auth.uid() = aluno_id);
 
 -- ============================================================
--- DADOS DE EXEMPLO (curso âncora gratuito + 3 aulas + atividades)
--- Comente este bloco se não quiser dados de demonstração.
+-- DADOS DE EXEMPLO (descontinuado)
+-- O curso âncora "Mesa Aberta" originalmente seedado aqui foi removido em
+-- 005_remove_mesa_aberta.sql. O bloco abaixo está comentado para que um
+-- setup novo não recrie o curso. O conteúdo permanece no histórico para
+-- fins de auditoria — o curso atual de partida é "Ego Transformado"
+-- (ver 004_curso_ego_transformado.sql).
 -- ============================================================
 
-insert into cursos (slug, titulo, descricao, is_pago, ordem, publicado) values
-('mesa-aberta', 'Mesa Aberta', 'O curso âncora da Ekballo Academy. Sete aulas curtas para entender o coração do discipulado relacional, da formação à mesa, do envio à multiplicação. Para todo discípulo que está começando a caminhada.', false, 1, true)
-on conflict (slug) do nothing;
-
-with c as (select id from cursos where slug = 'mesa-aberta')
-insert into aulas (curso_id, titulo, ordem, conteudo) values
-((select id from c), 'A mesa antes da palavra', 1, 'Antes do sermão, do estudo, da pregação — a mesa. Jesus discipulou andando, comendo, conversando. A mesa é o método anterior à fala. Quando a comunhão é real, a Palavra encontra solo preparado.'),
-((select id from c), 'Discípulo, não aluno', 2, 'Aluno aprende conteúdo. Discípulo aprende vida. A diferença entre os dois define se a transformação é cosmética ou raiz. Aqui você não estuda sobre Jesus — você aprende a andar com Ele.'),
-((select id from c), 'Famílias como solo', 3, 'A primeira eclésia é a casa. Se o discipulado não chega na cozinha, na conversa de casal, na oração antes de dormir, ele não chegou em lugar nenhum. Famílias fortes são solo. Sem solo bom, a semente morre.'),
-((select id from c), 'O Espírito como Mestre', 4, 'Não somos formados por cursos. Somos formados pelo Espírito. Cursos são instrumentos — Ele é o Mestre. Esta é uma plataforma honesta sobre seus limites: ela ajuda, mas não substitui a presença Dele.'),
-((select id from c), 'Maturidade como envio', 5, 'A maturidade cristã não é um destino, é um envio. O sinal de que alguém amadureceu é que ele começa a derramar. Quem foi formado, forma. Quem foi servido, serve. Quem foi enviado, envia.'),
-((select id from c), 'Comunidade que se compromete', 6, 'Não é grupo que se reúne — é família que se compromete. A diferença está no nível de exposição, vulnerabilidade e responsabilidade mútua. Comunidade rasa ensina pouco. Comunidade comprometida transforma.'),
-((select id from c), 'A mesa continua', 7, 'Este curso termina, mas a mesa não. Você foi convidado a continuar — em outra trilha, em outro encontro, em outra família. O Espírito te chamou para mais. Aceite o próximo passo.')
-on conflict do nothing;
-
-with a as (select id from aulas where titulo = 'A mesa antes da palavra' limit 1)
-insert into atividades (aula_id, pergunta, ordem) values
-((select id from a), 'Em qual mesa você foi mais transformado(a) na vida? Descreva a cena: quem estava, o que se conversava, o que aconteceu em você.', 1),
-((select id from a), 'Hoje, onde está a mesa que te forma? Se não há uma, o que está te impedindo de criá-la?', 2)
-on conflict do nothing;
-
-with a as (select id from aulas where titulo = 'Famílias como solo' limit 1)
-insert into atividades (aula_id, pergunta, ordem) values
-((select id from a), 'Como o discipulado tem chegado (ou não chegado) na sua casa? O que da sua família precisa ser orado, conversado, restaurado?', 1)
-on conflict do nothing;
-
-with a as (select id from aulas where titulo = 'Maturidade como envio' limit 1)
-insert into atividades (aula_id, pergunta, ordem) values
-((select id from a), 'Quem você está discipulando hoje? Se ninguém, por quê? E quem o Espírito está colocando no seu coração para começar?', 1),
-((select id from a), 'Maturidade como envio: que passo concreto de envio você se sente desafiado(a) a dar nas próximas quatro semanas?', 2)
-on conflict do nothing;
-
-with a as (select id from aulas where titulo = 'A mesa continua' limit 1)
-insert into atividades (aula_id, pergunta, ordem) values
-((select id from a), 'Qual o próximo passo da sua caminhada? Escreva uma palavra-síntese que você quer levar deste curso para o resto do ano.', 1)
-on conflict do nothing;
+-- insert into cursos (slug, titulo, descricao, is_pago, ordem, publicado) values
+-- ('mesa-aberta', 'Mesa Aberta', 'O curso âncora da Ekballo Academy. Sete aulas curtas para entender o coração do discipulado relacional, da formação à mesa, do envio à multiplicação. Para todo discípulo que está começando a caminhada.', false, 1, true)
+-- on conflict (slug) do nothing;
+--
+-- with c as (select id from cursos where slug = 'mesa-aberta')
+-- insert into aulas (curso_id, titulo, ordem, conteudo) values
+-- ((select id from c), 'A mesa antes da palavra', 1, 'Antes do sermão, do estudo, da pregação — a mesa. Jesus discipulou andando, comendo, conversando. A mesa é o método anterior à fala. Quando a comunhão é real, a Palavra encontra solo preparado.'),
+-- ((select id from c), 'Discípulo, não aluno', 2, 'Aluno aprende conteúdo. Discípulo aprende vida. A diferença entre os dois define se a transformação é cosmética ou raiz. Aqui você não estuda sobre Jesus — você aprende a andar com Ele.'),
+-- ((select id from c), 'Famílias como solo', 3, 'A primeira eclésia é a casa. Se o discipulado não chega na cozinha, na conversa de casal, na oração antes de dormir, ele não chegou em lugar nenhum. Famílias fortes são solo. Sem solo bom, a semente morre.'),
+-- ((select id from c), 'O Espírito como Mestre', 4, 'Não somos formados por cursos. Somos formados pelo Espírito. Cursos são instrumentos — Ele é o Mestre. Esta é uma plataforma honesta sobre seus limites: ela ajuda, mas não substitui a presença Dele.'),
+-- ((select id from c), 'Maturidade como envio', 5, 'A maturidade cristã não é um destino, é um envio. O sinal de que alguém amadureceu é que ele começa a derramar. Quem foi formado, forma. Quem foi servido, serve. Quem foi enviado, envia.'),
+-- ((select id from c), 'Comunidade que se compromete', 6, 'Não é grupo que se reúne — é família que se compromete. A diferença está no nível de exposição, vulnerabilidade e responsabilidade mútua. Comunidade rasa ensina pouco. Comunidade comprometida transforma.'),
+-- ((select id from c), 'A mesa continua', 7, 'Este curso termina, mas a mesa não. Você foi convidado a continuar — em outra trilha, em outro encontro, em outra família. O Espírito te chamou para mais. Aceite o próximo passo.')
+-- on conflict do nothing;
+--
+-- with a as (select id from aulas where titulo = 'A mesa antes da palavra' limit 1)
+-- insert into atividades (aula_id, pergunta, ordem) values
+-- ((select id from a), 'Em qual mesa você foi mais transformado(a) na vida? Descreva a cena: quem estava, o que se conversava, o que aconteceu em você.', 1),
+-- ((select id from a), 'Hoje, onde está a mesa que te forma? Se não há uma, o que está te impedindo de criá-la?', 2)
+-- on conflict do nothing;
+--
+-- with a as (select id from aulas where titulo = 'Famílias como solo' limit 1)
+-- insert into atividades (aula_id, pergunta, ordem) values
+-- ((select id from a), 'Como o discipulado tem chegado (ou não chegado) na sua casa? O que da sua família precisa ser orado, conversado, restaurado?', 1)
+-- on conflict do nothing;
+--
+-- with a as (select id from aulas where titulo = 'Maturidade como envio' limit 1)
+-- insert into atividades (aula_id, pergunta, ordem) values
+-- ((select id from a), 'Quem você está discipulando hoje? Se ninguém, por quê? E quem o Espírito está colocando no seu coração para começar?', 1),
+-- ((select id from a), 'Maturidade como envio: que passo concreto de envio você se sente desafiado(a) a dar nas próximas quatro semanas?', 2)
+-- on conflict do nothing;
+--
+-- with a as (select id from aulas where titulo = 'A mesa continua' limit 1)
+-- insert into atividades (aula_id, pergunta, ordem) values
+-- ((select id from a), 'Qual o próximo passo da sua caminhada? Escreva uma palavra-síntese que você quer levar deste curso para o resto do ano.', 1)
+-- on conflict do nothing;
 
 -- ============================================================
 -- DICA: para se tornar admin, depois de criar sua conta no app, rode:

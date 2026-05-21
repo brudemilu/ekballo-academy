@@ -59,20 +59,23 @@ export default async function AlunosPage() {
                   <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
                     Cadastro
                   </th>
+                  <th className="px-6 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-mesa-100">
                 {alunos.map((a) => (
                   <tr key={a.id} className="hover:bg-mesa-50/40">
                     <td className="px-6 py-4">
-                      <p className="font-medium text-mesa-800">
-                        {a.nome || "(sem nome)"}
-                      </p>
-                      {a.is_admin && (
-                        <span className="mt-0.5 inline-block rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
-                          Admin
-                        </span>
-                      )}
+                      <Link href={`/admin/alunos/${a.id}`} className="block">
+                        <p className="font-medium text-mesa-800 hover:underline">
+                          {a.nome || "(sem nome)"}
+                        </p>
+                        {a.is_admin && (
+                          <span className="mt-0.5 inline-block rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
+                            Admin
+                          </span>
+                        )}
+                      </Link>
                     </td>
                     <td className="px-6 py-4 text-sm text-mesa-700">{a.email}</td>
                     <td className="px-6 py-4 text-sm text-mesa-600">
@@ -83,6 +86,14 @@ export default async function AlunosPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-mesa-500">
                       {new Date(a.created_at).toLocaleDateString("pt-BR")}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Link
+                        href={`/admin/alunos/${a.id}`}
+                        className="rounded-full border border-mesa-200 bg-white px-4 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
+                      >
+                        Gerenciar
+                      </Link>
                     </td>
                   </tr>
                 ))}

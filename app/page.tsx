@@ -277,7 +277,7 @@ export default function Home() {
                 avatar: AVATAR_2,
                 nome: "João Pedro",
                 turma: "Mesa 01",
-                texto: "Comecei o Mesa Aberta de curiosidade e três meses depois eu estava começando o discipulado com um cara da minha célula. Não era o plano — virou o plano.",
+                texto: "Comecei o Ego Transformado de curiosidade e três meses depois eu estava começando o discipulado com um cara da minha célula. Não era o plano — virou o plano.",
               },
               {
                 avatar: AVATAR_3,

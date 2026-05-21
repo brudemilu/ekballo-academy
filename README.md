@@ -22,7 +22,7 @@ Plataforma de cursos e discipulado da comunidade Ekballo. Construída com Next.j
   - Lista de alunos
   - Lista de cursos com matrículas e taxa de conclusão
   - Exportação de respostas em CSV
-- **Schema SQL completo** com Row Level Security e dados de demonstração (curso âncora "Mesa Aberta" com 7 aulas e atividades reflexivas)
+- **Schema SQL completo** com Row Level Security e o curso de partida "Ego Transformado" (Timothy Keller) — 4 aulas com 10 atividades de múltipla escolha
 
 ---
 
@@ -167,7 +167,11 @@ ekballo-academy/
 │   └── types.ts
 ├── supabase/
 │   └── migrations/
-│       └── 001_initial_schema.sql # banco completo + RLS + dados demo
+│       ├── 001_initial_schema.sql  # banco base + RLS
+│       ├── 002_multipla_escolha.sql
+│       ├── 003_lock_security_definer.sql
+│       ├── 004_curso_ego_transformado.sql # curso de partida
+│       └── 005_remove_mesa_aberta.sql     # remove seed antigo
 ├── middleware.ts                  # protege rotas e valida admin
 ├── tailwind.config.ts             # paleta Ekballo (mesa + oliveira)
 └── package.json

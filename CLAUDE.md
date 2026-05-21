@@ -64,13 +64,15 @@ Pages are async server components. They call `getCurrentSession()` first and `re
 
 ### Migrations
 
-Schema is the union of three migrations in [supabase/migrations/](supabase/migrations/), **all applied** to the live Supabase project:
+Schema is the union of five migrations in [supabase/migrations/](supabase/migrations/), **all applied** to the live Supabase project:
 
-1. `001_initial_schema.sql` — base tables (profiles, cursos, aulas, atividades, respostas, matriculas, progresso), trigger `on_auth_user_created`, RLS policies, seeded "Mesa Aberta" course + 7 aulas.
+1. `001_initial_schema.sql` — base tables (profiles, cursos, aulas, atividades, respostas, matriculas, progresso), trigger `on_auth_user_created`, RLS policies. **Originally seeded a "Mesa Aberta" course with 7 aulas**; that seed block is commented out (removed by migration 005 — current starting course is "Ego Transformado", from migration 004).
 2. `002_multipla_escolha.sql` — adds `atividades.tipo`/`razao`, the `alternativas` table, `respostas.alternativa_id`, makes `respostas.texto` nullable, RLS for alternativas.
 3. `003_lock_security_definer.sql` — revokes EXECUTE on `handle_new_user` from anon/authenticated/public, switches `is_admin(uuid)` to `SECURITY INVOKER`. Cleared advisor warnings 0028/0029.
+4. `004_curso_ego_transformado.sql` — seeds the "Ego Transformado" (Timothy Keller) course: 4 aulas, 10 multiple-choice atividades, 40 alternativas.
+5. `005_remove_mesa_aberta.sql` — removes the Mesa Aberta course and its dependents (aulas, atividades, matriculas) from the live DB. Idempotent (no-op if already gone).
 
-For new schema changes, write `004_*.sql` (and so on) and apply via the **Supabase MCP** `apply_migration` tool — this keeps the Supabase `_migrations` table aligned with the repo. Always run `get_advisors` after DDL.
+For new schema changes, write `006_*.sql` (and so on) and apply via the **Supabase MCP** `apply_migration` tool — this keeps the Supabase `_migrations` table aligned with the repo. Always run `get_advisors` after DDL.
 
 ### Tailwind palette
 

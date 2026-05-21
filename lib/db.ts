@@ -24,9 +24,10 @@ import {
   progressoByAluno as mockProgByAluno,
   matriculasByAluno as mockMatByAluno,
   alternativasByAtividade as mockAltByAtv,
-  aulaCompletaMC as mockAulaCompleta,
+  aulaCompleta as mockAulaCompleta,
   getMockMcAnswer,
   setMockMcAnswer,
+  setMockReflexao,
 } from "@/lib/mock-data";
 import type { Profile, Curso, Aula, Atividade, Alternativa } from "@/lib/types";
 
@@ -210,15 +211,33 @@ export async function listMatriculasByAluno(alunoId: string): Promise<{ curso_id
   return data || [];
 }
 
-export async function ensureMatricula(alunoId: string, cursoId: string): Promise<void> {
+export async function isMatriculado(alunoId: string, cursoId: string): Promise<boolean> {
   if (isMockMode()) {
-    // No-op em mock
-    return;
+    return mockMatByAluno(alunoId).some((m) => m.curso_id === cursoId);
   }
   const supabase = await createClient();
-  await supabase
+  const { data } = await supabase
     .from("matriculas")
-    .upsert({ aluno_id: alunoId, curso_id: cursoId }, { onConflict: "aluno_id,curso_id" });
+    .select("curso_id")
+    .eq("aluno_id", alunoId)
+    .eq("curso_id", cursoId)
+    .maybeSingle();
+  return !!data;
+}
+
+// -------- ADMIN: ALUNO INDIVIDUAL --------
+
+export async function getAlunoById(alunoId: string): Promise<Profile | null> {
+  if (isMockMode()) {
+    return MOCK_ALUNOS.find((a) => a.id === alunoId) || null;
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", alunoId)
+    .single();
+  return data as Profile | null;
 }
 
 // -------- ADMIN: STATS --------
@@ -475,31 +494,34 @@ export async function salvarRespostaAlternativa(alunoId: string, atividadeId: st
   );
 }
 
-// Aula está completa se TODAS as MC dela foram respondidas corretamente
+// Aula completa = todas as MCs corretas E todas as reflexões respondidas (texto não vazio)
 export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boolean> {
   if (isMockMode()) return mockAulaCompleta(alunoId, aulaId);
   const supabase = await createClient();
   const { data: ats } = await supabase
     .from("atividades")
     .select("id, tipo")
-    .eq("aula_id", aulaId)
-    .eq("tipo", "multipla_escolha");
-  const mcs = (ats || []) as { id: string; tipo: string }[];
-  if (mcs.length === 0) return true;
-  for (const atv of mcs) {
+    .eq("aula_id", aulaId);
+  const atividades = (ats || []) as { id: string; tipo: string }[];
+  if (atividades.length === 0) return true;
+  for (const atv of atividades) {
     const { data: r } = await supabase
       .from("respostas")
-      .select("alternativa_id")
+      .select("alternativa_id, texto")
       .eq("aluno_id", alunoId)
       .eq("atividade_id", atv.id)
       .maybeSingle();
-    if (!r?.alternativa_id) return false;
-    const { data: alt } = await supabase
-      .from("alternativas")
-      .select("correta")
-      .eq("id", r.alternativa_id)
-      .single();
-    if (!alt?.correta) return false;
+    if (atv.tipo === "multipla_escolha") {
+      if (!r?.alternativa_id) return false;
+      const { data: alt } = await supabase
+        .from("alternativas")
+        .select("correta")
+        .eq("id", r.alternativa_id)
+        .single();
+      if (!alt?.correta) return false;
+    } else {
+      if (!r?.texto?.trim()) return false;
+    }
   }
   return true;
 }
