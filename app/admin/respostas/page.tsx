@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { getCurrentSession, listAllRespostas, listAllCursos } from "@/lib/db";
 
 export default async function RespostasPage({
   searchParams,
@@ -10,37 +10,17 @@ export default async function RespostasPage({
   searchParams: Promise<{ filtro?: string; curso?: string }>;
 }) {
   const { filtro, curso: cursoSlug } = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nome, email, is_admin")
-    .eq("id", user.id)
-    .single();
-  if (!profile?.is_admin) redirect("/dashboard");
+  const status =
+    filtro === "pendentes" ? "pendentes" : filtro === "comentadas" ? "comentadas" : undefined;
 
-  let query = supabase
-    .from("respostas")
-    .select(
-      "id, texto, comentario_lider, created_at, updated_at, atividade:atividades(pergunta, aula:aulas(titulo, curso:cursos(titulo, slug))), aluno:profiles(nome, email)"
-    )
-    .order("created_at", { ascending: false });
-
-  if (filtro === "pendentes") query = query.is("comentario_lider", null);
-  if (filtro === "comentadas") query = query.not("comentario_lider", "is", null);
-
-  const { data: respostas } = await query.limit(100);
-
-  const filtradas = (respostas || []).filter((r: any) =>
-    cursoSlug ? r.atividade?.aula?.curso?.slug === cursoSlug : true
-  );
-
-  const { data: cursos } = await supabase
-    .from("cursos")
-    .select("slug, titulo")
-    .order("titulo");
+  const [respostas, cursos] = await Promise.all([
+    listAllRespostas({ status, cursoSlug }),
+    listAllCursos(),
+  ]);
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -49,7 +29,7 @@ export default async function RespostasPage({
           <Link href="/admin">
             <Logo />
           </Link>
-          <UserMenu nome={profile.nome} email={profile.email || ""} isAdmin />
+          <UserMenu nome={session.profile.nome} email={session.profile.email || session.email} isAdmin />
         </nav>
       </header>
 
@@ -70,17 +50,17 @@ export default async function RespostasPage({
               Reflexões dos discípulos
             </h1>
           </div>
-          <Link
+          <a
             href="/admin/respostas/exportar"
             className="rounded-full border border-mesa-300 bg-white px-5 py-2 text-sm font-medium text-mesa-700 hover:bg-mesa-50"
           >
             Exportar CSV
-          </Link>
+          </a>
         </div>
 
         <div className="mb-6 flex flex-wrap gap-2">
           <FiltroLink filtro={undefined} atual={filtro}>
-            Todas ({filtradas.length})
+            Todas ({respostas.length})
           </FiltroLink>
           <FiltroLink filtro="pendentes" atual={filtro}>
             Aguardando devolutiva
@@ -90,7 +70,7 @@ export default async function RespostasPage({
           </FiltroLink>
         </div>
 
-        {cursos && cursos.length > 0 && (
+        {cursos.length > 0 && (
           <div className="mb-8 flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium uppercase tracking-wider text-mesa-500">
               Filtrar por curso:
@@ -118,7 +98,7 @@ export default async function RespostasPage({
           </div>
         )}
 
-        {filtradas.length === 0 ? (
+        {respostas.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-20 text-center">
             <p className="font-serif text-xl text-mesa-500">
               Nenhuma resposta no filtro escolhido.
@@ -126,7 +106,7 @@ export default async function RespostasPage({
           </div>
         ) : (
           <ul className="space-y-3">
-            {filtradas.map((r: any) => (
+            {respostas.map((r) => (
               <li key={r.id}>
                 <Link
                   href={`/admin/respostas/${r.id}`}
@@ -134,17 +114,17 @@ export default async function RespostasPage({
                 >
                   <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-medium text-mesa-800">
-                      {r.aluno?.nome || r.aluno?.email}
+                      {r.alunoNome || r.alunoEmail}
                     </p>
                     <p className="text-xs text-mesa-500">
                       {new Date(r.created_at).toLocaleString("pt-BR")}
                     </p>
                   </div>
                   <p className="mb-2 text-xs text-mesa-500">
-                    {r.atividade?.aula?.curso?.titulo} · {r.atividade?.aula?.titulo}
+                    {r.cursoTitulo} · {r.aulaTitulo}
                   </p>
                   <p className="mb-3 font-medium text-mesa-700">
-                    “{r.atividade?.pergunta}”
+                    &ldquo;{r.pergunta}&rdquo;
                   </p>
                   <p className="line-clamp-2 text-sm text-mesa-600">{r.texto}</p>
                   <div className="mt-3">

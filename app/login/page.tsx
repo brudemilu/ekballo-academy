@@ -1,18 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/Logo";
 
+const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-mesa-50" />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
 
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [email, setEmail] = useState(MOCK ? "iabolsa@bmbr.com.br" : "");
+  const [senha, setSenha] = useState(MOCK ? "qualquer-senha" : "");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -20,6 +30,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setErro(null);
+
+    if (MOCK) {
+      // Modo demo: pula auth, vai direto pra dentro
+      router.push(next);
+      router.refresh();
+      return;
+    }
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
@@ -49,6 +66,12 @@ export default function LoginPage() {
             <Logo />
           </Link>
         </div>
+
+        {MOCK && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <strong>Modo demonstração ativo.</strong> Login está liberado — só clique em &ldquo;Entrar&rdquo; pra entrar como Lucas (admin).
+          </div>
+        )}
 
         <div className="rounded-2xl border border-mesa-200 bg-white p-8 shadow-xl shadow-mesa-700/5 sm:p-10">
           <h1 className="mb-2 font-serif text-3xl font-semibold text-mesa-800">

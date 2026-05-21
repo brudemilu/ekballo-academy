@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+
 export function MarcarConcluida({
   alunoId,
   aulaId,
@@ -19,6 +21,11 @@ export function MarcarConcluida({
 
   function handleClick() {
     startTransition(async () => {
+      if (MOCK) {
+        await new Promise((r) => setTimeout(r, 250));
+        setConcluida(!concluida);
+        return;
+      }
       const supabase = createClient();
       if (!concluida) {
         await supabase

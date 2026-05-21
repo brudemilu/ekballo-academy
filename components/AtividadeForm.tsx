@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+
 type Props = {
   atividadeId: string;
   alunoId: string;
@@ -29,6 +31,11 @@ export function AtividadeForm({
   function handleSalvar() {
     if (!texto.trim()) return;
     startTransition(async () => {
+      if (MOCK) {
+        await new Promise((r) => setTimeout(r, 400));
+        setSalvo("ok");
+        return;
+      }
       const supabase = createClient();
       const { error } = await supabase
         .from("respostas")
@@ -68,7 +75,7 @@ export function AtividadeForm({
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-mesa-500">
           {salvo === "ok"
-            ? "✓ Sua resposta está salva. O líder vai ler."
+            ? MOCK ? "✓ Salvo (modo demo — não persiste após recarregar)" : "✓ Sua resposta está salva. O líder vai ler."
             : salvando
               ? "Salvando..."
               : salvo === "erro"

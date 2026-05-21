@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/Logo";
 
+const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+
 export default function CadastroPage() {
+  const router = useRouter();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -17,6 +21,13 @@ export default function CadastroPage() {
     e.preventDefault();
     setLoading(true);
     setErro(null);
+
+    if (MOCK) {
+      // Modo demo: pula cadastro real
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
 
     if (senha.length < 6) {
       setErro("A senha precisa ter pelo menos 6 caracteres.");
@@ -99,6 +110,12 @@ export default function CadastroPage() {
             <Logo />
           </Link>
         </div>
+
+        {MOCK && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <strong>Modo demonstração ativo.</strong> Cadastro simulado — qualquer dado entra como visitante.
+          </div>
+        )}
 
         <div className="rounded-2xl border border-mesa-200 bg-white p-8 shadow-xl shadow-mesa-700/5 sm:p-10">
           <h1 className="mb-2 font-serif text-3xl font-semibold text-mesa-800">

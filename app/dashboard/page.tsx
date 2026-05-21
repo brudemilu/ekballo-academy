@@ -1,35 +1,27 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
-import type { Curso } from "@/lib/types";
+import { getCurrentSession, listCursosPublicados, listMatriculasByAluno } from "@/lib/db";
+
+// Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
+function greetingName(nome?: string | null): string {
+  if (!nome) return "discípulo";
+  const parts = nome.trim().split(/\s+/);
+  if (parts[0]?.endsWith(".") && parts[1]) return `${parts[0]} ${parts[1]}`;
+  return parts[0];
+}
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nome, email, is_admin, turma")
-    .eq("id", user.id)
-    .single();
+  const [cursos, matriculas] = await Promise.all([
+    listCursosPublicados(),
+    listMatriculasByAluno(session.userId),
+  ]);
 
-  const { data: cursos } = await supabase
-    .from("cursos")
-    .select("*")
-    .eq("publicado", true)
-    .order("ordem", { ascending: true });
-
-  const { data: matriculas } = await supabase
-    .from("matriculas")
-    .select("curso_id, concluido_em")
-    .eq("aluno_id", user.id);
-
-  const matriculasMap = new Map(
-    (matriculas || []).map((m) => [m.curso_id, m])
-  );
+  const matriculasMap = new Map(matriculas.map((m) => [m.curso_id, m]));
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -39,9 +31,9 @@ export default async function DashboardPage() {
             <Logo />
           </Link>
           <UserMenu
-            nome={profile?.nome || null}
-            email={profile?.email || user.email || ""}
-            isAdmin={!!profile?.is_admin}
+            nome={session.profile?.nome || null}
+            email={session.profile?.email || session.email}
+            isAdmin={!!session.profile?.is_admin}
           />
         </nav>
       </header>
@@ -52,7 +44,7 @@ export default async function DashboardPage() {
             Bem-vindo de volta
           </p>
           <h1 className="font-serif text-4xl font-semibold text-mesa-800">
-            Olá, {(profile?.nome || "discípulo").split(" ")[0]}.
+            Olá, {greetingName(session.profile?.nome)}.
           </h1>
           <p className="mt-3 max-w-2xl text-mesa-700">
             Aqui está sua trilha. Escolha um curso, faça no seu ritmo, deixe sua
@@ -60,7 +52,7 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {!cursos || cursos.length === 0 ? (
+        {cursos.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-20 text-center">
             <p className="font-serif text-xl text-mesa-500">
               Os cursos estão sendo preparados.
@@ -71,16 +63,16 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {(cursos as Curso[]).map((curso) => {
+            {cursos.map((curso) => {
               const matricula = matriculasMap.get(curso.id);
               const concluido = matricula?.concluido_em;
               return (
                 <Link
                   key={curso.id}
                   href={`/cursos/${curso.slug}`}
-                  className="group block overflow-hidden rounded-2xl border border-mesa-200 bg-white transition hover:border-mesa-300 hover:shadow-xl hover:shadow-mesa-700/10"
+                  className="lift group block overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300"
                 >
-                  <div className="aspect-[16/9] bg-gradient-to-br from-mesa-200 via-mesa-100 to-oliveira-100">
+                  <div className="aspect-[16/9] bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 transition duration-700 group-hover:from-laranja-200 group-hover:to-oliveira-200">
                     {curso.imagem_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img

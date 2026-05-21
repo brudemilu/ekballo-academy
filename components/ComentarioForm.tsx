@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+
 export function ComentarioForm({
   respostaId,
   comentarioInicial,
@@ -20,6 +22,11 @@ export function ComentarioForm({
 
   function handleSalvar() {
     startTransition(async () => {
+      if (MOCK) {
+        await new Promise((r) => setTimeout(r, 400));
+        setSalvo("ok");
+        return;
+      }
       const supabase = createClient();
       const { error } = await supabase
         .from("respostas")
@@ -55,7 +62,7 @@ export function ComentarioForm({
       <div className="mt-3 flex items-center justify-between">
         <p className="text-xs text-mesa-500">
           {salvo === "ok"
-            ? "✓ Devolutiva enviada ao aluno."
+            ? MOCK ? "✓ Devolutiva salva (modo demo — não persiste após recarregar)." : "✓ Devolutiva enviada ao aluno."
             : pending
               ? "Salvando..."
               : "Esta mensagem aparece para o aluno na atividade."}

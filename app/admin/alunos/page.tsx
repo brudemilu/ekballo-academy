@@ -1,36 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { getCurrentSession, listAllAlunos } from "@/lib/db";
 
 export default async function AlunosPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nome, email, is_admin")
-    .eq("id", user.id)
-    .single();
-  if (!profile?.is_admin) redirect("/dashboard");
-
-  const { data: alunos } = await supabase
-    .from("profiles")
-    .select("id, nome, email, turma, created_at, is_admin")
-    .order("created_at", { ascending: false });
-
-  // Para cada aluno, contar respostas
-  const ids = (alunos || []).map((a) => a.id);
-  const { data: respostasCount } = await supabase
-    .from("respostas")
-    .select("aluno_id");
-
-  const map = new Map<string, number>();
-  (respostasCount || []).forEach((r: any) => {
-    map.set(r.aluno_id, (map.get(r.aluno_id) || 0) + 1);
-  });
+  const alunos = await listAllAlunos();
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -39,7 +18,7 @@ export default async function AlunosPage() {
           <Link href="/admin">
             <Logo />
           </Link>
-          <UserMenu nome={profile.nome} email={profile.email || ""} isAdmin />
+          <UserMenu nome={session.profile.nome} email={session.profile.email || session.email} isAdmin />
         </nav>
       </header>
 
@@ -51,10 +30,10 @@ export default async function AlunosPage() {
           Comunidade
         </p>
         <h1 className="mb-8 font-serif text-4xl font-semibold text-mesa-800">
-          {alunos?.length || 0} discípulos na mesa
+          {alunos.length} discípulos na mesa
         </h1>
 
-        {!alunos || alunos.length === 0 ? (
+        {alunos.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-20 text-center">
             <p className="font-serif text-xl text-mesa-500">
               Ainda ninguém se cadastrou.
@@ -100,7 +79,7 @@ export default async function AlunosPage() {
                       {a.turma || "—"}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-mesa-800">
-                      {map.get(a.id) || 0}
+                      {a.respostasCount}
                     </td>
                     <td className="px-6 py-4 text-sm text-mesa-500">
                       {new Date(a.created_at).toLocaleDateString("pt-BR")}

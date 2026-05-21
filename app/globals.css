@@ -3,18 +3,106 @@
 @tailwind utilities;
 
 :root {
-  --background: 251 248 242; /* mesa-50 */
-  --foreground: 35 21 16;    /* mesa-900 */
+  --background: 253 248 236;  /* bege-50 (creme manteiga) */
+  --foreground: 34 22 8;      /* bege-900 (quase preto quente) */
+  --laranja: 213 84 22;       /* laranja-500 (terracota) */
+  --oliveira: 97 88 33;       /* oliveira-600 (warm olive) */
+  --bege-700: 94 61 23;       /* chocolate quente */
 }
 
 html, body {
   background-color: rgb(var(--background));
   color: rgb(var(--foreground));
+  scroll-behavior: smooth;
 }
 
 body {
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: rgb(var(--laranja) / 0.3);
+  color: rgb(var(--foreground));
+}
+
+/* Scroll-triggered reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.12s; }
+.reveal-delay-2 { transition-delay: 0.24s; }
+.reveal-delay-3 { transition-delay: 0.36s; }
+.reveal-delay-4 { transition-delay: 0.48s; }
+
+/* Cursor glow on hero — agora terracota mais quente */
+.cursor-glow {
+  position: relative;
+  isolation: isolate;
+}
+.cursor-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(213, 84, 22, 0.22),
+    transparent 60%
+  );
+  transition: background 0.2s ease-out;
+  pointer-events: none;
+}
+
+/* Hover lift on interactive cards */
+.lift {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(94, 61, 23, 0.25);
+}
+
+/* Shimmering text — agora numa paleta totalmente quente */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgb(94, 61, 23) 0%,    /* chocolate quente */
+    rgb(213, 84, 22) 25%,  /* terracota */
+    rgb(180, 62, 14) 50%,  /* terracota profunda */
+    rgb(213, 84, 22) 75%,  /* terracota */
+    rgb(94, 61, 23) 100%   /* chocolate quente */
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Marquee strip */
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 40s linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 /* Refined prose for lessons */
@@ -27,7 +115,7 @@ body {
 .prose-mesa h2 {
   font-family: Georgia, serif;
   font-size: 1.6rem;
-  color: #5C3A2E;
+  color: #5E3D17;  /* chocolate quente */
   margin-top: 2em;
   margin-bottom: 0.6em;
   font-weight: 600;
@@ -35,19 +123,36 @@ body {
 .prose-mesa h3 {
   font-family: Georgia, serif;
   font-size: 1.25rem;
-  color: #3E5C3A;
+  color: #615821;  /* warm olive */
   margin-top: 1.6em;
   margin-bottom: 0.5em;
   font-weight: 600;
 }
 .prose-mesa blockquote {
-  border-left: 3px solid #C8A876;
+  border-left: 3px solid #D55416;  /* terracota */
   padding-left: 1.25rem;
   font-style: italic;
-  color: #5C3A2E;
+  color: #5E3D17;
   margin: 1.5em 0;
 }
 .prose-mesa ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.1em; }
 .prose-mesa ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1.1em; }
 .prose-mesa li { margin-bottom: 0.4em; }
-.prose-mesa a { color: #5C3A2E; text-decoration: underline; text-decoration-color: #C8A876; }
+.prose-mesa a { color: #D55416; text-decoration: underline; text-decoration-color: rgba(213, 84, 22, 0.45); }
+
+/* Image with subtle vignette — agora vinheta levemente mais quente */
+.img-vignette {
+  position: relative;
+  overflow: hidden;
+}
+.img-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(34, 22, 8, 0.55) 100%);
+  pointer-events: none;
+}
+
+/* Hide scrollbar utility for marquee */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

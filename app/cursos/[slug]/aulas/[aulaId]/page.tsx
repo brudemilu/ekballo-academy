@@ -1,10 +1,22 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { AtividadeForm } from "@/components/AtividadeForm";
+import { MultiplaEscolhaForm } from "@/components/MultiplaEscolhaForm";
 import { MarcarConcluida } from "@/components/MarcarConcluida";
+import {
+  getCurrentSession,
+  getCursoBySlug,
+  getAula,
+  listAtividadesByAula,
+  listRespostasByAluno,
+  listAulasComStatus,
+  jaConcluiu,
+  listAlternativasByAtividade,
+  getRespostaAlternativa,
+  aulaCompleta,
+} from "@/lib/db";
 
 export default async function AulaPage({
   params,
@@ -12,64 +24,48 @@ export default async function AulaPage({
   params: Promise<{ slug: string; aulaId: string }>;
 }) {
   const { slug, aulaId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nome, email, is_admin")
-    .eq("id", user.id)
-    .single();
-
-  const { data: curso } = await supabase
-    .from("cursos")
-    .select("id, slug, titulo")
-    .eq("slug", slug)
-    .single();
-
+  const curso = await getCursoBySlug(slug);
   if (!curso) notFound();
 
-  const { data: aula } = await supabase
-    .from("aulas")
-    .select("*")
-    .eq("id", aulaId)
-    .eq("curso_id", curso.id)
-    .single();
-
+  const aula = await getAula(aulaId, curso.id);
   if (!aula) notFound();
 
-  const { data: atividades } = await supabase
-    .from("atividades")
-    .select("*")
-    .eq("aula_id", aulaId)
-    .order("ordem", { ascending: true });
+  const aulasStatus = await listAulasComStatus(curso.id, session.userId);
+  const aulaStatus = aulasStatus.find((a) => a.id === aulaId);
+  if (!aulaStatus?.desbloqueada) {
+    redirect(`/cursos/${slug}`);
+  }
 
-  const { data: respostas } = await supabase
-    .from("respostas")
-    .select("atividade_id, texto, comentario_lider")
-    .eq("aluno_id", user.id);
+  const [atividades, respostas, concluida] = await Promise.all([
+    listAtividadesByAula(aulaId),
+    listRespostasByAluno(session.userId),
+    jaConcluiu(session.userId, aulaId),
+  ]);
 
-  const respostasMap = new Map(
-    (respostas || []).map((r) => [r.atividade_id, r])
+  const respostasMap = new Map(respostas.map((r) => [r.atividade_id, r]));
+  const indiceAtual = aulasStatus.findIndex((a) => a.id === aulaId);
+  const proxima = aulasStatus[indiceAtual + 1];
+  const anterior = aulasStatus[indiceAtual - 1];
+
+  // Buscar alternativas e respostas MC para atividades MC
+  const atividadesEnriquecidas = await Promise.all(
+    atividades.map(async (at) => {
+      if (at.tipo === "multipla_escolha") {
+        const [alts, altSel] = await Promise.all([
+          listAlternativasByAtividade(at.id),
+          getRespostaAlternativa(session.userId, at.id),
+        ]);
+        return { atividade: at, alternativas: alts, alternativaSalvaId: altSel };
+      }
+      return { atividade: at, alternativas: [], alternativaSalvaId: null };
+    })
   );
 
-  const { data: progresso } = await supabase
-    .from("progresso")
-    .select("aula_id")
-    .eq("aluno_id", user.id)
-    .eq("aula_id", aulaId)
-    .maybeSingle();
-
-  const { data: outrasAulas } = await supabase
-    .from("aulas")
-    .select("id, titulo, ordem")
-    .eq("curso_id", curso.id)
-    .order("ordem", { ascending: true });
-
-  const indiceAtual = (outrasAulas || []).findIndex((a) => a.id === aulaId);
-  const proxima = (outrasAulas || [])[indiceAtual + 1];
-  const anterior = (outrasAulas || [])[indiceAtual - 1];
+  const aulaConcluidaMC = await aulaCompleta(session.userId, aula.id);
+  const temMCs = atividades.some((a) => a.tipo === "multipla_escolha");
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -79,9 +75,9 @@ export default async function AulaPage({
             <Logo />
           </Link>
           <UserMenu
-            nome={profile?.nome || null}
-            email={profile?.email || user.email || ""}
-            isAdmin={!!profile?.is_admin}
+            nome={session.profile?.nome || null}
+            email={session.profile?.email || session.email}
+            isAdmin={!!session.profile?.is_admin}
           />
         </nav>
       </header>
@@ -115,7 +111,7 @@ export default async function AulaPage({
 
           {aula.conteudo && (
             <div className="prose-mesa">
-              {aula.conteudo.split("\n\n").map((paragrafo, i) => (
+              {(aula.conteudo as string).split("\n\n").map((paragrafo: string, i: number) => (
                 <p key={i} className="whitespace-pre-wrap">
                   {paragrafo}
                 </p>
@@ -124,26 +120,40 @@ export default async function AulaPage({
           )}
         </article>
 
-        {atividades && atividades.length > 0 && (
+        {atividades.length > 0 && (
           <div className="mb-12 space-y-5">
             <div className="mb-2">
               <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-                Atividades de reflexão
+                {temMCs ? "Questões da aula" : "Atividades de reflexão"}
               </p>
               <h2 className="font-serif text-2xl font-semibold text-mesa-800">
-                Sua resposta importa.
+                {temMCs ? "Responda para liberar a próxima aula." : "Sua resposta importa."}
               </h2>
             </div>
-            {atividades.map((at, idx) => {
-              const r = respostasMap.get(at.id);
+            {atividadesEnriquecidas.map(({ atividade, alternativas, alternativaSalvaId }, idx) => {
+              if (atividade.tipo === "multipla_escolha") {
+                return (
+                  <MultiplaEscolhaForm
+                    key={atividade.id}
+                    atividadeId={atividade.id}
+                    alunoId={session.userId}
+                    perguntaIndex={idx}
+                    pergunta={atividade.pergunta}
+                    razao={atividade.razao}
+                    alternativas={alternativas}
+                    alternativaSalvaId={alternativaSalvaId}
+                  />
+                );
+              }
+              const r = respostasMap.get(atividade.id);
               return (
                 <AtividadeForm
-                  key={at.id}
-                  atividadeId={at.id}
-                  alunoId={user.id}
+                  key={atividade.id}
+                  atividadeId={atividade.id}
+                  alunoId={session.userId}
                   perguntaIndex={idx}
-                  pergunta={at.pergunta}
-                  respostaInicial={r?.texto}
+                  pergunta={atividade.pergunta}
+                  respostaInicial={r?.texto || undefined}
                   comentarioLider={r?.comentario_lider}
                 />
               );
@@ -153,9 +163,9 @@ export default async function AulaPage({
 
         <div className="flex flex-col gap-4 border-t border-mesa-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <MarcarConcluida
-            alunoId={user.id}
+            alunoId={session.userId}
             aulaId={aula.id}
-            jaConcluida={!!progresso}
+            jaConcluida={concluida}
           />
           <div className="flex gap-2">
             {anterior && (
@@ -167,12 +177,21 @@ export default async function AulaPage({
               </Link>
             )}
             {proxima && (
-              <Link
-                href={`/cursos/${curso.slug}/aulas/${proxima.id}`}
-                className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
-              >
-                Próxima aula →
-              </Link>
+              temMCs && !aulaConcluidaMC ? (
+                <span
+                  className="rounded-full border border-mesa-200 bg-mesa-100/60 px-5 py-2.5 text-sm font-medium text-mesa-500"
+                  title="Acerte todas as questões para liberar"
+                >
+                  🔒 Próxima aula bloqueada
+                </span>
+              ) : (
+                <Link
+                  href={`/cursos/${curso.slug}/aulas/${proxima.id}`}
+                  className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+                >
+                  Próxima aula →
+                </Link>
+              )
             )}
           </div>
         </div>

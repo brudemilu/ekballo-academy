@@ -83,13 +83,15 @@ Recarregue o site. Você verá o botão "Painel admin" no canto superior direito
 2. No terminal, dentro da pasta do projeto:
 
    ```bash
-   git init
+   # O git já está inicializado. Atualize com qualquer mudança e suba:
    git add .
    git commit -m "Primeiro commit — Ekballo Academy"
    git branch -M main
    git remote add origin https://github.com/SEU-USUARIO/ekballo-academy.git
    git push -u origin main
    ```
+
+> **Observação:** o `.env.local` está no `.gitignore` e não será enviado ao GitHub — isso é correto, suas chaves do Supabase ficam só no seu computador e na Vercel.
 
 ### Passo 5 — Deploy na Vercel
 

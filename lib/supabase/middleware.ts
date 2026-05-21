@@ -2,6 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  // Em modo mock, libera tudo (sem bater no Supabase)
+  if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -12,7 +17,7 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
@@ -35,7 +40,6 @@ export async function updateSession(request: NextRequest) {
   const isProtectedAdmin = path.startsWith("/admin");
   const isAuthPage = path === "/login" || path === "/cadastro";
 
-  // Redireciona para login se não autenticado
   if (!user && (isProtectedAluno || isProtectedAdmin)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -43,14 +47,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Se autenticado tentando acessar login/cadastro, manda pro dashboard
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
-  // Para rotas admin, valida se é admin
   if (user && isProtectedAdmin) {
     const { data: profile } = await supabase
       .from("profiles")

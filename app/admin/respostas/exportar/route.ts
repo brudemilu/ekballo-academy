@@ -1,25 +1,13 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentSession, listAllRespostas } from "@/lib/db";
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-  if (!profile?.is_admin)
+  const session = await getCurrentSession();
+  if (!session) return NextResponse.json({ erro: "Não autenticado" }, { status: 401 });
+  if (!session.profile?.is_admin)
     return NextResponse.json({ erro: "Sem permissão" }, { status: 403 });
 
-  const { data } = await supabase
-    .from("respostas")
-    .select(
-      "id, texto, comentario_lider, comentario_lider_em, created_at, updated_at, atividade:atividades(pergunta, aula:aulas(titulo, curso:cursos(titulo, slug))), aluno:profiles(nome, email, turma)"
-    )
-    .order("created_at", { ascending: false });
+  const data = await listAllRespostas();
 
   const headers = [
     "Data",
@@ -34,20 +22,20 @@ export async function GET() {
     "Data_Comentario",
   ];
 
-  const escape = (v: any) => {
+  const escape = (v: unknown) => {
     if (v === null || v === undefined) return "";
     const s = String(v).replace(/"/g, '""');
     return `"${s}"`;
   };
 
-  const linhas = (data || []).map((r: any) => [
+  const linhas = data.map((r) => [
     new Date(r.created_at).toLocaleString("pt-BR"),
-    r.aluno?.nome || "",
-    r.aluno?.email || "",
-    r.aluno?.turma || "",
-    r.atividade?.aula?.curso?.titulo || "",
-    r.atividade?.aula?.titulo || "",
-    r.atividade?.pergunta || "",
+    r.alunoNome || "",
+    r.alunoEmail || "",
+    r.alunoTurma || "",
+    r.cursoTitulo || "",
+    r.aulaTitulo || "",
+    r.pergunta || "",
     r.texto,
     r.comentario_lider || "",
     r.comentario_lider_em ? new Date(r.comentario_lider_em).toLocaleString("pt-BR") : "",

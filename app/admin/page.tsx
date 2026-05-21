@@ -1,52 +1,24 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { getCurrentSession, getAdminStats, listRecentRespostas } from "@/lib/db";
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const session = await getCurrentSession();
+  if (!session) redirect("/login");
+  if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nome, email, is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) redirect("/dashboard");
-
-  // Stats
-  const [
-    { count: totalAlunos },
-    { count: totalCursos },
-    { count: totalRespostas },
-    { count: respostasSemComentario },
-  ] = await Promise.all([
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("cursos").select("*", { count: "exact", head: true }),
-    supabase.from("respostas").select("*", { count: "exact", head: true }),
-    supabase
-      .from("respostas")
-      .select("*", { count: "exact", head: true })
-      .is("comentario_lider", null),
+  const [stats, ultimas] = await Promise.all([
+    getAdminStats(),
+    listRecentRespostas(8),
   ]);
 
-  // Últimas respostas
-  const { data: ultimas } = await supabase
-    .from("respostas")
-    .select(
-      "id, texto, created_at, comentario_lider, atividade:atividades(pergunta, aula:aulas(titulo, curso:cursos(titulo, slug))), aluno:profiles(nome, email)"
-    )
-    .order("created_at", { ascending: false })
-    .limit(8);
-
-  const stats = [
-    { label: "Alunos cadastrados", value: totalAlunos || 0, color: "text-mesa-700" },
-    { label: "Cursos publicados", value: totalCursos || 0, color: "text-mesa-700" },
-    { label: "Respostas escritas", value: totalRespostas || 0, color: "text-oliveira-700" },
-    { label: "Aguardando devolutiva", value: respostasSemComentario || 0, color: "text-amber-700" },
+  const cards = [
+    { label: "Alunos cadastrados", value: stats.totalAlunos, color: "text-mesa-700" },
+    { label: "Cursos publicados", value: stats.totalCursos, color: "text-mesa-700" },
+    { label: "Respostas escritas", value: stats.totalRespostas, color: "text-oliveira-700" },
+    { label: "Aguardando devolutiva", value: stats.respostasSemComentario, color: "text-amber-700" },
   ];
 
   return (
@@ -57,8 +29,8 @@ export default async function AdminPage() {
             <Logo />
           </Link>
           <UserMenu
-            nome={profile.nome}
-            email={profile.email || user.email || ""}
+            nome={session.profile.nome}
+            email={session.profile.email || session.email}
             isAdmin
           />
         </nav>
@@ -74,9 +46,8 @@ export default async function AdminPage() {
           </h1>
         </div>
 
-        {/* Stats */}
         <div className="mb-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((s) => (
+          {cards.map((s) => (
             <div
               key={s.label}
               className="rounded-2xl border border-mesa-200 bg-white p-6"
@@ -91,7 +62,6 @@ export default async function AdminPage() {
           ))}
         </div>
 
-        {/* Atalhos */}
         <div className="mb-12 grid gap-4 sm:grid-cols-3">
           <Link
             href="/admin/respostas"
@@ -137,20 +107,19 @@ export default async function AdminPage() {
           </Link>
         </div>
 
-        {/* Últimas respostas */}
         <div className="rounded-2xl border border-mesa-200 bg-white">
           <div className="border-b border-mesa-100 px-6 py-4">
             <h2 className="font-serif text-xl font-semibold text-mesa-800">
               Últimas respostas
             </h2>
           </div>
-          {!ultimas || ultimas.length === 0 ? (
+          {ultimas.length === 0 ? (
             <p className="px-6 py-12 text-center text-mesa-500">
               Nenhuma resposta ainda. Em breve a mesa estará posta.
             </p>
           ) : (
             <ul className="divide-y divide-mesa-100">
-              {ultimas.map((r: any) => (
+              {ultimas.map((r) => (
                 <li key={r.id}>
                   <Link
                     href={`/admin/respostas/${r.id}`}
@@ -160,15 +129,14 @@ export default async function AdminPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="font-medium text-mesa-800">
-                          {r.aluno?.nome || r.aluno?.email}
+                          {r.alunoNome || r.alunoEmail}
                         </p>
                         <p className="flex-none text-xs text-mesa-500">
                           {new Date(r.created_at).toLocaleDateString("pt-BR")}
                         </p>
                       </div>
                       <p className="mt-0.5 text-xs text-mesa-500">
-                        {r.atividade?.aula?.curso?.titulo} ·{" "}
-                        {r.atividade?.aula?.titulo}
+                        {r.cursoTitulo} · {r.aulaTitulo}
                       </p>
                       <p className="mt-2 line-clamp-2 text-sm text-mesa-700">
                         {r.texto}

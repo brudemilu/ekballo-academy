@@ -30,19 +30,32 @@ export type Aula = {
   created_at: string;
 };
 
+export type TipoAtividade = "reflexao" | "multipla_escolha";
+
 export type Atividade = {
   id: string;
   aula_id: string;
   pergunta: string;
   ordem: number;
+  tipo: TipoAtividade;
+  razao: string | null; // justificativa exibida após resposta MC
   created_at: string;
+};
+
+export type Alternativa = {
+  id: string;
+  atividade_id: string;
+  texto: string;
+  correta: boolean;
+  ordem: number;
 };
 
 export type Resposta = {
   id: string;
   atividade_id: string;
   aluno_id: string;
-  texto: string;
+  texto: string | null;
+  alternativa_id: string | null; // preenchido quando atividade é MC
   comentario_lider: string | null;
   comentario_lider_em: string | null;
   created_at: string;

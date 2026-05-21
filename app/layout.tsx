@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { MockBanner } from "@/components/MockBanner";
+import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,8 +22,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="bg-mesa-50 text-mesa-900 antialiased">
+      <body className="bg-bege-50 text-bege-900 antialiased">
+        <MockBanner />
         {children}
+        <WhatsAppFloat />
       </body>
     </html>
   );
