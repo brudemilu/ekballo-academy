@@ -98,7 +98,13 @@ The platform is fully wired to live infra. Two MCP servers ([.mcp.json](.mcp.jso
 | Read project URL / anon key | `get_project_url`, `get_publishable_keys` |
 | Inspect runtime issues | `get_logs` |
 
-**Admin user creation**: the MCP does NOT have a "create auth user" tool. Workaround is direct insert into `auth.users` + `auth.identities` with `crypt(password, gen_salt('bf'))` (pgcrypto is enabled by default). Gotcha: `auth.identities.email` is a **generated column** — do not include it in the INSERT column list. The `on_auth_user_created` trigger then creates the matching `profiles` row, which you promote to admin in the same DO block.
+**Admin user creation**: the MCP does NOT have a "create auth user" tool. Workaround is direct insert into `auth.users` + `auth.identities` with `crypt(password, gen_salt('bf'))` (pgcrypto is enabled by default). Three gotchas to avoid:
+
+1. `auth.identities.email` is a **generated column** — do not include it in the INSERT column list.
+2. **GoTrue rejects NULLs in token columns.** The 8 fields `confirmation_token`, `recovery_token`, `email_change_token_new`, `email_change_token_current`, `email_change`, `phone_change`, `phone_change_token`, `reauthentication_token` must be `''`, not NULL — otherwise login fails with `Scan error on column "confirmation_token": converting NULL to string is unsupported`. Set them explicitly in the INSERT.
+3. The `on_auth_user_created` trigger creates the matching `profiles` row, which you then promote to admin (`update profiles set is_admin = true ...`) in the same DO block.
+
+The full SQL template lives in the project's persistent memory ([reference-supabase-mcp](file:///Users/brunofernandes/.claude/projects/-Users-brunofernandes-Projects-ekballo-academy/memory/reference_supabase_mcp.md)).
 
 ### Vercel
 
