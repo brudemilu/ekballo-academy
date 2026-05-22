@@ -74,7 +74,7 @@ export default async function CursoPage({
             {curso.titulo}
           </h1>
           {curso.descricao && (
-            <p className="text-lg leading-relaxed text-mesa-700">
+            <p className="text-lg leading-relaxed text-mesa-700 text-justify hyphens-auto">
               {curso.descricao}
             </p>
           )}

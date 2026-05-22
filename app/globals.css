@@ -105,13 +105,19 @@ body {
   to { transform: translateX(-50%); }
 }
 
-/* Refined prose for lessons */
+/* Refined prose for lessons — alinhamento ABNT (justificado + hifenização pt-BR) */
 .prose-mesa {
   max-width: 68ch;
   line-height: 1.75;
   font-size: 1.0625rem;
 }
-.prose-mesa p { margin-bottom: 1.1em; }
+.prose-mesa p {
+  margin-bottom: 1.1em;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
 .prose-mesa h2 {
   font-family: Georgia, serif;
   font-size: 1.6rem;

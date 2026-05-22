@@ -119,7 +119,7 @@ export function AtividadeForm({
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-oliveira-700">
             Devolutiva do líder
           </p>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mesa-800">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-mesa-800 text-justify hyphens-auto">
             {comentarioLider}
           </p>
         </div>
