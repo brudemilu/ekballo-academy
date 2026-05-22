@@ -122,7 +122,7 @@ export default async function AulaPage({
                   Material complementar
                 </p>
                 <p className="mt-0.5 text-sm font-medium text-mesa-800">
-                  Baixar capítulo completo em PDF →
+                  Baixar PDF →
                 </p>
               </div>
             </a>
