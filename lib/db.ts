@@ -29,7 +29,7 @@ import {
   setMockMcAnswer,
   setMockReflexao,
 } from "@/lib/mock-data";
-import type { Profile, Curso, Aula, Atividade, Alternativa } from "@/lib/types";
+import type { Profile, Curso, Aula, Atividade, Alternativa, EmailTemplate } from "@/lib/types";
 
 // -------- AUTH / PROFILE --------
 
@@ -564,4 +564,81 @@ export async function listAulasComStatus(cursoId: string, alunoId: string): Prom
 export async function listRecentRespostas(limit = 8): Promise<RespostaRich[]> {
   const all = await listAllRespostas();
   return all.slice(0, limit);
+}
+
+// -------- ADMIN: EMAIL TEMPLATES --------
+
+export async function listEmailTemplates(): Promise<EmailTemplate[]> {
+  if (isMockMode()) {
+    return [
+      {
+        id: "mock-1",
+        chave: "novo-cadastro",
+        descricao: "Email enviado ao administrador quando alguém cria conta.",
+        assunto: "Novo cadastro: {{nome_aluno}}",
+        corpo_html: "<p>Mock template.</p>",
+        corpo_texto: "Mock template.",
+        variaveis_disponiveis: ["{{nome_aluno}}", "{{email_aluno}}", "{{link_admin}}"],
+        ativo: true,
+        created_at: "2026-05-22T00:00:00Z",
+        updated_at: "2026-05-22T00:00:00Z",
+      },
+      {
+        id: "mock-2",
+        chave: "boas-vindas-curso",
+        descricao: "Email enviado ao aluno matriculado em um curso.",
+        assunto: "Bem-vindo(a) ao curso {{nome_curso}}",
+        corpo_html: "<p>Mock template.</p>",
+        corpo_texto: "Mock template.",
+        variaveis_disponiveis: ["{{nome_aluno}}", "{{nome_curso}}", "{{link_curso}}"],
+        ativo: true,
+        created_at: "2026-05-22T00:00:00Z",
+        updated_at: "2026-05-22T00:00:00Z",
+      },
+      {
+        id: "mock-3",
+        chave: "lembrete-inatividade",
+        descricao: "Lembrete pra aluno inativo há N dias.",
+        assunto: "Sentimos sua falta no curso {{nome_curso}}",
+        corpo_html: "<p>Mock template.</p>",
+        corpo_texto: "Mock template.",
+        variaveis_disponiveis: ["{{nome_aluno}}", "{{nome_curso}}", "{{link_curso}}", "{{dias_inatividade}}"],
+        ativo: true,
+        created_at: "2026-05-22T00:00:00Z",
+        updated_at: "2026-05-22T00:00:00Z",
+      },
+    ];
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("email_templates")
+    .select("*")
+    .order("chave", { ascending: true });
+  return (data || []) as EmailTemplate[];
+}
+
+export async function getEmailTemplate(chave: string): Promise<EmailTemplate | null> {
+  if (isMockMode()) {
+    const all = await listEmailTemplates();
+    return all.find((t) => t.chave === chave) || null;
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("email_templates")
+    .select("*")
+    .eq("chave", chave)
+    .single();
+  return data as EmailTemplate | null;
+}
+
+export async function updateEmailTemplate(
+  chave: string,
+  patch: { assunto?: string; corpo_html?: string; corpo_texto?: string | null; ativo?: boolean }
+): Promise<void> {
+  if (isMockMode()) {
+    // Mock mode: no-op (no persistence)
+    return;
+  }
+  const supabase = await createClient();
+  await supabase.from("email_templates").update(patch).eq("chave", chave);
 }

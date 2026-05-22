@@ -62,7 +62,7 @@ export default async function AdminPage() {
           ))}
         </div>
 
-        <div className="mb-12 grid gap-4 sm:grid-cols-3">
+        <div className="mb-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             href="/admin/respostas"
             className="group rounded-2xl border border-mesa-200 bg-white p-6 transition hover:border-mesa-300 hover:shadow-lg"
@@ -103,6 +103,20 @@ export default async function AdminPage() {
             </p>
             <p className="mt-3 text-sm font-medium text-mesa-700 group-hover:text-mesa-900">
               Ver cursos →
+            </p>
+          </Link>
+          <Link
+            href="/admin/templates"
+            className="group rounded-2xl border border-mesa-200 bg-white p-6 transition hover:border-mesa-300 hover:shadow-lg"
+          >
+            <h3 className="mb-1 font-serif text-xl font-semibold text-mesa-800">
+              Templates
+            </h3>
+            <p className="text-sm text-mesa-600">
+              Editar emails automáticos: cadastro, boas-vindas, lembrete.
+            </p>
+            <p className="mt-3 text-sm font-medium text-mesa-700 group-hover:text-mesa-900">
+              Ver templates →
             </p>
           </Link>
         </div>
