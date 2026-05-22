@@ -9,6 +9,7 @@ import {
   getCurrentSession,
   getCursoBySlug,
   getAula,
+  getMaterialUrl,
   isMatriculado,
   listAtividadesByAula,
   listRespostasByAluno,
@@ -46,10 +47,11 @@ export default async function AulaPage({
     redirect(`/cursos/${slug}`);
   }
 
-  const [atividades, respostas, concluida] = await Promise.all([
+  const [atividades, respostas, concluida, materialUrl] = await Promise.all([
     listAtividadesByAula(aulaId),
     listRespostasByAluno(session.userId),
     jaConcluiu(session.userId, aulaId),
+    getMaterialUrl(aula.material_url),
   ]);
 
   const respostasMap = new Map(respostas.map((r) => [r.atividade_id, r]));
@@ -106,6 +108,25 @@ export default async function AulaPage({
           <h1 className="mb-8 font-serif text-4xl font-semibold leading-tight text-mesa-800">
             {aula.titulo}
           </h1>
+
+          {materialUrl && (
+            <a
+              href={materialUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-8 flex items-start gap-3 rounded-xl border border-laranja-200 bg-laranja-50 p-4 transition hover:border-laranja-300 hover:bg-laranja-100"
+            >
+              <span className="text-2xl leading-none">📖</span>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-laranja-600">
+                  Material complementar
+                </p>
+                <p className="mt-0.5 text-sm font-medium text-mesa-800">
+                  Baixar capítulo completo em PDF →
+                </p>
+              </div>
+            </a>
+          )}
 
           {aula.video_url && (
             <div className="mb-8 aspect-video overflow-hidden rounded-xl bg-mesa-900">

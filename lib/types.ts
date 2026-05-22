@@ -26,6 +26,7 @@ export type Aula = {
   titulo: string;
   conteudo: string | null;
   video_url: string | null;
+  material_url: string | null;
   ordem: number;
   created_at: string;
 };

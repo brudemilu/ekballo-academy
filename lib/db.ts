@@ -129,6 +129,23 @@ export async function getAula(aulaId: string, cursoId: string): Promise<Aula | n
   return data as Aula | null;
 }
 
+// Resolve `aula.material_url` para um link utilizável pelo cliente.
+// - Se for http(s)://… → usa direto (URL externa).
+// - Caso contrário → trata como path no bucket privado `materiais-cursos`
+//   e devolve uma signed URL temporária (15 min).
+export async function getMaterialUrl(materialPathOrUrl: string | null): Promise<string | null> {
+  if (!materialPathOrUrl) return null;
+  if (/^https?:\/\//i.test(materialPathOrUrl)) return materialPathOrUrl;
+  if (isMockMode()) return materialPathOrUrl; // sem Storage no mock
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .storage
+    .from("materiais-cursos")
+    .createSignedUrl(materialPathOrUrl, 60 * 15);
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
+}
+
 // -------- ATIVIDADES --------
 
 export async function listAtividadesByAula(aulaId: string): Promise<Atividade[]> {

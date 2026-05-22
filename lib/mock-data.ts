@@ -74,17 +74,17 @@ export const MOCK_CURSOS: Curso[] = [
 
 export const MOCK_AULAS: Aula[] = [
   // Fundamentos do Discipulado (12 aulas) — só os títulos para o índice
-  { id: "aula-8", curso_id: "curso-2", titulo: "Identidade em Cristo: filho antes de servo", ordem: 1, video_url: null, conteudo: "Conteúdo desta aula em construção. Em breve.", created_at: "2026-04-05T00:00:00Z" },
-  { id: "aula-9", curso_id: "curso-2", titulo: "Vida no Espírito: dependência diária", ordem: 2, video_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
-  { id: "aula-10", curso_id: "curso-2", titulo: "Comunidade comprometida: para além do grupo", ordem: 3, video_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
-  { id: "aula-11", curso_id: "curso-2", titulo: "Missão integral: a fé que age", ordem: 4, video_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
+  { id: "aula-8", curso_id: "curso-2", titulo: "Identidade em Cristo: filho antes de servo", ordem: 1, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção. Em breve.", created_at: "2026-04-05T00:00:00Z" },
+  { id: "aula-9", curso_id: "curso-2", titulo: "Vida no Espírito: dependência diária", ordem: 2, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
+  { id: "aula-10", curso_id: "curso-2", titulo: "Comunidade comprometida: para além do grupo", ordem: 3, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
+  { id: "aula-11", curso_id: "curso-2", titulo: "Missão integral: a fé que age", ordem: 4, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
   // Envio (4 módulos)
-  { id: "aula-12", curso_id: "curso-3", titulo: "Liderança pastoral: cuidar antes de gerenciar", ordem: 1, video_url: null, conteudo: "Conteúdo do curso pago em construção.", created_at: "2026-04-20T00:00:00Z" },
+  { id: "aula-12", curso_id: "curso-3", titulo: "Liderança pastoral: cuidar antes de gerenciar", ordem: 1, video_url: null, material_url: null, conteudo: "Conteúdo do curso pago em construção.", created_at: "2026-04-20T00:00:00Z" },
   // ===== Ego Transformado (Keller) — 4 aulas =====
-  { id: "k-aula-1", curso_id: "curso-4", titulo: "Introdução: A liberdade resultante do autoesquecimento", ordem: 1, video_url: null, conteudo: EGO_K1, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-2", curso_id: "curso-4", titulo: "A condição natural do ego humano", ordem: 2, video_url: null, conteudo: EGO_K2, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-3", curso_id: "curso-4", titulo: "A visão transformada do eu", ordem: 3, video_url: null, conteudo: EGO_K3, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-4", curso_id: "curso-4", titulo: "Como alcançar uma visão transformada do eu", ordem: 4, video_url: null, conteudo: EGO_K4, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-1", curso_id: "curso-4", titulo: "Introdução: A liberdade resultante do autoesquecimento", ordem: 1, video_url: null, material_url: null, conteudo: EGO_K1, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-2", curso_id: "curso-4", titulo: "A condição natural do ego humano", ordem: 2, video_url: null, material_url: null, conteudo: EGO_K2, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-3", curso_id: "curso-4", titulo: "A visão transformada do eu", ordem: 3, video_url: null, material_url: null, conteudo: EGO_K3, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-4", curso_id: "curso-4", titulo: "Como alcançar uma visão transformada do eu", ordem: 4, video_url: null, material_url: null, conteudo: EGO_K4, created_at: "2026-05-14T00:00:00Z" },
 ];
 
 export const MOCK_ATIVIDADES: Atividade[] = [
