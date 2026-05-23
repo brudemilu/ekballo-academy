@@ -1,10 +1,10 @@
 // Edge Function: enviar-email
-// Recebe { chave, destinatario, variaveis } e dispara o template via Resend.
+// Recebe { chave, destinatario, variaveis } e dispara o template via Brevo.
 // Autenticada via header `x-internal-secret` (compartilhado entre postgres triggers
 // e esta função). Não verifica JWT porque é chamada pelos próprios triggers.
 //
 // Sem dependência externa — só fetch nativo. Acessa a tabela email_templates via
-// PostgREST (SUPABASE_URL + service_role) e o Resend via API REST.
+// PostgREST (SUPABASE_URL + service_role) e o Brevo via API REST.
 
 type Payload = {
   chave: string;
@@ -12,8 +12,9 @@ type Payload = {
   variaveis?: Record<string, string>;
 };
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "onboarding@resend.dev";
+const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY")!;
+const BREVO_SENDER_EMAIL = Deno.env.get("BREVO_SENDER_EMAIL")!;
+const BREVO_SENDER_NAME = Deno.env.get("BREVO_SENDER_NAME") ?? "Ekballo Academy";
 const INTERNAL_SECRET = Deno.env.get("INTERNAL_SECRET")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -98,29 +99,31 @@ Deno.serve(async (req) => {
     ? substituirVariaveis(template.corpo_texto, variaveis)
     : undefined;
 
-  const resendResp = await fetch("https://api.resend.com/emails", {
+  // Dispara via Brevo
+  const brevoResp = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "api-key": BREVO_API_KEY,
       "Content-Type": "application/json",
+      accept: "application/json",
     },
     body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: [destinatario],
+      sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+      to: [{ email: destinatario }],
       subject: assunto,
-      html,
-      ...(text ? { text } : {}),
+      htmlContent: html,
+      ...(text ? { textContent: text } : {}),
     }),
   });
 
-  const resendBody = await resendResp.json().catch(() => ({}));
-  if (!resendResp.ok) {
-    console.error("Resend error", resendResp.status, resendBody);
+  const brevoBody = await brevoResp.json().catch(() => ({}));
+  if (!brevoResp.ok) {
+    console.error("Brevo error", brevoResp.status, brevoBody);
     return new Response(
       JSON.stringify({
         erro: "falha no envio",
-        resend_status: resendResp.status,
-        resend_body: resendBody,
+        brevo_status: brevoResp.status,
+        brevo_body: brevoBody,
       }),
       { status: 502, headers: { "Content-Type": "application/json" } }
     );
@@ -131,7 +134,7 @@ Deno.serve(async (req) => {
       status: "enviado",
       chave,
       destinatario,
-      resend_id: resendBody.id,
+      message_id: brevoBody.messageId,
     }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
