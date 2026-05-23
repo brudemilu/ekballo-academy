@@ -82,10 +82,10 @@ export const MOCK_AULAS: Aula[] = [
   // Envio (4 módulos)
   { id: "aula-12", curso_id: "curso-3", titulo: "Liderança pastoral: cuidar antes de gerenciar", ordem: 1, video_url: null, material_url: null, conteudo: "Conteúdo do curso pago em construção.", created_at: "2026-04-20T00:00:00Z" },
   // ===== Ego Transformado (Keller) — 4 aulas =====
-  { id: "k-aula-1", curso_id: "curso-4", titulo: "Introdução: A liberdade resultante do autoesquecimento", ordem: 1, video_url: null, material_url: null, conteudo: EGO_K1, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-2", curso_id: "curso-4", titulo: "A condição natural do ego humano", ordem: 2, video_url: null, material_url: null, conteudo: EGO_K2, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-3", curso_id: "curso-4", titulo: "A visão transformada do eu", ordem: 3, video_url: null, material_url: null, conteudo: EGO_K3, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-4", curso_id: "curso-4", titulo: "Como alcançar uma visão transformada do eu", ordem: 4, video_url: null, material_url: null, conteudo: EGO_K4, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-1", curso_id: "curso-4", titulo: "Introdução: A liberdade resultante do autoesquecimento", ordem: 1, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K1, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-2", curso_id: "curso-4", titulo: "A condição natural do ego humano", ordem: 2, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K2, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-3", curso_id: "curso-4", titulo: "A visão transformada do eu", ordem: 3, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K3, created_at: "2026-05-14T00:00:00Z" },
+  { id: "k-aula-4", curso_id: "curso-4", titulo: "Como alcançar uma visão transformada do eu", ordem: 4, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K4, created_at: "2026-05-14T00:00:00Z" },
 ];
 
 export const MOCK_ATIVIDADES: Atividade[] = [

@@ -45,11 +45,18 @@ function LoginForm() {
     });
 
     if (error) {
-      setErro(
-        error.message === "Invalid login credentials"
-          ? "E-mail ou senha incorretos."
-          : "Não foi possível entrar. Tente novamente."
-      );
+      const msg = error.message.toLowerCase();
+      if (msg.includes("invalid login credentials")) {
+        setErro("E-mail ou senha incorretos.");
+      } else if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+        setErro(
+          "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada (e a pasta de spam) pelo link que enviamos no cadastro."
+        );
+      } else if (msg.includes("too many") || msg.includes("rate")) {
+        setErro("Muitas tentativas seguidas. Aguarde 1 minuto e tente de novo.");
+      } else {
+        setErro("Não foi possível entrar. Tente novamente.");
+      }
       setLoading(false);
       return;
     }
