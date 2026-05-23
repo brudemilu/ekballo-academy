@@ -133,6 +133,15 @@ function LoginForm() {
             </button>
           </form>
 
+          <p className="mt-4 text-center text-sm">
+            <Link
+              href="/recuperar-senha"
+              className="text-mesa-600 underline decoration-mesa-300 hover:text-mesa-800"
+            >
+              Esqueci minha senha
+            </Link>
+          </p>
+
           <p className="mt-6 text-center text-sm text-mesa-600">
             Ainda não tem conta?{" "}
             <Link

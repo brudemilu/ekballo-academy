@@ -13,6 +13,7 @@ export const MOCK_PROFILE: Profile = {
   id: MOCK_USER_ID,
   nome: "Pr. Bruno Fernandes",
   email: "bruno@ekballo.com.br",
+  telefone: "5511999990001",
   is_admin: true,
   turma: "Mesa 01",
   created_at: "2026-04-01T10:00:00Z",
@@ -20,14 +21,14 @@ export const MOCK_PROFILE: Profile = {
 
 export const MOCK_ALUNOS: Profile[] = [
   MOCK_PROFILE,
-  { id: "aluno-1b", nome: "Lucas Fernandes (Cowork)", email: "iabolsa@bmbr.com.br", is_admin: false, turma: "Mesa 01", created_at: "2026-04-02T08:00:00Z" },
-  { id: "aluno-2", nome: "Maria Helena Andrade", email: "maria.helena@email.com", is_admin: false, turma: "Mesa 01", created_at: "2026-04-08T14:21:00Z" },
-  { id: "aluno-3", nome: "João Pedro Costa", email: "joao.pedro@email.com", is_admin: false, turma: "Mesa 01", created_at: "2026-04-10T09:05:00Z" },
-  { id: "aluno-4", nome: "Beatriz Souza", email: "beatriz.souza@email.com", is_admin: false, turma: "Mesa 02", created_at: "2026-04-15T20:30:00Z" },
-  { id: "aluno-5", nome: "Pedro Henrique", email: "pedro.h@email.com", is_admin: false, turma: "Mesa 02", created_at: "2026-04-18T07:14:00Z" },
-  { id: "aluno-6", nome: "Camila Ribeiro", email: "camila.ribeiro@email.com", is_admin: false, turma: "Mesa 02", created_at: "2026-04-20T16:42:00Z" },
-  { id: "aluno-7", nome: "Lucas Fernandes (cadastro)", email: "lucas.f@email.com", is_admin: false, turma: "Mesa 03", created_at: "2026-05-02T11:30:00Z" },
-  { id: "aluno-8", nome: "Ana Caroline", email: "ana.c@email.com", is_admin: false, turma: "Mesa 03", created_at: "2026-05-09T08:00:00Z" },
+  { id: "aluno-1b", nome: "Lucas Fernandes (Cowork)", email: "iabolsa@bmbr.com.br", telefone: "5511999990002", is_admin: false, turma: "Mesa 01", created_at: "2026-04-02T08:00:00Z" },
+  { id: "aluno-2", nome: "Maria Helena Andrade", email: "maria.helena@email.com", telefone: "5511999990003", is_admin: false, turma: "Mesa 01", created_at: "2026-04-08T14:21:00Z" },
+  { id: "aluno-3", nome: "João Pedro Costa", email: "joao.pedro@email.com", telefone: "5511999990004", is_admin: false, turma: "Mesa 01", created_at: "2026-04-10T09:05:00Z" },
+  { id: "aluno-4", nome: "Beatriz Souza", email: "beatriz.souza@email.com", telefone: "5511999990005", is_admin: false, turma: "Mesa 02", created_at: "2026-04-15T20:30:00Z" },
+  { id: "aluno-5", nome: "Pedro Henrique", email: "pedro.h@email.com", telefone: null, is_admin: false, turma: "Mesa 02", created_at: "2026-04-18T07:14:00Z" },
+  { id: "aluno-6", nome: "Camila Ribeiro", email: "camila.ribeiro@email.com", telefone: "5511999990007", is_admin: false, turma: "Mesa 02", created_at: "2026-04-20T16:42:00Z" },
+  { id: "aluno-7", nome: "Lucas Fernandes (cadastro)", email: "lucas.f@email.com", telefone: "5511999990008", is_admin: false, turma: "Mesa 03", created_at: "2026-05-02T11:30:00Z" },
+  { id: "aluno-8", nome: "Ana Caroline", email: "ana.c@email.com", telefone: null, is_admin: false, turma: "Mesa 03", created_at: "2026-05-09T08:00:00Z" },
 ];
 
 export const MOCK_CURSOS: Curso[] = [

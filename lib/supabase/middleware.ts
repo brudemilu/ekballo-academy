@@ -36,7 +36,9 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isProtectedAluno =
-    path.startsWith("/dashboard") || path.startsWith("/cursos");
+    path.startsWith("/dashboard") ||
+    path.startsWith("/cursos") ||
+    path.startsWith("/perfil");
   const isProtectedAdmin = path.startsWith("/admin");
   const isAuthPage = path === "/login" || path === "/cadastro";
 

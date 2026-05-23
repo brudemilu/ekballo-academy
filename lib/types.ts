@@ -2,6 +2,7 @@ export type Profile = {
   id: string;
   nome: string | null;
   email: string;
+  telefone: string | null;
   is_admin: boolean;
   turma: string | null;
   created_at: string;

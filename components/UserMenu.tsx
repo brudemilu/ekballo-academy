@@ -23,7 +23,7 @@ export function UserMenu({
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       {isAdmin && (
         <Link
           href="/admin"
@@ -32,10 +32,20 @@ export function UserMenu({
           Painel admin
         </Link>
       )}
-      <div className="hidden text-right sm:block">
+      <Link
+        href="/perfil"
+        className="hidden text-right sm:block hover:opacity-80"
+        title="Editar meu perfil"
+      >
         <p className="text-sm font-medium text-mesa-800">{nome || "Aluno"}</p>
         <p className="text-xs text-mesa-500">{email}</p>
-      </div>
+      </Link>
+      <Link
+        href="/perfil"
+        className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-100 sm:hidden"
+      >
+        Perfil
+      </Link>
       <button
         onClick={handleSair}
         className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-100"

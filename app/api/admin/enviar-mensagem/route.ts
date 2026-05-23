@@ -14,12 +14,35 @@ type Body = {
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET!;
-const EDGE_FUNCTION_URL = `${SUPABASE_URL.replace(
+const FUNCTIONS_BASE = SUPABASE_URL.replace(
   ".supabase.co",
   ".functions.supabase.co"
-)}/enviar-email`;
+);
+const EDGE_EMAIL_URL = `${FUNCTIONS_BASE}/enviar-email`;
+const EDGE_WHATSAPP_URL = `${FUNCTIONS_BASE}/enviar-whatsapp`;
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+
+// Converte HTML em texto plano simples (pra body de WhatsApp).
+// Não é perfeito, mas cobre os casos de templates: troca <br>, <p>, <li> por
+// quebras de linha e remove tags.
+function htmlParaTexto(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<\/h[1-6]>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 export async function POST(req: NextRequest) {
   // 1) Auth: só admin
@@ -80,36 +103,53 @@ export async function POST(req: NextRequest) {
   });
 
   // 4) Resolve lista de destinatários
-  let destinatarios: { id: string; email: string; nome: string | null }[] = [];
+  type Destinatario = {
+    id: string;
+    email: string;
+    nome: string | null;
+    telefone: string | null;
+  };
+  let destinatarios: Destinatario[] = [];
 
   if (destino_tipo === "todos") {
     const { data } = await admin
       .from("profiles")
-      .select("id, email, nome")
+      .select("id, email, nome, telefone")
       .eq("is_admin", false);
     destinatarios = data || [];
   } else if (destino_tipo === "curso") {
     const { data } = await admin
       .from("matriculas")
-      .select("aluno:profiles!inner(id, email, nome)")
+      .select("aluno:profiles!inner(id, email, nome, telefone)")
       .eq("curso_id", destino_id!);
-    type Row = { aluno: { id: string; email: string; nome: string | null } };
+    type Row = { aluno: Destinatario };
     destinatarios = ((data || []) as unknown as Row[]).map((r) => r.aluno);
   } else if (destino_tipo === "aluno") {
     const { data } = await admin
       .from("profiles")
-      .select("id, email, nome")
+      .select("id, email, nome, telefone")
       .eq("id", destino_id!)
       .single();
-    if (data) destinatarios = [data];
+    if (data) destinatarios = [data as Destinatario];
   }
 
-  // Filtra emails inválidos/vazios
-  destinatarios = destinatarios.filter((d) => !!d.email && d.email.includes("@"));
+  const querEmail = canais.includes("email");
+  const querWhatsapp = canais.includes("whatsapp");
+
+  // Pra email exige `@`; pra whatsapp exige `telefone`. Mantém quem tem
+  // pelo menos um dos canais que foi selecionado.
+  destinatarios = destinatarios.filter((d) => {
+    const emailOk = !!d.email && d.email.includes("@");
+    const phoneOk = !!d.telefone && d.telefone.replace(/\D+/g, "").length >= 10;
+    if (querEmail && querWhatsapp) return emailOk || phoneOk;
+    if (querEmail) return emailOk;
+    if (querWhatsapp) return phoneOk;
+    return false;
+  });
 
   if (destinatarios.length === 0) {
     return NextResponse.json(
-      { erro: "nenhum destinatário com email válido encontrado" },
+      { erro: "nenhum destinatário válido encontrado pros canais selecionados" },
       { status: 400 }
     );
   }
@@ -150,32 +190,48 @@ export async function POST(req: NextRequest) {
   }
   const mensagemId = mensagemRow.id as string;
 
-  // 7) Cria linhas em `mensagens_destinatarios` (status inicial = 'pendente')
+  // 7) Cria linhas em `mensagens_destinatarios` (status inicial por canal)
   await admin.from("mensagens_destinatarios").insert(
-    destinatarios.map((d) => ({
-      mensagem_id: mensagemId,
-      aluno_id: d.id,
-      email_status: canais.includes("email") ? "pendente" : "pulado",
-      whatsapp_status: canais.includes("whatsapp") ? "pendente" : "pulado",
-    }))
+    destinatarios.map((d) => {
+      const emailOk = !!d.email && d.email.includes("@");
+      const phoneOk =
+        !!d.telefone && d.telefone.replace(/\D+/g, "").length >= 10;
+      return {
+        mensagem_id: mensagemId,
+        aluno_id: d.id,
+        email_status: querEmail
+          ? emailOk
+            ? "pendente"
+            : "pulado"
+          : "pulado",
+        whatsapp_status: querWhatsapp
+          ? phoneOk
+            ? "pendente"
+            : "pulado"
+          : "pulado",
+      };
+    })
   );
 
-  // 8) Dispara emails em paralelo (com concorrência limitada pra não estourar rate limit)
+  // 8) Dispara em paralelo (concorrência limitada pra não estourar rate limit)
   let totalEnviados = 0;
   let totalErros = 0;
+  const concurrency = 5;
+  const chunks: typeof destinatarios[] = [];
+  for (let i = 0; i < destinatarios.length; i += concurrency) {
+    chunks.push(destinatarios.slice(i, i + concurrency));
+  }
 
-  if (canais.includes("email")) {
-    const concurrency = 5;
-    const chunks: typeof destinatarios[] = [];
-    for (let i = 0; i < destinatarios.length; i += concurrency) {
-      chunks.push(destinatarios.slice(i, i + concurrency));
-    }
-
+  // -------- EMAIL --------
+  if (querEmail) {
     for (const chunk of chunks) {
       const results = await Promise.all(
         chunk.map(async (d) => {
+          if (!d.email || !d.email.includes("@")) {
+            return { aluno_id: d.id, skip: true as const };
+          }
           try {
-            const resp = await fetch(EDGE_FUNCTION_URL, {
+            const resp = await fetch(EDGE_EMAIL_URL, {
               method: "POST",
               headers: {
                 "x-internal-secret": INTERNAL_SECRET,
@@ -196,20 +252,20 @@ export async function POST(req: NextRequest) {
               erro?: string;
             };
             if (resp.ok && json.status === "enviado") {
-              return { aluno_id: d.id, ok: true, msg_id: json.message_id ?? null };
+              return { aluno_id: d.id, ok: true as const, msg_id: json.message_id ?? null };
             }
             const erro = json.erro || JSON.stringify(json.brevo_body) || `HTTP ${resp.status}`;
-            return { aluno_id: d.id, ok: false, erro };
+            return { aluno_id: d.id, ok: false as const, erro };
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            return { aluno_id: d.id, ok: false, erro: msg };
+            return { aluno_id: d.id, ok: false as const, erro: msg };
           }
         })
       );
 
-      // Atualiza status no banco
       await Promise.all(
         results.map((r) => {
+          if ("skip" in r) return Promise.resolve(null);
           if (r.ok) {
             totalEnviados++;
             return admin
@@ -228,6 +284,79 @@ export async function POST(req: NextRequest) {
             .update({
               email_status: "erro",
               email_erro: r.erro?.slice(0, 500),
+            })
+            .eq("mensagem_id", mensagemId)
+            .eq("aluno_id", r.aluno_id);
+        })
+      );
+    }
+  }
+
+  // -------- WHATSAPP --------
+  if (querWhatsapp) {
+    const mensagemTexto = (corpo_texto && corpo_texto.trim()) || htmlParaTexto(corpo_html);
+    // Z-API não tem campo "assunto", então prefixamos com o assunto pra dar contexto.
+    const mensagemFinal = assunto?.trim()
+      ? `*${assunto.trim()}*\n\n${mensagemTexto}`
+      : mensagemTexto;
+
+    for (const chunk of chunks) {
+      const results = await Promise.all(
+        chunk.map(async (d) => {
+          const digits = (d.telefone || "").replace(/\D+/g, "");
+          if (digits.length < 10) {
+            return { aluno_id: d.id, skip: true as const };
+          }
+          try {
+            const resp = await fetch(EDGE_WHATSAPP_URL, {
+              method: "POST",
+              headers: {
+                "x-internal-secret": INTERNAL_SECRET,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                destinatario: digits,
+                mensagem: mensagemFinal,
+              }),
+            });
+            const json = (await resp.json().catch(() => ({}))) as {
+              status?: string;
+              message_id?: string;
+              zapi_status?: number;
+              zapi_body?: unknown;
+              erro?: string;
+            };
+            if (resp.ok && json.status === "enviado") {
+              return { aluno_id: d.id, ok: true as const };
+            }
+            const erro = json.erro || JSON.stringify(json.zapi_body) || `HTTP ${resp.status}`;
+            return { aluno_id: d.id, ok: false as const, erro };
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            return { aluno_id: d.id, ok: false as const, erro: msg };
+          }
+        })
+      );
+
+      await Promise.all(
+        results.map((r) => {
+          if ("skip" in r) return Promise.resolve(null);
+          if (r.ok) {
+            totalEnviados++;
+            return admin
+              .from("mensagens_destinatarios")
+              .update({
+                whatsapp_status: "enviado",
+                whatsapp_enviado_em: new Date().toISOString(),
+              })
+              .eq("mensagem_id", mensagemId)
+              .eq("aluno_id", r.aluno_id);
+          }
+          totalErros++;
+          return admin
+            .from("mensagens_destinatarios")
+            .update({
+              whatsapp_status: "erro",
             })
             .eq("mensagem_id", mensagemId)
             .eq("aluno_id", r.aluno_id);

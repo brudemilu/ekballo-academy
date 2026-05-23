@@ -3,8 +3,18 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-type Aluno = { id: string; nome: string | null; email: string };
-type Curso = { id: string; titulo: string; matriculados: number };
+type Aluno = {
+  id: string;
+  nome: string | null;
+  email: string;
+  telefone: string | null;
+};
+type Curso = {
+  id: string;
+  titulo: string;
+  matriculados: number;
+  alunosComTelefone?: number;
+};
 
 type Props = {
   alunos: Aluno[];
@@ -18,6 +28,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
   const [destinoTipo, setDestinoTipo] = useState<DestinoTipo>("todos");
   const [destinoId, setDestinoId] = useState<string>("");
   const [canalEmail, setCanalEmail] = useState(true);
+  const [canalWhatsapp, setCanalWhatsapp] = useState(false);
   const [assunto, setAssunto] = useState("");
   const [corpoHtml, setCorpoHtml] = useState("");
   const [corpoTexto, setCorpoTexto] = useState("");
@@ -44,6 +55,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
 
     const canais: ("email" | "whatsapp")[] = [];
     if (canalEmail) canais.push("email");
+    if (canalWhatsapp) canais.push("whatsapp");
     if (canais.length === 0) {
       setResultado({ tipo: "erro", mensagem: "Selecione pelo menos um canal." });
       return;
@@ -108,14 +120,38 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
     });
   }
 
-  const totalDestinatariosLabel =
+  // Conta quem tem telefone preenchido entre os destinatários do escopo atual
+  const alunoSelecionado =
+    destinoTipo === "aluno" && destinoId
+      ? alunos.find((a) => a.id === destinoId)
+      : null;
+
+  const totalSelecionados =
     destinoTipo === "todos"
-      ? `${alunos.length} ${alunos.length === 1 ? "aluno" : "alunos"}`
+      ? alunos.length
       : destinoTipo === "curso" && destinoId
-        ? `${cursos.find((c) => c.id === destinoId)?.matriculados ?? 0} matriculado(s)`
+        ? cursos.find((c) => c.id === destinoId)?.matriculados ?? 0
         : destinoTipo === "aluno" && destinoId
-          ? "1 aluno"
-          : "—";
+          ? 1
+          : 0;
+
+  const totalComTelefone =
+    destinoTipo === "todos"
+      ? alunos.filter((a) => !!a.telefone).length
+      : destinoTipo === "curso" && destinoId
+        ? cursos.find((c) => c.id === destinoId)?.alunosComTelefone ?? 0
+        : destinoTipo === "aluno" && destinoId
+          ? alunoSelecionado?.telefone
+            ? 1
+            : 0
+          : 0;
+
+  const totalDestinatariosLabel =
+    totalSelecionados > 0
+      ? `${totalSelecionados} ${totalSelecionados === 1 ? "aluno" : "alunos"}`
+      : "—";
+
+  const semTelefone = canalWhatsapp ? totalSelecionados - totalComTelefone : 0;
 
   return (
     <div className="rounded-2xl border border-mesa-200 bg-white p-6 sm:p-8">
@@ -196,7 +232,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
             Canais
           </label>
           <div className="flex flex-wrap gap-3">
-            <label className="flex items-center gap-2 text-sm text-mesa-700">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-mesa-700">
               <input
                 type="checkbox"
                 checked={canalEmail}
@@ -205,18 +241,28 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
               />
               Email
             </label>
-            <label className="flex items-center gap-2 text-sm text-mesa-400">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-mesa-700">
               <input
                 type="checkbox"
-                disabled
+                checked={canalWhatsapp}
+                onChange={(e) => setCanalWhatsapp(e.target.checked)}
                 className="h-4 w-4 rounded border-mesa-300"
               />
               WhatsApp
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">
-                Em breve
-              </span>
             </label>
           </div>
+          {canalWhatsapp && semTelefone > 0 && (
+            <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              {semTelefone === totalSelecionados
+                ? "Nenhum dos destinatários selecionados tem telefone cadastrado — só serão atingidos os com email (se Email estiver marcado)."
+                : `${semTelefone} de ${totalSelecionados} sem telefone — esses serão pulados no WhatsApp.`}
+            </p>
+          )}
+          {canalWhatsapp && (
+            <p className="mt-2 text-xs text-mesa-500">
+              No WhatsApp a mensagem vai como texto plano (o assunto vira título em negrito; o HTML é convertido).
+            </p>
+          )}
         </div>
 
         {/* Assunto */}

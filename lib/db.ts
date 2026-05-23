@@ -421,7 +421,7 @@ export async function listOutrasRespostasDoAluno(alunoId: string, excludeId: str
 // -------- ADMIN: ALUNOS --------
 
 export async function listAllAlunos(): Promise<{
-  id: string; nome: string | null; email: string; turma: string | null; is_admin: boolean; created_at: string; respostasCount: number;
+  id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string; respostasCount: number;
 }[]> {
   if (isMockMode()) {
     return MOCK_ALUNOS.map((a) => ({
@@ -432,12 +432,12 @@ export async function listAllAlunos(): Promise<{
   const supabase = await createClient();
   const { data: alunos } = await supabase
     .from("profiles")
-    .select("id, nome, email, turma, is_admin, created_at")
+    .select("id, nome, email, telefone, turma, is_admin, created_at")
     .order("created_at", { ascending: false });
   const { data: r } = await supabase.from("respostas").select("aluno_id");
   const map = new Map<string, number>();
   (r || []).forEach((x: { aluno_id: string }) => map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1));
-  return (alunos || []).map((a: { id: string; nome: string | null; email: string; turma: string | null; is_admin: boolean; created_at: string }) => ({
+  return (alunos || []).map((a: { id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string }) => ({
     ...a,
     respostasCount: map.get(a.id) || 0,
   }));
@@ -446,32 +446,46 @@ export async function listAllAlunos(): Promise<{
 // -------- ADMIN: CURSOS COM STATS --------
 
 export async function listCursosWithStats(): Promise<{
-  curso: Curso; matriculados: number; concluidos: number;
+  curso: Curso; matriculados: number; concluidos: number; alunosComTelefone: number;
 }[]> {
   if (isMockMode()) {
     return MOCK_CURSOS.map((c) => {
       const ms = MOCK_MATRICULAS.filter((m) => m.curso_id === c.id);
+      const comTel = ms.filter((m) => {
+        const aluno = MOCK_ALUNOS.find((a) => a.id === m.aluno_id);
+        return !!aluno?.telefone;
+      }).length;
       return {
         curso: c,
         matriculados: ms.length,
         concluidos: ms.filter((m) => m.concluido_em).length,
+        alunosComTelefone: comTel,
       };
     });
   }
   const supabase = await createClient();
   const { data: cursos } = await supabase.from("cursos").select("*").order("ordem");
-  const { data: ms } = await supabase.from("matriculas").select("curso_id, concluido_em");
-  const map = new Map<string, { total: number; concluidas: number }>();
-  (ms || []).forEach((m: { curso_id: string; concluido_em: string | null }) => {
-    const cur = map.get(m.curso_id) || { total: 0, concluidas: 0 };
+  const { data: ms } = await supabase
+    .from("matriculas")
+    .select("curso_id, concluido_em, aluno:profiles!inner(telefone)");
+  type MatricRow = {
+    curso_id: string;
+    concluido_em: string | null;
+    aluno: { telefone: string | null } | null;
+  };
+  const map = new Map<string, { total: number; concluidas: number; comTel: number }>();
+  ((ms || []) as unknown as MatricRow[]).forEach((m) => {
+    const cur = map.get(m.curso_id) || { total: 0, concluidas: 0, comTel: 0 };
     cur.total += 1;
     if (m.concluido_em) cur.concluidas += 1;
+    if (m.aluno?.telefone) cur.comTel += 1;
     map.set(m.curso_id, cur);
   });
   return (cursos || []).map((c) => ({
     curso: c as Curso,
     matriculados: map.get((c as Curso).id)?.total || 0,
     concluidos: map.get((c as Curso).id)?.concluidas || 0,
+    alunosComTelefone: map.get((c as Curso).id)?.comTel || 0,
   }));
 }
 
@@ -755,5 +769,554 @@ export async function getMensagemComDestinatarios(
   return {
     mensagem: { ...mensagem, destino_label },
     destinatarios,
+  };
+}
+
+// =============================================================
+// PROGRESSÃO POR CURSO E POR ALUNO (admin)
+// =============================================================
+
+export type CursoProgressaoAulaRow = {
+  id: string;
+  titulo: string;
+  ordem: number;
+  totalAtividades: number;
+  alunosCompletos: number;
+  taxaConclusao: number; // 0-100
+};
+
+export type CursoProgressaoAlunoRow = {
+  id: string;
+  nome: string | null;
+  email: string;
+  telefone: string | null;
+  concluidoEm: string | null;
+  aulasCompletas: number;
+  progresso: number; // 0-100
+  aulaAtualOrdem: number | null;
+  aulaAtualTitulo: string | null;
+};
+
+export type CursoProgressao = {
+  curso: Curso;
+  totalAulas: number;
+  totalMatriculados: number;
+  totalConcluidos: number;
+  alunosComTelefone: number;
+  aulas: CursoProgressaoAulaRow[];
+  alunos: CursoProgressaoAlunoRow[];
+};
+
+export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgressao | null> {
+  if (isMockMode()) {
+    const curso = mockFindCurso(cursoSlug);
+    if (!curso) return null;
+    const aulas = mockAulasByCurso(curso.id);
+    const matriculas = MOCK_MATRICULAS.filter((m) => m.curso_id === curso.id);
+    const alunoIds = matriculas.map((m) => m.aluno_id);
+    const alunos = alunoIds
+      .map((id) => MOCK_ALUNOS.find((a) => a.id === id))
+      .filter((a): a is typeof MOCK_ALUNOS[number] => !!a);
+
+    const aulasRows: CursoProgressaoAulaRow[] = aulas.map((aula) => {
+      const totalAtividades = mockAtivByAula(aula.id).length;
+      const completos = alunoIds.filter((aid) => mockAulaCompleta(aid, aula.id)).length;
+      return {
+        id: aula.id,
+        titulo: aula.titulo,
+        ordem: aula.ordem,
+        totalAtividades,
+        alunosCompletos: completos,
+        taxaConclusao: alunoIds.length > 0 ? Math.round((completos / alunoIds.length) * 100) : 0,
+      };
+    });
+
+    const alunosRows: CursoProgressaoAlunoRow[] = alunos.map((aluno) => {
+      const matricula = matriculas.find((m) => m.aluno_id === aluno.id);
+      let aulasCompletas = 0;
+      let aulaAtualIdx = -1;
+      for (let i = 0; i < aulas.length; i++) {
+        if (mockAulaCompleta(aluno.id, aulas[i].id)) {
+          aulasCompletas++;
+        } else if (aulaAtualIdx === -1) {
+          aulaAtualIdx = i;
+        }
+      }
+      const aulaAtual = aulaAtualIdx >= 0 ? aulas[aulaAtualIdx] : null;
+      return {
+        id: aluno.id,
+        nome: aluno.nome,
+        email: aluno.email,
+        telefone: aluno.telefone,
+        concluidoEm: matricula?.concluido_em ?? null,
+        aulasCompletas,
+        progresso: aulas.length > 0 ? Math.round((aulasCompletas / aulas.length) * 100) : 0,
+        aulaAtualOrdem: aulaAtual?.ordem ?? null,
+        aulaAtualTitulo: aulaAtual?.titulo ?? null,
+      };
+    });
+
+    return {
+      curso,
+      totalAulas: aulas.length,
+      totalMatriculados: matriculas.length,
+      totalConcluidos: matriculas.filter((m) => m.concluido_em).length,
+      alunosComTelefone: alunos.filter((a) => !!a.telefone).length,
+      aulas: aulasRows,
+      alunos: alunosRows.sort((a, b) => b.progresso - a.progresso),
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: cursoRow } = await supabase
+    .from("cursos")
+    .select("*")
+    .eq("slug", cursoSlug)
+    .single();
+  if (!cursoRow) return null;
+  const curso = cursoRow as Curso;
+
+  const { data: aulasData } = await supabase
+    .from("aulas")
+    .select("*")
+    .eq("curso_id", curso.id)
+    .order("ordem", { ascending: true });
+  const aulas = (aulasData || []) as Aula[];
+  const aulaIds = aulas.map((a) => a.id);
+
+  if (aulaIds.length === 0) {
+    return {
+      curso,
+      totalAulas: 0,
+      totalMatriculados: 0,
+      totalConcluidos: 0,
+      alunosComTelefone: 0,
+      aulas: [],
+      alunos: [],
+    };
+  }
+
+  // Atividades de todas as aulas
+  const { data: atividadesData } = await supabase
+    .from("atividades")
+    .select("id, aula_id, tipo")
+    .in("aula_id", aulaIds);
+  const atividades = (atividadesData || []) as { id: string; aula_id: string; tipo: string }[];
+  const atvIds = atividades.map((a) => a.id);
+  const atvByAula = new Map<string, typeof atividades>();
+  atividades.forEach((a) => {
+    const arr = atvByAula.get(a.aula_id) || [];
+    arr.push(a);
+    atvByAula.set(a.aula_id, arr);
+  });
+
+  // Alternativas corretas
+  const { data: altsData } = atvIds.length
+    ? await supabase
+        .from("alternativas")
+        .select("id, atividade_id, correta")
+        .in("atividade_id", atvIds)
+        .eq("correta", true)
+    : { data: [] as { id: string; atividade_id: string; correta: boolean }[] };
+  const corretaByAtv = new Map<string, string>();
+  (altsData || []).forEach((alt: { id: string; atividade_id: string; correta: boolean }) => {
+    corretaByAtv.set(alt.atividade_id, alt.id);
+  });
+
+  // Matrículas + alunos
+  const { data: matriculasData } = await supabase
+    .from("matriculas")
+    .select("aluno_id, concluido_em, created_at, aluno:profiles!inner(id, nome, email, telefone)")
+    .eq("curso_id", curso.id);
+  type MatricRow = {
+    aluno_id: string;
+    concluido_em: string | null;
+    created_at: string;
+    aluno: { id: string; nome: string | null; email: string; telefone: string | null };
+  };
+  const matriculas = ((matriculasData || []) as unknown as MatricRow[]).map((m) => ({
+    aluno_id: m.aluno_id,
+    concluido_em: m.concluido_em,
+    created_at: m.created_at,
+    aluno: m.aluno,
+  }));
+  const alunoIds = matriculas.map((m) => m.aluno_id);
+
+  // Respostas dos alunos pras atividades do curso
+  const respostas =
+    atvIds.length > 0 && alunoIds.length > 0
+      ? (
+          await supabase
+            .from("respostas")
+            .select("atividade_id, aluno_id, alternativa_id, texto")
+            .in("atividade_id", atvIds)
+            .in("aluno_id", alunoIds)
+        ).data || []
+      : [];
+
+  // Indexa respostas por (aluno, atividade)
+  type Resp = {
+    atividade_id: string;
+    aluno_id: string;
+    alternativa_id: string | null;
+    texto: string | null;
+  };
+  const respByPair = new Map<string, Resp>();
+  (respostas as Resp[]).forEach((r) => {
+    respByPair.set(`${r.aluno_id}::${r.atividade_id}`, r);
+  });
+
+  function aulaCompletaPra(alunoId: string, aulaId: string): boolean {
+    const atvs = atvByAula.get(aulaId) || [];
+    if (atvs.length === 0) return true;
+    for (const a of atvs) {
+      const r = respByPair.get(`${alunoId}::${a.id}`);
+      if (a.tipo === "multipla_escolha") {
+        if (!r?.alternativa_id) return false;
+        if (r.alternativa_id !== corretaByAtv.get(a.id)) return false;
+      } else {
+        if (!r?.texto?.trim()) return false;
+      }
+    }
+    return true;
+  }
+
+  const aulasRows: CursoProgressaoAulaRow[] = aulas.map((aula) => {
+    const completos = alunoIds.filter((aid) => aulaCompletaPra(aid, aula.id)).length;
+    return {
+      id: aula.id,
+      titulo: aula.titulo,
+      ordem: aula.ordem,
+      totalAtividades: (atvByAula.get(aula.id) || []).length,
+      alunosCompletos: completos,
+      taxaConclusao:
+        alunoIds.length > 0 ? Math.round((completos / alunoIds.length) * 100) : 0,
+    };
+  });
+
+  const alunosRows: CursoProgressaoAlunoRow[] = matriculas.map((m) => {
+    let aulasCompletas = 0;
+    let aulaAtual: Aula | null = null;
+    for (const aula of aulas) {
+      if (aulaCompletaPra(m.aluno_id, aula.id)) {
+        aulasCompletas++;
+      } else if (!aulaAtual) {
+        aulaAtual = aula;
+      }
+    }
+    return {
+      id: m.aluno.id,
+      nome: m.aluno.nome,
+      email: m.aluno.email,
+      telefone: m.aluno.telefone,
+      concluidoEm: m.concluido_em,
+      aulasCompletas,
+      progresso:
+        aulas.length > 0 ? Math.round((aulasCompletas / aulas.length) * 100) : 0,
+      aulaAtualOrdem: aulaAtual?.ordem ?? null,
+      aulaAtualTitulo: aulaAtual?.titulo ?? null,
+    };
+  });
+
+  return {
+    curso,
+    totalAulas: aulas.length,
+    totalMatriculados: matriculas.length,
+    totalConcluidos: matriculas.filter((m) => m.concluido_em).length,
+    alunosComTelefone: matriculas.filter((m) => !!m.aluno.telefone).length,
+    aulas: aulasRows,
+    alunos: alunosRows.sort((a, b) => b.progresso - a.progresso),
+  };
+}
+
+export type AlunoProgressoAulaAtividade = {
+  atividade: Atividade;
+  alternativas: Alternativa[]; // [] se reflexao
+  alternativaSelecionada: string | null; // só MC
+  respondeuCorreto: boolean | null; // null se reflexao
+  textoReflexao: string | null;
+  comentarioLider: string | null;
+  comentarioLiderEm: string | null;
+  respostaId: string | null;
+};
+
+export type AlunoProgressoAula = {
+  aula: Aula;
+  status: "completa" | "em-andamento" | "bloqueada" | "nao-iniciada";
+  totalAtividades: number;
+  atividadesRespondidas: number;
+  atividades: AlunoProgressoAulaAtividade[];
+};
+
+export type AlunoProgressoNoCurso = {
+  curso: Curso;
+  aluno: Profile;
+  matriculadoEm: string | null;
+  concluidoEm: string | null;
+  totalAulas: number;
+  aulasCompletas: number;
+  progresso: number;
+  aulas: AlunoProgressoAula[];
+};
+
+export async function getAlunoProgressoNoCurso(
+  cursoSlug: string,
+  alunoId: string
+): Promise<AlunoProgressoNoCurso | null> {
+  if (isMockMode()) {
+    const curso = mockFindCurso(cursoSlug);
+    if (!curso) return null;
+    const aluno = MOCK_ALUNOS.find((a) => a.id === alunoId);
+    if (!aluno) return null;
+    const matricula = MOCK_MATRICULAS.find(
+      (m) => m.curso_id === curso.id && m.aluno_id === alunoId
+    );
+    const aulas = mockAulasByCurso(curso.id);
+
+    const aulasProgresso: AlunoProgressoAula[] = [];
+    let previousCompleta = true;
+    for (const aula of aulas) {
+      const atvs = mockAtivByAula(aula.id);
+      const detalheAtvs: AlunoProgressoAulaAtividade[] = atvs.map((atv) => {
+        if (atv.tipo === "multipla_escolha") {
+          const alts = mockAltByAtv(atv.id);
+          const selId = getMockMcAnswer(alunoId, atv.id) || null;
+          const correta = alts.find((a) => a.correta);
+          return {
+            atividade: atv,
+            alternativas: alts,
+            alternativaSelecionada: selId,
+            respondeuCorreto: selId ? selId === correta?.id : null,
+            textoReflexao: null,
+            comentarioLider: null,
+            comentarioLiderEm: null,
+            respostaId: null,
+          };
+        }
+        // reflexao
+        const r = MOCK_RESPOSTAS.find(
+          (x) => x.aluno_id === alunoId && x.atividade_id === atv.id
+        );
+        return {
+          atividade: atv,
+          alternativas: [],
+          alternativaSelecionada: null,
+          respondeuCorreto: null,
+          textoReflexao: r?.texto || null,
+          comentarioLider: r?.comentario_lider || null,
+          comentarioLiderEm: r?.comentario_lider_em || null,
+          respostaId: r?.id || null,
+        };
+      });
+
+      const respondidas = detalheAtvs.filter(
+        (a) =>
+          a.alternativaSelecionada || (a.textoReflexao && a.textoReflexao.trim())
+      ).length;
+      const completa = mockAulaCompleta(alunoId, aula.id);
+      const status: AlunoProgressoAula["status"] = completa
+        ? "completa"
+        : !previousCompleta
+          ? "bloqueada"
+          : respondidas > 0
+            ? "em-andamento"
+            : "nao-iniciada";
+
+      aulasProgresso.push({
+        aula,
+        status,
+        totalAtividades: atvs.length,
+        atividadesRespondidas: respondidas,
+        atividades: detalheAtvs,
+      });
+      previousCompleta = completa;
+    }
+
+    const aulasCompletasCount = aulasProgresso.filter((a) => a.status === "completa")
+      .length;
+
+    return {
+      curso,
+      aluno,
+      matriculadoEm: matricula?.matriculado_em ?? null,
+      concluidoEm: matricula?.concluido_em ?? null,
+      totalAulas: aulas.length,
+      aulasCompletas: aulasCompletasCount,
+      progresso:
+        aulas.length > 0 ? Math.round((aulasCompletasCount / aulas.length) * 100) : 0,
+      aulas: aulasProgresso,
+    };
+  }
+
+  const supabase = await createClient();
+  const [{ data: cursoRow }, { data: alunoRow }] = await Promise.all([
+    supabase.from("cursos").select("*").eq("slug", cursoSlug).single(),
+    supabase.from("profiles").select("*").eq("id", alunoId).single(),
+  ]);
+  if (!cursoRow || !alunoRow) return null;
+  const curso = cursoRow as Curso;
+  const aluno = alunoRow as Profile;
+
+  const [{ data: aulasData }, { data: matricRow }] = await Promise.all([
+    supabase
+      .from("aulas")
+      .select("*")
+      .eq("curso_id", curso.id)
+      .order("ordem", { ascending: true }),
+    supabase
+      .from("matriculas")
+      .select("created_at, concluido_em")
+      .eq("curso_id", curso.id)
+      .eq("aluno_id", alunoId)
+      .maybeSingle(),
+  ]);
+  const aulas = (aulasData || []) as Aula[];
+  const aulaIds = aulas.map((a) => a.id);
+
+  // Atividades e alternativas
+  const { data: atvData } = aulaIds.length
+    ? await supabase
+        .from("atividades")
+        .select("*")
+        .in("aula_id", aulaIds)
+        .order("ordem", { ascending: true })
+    : { data: [] as Atividade[] };
+  const atividades = (atvData || []) as Atividade[];
+  const atvIds = atividades.map((a) => a.id);
+
+  const { data: altsData } = atvIds.length
+    ? await supabase
+        .from("alternativas")
+        .select("*")
+        .in("atividade_id", atvIds)
+        .order("ordem", { ascending: true })
+    : { data: [] as Alternativa[] };
+  const alternativas = (altsData || []) as Alternativa[];
+
+  // Respostas do aluno
+  const { data: respData } = atvIds.length
+    ? await supabase
+        .from("respostas")
+        .select(
+          "id, atividade_id, alternativa_id, texto, comentario_lider, comentario_lider_em"
+        )
+        .in("atividade_id", atvIds)
+        .eq("aluno_id", alunoId)
+    : { data: [] as Array<{
+        id: string;
+        atividade_id: string;
+        alternativa_id: string | null;
+        texto: string | null;
+        comentario_lider: string | null;
+        comentario_lider_em: string | null;
+      }> };
+  type RespInfo = {
+    id: string;
+    atividade_id: string;
+    alternativa_id: string | null;
+    texto: string | null;
+    comentario_lider: string | null;
+    comentario_lider_em: string | null;
+  };
+  const respByAtv = new Map<string, RespInfo>();
+  (respData || []).forEach((r) => respByAtv.set((r as RespInfo).atividade_id, r as RespInfo));
+
+  const altsByAtv = new Map<string, Alternativa[]>();
+  alternativas.forEach((a) => {
+    const arr = altsByAtv.get(a.atividade_id) || [];
+    arr.push(a);
+    altsByAtv.set(a.atividade_id, arr);
+  });
+
+  const aulasProgresso: AlunoProgressoAula[] = [];
+  let previousCompleta = true;
+  for (const aula of aulas) {
+    const atvs = atividades.filter((a) => a.aula_id === aula.id);
+    const detalheAtvs: AlunoProgressoAulaAtividade[] = atvs.map((atv) => {
+      const r = respByAtv.get(atv.id);
+      if (atv.tipo === "multipla_escolha") {
+        const alts = altsByAtv.get(atv.id) || [];
+        const correta = alts.find((x) => x.correta);
+        return {
+          atividade: atv,
+          alternativas: alts,
+          alternativaSelecionada: r?.alternativa_id || null,
+          respondeuCorreto: r?.alternativa_id
+            ? r.alternativa_id === correta?.id
+            : null,
+          textoReflexao: null,
+          comentarioLider: r?.comentario_lider || null,
+          comentarioLiderEm: r?.comentario_lider_em || null,
+          respostaId: r?.id || null,
+        };
+      }
+      return {
+        atividade: atv,
+        alternativas: [],
+        alternativaSelecionada: null,
+        respondeuCorreto: null,
+        textoReflexao: r?.texto || null,
+        comentarioLider: r?.comentario_lider || null,
+        comentarioLiderEm: r?.comentario_lider_em || null,
+        respostaId: r?.id || null,
+      };
+    });
+
+    // Aula completa?
+    let completa = true;
+    for (const a of detalheAtvs) {
+      if (a.atividade.tipo === "multipla_escolha") {
+        if (a.respondeuCorreto !== true) {
+          completa = false;
+          break;
+        }
+      } else {
+        if (!a.textoReflexao?.trim()) {
+          completa = false;
+          break;
+        }
+      }
+    }
+    if (atvs.length === 0) completa = true;
+
+    const respondidas = detalheAtvs.filter(
+      (a) =>
+        !!a.alternativaSelecionada ||
+        (a.textoReflexao && a.textoReflexao.trim())
+    ).length;
+
+    const status: AlunoProgressoAula["status"] = completa
+      ? "completa"
+      : !previousCompleta
+        ? "bloqueada"
+        : respondidas > 0
+          ? "em-andamento"
+          : "nao-iniciada";
+
+    aulasProgresso.push({
+      aula,
+      status,
+      totalAtividades: atvs.length,
+      atividadesRespondidas: respondidas,
+      atividades: detalheAtvs,
+    });
+    previousCompleta = completa;
+  }
+
+  const aulasCompletasCount = aulasProgresso.filter((a) => a.status === "completa")
+    .length;
+
+  return {
+    curso,
+    aluno,
+    matriculadoEm: matricRow?.created_at ?? null,
+    concluidoEm: matricRow?.concluido_em ?? null,
+    totalAulas: aulas.length,
+    aulasCompletas: aulasCompletasCount,
+    progresso:
+      aulas.length > 0
+        ? Math.round((aulasCompletasCount / aulas.length) * 100)
+        : 0,
+    aulas: aulasProgresso,
   };
 }

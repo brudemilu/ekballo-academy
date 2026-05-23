@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/Logo";
+import { formatTelefoneBR, normalizeTelefoneBR } from "@/lib/telefone";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -12,6 +13,7 @@ export default function CadastroPage() {
   const router = useRouter();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -35,12 +37,19 @@ export default function CadastroPage() {
       return;
     }
 
+    const telefoneNorm = normalizeTelefoneBR(telefone);
+    if (!telefoneNorm) {
+      setErro("Informe um telefone válido com DDD (ex.: 11 99999-8888).");
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
       options: {
-        data: { nome },
+        data: { nome, telefone: telefoneNorm },
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
       },
     });
@@ -55,12 +64,13 @@ export default function CadastroPage() {
       return;
     }
 
-    // Cria o profile (caso o trigger não tenha rodado)
+    // Cria/atualiza o profile (caso o trigger não tenha rodado ou esteja sem telefone)
     if (data.user) {
       await supabase.from("profiles").upsert({
         id: data.user.id,
         nome,
         email,
+        telefone: telefoneNorm,
       });
     }
 
@@ -154,6 +164,26 @@ export default function CadastroPage() {
                 className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
                 placeholder="seu@email.com"
               />
+            </div>
+
+            <div>
+              <label htmlFor="telefone" className="mb-1.5 block text-sm font-medium text-mesa-700">
+                Celular (WhatsApp)
+              </label>
+              <input
+                id="telefone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel-national"
+                required
+                value={telefone}
+                onChange={(e) => setTelefone(formatTelefoneBR(e.target.value))}
+                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                placeholder="(11) 99999-8888"
+              />
+              <p className="mt-1.5 text-xs text-mesa-500">
+                Usaremos para te avisar sobre novos cursos e devolutivas pelo WhatsApp.
+              </p>
             </div>
 
             <div>
