@@ -56,6 +56,24 @@ export default async function DashboardPage() {
           </p>
         </div>
 
+        <Link
+          href="/biblia"
+          className="mb-10 flex items-center justify-between gap-4 rounded-2xl border border-laranja-200 bg-gradient-to-br from-laranja-50 to-bege-100 px-6 py-5 transition hover:border-laranja-300 hover:shadow-md"
+        >
+          <div className="min-w-0">
+            <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-laranja-700">
+              Escritura
+            </p>
+            <h2 className="font-serif text-xl font-semibold text-mesa-800">
+              Abrir a Bíblia
+            </h2>
+            <p className="mt-1 text-sm text-mesa-600">
+              Leia em qualquer livro · selecione versículos · gere imagens prontas pra postar.
+            </p>
+          </div>
+          <span className="flex-none text-2xl text-laranja-600">→</span>
+        </Link>
+
         {cursos.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-20 text-center">
             <p className="font-serif text-xl text-mesa-500">

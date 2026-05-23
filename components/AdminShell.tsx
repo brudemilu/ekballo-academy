@@ -6,6 +6,7 @@ import { UserMenu } from "@/components/UserMenu";
 export type AdminTab =
   | "painel"
   | "cursos"
+  | "biblia"
   | "respostas"
   | "alunos"
   | "mensagens"
@@ -21,6 +22,7 @@ type Item = {
 const ITEMS: Item[] = [
   { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral" },
   { key: "cursos", label: "Cursos", href: "/admin/cursos", hint: "Progresso por curso e aluno" },
+  { key: "biblia", label: "Bíblia", href: "/biblia", hint: "Leitor + gerador de imagem" },
   { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas" },
   { key: "alunos", label: "Alunos", href: "/admin/alunos", hint: "Matrículas e contatos" },
   { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email e WhatsApp" },
