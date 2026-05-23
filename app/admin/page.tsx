@@ -1,16 +1,23 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
-import { getCurrentSession, getAdminStats, listRecentRespostas } from "@/lib/db";
+import { Logo } from "@/components/Logo";
+import {
+  getCurrentSession,
+  getAdminStats,
+  listRecentRespostas,
+  listCursosPublicados,
+} from "@/lib/db";
 
 export default async function AdminPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const [stats, ultimas] = await Promise.all([
+  const [stats, ultimas, cursos] = await Promise.all([
     getAdminStats(),
     listRecentRespostas(8),
+    listCursosPublicados(),
   ]);
 
   const cards = [
@@ -46,6 +53,76 @@ export default async function AdminPage() {
           </div>
         ))}
       </div>
+
+      {/* Meus cursos — vista de aluno pra revisar conteúdo */}
+      {cursos.length > 0 && (
+        <section className="mb-10">
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 className="font-serif text-2xl font-semibold text-mesa-800">
+              Cursos
+            </h2>
+            <Link
+              href="/admin/cursos"
+              className="text-sm text-mesa-600 hover:text-mesa-800"
+            >
+              Ver progresso e gestão →
+            </Link>
+          </div>
+          <p className="mb-5 text-sm text-mesa-600">
+            Clique em um curso pra abrir como aluno e revisar o conteúdo, ou
+            entre em <Link href="/admin/cursos" className="underline decoration-mesa-300 hover:text-mesa-800">Cursos</Link> pra
+            ver matrículas, progresso e gargalos.
+          </p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {cursos.map((curso) => (
+              <Link
+                key={curso.id}
+                href={`/cursos/${curso.slug}`}
+                className="lift group block overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300"
+              >
+                <div className="aspect-[16/9] bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 transition duration-700 group-hover:from-laranja-200 group-hover:to-oliveira-200">
+                  {curso.imagem_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={curso.imagem_url}
+                      alt={curso.titulo}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <Logo />
+                    </div>
+                  )}
+                </div>
+                <div className="p-6">
+                  <div className="mb-3 flex items-center gap-2">
+                    {curso.is_pago ? (
+                      <span className="rounded-full bg-mesa-100 px-2.5 py-0.5 text-xs font-medium text-mesa-700">
+                        Pago
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-oliveira-100 px-2.5 py-0.5 text-xs font-medium text-oliveira-700">
+                        Gratuito
+                      </span>
+                    )}
+                    <span className="rounded-full bg-bege-100 px-2.5 py-0.5 text-xs font-medium text-bege-700">
+                      Vista de aluno
+                    </span>
+                  </div>
+                  <h3 className="mb-2 font-serif text-xl font-semibold text-mesa-800 group-hover:text-mesa-900">
+                    {curso.titulo}
+                  </h3>
+                  {curso.descricao && (
+                    <p className="line-clamp-3 text-sm text-mesa-600">
+                      {curso.descricao}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="rounded-2xl border border-mesa-200 bg-white">
         <div className="border-b border-mesa-100 px-6 py-4">

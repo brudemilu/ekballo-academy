@@ -69,5 +69,19 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Admin entrando na home de aluno: redireciona pro painel admin (porta única).
+  if (user && path === "/dashboard") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+    if (profile?.is_admin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return supabaseResponse;
 }
