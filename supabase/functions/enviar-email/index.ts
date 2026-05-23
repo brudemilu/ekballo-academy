@@ -1,16 +1,29 @@
 // Edge Function: enviar-email
-// Recebe { chave, destinatario, variaveis } e dispara o template via Brevo.
-// Autenticada via header `x-internal-secret` (compartilhado entre postgres triggers
-// e esta função). Não verifica JWT porque é chamada pelos próprios triggers.
+// Aceita dois modos no body:
+//   A) { chave, destinatario, variaveis } → busca template em email_templates
+//   B) { assunto, html, text?, destinatario } → manda direto sem template (broadcast)
 //
-// Sem dependência externa — só fetch nativo. Acessa a tabela email_templates via
-// PostgREST (SUPABASE_URL + service_role) e o Brevo via API REST.
+// Autenticada via header `x-internal-secret` (compartilhado entre postgres triggers
+// e esta função). Não verifica JWT porque é chamada pelos triggers e pela API route
+// /api/admin/enviar-mensagem.
+//
+// Sem dependência externa — só fetch nativo. Acessa email_templates via PostgREST
+// e dispara via Brevo HTTP API.
 
-type Payload = {
+type ModoTemplate = {
   chave: string;
   destinatario: string;
   variaveis?: Record<string, string>;
 };
+
+type ModoRaw = {
+  assunto: string;
+  html: string;
+  text?: string;
+  destinatario: string;
+};
+
+type Payload = ModoTemplate | ModoRaw;
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY")!;
 const BREVO_SENDER_EMAIL = Deno.env.get("BREVO_SENDER_EMAIL")!;
@@ -46,12 +59,42 @@ async function buscarTemplate(chave: string): Promise<
   return rows[0] ?? null;
 }
 
+async function enviarViaBrevo(
+  destinatario: string,
+  assunto: string,
+  html: string,
+  text?: string
+): Promise<{ ok: boolean; messageId?: string; status: number; body: unknown }> {
+  const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": BREVO_API_KEY,
+      "Content-Type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+      to: [{ email: destinatario }],
+      subject: assunto,
+      htmlContent: html,
+      ...(text ? { textContent: text } : {}),
+    }),
+  });
+  const body = await resp.json().catch(() => ({}));
+  return {
+    ok: resp.ok,
+    status: resp.status,
+    body,
+    messageId: (body as { messageId?: string }).messageId,
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  // Auth: header compartilhado com triggers postgres
+  // Auth: header compartilhado com triggers postgres + API route
   const headerSecret = req.headers.get("x-internal-secret");
   if (!headerSecret || headerSecret !== INTERNAL_SECRET) {
     return new Response(JSON.stringify({ erro: "unauthorized" }), {
@@ -70,60 +113,63 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { chave, destinatario, variaveis = {} } = payload;
-  if (!chave || !destinatario) {
+  const { destinatario } = payload as { destinatario: string };
+  if (!destinatario) {
     return new Response(
-      JSON.stringify({ erro: "chave e destinatario são obrigatórios" }),
+      JSON.stringify({ erro: "destinatario obrigatório" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  const template = await buscarTemplate(chave);
-  if (!template) {
+  let assunto: string;
+  let html: string;
+  let text: string | undefined;
+
+  // Modo A: template
+  if ("chave" in payload && payload.chave) {
+    const variaveis = payload.variaveis ?? {};
+    const template = await buscarTemplate(payload.chave);
+    if (!template) {
+      return new Response(
+        JSON.stringify({ erro: "template não encontrado", chave: payload.chave }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    if (!template.ativo) {
+      return new Response(
+        JSON.stringify({ status: "skipped", motivo: "template desativado" }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    assunto = substituirVariaveis(template.assunto, variaveis);
+    html = substituirVariaveis(template.corpo_html, variaveis);
+    text = template.corpo_texto
+      ? substituirVariaveis(template.corpo_texto, variaveis)
+      : undefined;
+  }
+  // Modo B: raw
+  else if ("assunto" in payload && "html" in payload && payload.assunto && payload.html) {
+    assunto = payload.assunto;
+    html = payload.html;
+    text = payload.text;
+  } else {
     return new Response(
-      JSON.stringify({ erro: "template não encontrado", chave }),
-      { status: 404, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({
+        erro:
+          "passe 'chave' (modo template) ou 'assunto' + 'html' (modo raw)",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  if (!template.ativo) {
-    return new Response(
-      JSON.stringify({ status: "skipped", motivo: "template desativado" }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const assunto = substituirVariaveis(template.assunto, variaveis);
-  const html = substituirVariaveis(template.corpo_html, variaveis);
-  const text = template.corpo_texto
-    ? substituirVariaveis(template.corpo_texto, variaveis)
-    : undefined;
-
-  // Dispara via Brevo
-  const brevoResp = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "api-key": BREVO_API_KEY,
-      "Content-Type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
-      to: [{ email: destinatario }],
-      subject: assunto,
-      htmlContent: html,
-      ...(text ? { textContent: text } : {}),
-    }),
-  });
-
-  const brevoBody = await brevoResp.json().catch(() => ({}));
-  if (!brevoResp.ok) {
-    console.error("Brevo error", brevoResp.status, brevoBody);
+  const result = await enviarViaBrevo(destinatario, assunto, html, text);
+  if (!result.ok) {
+    console.error("Brevo error", result.status, result.body);
     return new Response(
       JSON.stringify({
         erro: "falha no envio",
-        brevo_status: brevoResp.status,
-        brevo_body: brevoBody,
+        brevo_status: result.status,
+        brevo_body: result.body,
       }),
       { status: 502, headers: { "Content-Type": "application/json" } }
     );
@@ -132,9 +178,8 @@ Deno.serve(async (req) => {
   return new Response(
     JSON.stringify({
       status: "enviado",
-      chave,
       destinatario,
-      message_id: brevoBody.messageId,
+      message_id: result.messageId,
     }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );

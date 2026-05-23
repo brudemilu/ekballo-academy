@@ -80,3 +80,34 @@ export type EmailTemplate = {
   created_at: string;
   updated_at: string;
 };
+
+export type MensagemDestinoTipo = "todos" | "curso" | "aluno";
+export type MensagemCanal = "email" | "whatsapp";
+export type MensagemStatus = "pendente" | "enviado" | "erro" | "pulado";
+
+export type Mensagem = {
+  id: string;
+  autor_id: string;
+  destino_tipo: MensagemDestinoTipo;
+  destino_id: string | null;
+  canais: MensagemCanal[];
+  assunto: string;
+  corpo_html: string;
+  corpo_texto: string | null;
+  total_destinatarios: number;
+  total_enviados: number;
+  total_erros: number;
+  enviada_em: string;
+};
+
+export type MensagemDestinatario = {
+  id: string;
+  mensagem_id: string;
+  aluno_id: string;
+  email_status: MensagemStatus;
+  email_msg_id: string | null;
+  email_erro: string | null;
+  email_enviado_em: string | null;
+  whatsapp_status: MensagemStatus;
+  whatsapp_enviado_em: string | null;
+};

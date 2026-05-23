@@ -29,7 +29,16 @@ import {
   setMockMcAnswer,
   setMockReflexao,
 } from "@/lib/mock-data";
-import type { Profile, Curso, Aula, Atividade, Alternativa, EmailTemplate } from "@/lib/types";
+import type {
+  Profile,
+  Curso,
+  Aula,
+  Atividade,
+  Alternativa,
+  EmailTemplate,
+  Mensagem,
+  MensagemDestinatario,
+} from "@/lib/types";
 
 // -------- AUTH / PROFILE --------
 
@@ -641,4 +650,110 @@ export async function updateEmailTemplate(
   }
   const supabase = await createClient();
   await supabase.from("email_templates").update(patch).eq("chave", chave);
+}
+
+// -------- ADMIN: MENSAGENS (broadcast) --------
+
+export type MensagemRich = Mensagem & {
+  destino_label: string; // "Todos", "Curso: X", "Aluno: Y"
+};
+
+export async function listMensagens(limit = 50): Promise<MensagemRich[]> {
+  if (isMockMode()) return [];
+  const supabase = await createClient();
+  const { data: rows } = await supabase
+    .from("mensagens")
+    .select("*")
+    .order("enviada_em", { ascending: false })
+    .limit(limit);
+  const mensagens = (rows || []) as Mensagem[];
+  if (mensagens.length === 0) return [];
+
+  // Resolve labels (curso titulo, aluno nome) em batch
+  const cursoIds = mensagens
+    .filter((m) => m.destino_tipo === "curso" && m.destino_id)
+    .map((m) => m.destino_id!);
+  const alunoIds = mensagens
+    .filter((m) => m.destino_tipo === "aluno" && m.destino_id)
+    .map((m) => m.destino_id!);
+
+  const [cursosResp, alunosResp] = await Promise.all([
+    cursoIds.length > 0
+      ? supabase.from("cursos").select("id, titulo").in("id", cursoIds)
+      : Promise.resolve({ data: [] as { id: string; titulo: string }[] }),
+    alunoIds.length > 0
+      ? supabase.from("profiles").select("id, nome, email").in("id", alunoIds)
+      : Promise.resolve({ data: [] as { id: string; nome: string | null; email: string }[] }),
+  ]);
+
+  const cursoMap = new Map(
+    (cursosResp.data || []).map((c) => [c.id, c.titulo])
+  );
+  const alunoMap = new Map(
+    (alunosResp.data || []).map((a) => [a.id, a.nome || a.email])
+  );
+
+  return mensagens.map((m) => ({
+    ...m,
+    destino_label:
+      m.destino_tipo === "todos"
+        ? "Todos os alunos"
+        : m.destino_tipo === "curso"
+          ? `Curso: ${cursoMap.get(m.destino_id || "") || "?"}`
+          : `Aluno: ${alunoMap.get(m.destino_id || "") || "?"}`,
+  }));
+}
+
+export async function getMensagemComDestinatarios(
+  id: string
+): Promise<{
+  mensagem: MensagemRich;
+  destinatarios: (MensagemDestinatario & { aluno_nome: string; aluno_email: string })[];
+} | null> {
+  if (isMockMode()) return null;
+  const supabase = await createClient();
+  const { data: mensagemRow } = await supabase
+    .from("mensagens")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (!mensagemRow) return null;
+  const mensagem = mensagemRow as Mensagem;
+
+  // Label do destino
+  let destino_label = "Todos os alunos";
+  if (mensagem.destino_tipo === "curso" && mensagem.destino_id) {
+    const { data } = await supabase
+      .from("cursos")
+      .select("titulo")
+      .eq("id", mensagem.destino_id)
+      .single();
+    destino_label = `Curso: ${data?.titulo || "?"}`;
+  } else if (mensagem.destino_tipo === "aluno" && mensagem.destino_id) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("nome, email")
+      .eq("id", mensagem.destino_id)
+      .single();
+    destino_label = `Aluno: ${data?.nome || data?.email || "?"}`;
+  }
+
+  const { data: destRows } = await supabase
+    .from("mensagens_destinatarios")
+    .select("*, profiles!inner(nome, email)")
+    .eq("mensagem_id", id);
+
+  type DestRow = MensagemDestinatario & {
+    profiles: { nome: string | null; email: string };
+  };
+  const destinatarios = ((destRows || []) as DestRow[]).map((d) => ({
+    ...d,
+    aluno_nome: d.profiles.nome || "",
+    aluno_email: d.profiles.email,
+  }));
+
+  return {
+    mensagem: { ...mensagem, destino_label },
+    destinatarios,
+  };
 }
