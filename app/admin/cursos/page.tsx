@@ -40,7 +40,7 @@ export default async function AdminCursosPage() {
             return (
               <li key={c.id}>
                 <Link
-                  href={`/admin/cursos/${c.slug}`}
+                  href={c.external_path ?? `/admin/cursos/${c.slug}`}
                   className="block rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-mesa-300 hover:shadow-md"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-4">

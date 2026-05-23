@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
-import { getCurrentSession } from "@/lib/db";
+import { getCurrentSession, getCursoBySlug, isMatriculado } from "@/lib/db";
 import {
   listLivros,
   agrupar,
@@ -14,6 +14,15 @@ import {
 export default async function BibliaIndexPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
+
+  // Gate de matrícula: aluno precisa estar matriculado no "curso" Bíblia.
+  // Admin tem acesso livre.
+  if (!session.profile?.is_admin) {
+    const cursoBiblia = await getCursoBySlug("biblia");
+    if (!cursoBiblia) redirect("/dashboard");
+    const matriculado = await isMatriculado(session.userId, cursoBiblia.id);
+    if (!matriculado) redirect("/dashboard");
+  }
 
   const livros = await listLivros();
   const { at, nt } = agrupar(livros);

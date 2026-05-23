@@ -18,6 +18,9 @@ export type Curso = {
   preco_centavos: number;
   ordem: number;
   publicado: boolean;
+  // Quando preenchido, o card linka pra essa rota em vez de /cursos/[slug].
+  // Usado pra "cursos" com interface custom (ex.: Bíblia → /biblia).
+  external_path: string | null;
   created_at: string;
 };
 

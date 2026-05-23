@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { CapituloLeitor } from "@/components/CapituloLeitor";
-import { getCurrentSession } from "@/lib/db";
+import { getCurrentSession, getCursoBySlug, isMatriculado } from "@/lib/db";
 import { getLivro, getCapitulo } from "@/lib/biblia";
 
 export default async function CapituloPage({
@@ -14,6 +14,14 @@ export default async function CapituloPage({
   const { livroId, capitulo } = await params;
   const session = await getCurrentSession();
   if (!session) redirect("/login");
+
+  // Gate de matrícula no "curso" Bíblia. Admin bypass.
+  if (!session.profile?.is_admin) {
+    const cursoBiblia = await getCursoBySlug("biblia");
+    if (!cursoBiblia) redirect("/dashboard");
+    const matriculado = await isMatriculado(session.userId, cursoBiblia.id);
+    if (!matriculado) redirect("/dashboard");
+  }
 
   const livroIdN = Number(livroId);
   const capN = Number(capitulo);

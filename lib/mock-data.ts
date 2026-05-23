@@ -33,6 +33,20 @@ export const MOCK_ALUNOS: Profile[] = [
 
 export const MOCK_CURSOS: Curso[] = [
   {
+    id: "curso-biblia",
+    slug: "biblia",
+    titulo: "Bíblia",
+    descricao:
+      "Leitura da Bíblia inteira (Almeida Corrigida Fiel). Toque nos versículos pra selecionar e gere imagens prontas pra postar no Instagram, Status do WhatsApp ou compartilhar com a galera.",
+    imagem_url: null,
+    is_pago: false,
+    preco_centavos: 0,
+    ordem: 100,
+    publicado: true,
+    external_path: "/biblia",
+    created_at: "2026-05-23T00:00:00Z",
+  },
+  {
     id: "curso-2",
     slug: "fundamentos-do-discipulado",
     titulo: "Fundamentos do Discipulado",
@@ -43,6 +57,7 @@ export const MOCK_CURSOS: Curso[] = [
     preco_centavos: 0,
     ordem: 2,
     publicado: true,
+    external_path: null,
     created_at: "2026-04-05T00:00:00Z",
   },
   {
@@ -56,6 +71,7 @@ export const MOCK_CURSOS: Curso[] = [
     preco_centavos: 19700,
     ordem: 3,
     publicado: true,
+    external_path: null,
     created_at: "2026-04-20T00:00:00Z",
   },
   {
@@ -69,6 +85,7 @@ export const MOCK_CURSOS: Curso[] = [
     preco_centavos: 0,
     ordem: 4,
     publicado: true,
+    external_path: null,
     created_at: "2026-05-14T00:00:00Z",
   },
 ];
