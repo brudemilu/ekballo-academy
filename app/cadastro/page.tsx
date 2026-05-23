@@ -55,11 +55,24 @@ export default function CadastroPage() {
     });
 
     if (error) {
-      setErro(
-        error.message.includes("already registered")
-          ? "Esse e-mail já tem conta. Faça login."
-          : "Não foi possível criar a conta. Tente novamente."
-      );
+      const msg = error.message.toLowerCase();
+      if (msg.includes("already registered") || msg.includes("user already")) {
+        setErro("Esse e-mail já tem conta. Faça login.");
+      } else if (
+        msg.includes("rate limit") ||
+        msg.includes("over_email_send") ||
+        msg.includes("email rate limit")
+      ) {
+        setErro(
+          "Limite temporário de envio de e-mails atingido. Tente novamente em ~30 minutos, ou peça pro Pr. Bruno te liberar manualmente."
+        );
+      } else if (msg.includes("password") && msg.includes("weak")) {
+        setErro("Escolha uma senha mais forte (use letras, números, mais caracteres).");
+      } else if (msg.includes("invalid") && msg.includes("email")) {
+        setErro("E-mail inválido. Confira se digitou certo.");
+      } else {
+        setErro("Não foi possível criar a conta. Tente novamente.");
+      }
       setLoading(false);
       return;
     }
