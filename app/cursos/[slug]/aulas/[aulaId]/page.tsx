@@ -42,9 +42,12 @@ export default async function AulaPage({
   if (!aula) notFound();
 
   const aulasStatus = await listAulasComStatus(curso.id, session.userId);
-  const aulaStatus = aulasStatus.find((a) => a.id === aulaId);
-  if (!aulaStatus?.desbloqueada) {
-    redirect(`/cursos/${slug}`);
+  // Admin pode acessar qualquer aula pra revisar; aluno depende do desbloqueio.
+  if (!session.profile?.is_admin) {
+    const aulaStatus = aulasStatus.find((a) => a.id === aulaId);
+    if (!aulaStatus?.desbloqueada) {
+      redirect(`/cursos/${slug}`);
+    }
   }
 
   const [atividades, respostas, concluida, materialUrl] = await Promise.all([
@@ -211,7 +214,7 @@ export default async function AulaPage({
               </Link>
             )}
             {proxima && (
-              temAtividades && !aulaConcluida ? (
+              temAtividades && !aulaConcluida && !session.profile?.is_admin ? (
                 <span
                   className="rounded-full border border-mesa-200 bg-mesa-100/60 px-5 py-2.5 text-sm font-medium text-mesa-500"
                   title={

@@ -28,10 +28,15 @@ export default async function CursoPage({
     if (!matriculado) redirect("/dashboard");
   }
 
-  const [aulas, progresso] = await Promise.all([
+  const [aulasRaw, progresso] = await Promise.all([
     listAulasComStatus(curso.id, session.userId),
     listProgressoByAluno(session.userId),
   ]);
+
+  // Admin tem acesso livre — todas as aulas desbloqueadas pra revisão.
+  const aulas = session.profile?.is_admin
+    ? aulasRaw.map((a) => ({ ...a, desbloqueada: true }))
+    : aulasRaw;
 
   const concluidas = new Set(progresso.map((p) => p.aula_id));
 
