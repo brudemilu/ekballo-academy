@@ -31,6 +31,7 @@ export type BibliaVersao = {
   descricao: string | null;
   ativa: boolean;
   ordem: number;
+  fonte_api_sigla?: string | null;
 };
 
 export const VERSAO_PADRAO = "ACF";
@@ -84,7 +85,7 @@ export async function listVersoes(): Promise<BibliaVersao[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("biblia_versoes")
-    .select("sigla, nome, descricao, ativa, ordem")
+    .select("sigla, nome, descricao, ativa, ordem, fonte_api_sigla")
     .order("ordem", { ascending: true });
   return (data || []) as BibliaVersao[];
 }
@@ -96,7 +97,7 @@ export async function getVersao(sigla: string): Promise<BibliaVersao | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("biblia_versoes")
-    .select("sigla, nome, descricao, ativa, ordem")
+    .select("sigla, nome, descricao, ativa, ordem, fonte_api_sigla")
     .eq("sigla", sigla)
     .maybeSingle();
   return (data as BibliaVersao) || null;
@@ -137,15 +138,33 @@ export async function getCapitulo(
       (v) => v.livro_id === livroId && v.capitulo === capitulo
     ).sort((a, b) => a.versiculo - b.versiculo);
   }
+
   const supabase = await createClient();
-  const { data } = await supabase
+
+  // 1) Tenta banco local primeiro (rápido)
+  const { data: locais } = await supabase
     .from("biblia_versiculos")
     .select("livro_id, capitulo, versiculo, texto")
     .eq("versao", versao)
     .eq("livro_id", livroId)
     .eq("capitulo", capitulo)
     .order("versiculo", { ascending: true });
-  return (data || []) as BibliaVersiculo[];
+  if (locais && locais.length > 0) return locais as BibliaVersiculo[];
+
+  // 2) Não tem no banco. Verifica se versão tem fonte_api → busca externa
+  const { data: versaoRow } = await supabase
+    .from("biblia_versoes")
+    .select("sigla, fonte_api_sigla, ativa")
+    .eq("sigla", versao)
+    .maybeSingle();
+  const sigla = versaoRow?.fonte_api_sigla as string | undefined;
+  if (!versaoRow?.ativa || !sigla) return [];
+
+  // Cache via CDN do Vercel (revalidate 24h, configurado no fetch da função).
+  // Pular cache no banco evita complexidade de RLS (aluno não tem permissão
+  // de escrita em biblia_versiculos).
+  const { fetchCapituloViaApi } = await import("@/lib/biblia-api");
+  return await fetchCapituloViaApi(sigla, livroId, capitulo);
 }
 
 // Busca versículos individuais (usado pelo gerador de imagem).
