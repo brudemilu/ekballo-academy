@@ -25,6 +25,16 @@ export type BibliaVersiculo = {
   texto: string;
 };
 
+export type BibliaVersao = {
+  sigla: string;
+  nome: string;
+  descricao: string | null;
+  ativa: boolean;
+  ordem: number;
+};
+
+export const VERSAO_PADRAO = "ACF";
+
 export const GRUPOS_AT: { key: string; label: string }[] = [
   { key: "pentateuco", label: "Pentateuco" },
   { key: "historicos", label: "Históricos" },
@@ -58,7 +68,39 @@ const MOCK_VERSICULOS: BibliaVersiculo[] = [
   { livro_id: 45, capitulo: 1, versiculo: 16, texto: "Porque não me envergonho do evangelho de Cristo, pois é o poder de Deus para salvação de todo aquele que crê; primeiro do judeu, e também do grego." },
 ];
 
+const MOCK_VERSOES: BibliaVersao[] = [
+  { sigla: "ACF", nome: "Almeida Corrigida Fiel", descricao: "Domínio público.", ativa: true, ordem: 1 },
+  { sigla: "NAA", nome: "Nova Almeida Atualizada", descricao: "Aguardando licenciamento.", ativa: false, ordem: 2 },
+  { sigla: "NVT", nome: "Nova Versão Transformadora", descricao: "Aguardando licenciamento.", ativa: false, ordem: 3 },
+  { sigla: "NVI", nome: "Nova Versão Internacional", descricao: "Aguardando licenciamento.", ativa: false, ordem: 4 },
+];
+
 // -------- API ----------------------------------------------------------------
+
+export async function listVersoes(): Promise<BibliaVersao[]> {
+  if (isMockMode()) {
+    return [...MOCK_VERSOES].sort((a, b) => a.ordem - b.ordem);
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("biblia_versoes")
+    .select("sigla, nome, descricao, ativa, ordem")
+    .order("ordem", { ascending: true });
+  return (data || []) as BibliaVersao[];
+}
+
+export async function getVersao(sigla: string): Promise<BibliaVersao | null> {
+  if (isMockMode()) {
+    return MOCK_VERSOES.find((v) => v.sigla === sigla) || null;
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("biblia_versoes")
+    .select("sigla, nome, descricao, ativa, ordem")
+    .eq("sigla", sigla)
+    .maybeSingle();
+  return (data as BibliaVersao) || null;
+}
 
 export async function listLivros(): Promise<BibliaLivro[]> {
   if (isMockMode()) {
@@ -87,7 +129,8 @@ export async function getLivro(id: number): Promise<BibliaLivro | null> {
 
 export async function getCapitulo(
   livroId: number,
-  capitulo: number
+  capitulo: number,
+  versao: string = VERSAO_PADRAO
 ): Promise<BibliaVersiculo[]> {
   if (isMockMode()) {
     return MOCK_VERSICULOS.filter(
@@ -97,7 +140,8 @@ export async function getCapitulo(
   const supabase = await createClient();
   const { data } = await supabase
     .from("biblia_versiculos")
-    .select("*")
+    .select("livro_id, capitulo, versiculo, texto")
+    .eq("versao", versao)
     .eq("livro_id", livroId)
     .eq("capitulo", capitulo)
     .order("versiculo", { ascending: true });
@@ -105,9 +149,9 @@ export async function getCapitulo(
 }
 
 // Busca versículos individuais (usado pelo gerador de imagem).
-// `refs` = ["1:1:1", "1:1:2", ...] (livro:capitulo:versiculo)
 export async function getVersiculos(
-  refs: { livro_id: number; capitulo: number; versiculo: number }[]
+  refs: { livro_id: number; capitulo: number; versiculo: number }[],
+  versao: string = VERSAO_PADRAO
 ): Promise<BibliaVersiculo[]> {
   if (refs.length === 0) return [];
   if (isMockMode()) {
@@ -120,7 +164,6 @@ export async function getVersiculos(
       )
     );
   }
-  // Agrupa por livro/capítulo pra reduzir queries
   const supabase = await createClient();
   const byLivCap = new Map<string, number[]>();
   for (const r of refs) {
@@ -133,7 +176,8 @@ export async function getVersiculos(
     const [livStr, capStr] = k.split("::");
     const { data } = await supabase
       .from("biblia_versiculos")
-      .select("*")
+      .select("livro_id, capitulo, versiculo, texto")
+      .eq("versao", versao)
       .eq("livro_id", Number(livStr))
       .eq("capitulo", Number(capStr))
       .in("versiculo", vs);

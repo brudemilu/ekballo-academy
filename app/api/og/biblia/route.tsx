@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import { getLivro, getCapitulo } from "@/lib/biblia";
+import { getLivro, getCapitulo, VERSAO_PADRAO } from "@/lib/biblia";
 
 // Tamanhos:
 //   feed  → 1080x1080 (Insta feed, WhatsApp)
@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   const cap = Number(url.searchParams.get("cap") || "0");
   const versParam = url.searchParams.get("v") || "";
   const formato = (url.searchParams.get("f") || "feed") as "feed" | "story";
+  const versao = (url.searchParams.get("versao") || VERSAO_PADRAO).toUpperCase();
 
   const versNums = versParam
     .split(",")
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   const [livro, todosDoCap] = await Promise.all([
     getLivro(livroId),
-    getCapitulo(livroId, cap),
+    getCapitulo(livroId, cap, versao),
   ]);
   if (!livro) return new Response("livro não encontrado", { status: 404 });
 
@@ -150,12 +151,31 @@ export async function GET(req: NextRequest) {
         >
           <div
             style={{
-              fontSize: formato === "story" ? 44 : 36,
-              fontWeight: 700,
-              color: "#5E3D17",
+              display: "flex",
+              alignItems: "baseline",
+              gap: 14,
             }}
           >
-            {refLabel}
+            <div
+              style={{
+                fontSize: formato === "story" ? 44 : 36,
+                fontWeight: 700,
+                color: "#5E3D17",
+              }}
+            >
+              {refLabel}
+            </div>
+            <div
+              style={{
+                fontSize: formato === "story" ? 20 : 16,
+                letterSpacing: 4,
+                color: "#8B4513",
+                fontWeight: 600,
+                textTransform: "uppercase",
+              }}
+            >
+              {versao}
+            </div>
           </div>
           <div
             style={{

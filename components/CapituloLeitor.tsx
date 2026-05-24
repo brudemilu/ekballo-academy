@@ -10,12 +10,14 @@ export function CapituloLeitor({
   livroNome,
   capitulo,
   capitulosTotal,
+  versao,
   versiculos,
 }: {
   livroId: number;
   livroNome: string;
   capitulo: number;
   capitulosTotal: number;
+  versao: string;
   versiculos: Versiculo[];
 }) {
   const [sel, setSel] = useState<Set<number>>(new Set());
@@ -51,9 +53,14 @@ export function CapituloLeitor({
       cap: String(capitulo),
       v: verses,
       f: formato,
+      versao,
     });
     return `/api/og/biblia?${params.toString()}`;
   }
+
+  // Mantém versão na navegação ←/→
+  const linkBase = (cap: number) =>
+    `/biblia/${livroId}/${cap}${versao !== "ACF" ? `?v=${versao}` : ""}`;
 
   return (
     <>
@@ -85,7 +92,7 @@ export function CapituloLeitor({
       <div className="mt-10 flex items-center justify-between border-t border-mesa-200 pt-6">
         {capitulo > 1 ? (
           <Link
-            href={`/biblia/${livroId}/${capitulo - 1}`}
+            href={linkBase(capitulo - 1)}
             className="rounded-full border border-mesa-200 bg-white px-4 py-2 text-sm text-mesa-700 hover:bg-mesa-50"
           >
             ← Capítulo {capitulo - 1}
@@ -98,7 +105,7 @@ export function CapituloLeitor({
         </span>
         {capitulo < capitulosTotal ? (
           <Link
-            href={`/biblia/${livroId}/${capitulo + 1}`}
+            href={linkBase(capitulo + 1)}
             className="rounded-full bg-mesa-700 px-4 py-2 text-sm text-mesa-50 hover:bg-mesa-800"
           >
             Capítulo {capitulo + 1} →
