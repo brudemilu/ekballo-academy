@@ -21,6 +21,7 @@ export function CapituloLeitor({
   versiculos: Versiculo[];
 }) {
   const [sel, setSel] = useState<Set<number>>(new Set());
+  const [tema, setTema] = useState<"classico" | "moderno">("classico");
 
   function toggle(numero: number) {
     setSel((prev) => {
@@ -55,6 +56,7 @@ export function CapituloLeitor({
       v: verses,
       f: formato,
       versao,
+      tema,
     });
     if (baixar) params.set("dl", "1");
     return `/api/og/biblia?${params.toString()}`;
@@ -66,7 +68,7 @@ export function CapituloLeitor({
       arr.length > 1 && arr.every((v, i) => i === 0 || v === arr[i - 1] + 1)
         ? `${capitulo}-${arr[0]}-${arr[arr.length - 1]}`
         : `${capitulo}-${arr.join(",")}`;
-    return `${livroNome.replace(/\s+/g, "-")}-${ref}-${versao}-${formato}.png`;
+    return `${livroNome.replace(/\s+/g, "-")}-${ref}-${versao}-${tema}-${formato}.png`;
   }
 
   // Mantém versão na navegação ←/→
@@ -129,14 +131,41 @@ export function CapituloLeitor({
       {/* Barra flutuante de seleção */}
       {sel.size > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-mesa-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:rounded-2xl sm:border sm:px-6 sm:py-4">
-          <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wider text-mesa-500">
-                {sel.size} {sel.size === 1 ? "versículo" : "versículos"}
-              </p>
-              <p className="truncate font-serif text-base font-semibold text-mesa-800">
-                {refLabel}
-              </p>
+          <div className="mx-auto flex max-w-3xl flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wider text-mesa-500">
+                  {sel.size} {sel.size === 1 ? "versículo" : "versículos"}
+                </p>
+                <p className="truncate font-serif text-base font-semibold text-mesa-800">
+                  {refLabel}
+                </p>
+              </div>
+              {/* Seletor de tema */}
+              <div className="flex items-center gap-1.5 rounded-full bg-mesa-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setTema("classico")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                    tema === "classico"
+                      ? "bg-mesa-700 text-mesa-50"
+                      : "text-mesa-600 hover:text-mesa-800"
+                  }`}
+                >
+                  Clássico
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTema("moderno")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                    tema === "moderno"
+                      ? "bg-mesa-700 text-mesa-50"
+                      : "text-mesa-600 hover:text-mesa-800"
+                  }`}
+                >
+                  Moderno
+                </button>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button

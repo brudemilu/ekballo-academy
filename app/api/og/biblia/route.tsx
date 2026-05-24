@@ -5,13 +5,53 @@ import { getLivro, getCapitulo, VERSAO_PADRAO } from "@/lib/biblia";
 // Tamanhos:
 //   feed  → 1080x1080 (Insta feed, WhatsApp)
 //   story → 1080x1920 (Insta Story, Status WhatsApp)
+//
+// Temas:
+//   classico → fundo bege/terracota, Cormorant Garamond Italic, ornamentos
+//   moderno  → fundo terracota sólido, Inter Italic, tipografia dominante
+
+type Tema = "classico" | "moderno";
+type Formato = "feed" | "story";
+
+// Cache simples de fontes (fetch só na primeira chamada de cada runtime)
+let cachedCormorantItalic: ArrayBuffer | undefined;
+let cachedCormorantBold: ArrayBuffer | undefined;
+let cachedInterItalic: ArrayBuffer | undefined;
+
+async function loadFonts(origin: string): Promise<{
+  cormorantItalic: ArrayBuffer;
+  cormorantBold: ArrayBuffer;
+  interItalic: ArrayBuffer;
+}> {
+  if (!cachedCormorantItalic) {
+    cachedCormorantItalic = await fetch(
+      `${origin}/fonts/cormorant-italic.ttf`
+    ).then((r) => r.arrayBuffer());
+  }
+  if (!cachedCormorantBold) {
+    cachedCormorantBold = await fetch(
+      `${origin}/fonts/cormorant-bold.ttf`
+    ).then((r) => r.arrayBuffer());
+  }
+  if (!cachedInterItalic) {
+    cachedInterItalic = await fetch(
+      `${origin}/fonts/inter-italic.ttf`
+    ).then((r) => r.arrayBuffer());
+  }
+  return {
+    cormorantItalic: cachedCormorantItalic!,
+    cormorantBold: cachedCormorantBold!,
+    interItalic: cachedInterItalic!,
+  };
+}
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const livroId = Number(url.searchParams.get("livro") || "0");
   const cap = Number(url.searchParams.get("cap") || "0");
   const versParam = url.searchParams.get("v") || "";
-  const formato = (url.searchParams.get("f") || "feed") as "feed" | "story";
+  const formato = (url.searchParams.get("f") || "feed") as Formato;
+  const tema = (url.searchParams.get("tema") || "classico") as Tema;
   const versao = (url.searchParams.get("versao") || VERSAO_PADRAO).toUpperCase();
   const download = url.searchParams.get("dl") === "1";
 
@@ -26,9 +66,10 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const [livro, todosDoCap] = await Promise.all([
+  const [livro, todosDoCap, fonts] = await Promise.all([
     getLivro(livroId),
     getCapitulo(livroId, cap, versao),
+    loadFonts(url.origin),
   ]);
   if (!livro) return new Response("livro não encontrado", { status: 404 });
 
@@ -53,114 +94,420 @@ export async function GET(req: NextRequest) {
 
   const w = 1080;
   const h = formato === "story" ? 1920 : 1080;
+
+  const jsx =
+    tema === "moderno"
+      ? renderModerno(texto, refLabel, versao, formato)
+      : renderClassico(texto, refLabel, versao, formato);
+
+  return new ImageResponse(jsx, {
+    width: w,
+    height: h,
+    fonts: [
+      {
+        name: "Cormorant",
+        data: fonts.cormorantItalic,
+        weight: 400,
+        style: "italic",
+      },
+      {
+        name: "Cormorant",
+        data: fonts.cormorantBold,
+        weight: 600,
+        style: "normal",
+      },
+      {
+        name: "Inter",
+        data: fonts.interItalic,
+        weight: 400,
+        style: "italic",
+      },
+    ],
+    headers: download
+      ? {
+          "Content-Disposition": `attachment; filename="${sanitizeFilename(
+            `${refLabel}-${versao}-${tema}-${formato}.png`
+          )}"`,
+        }
+      : undefined,
+  });
+}
+
+// ============================================================================
+// TEMA CLÁSSICO
+// Fundo bege com gradient, Cormorant Italic, aspas grandes, cruz tipográfica.
+// ============================================================================
+function renderClassico(
+  texto: string,
+  refLabel: string,
+  versao: string,
+  formato: Formato
+) {
   const charCount = texto.length;
+  // Fontes maiores que o Moderno — clássico precisa "respirar" mais
   const fontSize =
     formato === "story"
       ? charCount < 120
-        ? 72
+        ? 110
         : charCount < 240
-          ? 58
+          ? 88
           : charCount < 380
-            ? 48
-            : 40
+            ? 70
+            : 58
       : charCount < 100
-        ? 64
+        ? 92
         : charCount < 200
-          ? 52
+          ? 74
           : charCount < 320
-            ? 44
-            : 36;
+            ? 60
+            : 50;
 
-  // OBS: next/og (Satori) exige display:flex em todo div com >1 filho.
-  return new ImageResponse(
-    (
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%",
+        padding: formato === "story" ? "120px 80px" : "90px 80px",
+        background:
+          "radial-gradient(circle at 30% 20%, #FCE5C7 0%, #F2C896 55%, #DEAA6D 100%)",
+        color: "#3D2811",
+        fontFamily: "Cormorant",
+        position: "relative",
+      }}
+    >
+      {/* Ornamento topo: linha + losango/quatrefólio SVG + linha */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 18,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            height: 1,
+            background: "#B57E2F",
+            opacity: 0.5,
+          }}
+        />
+        <svg width="42" height="42" viewBox="0 0 24 24">
+          {/* Quatrefólio cristão sutil */}
+          <path
+            d="M12 2 C 14 6, 18 6, 22 8 C 18 10, 18 14, 12 22 C 6 14, 6 10, 2 8 C 6 6, 10 6, 12 2 Z"
+            fill="#D55416"
+            opacity="0.85"
+          />
+          <circle cx="12" cy="12" r="2" fill="#FCE5C7" />
+        </svg>
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            height: 1,
+            background: "#B57E2F",
+            opacity: 0.5,
+          }}
+        />
+      </div>
+
+      {/* Versículo central */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          width: "100%",
-          height: "100%",
-          padding: formato === "story" ? "120px 80px" : "100px 80px",
-          background:
-            "linear-gradient(135deg, #FBDDC0 0%, #F5C99A 45%, #E8A874 100%)",
-          fontFamily: "serif",
-          color: "#3D2811",
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: formato === "story" ? "60px 0" : "40px 0",
+          position: "relative",
         }}
       >
-        {/* Topo: linha + label */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* Aspa grande decorativa */}
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            top: formato === "story" ? -40 : -50,
+            left: 20,
+            fontSize: formato === "story" ? 360 : 300,
+            fontFamily: "Cormorant",
+            fontWeight: 600,
+            color: "#D55416",
+            opacity: 0.2,
+            lineHeight: 1,
+          }}
+        >
+          "
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            fontSize,
+            lineHeight: 1.3,
+            fontFamily: "Cormorant",
+            fontStyle: "italic",
+            fontWeight: 400,
+            textAlign: "center",
+            color: "#3D2811",
+            maxWidth: "100%",
+          }}
+        >
+          {texto}
+        </div>
+      </div>
+
+      {/* Footer: ref + versão + marca */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "Cormorant",
+            fontWeight: 600,
+            fontSize: formato === "story" ? 68 : 56,
+            color: "#5E3D17",
+            letterSpacing: 1,
+          }}
+        >
+          {refLabel}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "Cormorant",
+            fontStyle: "italic",
+            fontSize: formato === "story" ? 28 : 24,
+            letterSpacing: 8,
+            color: "#8B4513",
+            textTransform: "uppercase",
+          }}
+        >
+          {versao}
+        </div>
+
+        {/* Ornamento entre footer e marca */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            marginTop: 24,
+          }}
+        >
           <div
             style={{
               display: "flex",
-              width: 60,
-              height: 4,
-              background: "#D55416",
-              borderRadius: 2,
+              width: 50,
+              height: 1,
+              background: "#B57E2F",
+              opacity: 0.5,
             }}
           />
+          <svg width="34" height="34" viewBox="0 0 32 32">
+            <circle
+              cx="16"
+              cy="16"
+              r="13"
+              stroke="#D55416"
+              strokeWidth="1.4"
+              fill="none"
+            />
+            <path
+              d="M9 19 L16 11 L23 19"
+              stroke="#D55416"
+              strokeWidth="1.7"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <line
+              x1="9"
+              y1="22.5"
+              x2="23"
+              y2="22.5"
+              stroke="#5E3D17"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+          </svg>
           <div
             style={{
               display: "flex",
-              fontSize: 24,
-              letterSpacing: 6,
-              textTransform: "uppercase",
-              color: "#8B4513",
+              fontFamily: "Cormorant",
               fontWeight: 600,
+              fontSize: 26,
+              color: "#5E3D17",
+              letterSpacing: 3,
             }}
           >
-            Palavra
+            EKBALLO ACADEMY
           </div>
+          <div
+            style={{
+              display: "flex",
+              width: 50,
+              height: 1,
+              background: "#B57E2F",
+              opacity: 0.5,
+            }}
+          />
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {/* Versículo central */}
+// ============================================================================
+// TEMA MODERNO
+// Fundo sólido terracota escuro, Inter Italic, tipografia dominante.
+// ============================================================================
+function renderModerno(
+  texto: string,
+  refLabel: string,
+  versao: string,
+  formato: Formato
+) {
+  const charCount = texto.length;
+  const fontSize =
+    formato === "story"
+      ? charCount < 120
+        ? 90
+        : charCount < 240
+          ? 72
+          : charCount < 380
+            ? 58
+            : 48
+      : charCount < 100
+        ? 76
+        : charCount < 200
+          ? 62
+          : charCount < 320
+            ? 50
+            : 42;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%",
+        padding: formato === "story" ? "120px 80px" : "100px 80px",
+        background: "#2A1810",
+        color: "#FBDDC0",
+        fontFamily: "Inter",
+        position: "relative",
+      }}
+    >
+      {/* Topo: barra laranja vertical + label */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+        }}
+      >
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            flex: 1,
-            paddingTop: formato === "story" ? 60 : 40,
-            paddingBottom: formato === "story" ? 60 : 40,
+            width: 4,
+            height: 36,
+            background: "#D55416",
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "Inter",
+            fontSize: 22,
+            letterSpacing: 8,
+            color: "#D55416",
+            textTransform: "uppercase",
+            fontStyle: "italic",
+          }}
+        >
+          Palavra
+        </div>
+      </div>
+
+      {/* Versículo dominante */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          justifyContent: "center",
+          paddingTop: formato === "story" ? 40 : 20,
+          paddingBottom: formato === "story" ? 40 : 20,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "Inter",
+            fontStyle: "italic",
+            fontSize,
+            lineHeight: 1.25,
+            color: "#FBDDC0",
+            fontWeight: 400,
+          }}
+        >
+          {texto}
+        </div>
+      </div>
+
+      {/* Footer: ref grande + versão pequena + marca à direita */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            width: 80,
+            height: 3,
+            background: "#D55416",
+            marginBottom: 24,
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            gap: 24,
           }}
         >
           <div
             style={{
               display: "flex",
-              fontSize,
-              lineHeight: 1.35,
-              fontStyle: "italic",
-              fontWeight: 500,
-              textAlign: "center",
-              maxWidth: "100%",
-            }}
-          >
-            &ldquo;{texto}&rdquo;
-          </div>
-        </div>
-
-        {/* Footer: ref + versao + linha + marca */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 28,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 14,
+              flexDirection: "column",
+              gap: 6,
             }}
           >
             <div
               style={{
                 display: "flex",
-                fontSize: formato === "story" ? 44 : 36,
-                fontWeight: 700,
-                color: "#5E3D17",
+                fontFamily: "Inter",
+                fontStyle: "italic",
+                fontWeight: 400,
+                fontSize: formato === "story" ? 52 : 42,
+                color: "#FBDDC0",
               }}
             >
               {refLabel}
@@ -168,10 +515,11 @@ export async function GET(req: NextRequest) {
             <div
               style={{
                 display: "flex",
-                fontSize: formato === "story" ? 20 : 16,
-                letterSpacing: 4,
-                color: "#8B4513",
-                fontWeight: 600,
+                fontFamily: "Inter",
+                fontStyle: "italic",
+                fontSize: formato === "story" ? 22 : 18,
+                letterSpacing: 6,
+                color: "#D55416",
                 textTransform: "uppercase",
               }}
             >
@@ -182,34 +530,23 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               display: "flex",
-              width: 120,
-              height: 2,
-              background: "#D55416",
-              opacity: 0.6,
-            }}
-          />
-
-          {/* Marca: símbolo SVG + texto Ekballo Academy */}
-          <div
-            style={{
-              display: "flex",
               alignItems: "center",
-              gap: 14,
+              gap: 10,
             }}
           >
-            <svg width="40" height="40" viewBox="0 0 32 32">
+            <svg width="28" height="28" viewBox="0 0 32 32">
               <circle
                 cx="16"
                 cy="16"
-                r="14"
+                r="13"
                 stroke="#D55416"
-                strokeWidth="1.6"
+                strokeWidth="1.4"
                 fill="none"
               />
               <path
                 d="M9 19 L16 11 L23 19"
                 stroke="#D55416"
-                strokeWidth="1.8"
+                strokeWidth="1.7"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -219,54 +556,30 @@ export async function GET(req: NextRequest) {
                 y1="22.5"
                 x2="23"
                 y2="22.5"
-                stroke="#5E3D17"
-                strokeWidth="1.6"
+                stroke="#FBDDC0"
+                strokeWidth="1.4"
                 strokeLinecap="round"
               />
             </svg>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 26,
-                  fontWeight: 700,
-                  color: "#5E3D17",
-                  letterSpacing: 1,
-                }}
-              >
-                Ekballo
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 12,
-                  letterSpacing: 4,
-                  color: "#8B4513",
-                  textTransform: "uppercase",
-                }}
-              >
-                Academy
-              </div>
+            <div
+              style={{
+                display: "flex",
+                fontFamily: "Inter",
+                fontSize: 18,
+                color: "#FBDDC0",
+                letterSpacing: 3,
+                fontStyle: "italic",
+              }}
+            >
+              ekballo
             </div>
           </div>
         </div>
       </div>
-    ),
-    {
-      width: w,
-      height: h,
-      headers: download
-        ? {
-            "Content-Disposition": `attachment; filename="${sanitizeFilename(
-              `${refLabel}-${versao}-${formato}.png`
-            )}"`,
-          }
-        : undefined,
-    }
+    </div>
   );
 }
 
-// Normaliza ref pra nome de arquivo: "Romanos 1:16-17-ACF-feed.png"
 function sanitizeFilename(name: string): string {
   return name
     .normalize("NFD")
