@@ -3,10 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { CapituloLeitor } from "@/components/CapituloLeitor";
+import { BibliaJumper } from "@/components/BibliaJumper";
 import { getCurrentSession, getCursoBySlug, isMatriculado } from "@/lib/db";
 import {
   getLivro,
   getCapitulo,
+  listLivros,
   listVersoes,
   getVersao,
   VERSAO_PADRAO,
@@ -48,7 +50,10 @@ export default async function CapituloPage({
   }
   const versaoAtual = await getVersao(versaoSigla);
 
-  const versiculos = await getCapitulo(livroIdN, capN, versaoSigla);
+  const [versiculos, todosLivros] = await Promise.all([
+    getCapitulo(livroIdN, capN, versaoSigla),
+    listLivros(),
+  ]);
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -72,6 +77,21 @@ export default async function CapituloPage({
         >
           ← Todos os livros
         </Link>
+
+        {/* Jumper rápido: livro + capítulo */}
+        <div className="mb-6 rounded-xl border border-mesa-200 bg-white p-3">
+          <BibliaJumper
+            livros={todosLivros.map((l) => ({
+              id: l.id,
+              nome: l.nome,
+              testamento: l.testamento,
+              capitulos: l.capitulos_total,
+            }))}
+            livroAtualId={livro.id}
+            capituloAtual={capN}
+            versaoAtual={versaoSigla}
+          />
+        </div>
 
         <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
           {livro.testamento === "AT" ? "Antigo Testamento" : "Novo Testamento"}

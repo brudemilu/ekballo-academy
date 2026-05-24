@@ -39,7 +39,6 @@ export async function GET(req: NextRequest) {
     return new Response("nenhum versículo encontrado", { status: 404 });
   }
 
-  // Renderiza ref ("Gênesis 1:1-3" ou "Salmos 23:1,3,5")
   const nums = selecionados.map((s) => s.versiculo);
   const isRange =
     nums.length > 1 && nums.every((n, i) => i === 0 || n === nums[i - 1] + 1);
@@ -47,16 +46,13 @@ export async function GET(req: NextRequest) {
     ? `${livro.nome} ${cap}:${nums[0]}-${nums[nums.length - 1]}`
     : `${livro.nome} ${cap}:${nums.join(",")}`;
 
-  // Junta o texto com versículos pequenos como sup
   const texto = selecionados
     .map((s, i) => (i === 0 ? s.texto : ` ${s.texto}`))
     .join("");
 
-  // Dimensões + heurística pra tamanho de fonte
   const w = 1080;
   const h = formato === "story" ? 1920 : 1080;
   const charCount = texto.length;
-  // Ajuste empírico
   const fontSize =
     formato === "story"
       ? charCount < 120
@@ -74,27 +70,28 @@ export async function GET(req: NextRequest) {
             ? 44
             : 36;
 
+  // OBS: next/og (Satori) exige display:flex em todo div com >1 filho.
   return new ImageResponse(
     (
       <div
         style={{
-          width: "100%",
-          height: "100%",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
+          width: "100%",
+          height: "100%",
           padding: formato === "story" ? "120px 80px" : "100px 80px",
           background:
             "linear-gradient(135deg, #FBDDC0 0%, #F5C99A 45%, #E8A874 100%)",
           fontFamily: "serif",
           color: "#3D2811",
-          position: "relative",
         }}
       >
-        {/* Decoração — linha decorativa no topo */}
+        {/* Topo: linha + label */}
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div
             style={{
+              display: "flex",
               width: 60,
               height: 4,
               background: "#D55416",
@@ -103,6 +100,7 @@ export async function GET(req: NextRequest) {
           />
           <div
             style={{
+              display: "flex",
               fontSize: 24,
               letterSpacing: 6,
               textTransform: "uppercase",
@@ -127,20 +125,20 @@ export async function GET(req: NextRequest) {
         >
           <div
             style={{
+              display: "flex",
               fontSize,
               lineHeight: 1.35,
               fontStyle: "italic",
               fontWeight: 500,
               textAlign: "center",
               maxWidth: "100%",
-              wordBreak: "break-word",
             }}
           >
             &ldquo;{texto}&rdquo;
           </div>
         </div>
 
-        {/* Footer — referência + marca */}
+        {/* Footer: ref + versao + linha + marca */}
         <div
           style={{
             display: "flex",
@@ -158,6 +156,7 @@ export async function GET(req: NextRequest) {
           >
             <div
               style={{
+                display: "flex",
                 fontSize: formato === "story" ? 44 : 36,
                 fontWeight: 700,
                 color: "#5E3D17",
@@ -167,6 +166,7 @@ export async function GET(req: NextRequest) {
             </div>
             <div
               style={{
+                display: "flex",
                 fontSize: formato === "story" ? 20 : 16,
                 letterSpacing: 4,
                 color: "#8B4513",
@@ -177,14 +177,18 @@ export async function GET(req: NextRequest) {
               {versao}
             </div>
           </div>
+
           <div
             style={{
+              display: "flex",
               width: 120,
               height: 2,
               background: "#D55416",
               opacity: 0.6,
             }}
           />
+
+          {/* Marca: símbolo SVG + texto Ekballo Academy */}
           <div
             style={{
               display: "flex",
@@ -192,7 +196,6 @@ export async function GET(req: NextRequest) {
               gap: 14,
             }}
           >
-            {/* Logo SVG inline */}
             <svg width="40" height="40" viewBox="0 0 32 32">
               <circle
                 cx="16"
@@ -223,6 +226,7 @@ export async function GET(req: NextRequest) {
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div
                 style={{
+                  display: "flex",
                   fontSize: 26,
                   fontWeight: 700,
                   color: "#5E3D17",
@@ -233,6 +237,7 @@ export async function GET(req: NextRequest) {
               </div>
               <div
                 style={{
+                  display: "flex",
                   fontSize: 12,
                   letterSpacing: 4,
                   color: "#8B4513",
