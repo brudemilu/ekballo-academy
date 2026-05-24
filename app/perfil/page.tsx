@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { PerfilForm } from "@/components/PerfilForm";
+import { PushToggle } from "@/components/PushToggle";
 import { getCurrentSession } from "@/lib/db";
 
 export default async function PerfilPage() {
@@ -50,6 +51,10 @@ export default async function PerfilPage() {
               telefone: session.profile?.telefone || "",
             }}
           />
+        </div>
+
+        <div className="mt-6">
+          <PushToggle />
         </div>
 
         <div className="mt-6 rounded-2xl border border-mesa-200 bg-white p-6">

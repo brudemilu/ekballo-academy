@@ -29,6 +29,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
   const [destinoId, setDestinoId] = useState<string>("");
   const [canalEmail, setCanalEmail] = useState(true);
   const [canalWhatsapp, setCanalWhatsapp] = useState(false);
+  const [canalPush, setCanalPush] = useState(false);
   const [assunto, setAssunto] = useState("");
   const [corpoHtml, setCorpoHtml] = useState("");
   const [corpoTexto, setCorpoTexto] = useState("");
@@ -53,9 +54,10 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
       return;
     }
 
-    const canais: ("email" | "whatsapp")[] = [];
+    const canais: ("email" | "whatsapp" | "push")[] = [];
     if (canalEmail) canais.push("email");
     if (canalWhatsapp) canais.push("whatsapp");
+    if (canalPush) canais.push("push");
     if (canais.length === 0) {
       setResultado({ tipo: "erro", mensagem: "Selecione pelo menos um canal." });
       return;
@@ -249,6 +251,15 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
                 className="h-4 w-4 rounded border-mesa-300"
               />
               WhatsApp
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-mesa-700">
+              <input
+                type="checkbox"
+                checked={canalPush}
+                onChange={(e) => setCanalPush(e.target.checked)}
+                className="h-4 w-4 rounded border-mesa-300"
+              />
+              Push (app)
             </label>
           </div>
           {canalWhatsapp && semTelefone > 0 && (

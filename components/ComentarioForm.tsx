@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -27,18 +26,20 @@ export function ComentarioForm({
         setSalvo("ok");
         return;
       }
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("respostas")
-        .update({
-          comentario_lider: texto.trim() || null,
-          comentario_lider_em: texto.trim() ? new Date().toISOString() : null,
-        })
-        .eq("id", respostaId);
-      if (!error) {
-        setSalvo("ok");
-        router.refresh();
-      } else {
+      // Vai pela API route — ela faz o update e dispara push pro aluno.
+      try {
+        const resp = await fetch("/api/admin/devolutiva", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ respostaId, texto }),
+        });
+        if (resp.ok) {
+          setSalvo("ok");
+          router.refresh();
+        } else {
+          setSalvo("erro");
+        }
+      } catch {
         setSalvo("erro");
       }
     });

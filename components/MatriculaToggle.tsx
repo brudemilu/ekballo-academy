@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -27,35 +26,19 @@ export function MatriculaToggle({
     startTransition(async () => {
       const novaSituacao = !matriculado;
       try {
-        if (MOCK) {
-          const res = await fetch("/api/mock/matricular", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              alunoId,
-              cursoId,
-              acao: novaSituacao ? "matricular" : "desmatricular",
-            }),
-          });
-          if (!res.ok) throw new Error("Falha ao atualizar matrícula (mock).");
-        } else {
-          const supabase = createClient();
-          if (novaSituacao) {
-            const { error } = await supabase
-              .from("matriculas")
-              .upsert(
-                { aluno_id: alunoId, curso_id: cursoId },
-                { onConflict: "aluno_id,curso_id" }
-              );
-            if (error) throw error;
-          } else {
-            const { error } = await supabase
-              .from("matriculas")
-              .delete()
-              .eq("aluno_id", alunoId)
-              .eq("curso_id", cursoId);
-            if (error) throw error;
-          }
+        const endpoint = MOCK ? "/api/mock/matricular" : "/api/admin/matricular";
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            alunoId,
+            cursoId,
+            acao: novaSituacao ? "matricular" : "desmatricular",
+          }),
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j.erro || `HTTP ${res.status}`);
         }
         setMatriculado(novaSituacao);
         router.refresh();

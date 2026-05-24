@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 type Body = {
   destino_tipo: "todos" | "curso" | "aluno";
   destino_id?: string | null;
-  canais: ("email" | "whatsapp")[];
+  canais: ("email" | "whatsapp" | "push")[];
   assunto: string;
   corpo_html: string;
   corpo_texto?: string | null;
@@ -135,12 +135,14 @@ export async function POST(req: NextRequest) {
 
   const querEmail = canais.includes("email");
   const querWhatsapp = canais.includes("whatsapp");
+  const querPush = canais.includes("push");
 
-  // Pra email exige `@`; pra whatsapp exige `telefone`. Mantém quem tem
-  // pelo menos um dos canais que foi selecionado.
+  // Pra email exige `@`; pra whatsapp exige `telefone`; pra push é
+  // suficiente ter aluno_id (filtragem pelas subs acontece depois).
   destinatarios = destinatarios.filter((d) => {
     const emailOk = !!d.email && d.email.includes("@");
     const phoneOk = !!d.telefone && d.telefone.replace(/\D+/g, "").length >= 10;
+    if (querPush) return true; // push tolera ausência dos outros canais
     if (querEmail && querWhatsapp) return emailOk || phoneOk;
     if (querEmail) return emailOk;
     if (querWhatsapp) return phoneOk;
@@ -365,6 +367,29 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // -------- PUSH --------
+  let pushEnviados = 0;
+  if (querPush) {
+    const { enviarPush } = await import("@/lib/push");
+    const alunoIds = destinatarios.map((d) => d.id);
+    const texto = (corpo_texto && corpo_texto.trim()) ||
+      corpo_html
+        .replace(/<br\s*\/?>/gi, " ")
+        .replace(/<[^>]+>/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 200);
+    const r = await enviarPush(alunoIds, {
+      title: assunto,
+      body: texto,
+      url: `/dashboard`,
+      tag: `mensagem-${mensagemId}`,
+    });
+    pushEnviados = r.enviados;
+    totalEnviados += r.enviados;
+    totalErros += r.erros;
+  }
+
   // 9) Atualiza contadores na mensagem
   await admin
     .from("mensagens")
@@ -376,5 +401,6 @@ export async function POST(req: NextRequest) {
     total_destinatarios: destinatarios.length,
     total_enviados: totalEnviados,
     total_erros: totalErros,
+    push_enviados: pushEnviados,
   });
 }

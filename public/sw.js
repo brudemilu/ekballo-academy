@@ -1,9 +1,9 @@
-// Service worker simples — apenas habilita comportamento de "app instalável"
-// e cacheia assets estáticos pra ficar offline-resilient.
-// NÃO cacheia respostas dinâmicas (HTML/API) pra evitar mostrar conteúdo
-// desatualizado em mock-mode/auth.
+// Service worker — Ekballo Academy
+// Funções:
+//   1. App-shell: cacheia assets estáticos pra app instalado funcionar offline parcial.
+//   2. Web Push: recebe push do backend, exibe notificação, foca/abre URL ao clicar.
 
-const CACHE_VERSION = "ekballo-v1";
+const CACHE_VERSION = "ekballo-v2";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icon-192.png",
@@ -32,8 +32,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first com fallback pro cache. Só intercepta requests GET de mesma origem
-// pra assets estáticos. HTML/API vão direto pra rede.
+// Network-first com fallback pro cache. Apenas assets estáticos.
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
@@ -43,7 +42,6 @@ self.addEventListener("fetch", (event) => {
   const isStatic =
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|ttf|otf)$/i);
-
   if (!isStatic) return;
 
   event.respondWith(
@@ -54,5 +52,53 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() => caches.match(request))
+  );
+});
+
+// ============== PUSH NOTIFICATIONS ==============
+
+self.addEventListener("push", (event) => {
+  let data = { title: "Ekballo Academy", body: "Você tem uma novidade." };
+  try {
+    if (event.data) data = event.data.json();
+  } catch (e) {
+    // payload não-JSON: ignora e usa default
+  }
+
+  const title = data.title || "Ekballo Academy";
+  const options = {
+    body: data.body || "",
+    icon: data.icon || "/icon-192.png",
+    badge: data.badge || "/icon-192.png",
+    tag: data.tag,
+    data: { url: data.url || "/dashboard" },
+    requireInteraction: false,
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || "/dashboard";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // Se já tem uma janela do app aberta, foca e navega
+      for (const client of clientList) {
+        try {
+          const u = new URL(client.url);
+          if (u.origin === self.location.origin && "focus" in client) {
+            client.navigate(targetUrl);
+            return client.focus();
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      // Senão abre nova janela
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
   );
 });
