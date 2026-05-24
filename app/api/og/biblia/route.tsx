@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   const versParam = url.searchParams.get("v") || "";
   const formato = (url.searchParams.get("f") || "feed") as "feed" | "story";
   const versao = (url.searchParams.get("versao") || VERSAO_PADRAO).toUpperCase();
+  const download = url.searchParams.get("dl") === "1";
 
   const versNums = versParam
     .split(",")
@@ -254,6 +255,23 @@ export async function GET(req: NextRequest) {
     {
       width: w,
       height: h,
+      headers: download
+        ? {
+            "Content-Disposition": `attachment; filename="${sanitizeFilename(
+              `${refLabel}-${versao}-${formato}.png`
+            )}"`,
+          }
+        : undefined,
     }
   );
+}
+
+// Normaliza ref pra nome de arquivo: "Romanos 1:16-17-ACF-feed.png"
+function sanitizeFilename(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }

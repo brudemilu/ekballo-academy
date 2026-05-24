@@ -5,6 +5,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { getCurrentSession, getCursoBySlug, isMatriculado } from "@/lib/db";
 import {
   listLivros,
+  listVersoes,
   agrupar,
   GRUPOS_AT,
   GRUPOS_NT,
@@ -24,8 +25,9 @@ export default async function BibliaIndexPage() {
     if (!matriculado) redirect("/dashboard");
   }
 
-  const livros = await listLivros();
+  const [livros, versoes] = await Promise.all([listLivros(), listVersoes()]);
   const { at, nt } = agrupar(livros);
+  const versoesAtivas = versoes.filter((v) => v.ativa);
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -55,11 +57,25 @@ export default async function BibliaIndexPage() {
         <h1 className="mb-2 font-serif text-4xl font-semibold text-mesa-800">
           Bíblia
         </h1>
-        <p className="mb-12 max-w-2xl text-mesa-600 text-justify hyphens-auto">
-          Almeida Corrigida Fiel — domínio público. Selecione versículos e gere
-          imagens prontas pra postar no Instagram, Status do WhatsApp ou
+        <p className="mb-4 max-w-2xl text-mesa-600 text-justify hyphens-auto">
+          Leia em qualquer livro, escolha entre {versoesAtivas.length}{" "}
+          {versoesAtivas.length === 1 ? "versão" : "versões"} (
+          {versoesAtivas.map((v) => v.sigla).join(", ")}). Selecione versículos
+          e gere imagens prontas pra postar no Instagram, Status do WhatsApp ou
           compartilhar com a galera.
         </p>
+        <div className="mb-12 flex flex-wrap gap-2">
+          {versoesAtivas.map((v) => (
+            <span
+              key={v.sigla}
+              className="rounded-full border border-mesa-200 bg-white px-3 py-1 text-xs text-mesa-700"
+              title={v.nome}
+            >
+              <span className="font-medium">{v.sigla}</span>
+              <span className="ml-1.5 text-mesa-500">{v.nome}</span>
+            </span>
+          ))}
+        </div>
 
         <section className="mb-12">
           <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-700">

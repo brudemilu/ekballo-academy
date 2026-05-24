@@ -45,8 +45,9 @@ export function CapituloLeitor({
       : `${livroNome} ${capitulo}:${arr.join(",")}`;
   }, [sel, livroNome, capitulo]);
 
-  // URL pra abrir o gerador de imagem
-  function genUrl(formato: "feed" | "story") {
+  // URL pra abrir o gerador de imagem.
+  // dl=1 → server responde com Content-Disposition: attachment, força download.
+  function genUrl(formato: "feed" | "story", baixar = false) {
     const verses = Array.from(sel).sort((a, b) => a - b).join(",");
     const params = new URLSearchParams({
       livro: String(livroId),
@@ -55,7 +56,17 @@ export function CapituloLeitor({
       f: formato,
       versao,
     });
+    if (baixar) params.set("dl", "1");
     return `/api/og/biblia?${params.toString()}`;
+  }
+
+  function filename(formato: "feed" | "story") {
+    const arr = Array.from(sel).sort((a, b) => a - b);
+    const ref =
+      arr.length > 1 && arr.every((v, i) => i === 0 || v === arr[i - 1] + 1)
+        ? `${capitulo}-${arr[0]}-${arr[arr.length - 1]}`
+        : `${capitulo}-${arr.join(",")}`;
+    return `${livroNome.replace(/\s+/g, "-")}-${ref}-${versao}-${formato}.png`;
   }
 
   // Mantém versão na navegação ←/→
@@ -134,21 +145,32 @@ export function CapituloLeitor({
               >
                 Limpar
               </button>
+              {/* Download direto (Content-Disposition: attachment no server) */}
+              <a
+                href={genUrl("feed", true)}
+                download={filename("feed")}
+                className="rounded-full bg-laranja-600 px-4 py-2 text-xs font-medium text-white hover:bg-laranja-700"
+                title="Baixar imagem quadrada (1080x1080) pra feed/WhatsApp"
+              >
+                ⬇ Feed (1:1)
+              </a>
+              <a
+                href={genUrl("story", true)}
+                download={filename("story")}
+                className="rounded-full bg-mesa-700 px-4 py-2 text-xs font-medium text-white hover:bg-mesa-800"
+                title="Baixar imagem vertical (1080x1920) pra Story/Status"
+              >
+                ⬇ Story (9:16)
+              </a>
+              {/* Preview separado pra quem quer ver antes de salvar */}
               <a
                 href={genUrl("feed")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full bg-laranja-600 px-4 py-2 text-xs font-medium text-white hover:bg-laranja-700"
+                className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-600 hover:bg-mesa-50"
+                title="Abrir prévia em nova aba"
               >
-                📱 Feed (1:1)
-              </a>
-              <a
-                href={genUrl("story")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full bg-mesa-700 px-4 py-2 text-xs font-medium text-white hover:bg-mesa-800"
-              >
-                📲 Story (9:16)
+                👁 Ver
               </a>
             </div>
           </div>
