@@ -2,7 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
-import { getCurrentSession, listCursosPublicados, listMatriculasByAluno } from "@/lib/db";
+import {
+  getCurrentSession,
+  listCursosPublicados,
+  listMatriculasByAluno,
+  getMaterialUrl,
+} from "@/lib/db";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
 function greetingName(nome?: string | null): string {
@@ -26,6 +31,14 @@ export default async function DashboardPage() {
   const cursos = session.profile?.is_admin
     ? todosCursos
     : todosCursos.filter((c) => matriculasMap.has(c.id));
+
+  // Resolve imagens (path do bucket privado vira signed URL)
+  const imagensResolvidas = await Promise.all(
+    cursos.map((c) => getMaterialUrl(c.imagem_url))
+  );
+  const imagemMap = new Map(
+    cursos.map((c, i) => [c.id, imagensResolvidas[i]])
+  );
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -79,10 +92,10 @@ export default async function DashboardPage() {
                   className="lift group block overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300"
                 >
                   <div className="aspect-[16/9] bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 transition duration-700 group-hover:from-laranja-200 group-hover:to-oliveira-200">
-                    {curso.imagem_url ? (
+                    {imagemMap.get(curso.id) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={curso.imagem_url}
+                        src={imagemMap.get(curso.id) || undefined}
                         alt={curso.titulo}
                         className="h-full w-full object-cover"
                       />

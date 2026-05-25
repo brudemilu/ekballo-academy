@@ -7,6 +7,7 @@ import {
   getAdminStats,
   listRecentRespostas,
   listCursosPublicados,
+  getMaterialUrl,
 } from "@/lib/db";
 
 export default async function AdminPage() {
@@ -19,6 +20,12 @@ export default async function AdminPage() {
     listRecentRespostas(8),
     listCursosPublicados(),
   ]);
+  const imagensResolvidas = await Promise.all(
+    cursos.map((c) => getMaterialUrl(c.imagem_url))
+  );
+  const imagemMap = new Map(
+    cursos.map((c, i) => [c.id, imagensResolvidas[i]])
+  );
 
   const cards = [
     { label: "Alunos cadastrados", value: stats.totalAlunos, color: "text-mesa-700" },
@@ -81,10 +88,10 @@ export default async function AdminPage() {
                 className="lift group block overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300"
               >
                 <div className="aspect-[16/9] bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 transition duration-700 group-hover:from-laranja-200 group-hover:to-oliveira-200">
-                  {curso.imagem_url ? (
+                  {imagemMap.get(curso.id) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={curso.imagem_url}
+                      src={imagemMap.get(curso.id) || undefined}
                       alt={curso.titulo}
                       className="h-full w-full object-cover"
                     />

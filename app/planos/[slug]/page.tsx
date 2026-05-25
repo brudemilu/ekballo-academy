@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
-import { getCurrentSession, getCursoBySlug, isMatriculado } from "@/lib/db";
+import { getCurrentSession, getCursoBySlug, isMatriculado, getMaterialUrl } from "@/lib/db";
 import {
   getPlanoBySlug,
   listDiasDoPlano,
@@ -31,10 +31,11 @@ export default async function PlanoPage({
   const plano = await getPlanoBySlug(slug);
   if (!plano) notFound();
 
-  const [dias, concluidos, proximo] = await Promise.all([
+  const [dias, concluidos, proximo, bannerUrl] = await Promise.all([
     listDiasDoPlano(plano.id),
     listProgressoDoAluno(plano.id, session.userId),
     proximoDiaPendente(plano.id, session.userId, plano.dias_total),
+    getMaterialUrl(plano.imagem_url),
   ]);
 
   const totalConcluidos = concluidos.size;
@@ -63,6 +64,18 @@ export default async function PlanoPage({
         >
           ← Voltar
         </Link>
+
+        {/* Banner com a logo do plano */}
+        {bannerUrl && (
+          <div className="mb-8 overflow-hidden rounded-2xl border border-mesa-200 bg-white shadow-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={bannerUrl}
+              alt={plano.nome}
+              className="aspect-square w-full max-w-md mx-auto object-cover sm:aspect-[3/2]"
+            />
+          </div>
+        )}
 
         <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
           Plano de Leitura
