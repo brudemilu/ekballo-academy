@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 // Número oficial do WhatsApp da Ekballo (Pr. Bruno) — formato internacional sem + ou espaços
 const WHATSAPP_NUMERO = "5531994108839";
 const MENSAGEM_PADRAO =
   "Olá Pr. Bruno! Vim pela Ekballo Academy e gostaria de saber mais sobre os cursos.";
 
+// Rotas onde o botão flutuante NÃO aparece (atrapalha leitura / sobrepõe UI).
+// Páginas internas de estudo: leitor de aula e leitor da Bíblia.
+const ESCONDER_PREFIXOS = ["/cursos", "/biblia"];
+
 export function WhatsAppFloat() {
+  const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
   const [mostrar, setMostrar] = useState(false);
 
@@ -16,6 +22,11 @@ export function WhatsAppFloat() {
     const t = setTimeout(() => setMostrar(true), 1200);
     return () => clearTimeout(t);
   }, []);
+
+  // Esconde nas rotas de estudo, mantém na home/dashboard/admin/perfil/etc
+  if (pathname && ESCONDER_PREFIXOS.some((p) => pathname.startsWith(p))) {
+    return null;
+  }
 
   const link = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(MENSAGEM_PADRAO)}`;
 
