@@ -9,8 +9,9 @@ const MENSAGEM_PADRAO =
   "Olá Pr. Bruno! Vim pela Ekballo Academy e gostaria de saber mais sobre os cursos.";
 
 // Rotas onde o botão flutuante NÃO aparece (atrapalha leitura / sobrepõe UI).
-// Páginas internas de estudo: leitor de aula e leitor da Bíblia.
-const ESCONDER_PREFIXOS = ["/cursos", "/biblia"];
+// Páginas internas de estudo: leitor de aula, leitor da Bíblia e detalhe
+// de dia de plano de leitura.
+const ESCONDER_PREFIXOS = ["/cursos", "/biblia", "/planos"];
 
 export function WhatsAppFloat() {
   const pathname = usePathname();
