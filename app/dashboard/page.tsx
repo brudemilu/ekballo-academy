@@ -8,6 +8,7 @@ import {
   listMatriculasByAluno,
   getMaterialUrl,
 } from "@/lib/db";
+import { getDevocionalDoDia } from "@/lib/devocionais";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
 function greetingName(nome?: string | null): string {
@@ -21,9 +22,10 @@ export default async function DashboardPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  const [todosCursos, matriculas] = await Promise.all([
+  const [todosCursos, matriculas, devocional] = await Promise.all([
     listCursosPublicados(),
     listMatriculasByAluno(session.userId),
+    getDevocionalDoDia(),
   ]);
 
   const matriculasMap = new Map(matriculas.map((m) => [m.curso_id, m]));
@@ -68,6 +70,30 @@ export default async function DashboardPage() {
             reflexão. O líder vai ler e te responder.
           </p>
         </div>
+
+        {/* Devocional de hoje (destaque no topo) */}
+        {devocional && (
+          <Link
+            href="/devocional"
+            className="mb-10 flex flex-col gap-3 rounded-2xl border border-laranja-200 bg-gradient-to-br from-laranja-50 to-bege-100 px-6 py-5 transition hover:border-laranja-300 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="min-w-0">
+              <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-laranja-700">
+                Devocional de hoje
+              </p>
+              <h2 className="font-serif text-xl font-semibold text-mesa-800">
+                {devocional.titulo || devocional.versiculo_ref}
+              </h2>
+              <p className="mt-1 line-clamp-2 text-sm italic text-mesa-600">
+                &ldquo;{devocional.versiculo_texto}&rdquo;{" "}
+                <span className="not-italic text-mesa-500">
+                  — {devocional.versiculo_ref}
+                </span>
+              </p>
+            </div>
+            <span className="flex-none text-2xl text-laranja-600">→</span>
+          </Link>
+        )}
 
 
         {cursos.length === 0 ? (

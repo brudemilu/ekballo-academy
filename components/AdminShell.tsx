@@ -7,6 +7,7 @@ export type AdminTab =
   | "painel"
   | "cursos"
   | "biblia"
+  | "devocionais"
   | "respostas"
   | "alunos"
   | "mensagens"
@@ -23,6 +24,7 @@ const ITEMS: Item[] = [
   { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral" },
   { key: "cursos", label: "Cursos", href: "/admin/cursos", hint: "Progresso por curso e aluno" },
   { key: "biblia", label: "Bíblia", href: "/biblia", hint: "Leitor + gerador de imagem" },
+  { key: "devocionais", label: "Devocional", href: "/admin/devocionais", hint: "Devocional diário" },
   { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas" },
   { key: "alunos", label: "Alunos", href: "/admin/alunos", hint: "Matrículas e contatos" },
   { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email e WhatsApp" },
