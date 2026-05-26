@@ -49,7 +49,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
     if ((destinoTipo === "curso" || destinoTipo === "aluno") && !destinoId) {
       setResultado({
         tipo: "erro",
-        mensagem: `Selecione ${destinoTipo === "curso" ? "o curso" : "o aluno"}.`,
+        mensagem: `Selecione ${destinoTipo === "curso" ? "o curso" : "o discípulo"}.`,
       });
       return;
     }
@@ -150,7 +150,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
 
   const totalDestinatariosLabel =
     totalSelecionados > 0
-      ? `${totalSelecionados} ${totalSelecionados === 1 ? "aluno" : "alunos"}`
+      ? `${totalSelecionados} ${totalSelecionados === 1 ? "discípulo" : "discípulos"}`
       : "—";
 
   const semTelefone = canalWhatsapp ? totalSelecionados - totalComTelefone : 0;
@@ -165,9 +165,9 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
           </label>
           <div className="grid gap-2 sm:grid-cols-3">
             {([
-              { v: "todos", label: "Todos os alunos" },
-              { v: "curso", label: "Alunos de um curso" },
-              { v: "aluno", label: "Aluno específico" },
+              { v: "todos", label: "Todos os discípulos" },
+              { v: "curso", label: "Discípulos de um curso" },
+              { v: "aluno", label: "Discípulo específico" },
             ] as { v: DestinoTipo; label: string }[]).map((opt) => (
               <label
                 key={opt.v}
@@ -214,7 +214,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
               onChange={(e) => setDestinoId(e.target.value)}
               className="mt-3 w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
             >
-              <option value="">Selecione um aluno…</option>
+              <option value="">Selecione um discípulo…</option>
               {alunos.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.nome ? `${a.nome} (${a.email})` : a.email}

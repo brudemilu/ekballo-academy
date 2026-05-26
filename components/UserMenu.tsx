@@ -37,7 +37,7 @@ export function UserMenu({
         className="hidden text-right sm:block hover:opacity-80"
         title="Editar meu perfil"
       >
-        <p className="text-sm font-medium text-mesa-800">{nome || "Aluno"}</p>
+        <p className="text-sm font-medium text-mesa-800">{nome || "Discípulo"}</p>
         <p className="text-xs text-mesa-500">{email}</p>
       </Link>
       <Link

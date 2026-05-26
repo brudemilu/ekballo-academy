@@ -22,7 +22,7 @@ export default async function AlunosPage() {
       </h1>
       {semTelefone > 0 && (
         <p className="mb-6 text-sm text-mesa-600">
-          {semTelefone} {semTelefone === 1 ? "aluno" : "alunos"} ainda sem
+          {semTelefone} {semTelefone === 1 ? "discípulo" : "discípulos"} ainda sem
           telefone — não recebem WhatsApp até atualizarem o perfil.
         </p>
       )}

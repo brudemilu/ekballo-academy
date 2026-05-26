@@ -11,7 +11,7 @@ export async function GET() {
 
   const headers = [
     "Data",
-    "Aluno",
+    "Discípulo",
     "Email",
     "Turma",
     "Curso",

@@ -22,11 +22,11 @@ type Item = {
 
 const ITEMS: Item[] = [
   { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral" },
-  { key: "cursos", label: "Cursos", href: "/admin/cursos", hint: "Progresso por curso e aluno" },
+  { key: "cursos", label: "Cursos", href: "/admin/cursos", hint: "Progresso por curso e discípulo" },
   { key: "biblia", label: "Bíblia", href: "/biblia", hint: "Leitor + gerador de imagem" },
   { key: "devocionais", label: "Devocional", href: "/admin/devocionais", hint: "Devocional diário" },
   { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas" },
-  { key: "alunos", label: "Alunos", href: "/admin/alunos", hint: "Matrículas e contatos" },
+  { key: "alunos", label: "Discípulos", href: "/admin/alunos", hint: "Matrículas e contatos" },
   { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email e WhatsApp" },
   { key: "templates", label: "Templates", href: "/admin/templates", hint: "Emails automáticos" },
 ];

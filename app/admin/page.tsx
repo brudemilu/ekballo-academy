@@ -28,7 +28,7 @@ export default async function AdminPage() {
   );
 
   const cards = [
-    { label: "Alunos cadastrados", value: stats.totalAlunos, color: "text-mesa-700" },
+    { label: "Discípulos cadastrados", value: stats.totalAlunos, color: "text-mesa-700" },
     { label: "Cursos publicados", value: stats.totalCursos, color: "text-mesa-700" },
     { label: "Respostas escritas", value: stats.totalRespostas, color: "text-oliveira-700" },
     { label: "Aguardando devolutiva", value: stats.respostasSemComentario, color: "text-amber-700" },
@@ -61,7 +61,7 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      {/* Meus cursos — vista de aluno pra revisar conteúdo */}
+      {/* Meus cursos — vista de discípulo pra revisar conteúdo */}
       {cursos.length > 0 && (
         <section className="mb-10">
           <div className="mb-4 flex items-baseline justify-between">
@@ -76,7 +76,7 @@ export default async function AdminPage() {
             </Link>
           </div>
           <p className="mb-5 text-sm text-mesa-600">
-            Clique em um curso pra abrir como aluno e revisar o conteúdo, ou
+            Clique em um curso pra abrir como discípulo e revisar o conteúdo, ou
             entre em <Link href="/admin/cursos" className="underline decoration-mesa-300 hover:text-mesa-800">Cursos</Link> pra
             ver matrículas, progresso e gargalos.
           </p>

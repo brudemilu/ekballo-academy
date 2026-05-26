@@ -129,10 +129,10 @@ export default async function AdminCursoProgressaoPage({
         )}
       </section>
 
-      {/* Alunos */}
+      {/* Discípulos */}
       <section>
         <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
-          Alunos ({alunos.length})
+          Discípulos ({alunos.length})
         </h2>
         {alunos.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-16 text-center">
@@ -144,7 +144,7 @@ export default async function AdminCursoProgressaoPage({
               <thead className="border-b border-mesa-200 bg-mesa-50/50 text-left">
                 <tr>
                   <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
-                    Aluno
+                    Discípulo
                   </th>
                   <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
                     Progresso

@@ -32,7 +32,7 @@ export default async function AdminMensagensPage() {
         Mensagens
       </h1>
       <p className="mb-8 text-sm text-mesa-600">
-        Envie mensagens pra todos os alunos, alunos de um curso específico ou
+        Envie mensagens pra todos os discípulos, discípulos de um curso específico ou
         alguém individual. Email e WhatsApp.
       </p>
 

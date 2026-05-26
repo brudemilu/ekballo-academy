@@ -19,7 +19,7 @@ export default async function AdminCursosPage() {
         Cursos
       </h1>
       <p className="mb-8 text-sm text-mesa-600">
-        Clique em um curso pra ver progresso por aula, por aluno e onde estão
+        Clique em um curso pra ver progresso por aula, por discípulo e onde estão
         os gargalos. Para criar ou editar conteúdo (aulas, atividades), use o
         Supabase.
       </p>

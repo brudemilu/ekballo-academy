@@ -57,16 +57,16 @@ export function ComentarioForm({
           if (salvo === "ok") setSalvo("idle");
         }}
         rows={5}
-        placeholder="Escreva uma palavra de cuidado, encorajamento ou direcionamento. O aluno verá esta devolutiva ao voltar à atividade."
+        placeholder="Escreva uma palavra de cuidado, encorajamento ou direcionamento. O discípulo verá esta devolutiva ao voltar à atividade."
         className="w-full resize-y rounded-lg border border-oliveira-200 bg-white px-4 py-3 outline-none focus:border-oliveira-400 focus:ring-2 focus:ring-oliveira-200"
       />
       <div className="mt-3 flex items-center justify-between">
         <p className="text-xs text-mesa-500">
           {salvo === "ok"
-            ? MOCK ? "✓ Devolutiva salva (modo demo — não persiste após recarregar)." : "✓ Devolutiva enviada ao aluno."
+            ? MOCK ? "✓ Devolutiva salva (modo demo — não persiste após recarregar)." : "✓ Devolutiva enviada ao discípulo."
             : pending
               ? "Salvando..."
-              : "Esta mensagem aparece para o aluno na atividade."}
+              : "Esta mensagem aparece para o discípulo na atividade."}
         </p>
         <button
           onClick={handleSalvar}
