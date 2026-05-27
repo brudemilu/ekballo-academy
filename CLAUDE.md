@@ -95,6 +95,26 @@ Sem nenhum backend (ou ambos falhando): o template cai em gradiente CSS escuro c
 
 **Página admin:** [/admin/imagens](app/admin/imagens/page.tsx) — gerador livre com preview ao vivo, form em [components/GeradorImagemForm.tsx](components/GeradorImagemForm.tsx).
 
+### Download de áudio do YouTube (admin)
+
+Página [app/admin/youtube/page.tsx](app/admin/youtube/page.tsx) deixa o admin colar um link do YouTube e baixar como MP3 (128 kbps). Stream direto pro browser, **nada persiste no servidor**.
+
+**Stack:** `yt-dlp` binário standalone (instalado via `brew install yt-dlp` localmente) + `ffmpeg-static` (binário Node) + `fluent-ffmpeg` (API JS). Lib em [lib/youtube.ts](lib/youtube.ts). Resolução do binário yt-dlp: tenta `/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin`, fallback pra `yt-dlp` no PATH. Override via env `YT_DLP_PATH`.
+
+**Rotas (Node runtime, admin-only):**
+- `GET /api/admin/youtube-meta?url=...` — devolve metadata (título, autor, duração, thumb)
+- `GET /api/admin/youtube-mp3?url=...` — stream do MP3 com `Content-Disposition: attachment`
+
+**Setup local (1x):** `brew install yt-dlp ffmpeg`
+
+**Produção (Vercel) — não funciona ainda.** O binário yt-dlp não é bundlado no deploy. Pra funcionar em prod precisaria:
+- bundlar o standalone Linux do yt-dlp em algum diretório do repo, OU
+- mover o download pra worker externo (VPS, Mac do Bruno, etc.), com a página admin apenas listando o que já chegou via Supabase Storage.
+
+Além disso, YouTube bloqueia IPs de datacenter (Vercel/AWS) com frequência. Mesmo com binário, prod pode falhar muitas chamadas com "Sign in to confirm you're not a bot".
+
+**Aviso legal:** copyright e ToS do YouTube são responsabilidade do admin (banner amarelo no painel deixa claro).
+
 ### Tailwind palette
 
 Custom palette in [tailwind.config.ts](tailwind.config.ts): `bege` (warm cream → chocolate), `laranja` (terracotta CTA), `oliveira` (warm olive). `mesa` is a **backwards-compatibility alias for `bege`** — existing pages and components still use `mesa-*` classes heavily. Either prefix works; don't rip out `mesa-*` for cosmetic consistency.

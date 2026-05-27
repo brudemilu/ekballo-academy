@@ -12,7 +12,8 @@ export type AdminTab =
   | "alunos"
   | "mensagens"
   | "templates"
-  | "imagens";
+  | "imagens"
+  | "youtube";
 
 type Item = {
   key: AdminTab;
@@ -29,6 +30,7 @@ const ITEMS: Item[] = [
   { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email e WhatsApp" },
   { key: "templates", label: "Templates", href: "/admin/templates", hint: "Emails automáticos" },
   { key: "imagens", label: "Imagens", href: "/admin/imagens", hint: "Gerador cinematográfico IA" },
+  { key: "youtube", label: "YouTube", href: "/admin/youtube", hint: "Baixar áudio em MP3" },
 ];
 
 export function AdminShell({
