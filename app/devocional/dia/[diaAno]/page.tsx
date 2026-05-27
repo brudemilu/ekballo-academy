@@ -108,6 +108,55 @@ export default async function DevocionalDiaPage({
           />
         </div>
 
+        {/* Gerador de imagem pra compartilhar */}
+        <div className="mt-6 rounded-2xl border border-mesa-200 bg-white p-6">
+          <p className="mb-1 font-serif text-lg font-semibold text-mesa-800">
+            Compartilhar como imagem
+          </p>
+          <p className="mb-4 text-sm text-mesa-600">
+            Escolha um modelo. Clique pra baixar e mandar no Insta, status do
+            WhatsApp ou story.
+          </p>
+
+          {/* Templates: Pergaminho · Bloco · Reflexão */}
+          {(["pergaminho", "bloco", "reflexao"] as const).map((tema) => (
+            <div key={tema} className="mb-4 last:mb-0">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-mesa-500">
+                {tema === "pergaminho"
+                  ? "Pergaminho · clássico"
+                  : tema === "bloco"
+                    ? "Bloco · moderno"
+                    : "Reflexão · suave"}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href={`/api/og/devocional?dia=${diaAno}&f=feed&tema=${tema}&dl=1`}
+                  download
+                  className="rounded-full bg-laranja-600 px-4 py-2 text-xs font-medium text-white hover:bg-laranja-700"
+                >
+                  Feed 1080×1080
+                </a>
+                <a
+                  href={`/api/og/devocional?dia=${diaAno}&f=story&tema=${tema}&dl=1`}
+                  download
+                  className="rounded-full bg-mesa-700 px-4 py-2 text-xs font-medium text-white hover:bg-mesa-800"
+                >
+                  Story 1080×1920
+                </a>
+                <a
+                  href={`/api/og/devocional?dia=${diaAno}&f=feed&tema=${tema}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-mesa-300 bg-white px-3 py-2 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
+                  title="Abrir preview em nova aba"
+                >
+                  👁 Ver
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Nav anterior/próximo */}
         <div className="mt-6 flex items-center justify-between gap-3">
           {diaAno > 1 ? (
