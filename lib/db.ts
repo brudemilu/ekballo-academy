@@ -145,6 +145,8 @@ export async function getAula(aulaId: string, cursoId: string): Promise<Aula | n
 export async function getMaterialUrl(materialPathOrUrl: string | null): Promise<string | null> {
   if (!materialPathOrUrl) return null;
   if (/^https?:\/\//i.test(materialPathOrUrl)) return materialPathOrUrl;
+  // Rotas locais (ex.: /api/og/curso/...) — devolve como está.
+  if (materialPathOrUrl.startsWith("/")) return materialPathOrUrl;
   if (isMockMode()) return materialPathOrUrl; // sem Storage no mock
   const supabase = await createClient();
   const { data, error } = await supabase
