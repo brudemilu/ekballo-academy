@@ -21,7 +21,9 @@ export function CapituloLeitor({
   versiculos: Versiculo[];
 }) {
   const [sel, setSel] = useState<Set<number>>(new Set());
-  const [tema, setTema] = useState<"classico" | "moderno">("classico");
+  const [tema, setTema] = useState<"classico" | "moderno" | "cinematografico">(
+    "classico",
+  );
 
   function toggle(numero: number) {
     setSel((prev) => {
@@ -164,6 +166,18 @@ export function CapituloLeitor({
                   }`}
                 >
                   Moderno
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTema("cinematografico")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                    tema === "cinematografico"
+                      ? "bg-mesa-700 text-mesa-50"
+                      : "text-mesa-600 hover:text-mesa-800"
+                  }`}
+                  title="Fundo gerado por IA (mais lento)"
+                >
+                  Cinematográfico
                 </button>
               </div>
             </div>

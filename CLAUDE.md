@@ -74,6 +74,22 @@ Schema is the union of five migrations in [supabase/migrations/](supabase/migrat
 
 For new schema changes, write `006_*.sql` (and so on) and apply via the **Supabase MCP** `apply_migration` tool — this keeps the Supabase `_migrations` table aligned with the repo. Always run `get_advisors` after DDL.
 
+### Gerador de imagens (3 entradas, 1 template compartilhado)
+
+A plataforma gera imagens compartilháveis (Instagram/WhatsApp) via Next.js `ImageResponse` (Vercel `@vercel/og`, edge runtime). Templates pré-existentes: `pergaminho` / `bloco` / `reflexao` no devocional; `classico` / `moderno` na bíblia. Adicionado depois: **`cinematografico`** — fundo gerado por IA (Google Imagen via Gemini API), overlay sacro navy/dourado, tipografia Cormorant Italic.
+
+**Três rotas, uma função render:**
+
+- [app/api/og/devocional/route.tsx](app/api/og/devocional/route.tsx) — `?dia=N&f=feed|story&tema=...` (templates: pergaminho/bloco/reflexao/cinematografico)
+- [app/api/og/biblia/route.tsx](app/api/og/biblia/route.tsx) — `?livro=N&cap=N&v=1,2,3&versao=ACF&f=...&tema=...` (classico/moderno/cinematografico)
+- [app/api/og/livre/route.tsx](app/api/og/livre/route.tsx) — `?verso=...&ref=...&top=...&sub=...&brand=...&bg=...&f=...` (só cinematografico; usado pelo gerador admin)
+
+O cinematográfico vive em [lib/cinematografico.tsx](lib/cinematografico.tsx) (shared render) + [lib/imagen.ts](lib/imagen.ts) (chamada Imagen, Edge-compatível). As três rotas chamam `renderCinematografico(payload, formato)` com um payload comum (`verseText, ref, topLabel?, subRef?, brand?, bgTema?`).
+
+**Env vars (opcionais):** `GEMINI_API_KEY` ativa a IA; sem ela tudo continua funcionando mas o fundo cai em gradiente CSS. `GEMINI_IMAGE_MODEL` (default `gemini-2.5-flash-image-preview`, gratuito no AI Studio).
+
+**Página admin:** [/admin/imagens](app/admin/imagens/page.tsx) — gerador livre com preview ao vivo, form em [components/GeradorImagemForm.tsx](components/GeradorImagemForm.tsx).
+
 ### Tailwind palette
 
 Custom palette in [tailwind.config.ts](tailwind.config.ts): `bege` (warm cream → chocolate), `laranja` (terracotta CTA), `oliveira` (warm olive). `mesa` is a **backwards-compatibility alias for `bege`** — existing pages and components still use `mesa-*` classes heavily. Either prefix works; don't rip out `mesa-*` for cosmetic consistency.

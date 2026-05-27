@@ -1,16 +1,19 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { getLivro, getCapitulo, VERSAO_PADRAO } from "@/lib/biblia";
+import { renderCinematografico } from "@/lib/cinematografico";
 
 // Tamanhos:
 //   feed  → 1080x1080 (Insta feed, WhatsApp)
 //   story → 1080x1920 (Insta Story, Status WhatsApp)
 //
 // Temas:
-//   classico → fundo bege/terracota, Cormorant Garamond Italic, ornamentos
-//   moderno  → fundo terracota sólido, Inter Italic, tipografia dominante
+//   classico        → fundo bege/terracota, Cormorant Garamond Italic, ornamentos
+//   moderno         → fundo terracota sólido, Inter Italic, tipografia dominante
+//   cinematografico → fundo gerado por IA (Imagen), overlay sacro navy/gold,
+//                     Cormorant Italic. Fallback de gradiente se GEMINI_API_KEY ausente.
 
-type Tema = "classico" | "moderno";
+type Tema = "classico" | "moderno" | "cinematografico";
 type Formato = "feed" | "story";
 
 // Cache simples de fontes (fetch só na primeira chamada de cada runtime)
@@ -95,10 +98,22 @@ export async function GET(req: NextRequest) {
   const w = 1080;
   const h = formato === "story" ? 1920 : 1080;
 
+  const bgTema = url.searchParams.get("bg") || `${livro.nome}, atmosfera bíblica reverente`;
+
   const jsx =
-    tema === "moderno"
-      ? renderModerno(texto, refLabel, versao, formato)
-      : renderClassico(texto, refLabel, versao, formato);
+    tema === "cinematografico"
+      ? await renderCinematografico(
+          {
+            verseText: texto,
+            ref: refLabel,
+            subRef: versao,
+            bgTema,
+          },
+          formato,
+        )
+      : tema === "moderno"
+        ? renderModerno(texto, refLabel, versao, formato)
+        : renderClassico(texto, refLabel, versao, formato);
 
   return new ImageResponse(jsx, {
     width: w,
@@ -588,3 +603,4 @@ function sanitizeFilename(name: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 }
+

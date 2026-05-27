@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { getDevocionalAnualByDia } from "@/lib/devocionais";
+import { renderCinematografico } from "@/lib/cinematografico";
 
 // Gerador de imagem do devocional anual.
 //
@@ -9,11 +10,15 @@ import { getDevocionalAnualByDia } from "@/lib/devocionais";
 //   story → 1080x1920 (Insta Story)
 //
 // Templates (fontes diversas):
-//   pergaminho → Cormorant Italic, fundo bege/sépia, ornamentos clássicos
-//   bloco      → Inter Bold, terracota sólido, tipografia dominante
-//   reflexao   → gradient oliveira+bege, layout limpo, versículo grande
+//   pergaminho     → Cormorant Italic, fundo bege/sépia, ornamentos clássicos
+//   bloco          → Inter Bold, terracota sólido, tipografia dominante
+//   reflexao       → gradient oliveira+bege, layout limpo, versículo grande
+//   cinematografico → Cormorant Italic + fundo gerado por IA (Imagen),
+//                     overlay cinematográfico (gradiente + vinheta),
+//                     paleta navy/cream/dourado. Fallback de gradiente se
+//                     GEMINI_API_KEY não estiver definido.
 
-type Template = "pergaminho" | "bloco" | "reflexao";
+type Template = "pergaminho" | "bloco" | "reflexao" | "cinematografico";
 type Formato = "feed" | "story";
 
 let cachedCormorantItalic: ArrayBuffer | undefined;
@@ -73,11 +78,25 @@ export async function GET(req: NextRequest) {
   const w = 1080;
   const h = formato === "story" ? 1920 : 1080;
 
+  // Tema do fundo IA: usa ?bg=... se passado, senão deriva do tema do devocional.
+  const bgTema = url.searchParams.get("bg") || temaFundoDoDevocional(dev);
+
   let jsx;
   if (template === "bloco") {
     jsx = renderBloco(dev, formato);
   } else if (template === "reflexao") {
     jsx = renderReflexao(dev, formato);
+  } else if (template === "cinematografico") {
+    jsx = await renderCinematografico(
+      {
+        verseText: dev.versiculo_texto,
+        ref: dev.versiculo_ref,
+        topLabel: dev.tema,
+        subRef: `— ${dev.autor}`,
+        bgTema,
+      },
+      formato,
+    );
   } else {
     jsx = renderPergaminho(dev, formato);
   }
@@ -109,6 +128,17 @@ type Dev = {
   tema: string;
   autor: string;
 };
+
+// Deriva um prompt de fundo a partir do tema mensal + título do devocional.
+// Ex: tema="Espírito Santo", título="O selo da promessa"
+//   → "Espírito Santo: o selo da promessa — atmosfera bíblica contemplativa"
+function temaFundoDoDevocional(d: Dev): string {
+  const base = d.tema?.trim() || "atmosfera bíblica";
+  const titulo = d.titulo?.trim();
+  return titulo
+    ? `${base}: ${titulo.toLowerCase()}, atmosfera bíblica contemplativa`
+    : `${base}, atmosfera bíblica contemplativa`;
+}
 
 // ============================================================================
 // TEMPLATE 1: PERGAMINHO (Cormorant Italic, bege/sépia, ornamentos clássicos)
@@ -511,3 +541,4 @@ function renderReflexao(d: Dev, formato: Formato) {
     </div>
   );
 }
+
