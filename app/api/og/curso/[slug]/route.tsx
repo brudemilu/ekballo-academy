@@ -17,6 +17,7 @@ type CapaConfig = {
   preLabelCor: string;
   rodapeCor: string;
   badge?: string;
+  livroUrl?: string; // se definido, layout vira "livro à esquerda + texto à direita"
 };
 
 const CAPAS: Record<string, CapaConfig> = {
@@ -30,6 +31,7 @@ const CAPAS: Record<string, CapaConfig> = {
     acentoCor: "#E8E4CC",
     preLabelCor: "#D6CFA8",
     rodapeCor: "#D6CFA8",
+    livroUrl: "https://m.media-amazon.com/images/I/71Vb4sTcewL.jpg",
   },
   "olhe-para-jesus": {
     preLabel: "ESTUDO · 7 AULAS",
@@ -41,6 +43,7 @@ const CAPAS: Record<string, CapaConfig> = {
     acentoCor: "#FBE4C2",
     preLabelCor: "#F5D0A4",
     rodapeCor: "#F5D0A4",
+    livroUrl: "https://m.media-amazon.com/images/I/51Mqaoc5B8L.jpg",
   },
   biblia: {
     preLabel: "LEITURA · 6 VERSÕES",
@@ -112,6 +115,8 @@ export async function GET(
   const w = 1600;
   const h = 900;
 
+  const layoutLivro = !!config.livroUrl;
+
   return new ImageResponse(
     (
       <div
@@ -119,8 +124,7 @@ export async function GET(
           width: w,
           height: h,
           display: "flex",
-          flexDirection: "column",
-          padding: "90px",
+          flexDirection: "row",
           background: config.bg,
           fontFamily: "Cormorant",
           position: "relative",
@@ -160,84 +164,123 @@ export async function GET(
           </div>
         )}
 
-        {/* Pré-label */}
-        <div
-          style={{
-            fontFamily: "Inter",
-            fontStyle: "italic",
-            fontSize: 26,
-            letterSpacing: "0.32em",
-            color: config.preLabelCor,
-            textTransform: "uppercase",
-            display: "flex",
-          }}
-        >
-          {config.preLabel}
-        </div>
-
-        {/* Espaçador flex */}
-        <div style={{ display: "flex", flex: 1 }} />
-
-        {/* Título */}
-        <div
-          style={{
-            fontFamily: "Cormorant",
-            fontWeight: 700,
-            fontSize: 168,
-            lineHeight: 0.94,
-            color: config.textoCor,
-            letterSpacing: "-0.02em",
-            display: "flex",
-            whiteSpace: "pre-wrap",
-            marginBottom: 32,
-          }}
-        >
-          {config.titulo}
-        </div>
-
-        {/* Divisor + subtítulo */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 24,
-            marginBottom: 16,
-          }}
-        >
+        {/* Coluna da capa do livro (só quando livroUrl) */}
+        {layoutLivro && (
           <div
             style={{
-              width: 80,
-              height: 3,
-              background: config.acentoCor,
+              width: 560,
+              height: "100%",
               display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "90px 20px 90px 90px",
             }}
-          />
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={config.livroUrl!}
+              alt=""
+              width={460}
+              height={690}
+              style={{
+                maxWidth: 460,
+                maxHeight: 690,
+                objectFit: "contain",
+                boxShadow: "0 30px 60px rgba(0,0,0,0.45)",
+                borderRadius: 6,
+              }}
+            />
+          </div>
+        )}
+
+        {/* Coluna de texto */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            padding: layoutLivro ? "90px 90px 90px 40px" : "90px",
+          }}
+        >
+          {/* Pré-label */}
           <div
             style={{
-              fontFamily: "Cormorant",
+              fontFamily: "Inter",
               fontStyle: "italic",
-              fontSize: 40,
-              color: config.acentoCor,
+              fontSize: 24,
+              letterSpacing: "0.32em",
+              color: config.preLabelCor,
+              textTransform: "uppercase",
               display: "flex",
             }}
           >
-            {config.subtitulo}
+            {config.preLabel}
           </div>
-        </div>
 
-        {/* Rodapé */}
-        <div
-          style={{
-            fontFamily: "Inter",
-            fontStyle: "italic",
-            fontSize: 24,
-            letterSpacing: "0.06em",
-            color: config.rodapeCor,
-            display: "flex",
-            marginTop: 12,
-          }}
-        >
-          {config.rodape}
+          {/* Espaçador flex */}
+          <div style={{ display: "flex", flex: 1 }} />
+
+          {/* Título */}
+          <div
+            style={{
+              fontFamily: "Cormorant",
+              fontWeight: 700,
+              fontSize: layoutLivro ? 132 : 168,
+              lineHeight: 0.94,
+              color: config.textoCor,
+              letterSpacing: "-0.02em",
+              display: "flex",
+              whiteSpace: "pre-wrap",
+              marginBottom: 32,
+            }}
+          >
+            {config.titulo}
+          </div>
+
+          {/* Divisor + subtítulo */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 24,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 80,
+                height: 3,
+                background: config.acentoCor,
+                display: "flex",
+              }}
+            />
+            <div
+              style={{
+                fontFamily: "Cormorant",
+                fontStyle: "italic",
+                fontSize: layoutLivro ? 34 : 40,
+                color: config.acentoCor,
+                display: "flex",
+              }}
+            >
+              {config.subtitulo}
+            </div>
+          </div>
+
+          {/* Rodapé */}
+          <div
+            style={{
+              fontFamily: "Inter",
+              fontStyle: "italic",
+              fontSize: 22,
+              letterSpacing: "0.06em",
+              color: config.rodapeCor,
+              display: "flex",
+              marginTop: 12,
+            }}
+          >
+            {config.rodape}
+          </div>
         </div>
       </div>
     ),
