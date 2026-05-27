@@ -28,6 +28,7 @@ export default async function DevocionalPage() {
   const hoje = hojeDateStr();
   const diaAnoHoje = diaAnoFromDateStr(hoje);
   const devHoje = todos.find((d) => d.dia_ano === diaAnoHoje) || null;
+  const mesAtual = devHoje?.mes ?? new Date().getMonth() + 1;
 
   const totalPublicado = todos.length;
   const totalMarcado = marcados.size;
@@ -151,27 +152,51 @@ export default async function DevocionalPage() {
             Nenhum devocional publicado ainda.
           </p>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-3">
             {mesesOrdenados.map((mes) => {
               const itens = porMes.get(mes) || [];
               const tema = itens[0]?.tema || "";
+              const total = itens.length;
               const marcadosMes = itens.filter((d) =>
                 marcados.has(d.dia_ano)
               ).length;
+              const pctMes =
+                total > 0 ? Math.round((marcadosMes / total) * 100) : 0;
+              const isAtual = mes === mesAtual;
               return (
-                <section key={mes}>
-                  <div className="mb-3 flex items-baseline justify-between">
-                    <h3 className="font-serif text-xl font-semibold text-mesa-800">
-                      {MESES_NOMES[mes - 1]}
-                      <span className="ml-2 text-sm font-normal text-mesa-500">
-                        · {tema}
-                      </span>
-                    </h3>
-                    <span className="text-xs font-medium text-mesa-500">
-                      {marcadosMes}/{itens.length}
+                <details
+                  key={mes}
+                  open={isAtual}
+                  className="group overflow-hidden rounded-2xl border border-mesa-200 bg-white open:shadow-sm"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 transition hover:bg-mesa-50">
+                    <div className="min-w-0">
+                      <h3 className="font-serif text-xl font-semibold text-mesa-800">
+                        {MESES_NOMES[mes - 1]}
+                        <span className="ml-2 text-sm font-normal text-mesa-500">
+                          · {tema}
+                        </span>
+                      </h3>
+                      <div className="mt-2 flex items-center gap-3">
+                        <div className="h-1.5 w-32 overflow-hidden rounded-full bg-mesa-100">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-laranja-500 to-oliveira-500 transition-all"
+                            style={{ width: `${pctMes}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-mesa-500">
+                          {marcadosMes}/{total}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className="flex-none text-mesa-400 transition-transform group-open:rotate-180"
+                      aria-hidden="true"
+                    >
+                      ▾
                     </span>
-                  </div>
-                  <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  </summary>
+                  <ul className="grid grid-cols-1 gap-2 border-t border-mesa-100 bg-mesa-50/50 p-4 sm:grid-cols-2">
                     {itens.map((d) => {
                       const ok = marcados.has(d.dia_ano);
                       const isHoje = d.dia_ano === diaAnoHoje;
@@ -211,7 +236,7 @@ export default async function DevocionalPage() {
                       );
                     })}
                   </ul>
-                </section>
+                </details>
               );
             })}
           </div>
