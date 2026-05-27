@@ -86,7 +86,12 @@ A plataforma gera imagens compartilháveis (Instagram/WhatsApp) via Next.js `Ima
 
 O cinematográfico vive em [lib/cinematografico.tsx](lib/cinematografico.tsx) (shared render) + [lib/imagen.ts](lib/imagen.ts) (chamada Imagen, Edge-compatível). As três rotas chamam `renderCinematografico(payload, formato)` com um payload comum (`verseText, ref, topLabel?, subRef?, brand?, bgTema?`).
 
-**Env vars (opcionais):** `GEMINI_API_KEY` ativa a IA; sem ela tudo continua funcionando mas o fundo cai em gradiente CSS. `GEMINI_IMAGE_MODEL` (default `gemini-2.5-flash-image-preview`, gratuito no AI Studio).
+**Backend de IA — dois caminhos (via `IMAGE_BACKEND` env var):**
+
+- `pollinations` (default) — Pollinations.ai com Flux Schnell. 100% grátis, sem chave, sem limite. A URL é passada direto pro `<img>` do Satori (Satori faz o fetch ao renderizar). É o que está rodando em produção.
+- `gemini` — Google Imagen 4 ou Gemini Image via AI Studio. Qualidade fotográfica top, mas **exige billing ativo** no projeto AI Studio (em 2026 o free tier de imagem foi zerado por Google; só Imagen 4 paid funciona). Precisa `GEMINI_API_KEY` + opcional `GEMINI_IMAGE_MODEL` (default `imagen-4.0-generate-001`).
+
+Sem nenhum backend (ou ambos falhando): o template cai em gradiente CSS escuro como fallback — texto e divisor continuam exibindo normalmente.
 
 **Página admin:** [/admin/imagens](app/admin/imagens/page.tsx) — gerador livre com preview ao vivo, form em [components/GeradorImagemForm.tsx](components/GeradorImagemForm.tsx).
 

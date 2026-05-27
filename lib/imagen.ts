@@ -1,17 +1,19 @@
 /**
- * Helper para gerar imagens de fundo via Google AI Studio (Gemini / Imagen API).
+ * Helper para gerar imagens de fundo via dois backends possíveis:
  *
- * Edge-runtime compatível — só usa fetch.
+ *   - "pollinations" (DEFAULT)
+ *       100% grátis, sem chave, sem limite. Usa Flux Schnell via
+ *       https://image.pollinations.ai. Retornamos a URL diretamente — o
+ *       Satori (ImageResponse) faz fetch ao renderizar.
  *
- * Uso típico (dentro de uma route que retorna ImageResponse):
- *   const bgDataUrl = await gerarFundoCinematografico({
- *     tema: "amanhecer sobre montanhas",
- *     aspect: "1:1",
- *   });
- *   // bgDataUrl é null se GEMINI_API_KEY não estiver definido
- *   // (a route deve cair em fallback de gradiente)
+ *   - "gemini"
+ *       Google AI Studio (Imagen 4 ou Gemini Image). Precisa GEMINI_API_KEY
+ *       e BILLING ATIVO no projeto (atualmente o free tier de imagem está
+ *       zerado). Melhor qualidade fotográfica.
  *
- * Chave grátis: https://aistudio.google.com/apikey
+ * Edge-runtime compatível.
+ *
+ * Trocar backend: defina IMAGE_BACKEND=gemini no .env.local + Vercel.
  */
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta";
@@ -33,106 +35,143 @@ function buildPrompt(tema: string, aspect: AspectRatio): string {
   return `${tema.trim()}. ${ESTILO_CINEMATOGRAFICO}. Aspect ratio ${aspect}.`;
 }
 
+function dimensoesPorAspect(aspect: AspectRatio): { w: number; h: number } {
+  switch (aspect) {
+    case "9:16":
+      return { w: 1024, h: 1820 };
+    case "16:9":
+      return { w: 1820, h: 1024 };
+    case "4:5":
+      return { w: 1024, h: 1280 };
+    case "3:4":
+      return { w: 1024, h: 1365 };
+    case "1:1":
+    default:
+      return { w: 1024, h: 1024 };
+  }
+}
+
 type GerarParams = {
   tema: string;
   aspect: AspectRatio;
-  /** Sobrescreve o modelo do env. */
+  /** Sobrescreve o modelo do env (só usado quando backend=gemini). */
   model?: string;
 };
 
-type GerarResult = {
-  dataUrl: string;
-  mime: string;
+export type GerarResult = {
+  /** URL ou data URL que pode ser passada direto pro <img src> no Satori. */
+  src: string;
+  /** "pollinations" | "gemini" — qual backend serviu. */
+  backend: string;
 };
 
-// Imagen REST (:predict) — Imagen 3 / Imagen 4
+// ----------------------------------------------------------------------------
+// Backend 1: Pollinations.ai (grátis, sem chave)
+// ----------------------------------------------------------------------------
+function gerarPollinations({ tema, aspect }: GerarParams): GerarResult {
+  const { w, h } = dimensoesPorAspect(aspect);
+  const prompt = buildPrompt(tema, aspect);
+  const params = new URLSearchParams({
+    width: String(w),
+    height: String(h),
+    model: "flux",
+    nologo: "true",
+    enhance: "true",
+    private: "true",
+  });
+  const src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?${params.toString()}`;
+  return { src, backend: "pollinations" };
+}
+
+// ----------------------------------------------------------------------------
+// Backend 2: Google Imagen / Gemini (precisa GEMINI_API_KEY + billing)
+// ----------------------------------------------------------------------------
 async function callImagenPredict(
   apiKey: string,
   model: string,
   prompt: string,
   aspectRatio: AspectRatio,
-): Promise<GerarResult> {
+): Promise<{ dataUrl: string }> {
   const url = `${API_BASE}/models/${model}:predict?key=${apiKey}`;
-  const body = {
-    instances: [{ prompt }],
-    parameters: {
-      sampleCount: 1,
-      aspectRatio,
-      personGeneration: "allow_adult",
-    },
-  };
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      instances: [{ prompt }],
+      parameters: {
+        sampleCount: 1,
+        aspectRatio,
+        personGeneration: "allow_adult",
+      },
+    }),
   });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Imagen API ${res.status}: ${txt.slice(0, 300)}`);
-  }
+  if (!res.ok) throw new Error(`Imagen API ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const json = await res.json();
   const pred = json.predictions?.[0];
-  if (!pred?.bytesBase64Encoded) {
-    throw new Error("Imagen API: resposta sem imagem");
-  }
-  const mime = pred.mimeType || "image/png";
-  return { dataUrl: `data:${mime};base64,${pred.bytesBase64Encoded}`, mime };
+  if (!pred?.bytesBase64Encoded) throw new Error("Imagen: resposta sem imagem");
+  return {
+    dataUrl: `data:${pred.mimeType || "image/png"};base64,${pred.bytesBase64Encoded}`,
+  };
 }
 
-// Gemini multimodal (:generateContent) — Nano Banana / Gemini 2.5 Flash Image
 async function callGeminiImage(
   apiKey: string,
   model: string,
   prompt: string,
-): Promise<GerarResult> {
+): Promise<{ dataUrl: string }> {
   const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`;
-  const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
-  };
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
+    }),
   });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Gemini API ${res.status}: ${txt.slice(0, 300)}`);
-  }
+  if (!res.ok) throw new Error(`Gemini API ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const json = await res.json();
   const parts = json.candidates?.[0]?.content?.parts || [];
   const imgPart = parts.find((p: { inlineData?: { data?: string } }) => p.inlineData?.data);
-  if (!imgPart) throw new Error("Gemini API: resposta sem imagem");
-  const mime = imgPart.inlineData.mimeType || "image/png";
-  return { dataUrl: `data:${mime};base64,${imgPart.inlineData.data}`, mime };
+  if (!imgPart) throw new Error("Gemini: resposta sem imagem");
+  return {
+    dataUrl: `data:${imgPart.inlineData.mimeType || "image/png"};base64,${imgPart.inlineData.data}`,
+  };
 }
 
+async function gerarGemini(params: GerarParams): Promise<GerarResult | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  const model = params.model || process.env.GEMINI_IMAGE_MODEL || "imagen-4.0-generate-001";
+  const prompt = buildPrompt(params.tema, params.aspect);
+  const isImagen = /^imagen-/i.test(model);
+  const r = isImagen
+    ? await callImagenPredict(apiKey, model, prompt, params.aspect)
+    : await callGeminiImage(apiKey, model, prompt);
+  return { src: r.dataUrl, backend: "gemini" };
+}
+
+// ----------------------------------------------------------------------------
+// Dispatch público
+// ----------------------------------------------------------------------------
+
 /**
- * Gera um fundo cinematográfico via Imagen ou Gemini Image.
- * Retorna null se a chave não estiver configurada (a route deve usar fallback).
- * Pode lançar erro se a chave estiver configurada mas a chamada falhar.
+ * Gera um fundo cinematográfico via backend configurado.
+ * Retorna null se nada conseguir gerar (a route cai em fallback de gradiente).
  */
 export async function gerarFundoCinematografico(
   params: GerarParams,
 ): Promise<GerarResult | null> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
-
-  const model =
-    params.model ||
-    process.env.GEMINI_IMAGE_MODEL ||
-    "gemini-2.5-flash-image-preview";
-  const prompt = buildPrompt(params.tema, params.aspect);
-
-  const isImagen = /^imagen-/i.test(model);
-  return isImagen
-    ? await callImagenPredict(apiKey, model, prompt, params.aspect)
-    : await callGeminiImage(apiKey, model, prompt);
+  const backend = (process.env.IMAGE_BACKEND || "pollinations").toLowerCase();
+  if (backend === "gemini") return gerarGemini(params);
+  // Default e qualquer valor desconhecido: pollinations.
+  return gerarPollinations(params);
 }
 
 /**
- * Mesma coisa que gerarFundoCinematografico, mas nunca lança:
- * retorna null em qualquer erro. Útil pra rotas que devem cair em fallback.
+ * Mesma coisa, mas nunca lança — retorna null em qualquer erro.
+ * Pollinations não chama API no servidor (Satori faz o fetch), então em
+ * tese nunca lança aqui; o erro só apareceria se o Satori não conseguisse
+ * baixar a imagem ao renderizar (aí cai no fallback do template).
  */
 export async function gerarFundoSafe(params: GerarParams): Promise<GerarResult | null> {
   try {

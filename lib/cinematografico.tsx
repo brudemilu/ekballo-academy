@@ -84,7 +84,7 @@ export async function renderCinematografico(
       {fundo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={fundo.dataUrl}
+          src={fundo.src}
           alt=""
           style={{
             position: "absolute",
