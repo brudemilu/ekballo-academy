@@ -62,7 +62,21 @@ export type YouTubeMetadata = {
 };
 
 const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
+/**
+ * Argumentos comuns pra reduzir bloqueio anti-bot do YouTube em IPs
+ * de datacenter (Vercel/AWS). O cliente Android usa um esquema de
+ * assinatura diferente do web e tipicamente sofre menos com detecção.
+ */
+const ANTI_BOT_ARGS = [
+  "--extractor-args",
+  "youtube:player_client=android,ios,web,tv",
+  "--retries",
+  "3",
+  "--retry-sleep",
+  "2",
+];
 
 /**
  * Executa yt-dlp e devolve stdout completo (pra metadata em JSON).
@@ -73,6 +87,7 @@ function runYtDlp(args: string[]): Promise<string> {
       "--no-warnings",
       "--user-agent",
       USER_AGENT,
+      ...ANTI_BOT_ARGS,
       ...args,
     ]);
     let stdout = "";
@@ -118,6 +133,7 @@ export function baixarComoMp3Stream(url: string): NodeJS.ReadableStream {
     "--no-warnings",
     "--user-agent",
     USER_AGENT,
+    ...ANTI_BOT_ARGS,
     url,
   ]);
 
