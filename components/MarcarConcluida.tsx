@@ -10,10 +10,14 @@ export function MarcarConcluida({
   alunoId,
   aulaId,
   jaConcluida,
+  proximaHref,
 }: {
   alunoId: string;
   aulaId: string;
   jaConcluida: boolean;
+  // Quando passado, marcar a aula como concluída já navega pro próximo capítulo
+  // (usado em cursos de leitura, sem atividades).
+  proximaHref?: string | null;
 }) {
   const router = useRouter();
   const [concluida, setConcluida] = useState(jaConcluida);
@@ -23,7 +27,15 @@ export function MarcarConcluida({
     startTransition(async () => {
       if (MOCK) {
         await new Promise((r) => setTimeout(r, 250));
-        setConcluida(!concluida);
+        if (!concluida) {
+          setConcluida(true);
+          if (proximaHref) {
+            router.push(proximaHref);
+            return;
+          }
+        } else {
+          setConcluida(false);
+        }
         return;
       }
       const supabase = createClient();
@@ -35,6 +47,10 @@ export function MarcarConcluida({
             { onConflict: "aluno_id,aula_id" }
           );
         setConcluida(true);
+        if (proximaHref) {
+          router.push(proximaHref);
+          return;
+        }
       } else {
         await supabase
           .from("progresso")
@@ -57,7 +73,11 @@ export function MarcarConcluida({
           : "bg-oliveira-600 text-white hover:bg-oliveira-700"
       }`}
     >
-      {concluida ? "✓ Aula concluída" : "Marcar aula como concluída"}
+      {concluida
+        ? "✓ Aula concluída"
+        : proximaHref
+          ? "Concluir e continuar →"
+          : "Marcar aula como concluída"}
     </button>
   );
 }

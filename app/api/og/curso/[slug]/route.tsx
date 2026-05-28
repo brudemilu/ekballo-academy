@@ -68,6 +68,17 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#E8D8A8",
     badge: "365",
   },
+  "seja-um-lider-de-verdade": {
+    preLabel: "LEITURA · 13 CAPÍTULOS",
+    titulo: "Seja um\nLíder de\nVerdade",
+    subtitulo: "Os princípios da liderança cristã",
+    rodape: "A partir do livro de John Haggai",
+    bg: "linear-gradient(135deg, #1F2A38 0%, #2E4256 55%, #4A6B7A 100%)",
+    textoCor: "#F2F6F8",
+    acentoCor: "#CFE0E6",
+    preLabelCor: "#A8C4CE",
+    rodapeCor: "#A8C4CE",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;

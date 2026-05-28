@@ -203,6 +203,11 @@ export default async function AulaPage({
             alunoId={session.userId}
             aulaId={aula.id}
             jaConcluida={concluida}
+            proximaHref={
+              !temAtividades && proxima
+                ? `/cursos/${curso.slug}/aulas/${proxima.id}`
+                : null
+            }
           />
           <div className="flex gap-2">
             {anterior && (
