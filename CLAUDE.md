@@ -105,13 +105,13 @@ Página [app/admin/youtube/page.tsx](app/admin/youtube/page.tsx) deixa o admin c
 - `GET /api/admin/youtube-meta?url=...` — devolve metadata (título, autor, duração, thumb)
 - `GET /api/admin/youtube-mp3?url=...` — stream do MP3 com `Content-Disposition: attachment`
 
-**Setup local (1x):** `brew install yt-dlp ffmpeg`
+**Setup local (1x):** `brew install yt-dlp` (ffmpeg já vem via `ffmpeg-static` no npm).
 
-**Produção (Vercel) — não funciona ainda.** O binário yt-dlp não é bundlado no deploy. Pra funcionar em prod precisaria:
-- bundlar o standalone Linux do yt-dlp em algum diretório do repo, OU
-- mover o download pra worker externo (VPS, Mac do Bruno, etc.), com a página admin apenas listando o que já chegou via Supabase Storage.
+**Decisão (28/05/2026): ferramenta é LOCAL-ONLY.** Tentamos bundlar o binário yt-dlp Linux pra rodar na Vercel, mas o YouTube bloqueia IPs de datacenter por IP (não por técnica) — nem o `player_client=android` resolveu, e a API pública do Cobalt fechou (exige JWT). Reverteu-se o bundle. Agora:
+- Em **produção** (`process.env.VERCEL` setado): a página mostra um card "rode no seu Mac" em vez do form.
+- Em **dev local**: form completo, usa o yt-dlp do brew (IP residencial não é bloqueado).
 
-Além disso, YouTube bloqueia IPs de datacenter (Vercel/AWS) com frequência. Mesmo com binário, prod pode falhar muitas chamadas com "Sign in to confirm you're not a bot".
+Se um dia precisar do botão funcionando no Ekballo publicado, as opções reais são: worker no Mac do Bruno + fila Supabase (Mac precisa estar ligado), cookies do YouTube no yt-dlp (frágil, risco de conta), ou proxy residencial pago. Nenhuma é trivial.
 
 **Aviso legal:** copyright e ToS do YouTube são responsabilidade do admin (banner amarelo no painel deixa claro).
 

@@ -19,33 +19,23 @@ import { PassThrough } from "node:stream";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 /**
- * Localiza o binário yt-dlp.
- * Ordem:
- *   1. env YT_DLP_PATH
- *   2. ./bin/yt-dlp do repo (Linux standalone, usado em produção Vercel)
- *   3. paths comuns do sistema (Mac brew, Linux package)
- *   4. fallback: 'yt-dlp' no PATH
+ * Localiza o binário yt-dlp instalado no sistema (uso local, dev).
+ * Ferramenta roda só em desenvolvimento — em produção Vercel o YouTube
+ * bloqueia IPs de datacenter, então a página nem mostra o form lá.
+ * Ordem: env YT_DLP_PATH → paths comuns → fallback 'yt-dlp' no PATH.
  */
 function resolveYtDlpPath(): string {
   if (process.env.YT_DLP_PATH) return process.env.YT_DLP_PATH;
-
-  // Binário bundlado no repo (Linux x86_64) — usado em Vercel/produção
-  const repoBin = join(process.cwd(), "bin", "yt-dlp");
-  if (existsSync(repoBin) && process.platform === "linux") return repoBin;
-
-  // Sistema (Mac dev local com brew)
   const sistema = [
-    "/opt/homebrew/bin/yt-dlp", // Apple Silicon
-    "/usr/local/bin/yt-dlp",    // Intel Mac / Linux manual
+    "/opt/homebrew/bin/yt-dlp", // Apple Silicon (brew)
+    "/usr/local/bin/yt-dlp",    // Intel Mac (brew) / Linux manual
     "/usr/bin/yt-dlp",          // Linux package manager
   ];
   for (const p of sistema) {
     if (existsSync(p)) return p;
   }
-
   return "yt-dlp";
 }
 
