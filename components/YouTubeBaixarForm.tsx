@@ -83,6 +83,22 @@ export function YouTubeBaixarForm() {
         <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
           <p className="font-medium">Erro: {error}</p>
           {dica && <p className="mt-1 text-xs">💡 {dica}</p>}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={consultar}
+              className="rounded-full bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-800"
+            >
+              🔄 Tentar de novo
+            </button>
+            {(error.toLowerCase().includes("bot") ||
+              error.toLowerCase().includes("sign in")) && (
+              <span className="text-xs text-red-700">
+                Bloqueio do YouTube no servidor. Tente algumas vezes ou abra no
+                seu Mac em <code>npm run dev</code>.
+              </span>
+            )}
+          </div>
         </div>
       )}
 
