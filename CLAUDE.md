@@ -97,23 +97,17 @@ Sem nenhum backend (ou ambos falhando): o template cai em gradiente CSS escuro c
 
 ### Download de áudio do YouTube (admin)
 
-Página [app/admin/youtube/page.tsx](app/admin/youtube/page.tsx) deixa o admin colar um link do YouTube e baixar como MP3 (128 kbps). Stream direto pro browser, **nada persiste no servidor**.
+Página [app/admin/youtube/page.tsx](app/admin/youtube/page.tsx) deixa o admin colar um link do YouTube e converter em MP3. **Funciona em produção (Vercel)**.
 
-**Stack:** `yt-dlp` binário standalone (instalado via `brew install yt-dlp` localmente) + `ffmpeg-static` (binário Node) + `fluent-ffmpeg` (API JS). Lib em [lib/youtube.ts](lib/youtube.ts). Resolução do binário yt-dlp: tenta `/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin`, fallback pra `yt-dlp` no PATH. Override via env `YT_DLP_PATH`.
+**Stack (decisão 28/05/2026): API de terceiros via RapidAPI.** Tentamos antes rodar `yt-dlp` direto (local e bundlado na Vercel) — mas YouTube bloqueia IPs de datacenter por IP, não por técnica (nem `player_client=android` resolveu; Cobalt público fechou exigindo JWT). A solução que funciona em qualquer ambiente: delegar pra um serviço que já lida com o bloqueio (mesmo princípio do y2meta). Sem binários, sem ffmpeg.
 
-**Rotas (Node runtime, admin-only):**
-- `GET /api/admin/youtube-meta?url=...` — devolve metadata (título, autor, duração, thumb)
-- `GET /api/admin/youtube-mp3?url=...` — stream do MP3 com `Content-Disposition: attachment`
+- [lib/youtube.ts](lib/youtube.ts): `extractVideoId()` + `converterParaMp3()` (chama a API, faz polling se status="processing", devolve link MP3).
+- `GET /api/admin/youtube-mp3?url=...` (Node runtime, admin-only) → JSON `{ok, videoId, title, link, durationSec}`. O `link` é a URL do MP3 no CDN do serviço; o front mostra botão de download apontando pra ele.
+- Front: [components/YouTubeBaixarForm.tsx](components/YouTubeBaixarForm.tsx) — input → "Converter em MP3" → preview + botão baixar.
 
-**Setup local (1x):** `brew install yt-dlp` (ffmpeg já vem via `ffmpeg-static` no npm).
+**Env vars:** `YOUTUBE_MP3_API_KEY` (chave RapidAPI, obrigatória) + `YOUTUBE_MP3_API_HOST` (default `youtube-mp36.p.rapidapi.com`). Sem a chave, a página mostra aviso "falta configurar" e a rota retorna 503. Setar no `.env.local` e nas envs da Vercel.
 
-**Decisão (28/05/2026): ferramenta é LOCAL-ONLY.** Tentamos bundlar o binário yt-dlp Linux pra rodar na Vercel, mas o YouTube bloqueia IPs de datacenter por IP (não por técnica) — nem o `player_client=android` resolveu, e a API pública do Cobalt fechou (exige JWT). Reverteu-se o bundle. Agora:
-- Em **produção** (`process.env.VERCEL` setado): a página mostra um card "rode no seu Mac" em vez do form.
-- Em **dev local**: form completo, usa o yt-dlp do brew (IP residencial não é bloqueado).
-
-Se um dia precisar do botão funcionando no Ekballo publicado, as opções reais são: worker no Mac do Bruno + fila Supabase (Mac precisa estar ligado), cookies do YouTube no yt-dlp (frágil, risco de conta), ou proxy residencial pago. Nenhuma é trivial.
-
-**Aviso legal:** copyright e ToS do YouTube são responsabilidade do admin (banner amarelo no painel deixa claro).
+**Aviso legal:** copyright e ToS do YouTube são responsabilidade do admin (banner no painel).
 
 ### Tailwind palette
 

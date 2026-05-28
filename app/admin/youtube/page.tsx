@@ -2,15 +2,14 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { getCurrentSession } from "@/lib/db";
 import { YouTubeBaixarForm } from "@/components/YouTubeBaixarForm";
+import { apiConfigurada } from "@/lib/youtube";
 
 export default async function AdminYouTubePage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
-  // Em produção (Vercel) o YouTube bloqueia os IPs de datacenter, então a
-  // ferramenta roda só em desenvolvimento local (rede residencial).
-  const emProducao = Boolean(process.env.VERCEL);
+  const temApi = apiConfigurada();
 
   return (
     <AdminShell current="youtube" session={session}>
@@ -21,55 +20,35 @@ export default async function AdminYouTubePage() {
         Baixar áudio do YouTube
       </h1>
       <p className="mb-6 max-w-2xl text-sm text-mesa-600 text-justify hyphens-auto">
-        Cole o link de um vídeo do YouTube e baixe como MP3 (128 kbps). O arquivo
-        vem direto pro seu computador — nada fica armazenado no servidor.
+        Cole o link de um vídeo do YouTube e converta em MP3. Funciona direto
+        aqui no site — o download é feito por um serviço externo.
       </p>
 
-      {emProducao ? (
-        <div className="rounded-2xl border border-mesa-300 bg-mesa-50 p-5 text-sm text-mesa-800">
-          <p className="mb-2 font-serif text-lg font-semibold">
-            Esta ferramenta roda no seu computador
+      {!temApi && (
+        <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-medium">⚙ Falta configurar a chave</p>
+          <p className="mt-1 text-justify hyphens-auto">
+            O servidor ainda não tem a variável{" "}
+            <code className="rounded bg-amber-100 px-1.5 py-0.5 text-xs">
+              YOUTUBE_MP3_API_KEY
+            </code>
+            . Sem ela o botão de converter vai dar erro. Configure no{" "}
+            <code className="rounded bg-amber-100 px-1.5 py-0.5 text-xs">.env.local</code>{" "}
+            (local) e nas variáveis da Vercel (produção).
           </p>
-          <p className="text-justify hyphens-auto">
-            O YouTube bloqueia downloads vindos de servidores (como a Vercel),
-            então o gerador funciona a partir da sua máquina:
-          </p>
-          <ol className="mt-3 list-inside list-decimal space-y-1">
-            <li>
-              No Mac, uma vez:{" "}
-              <code className="rounded bg-mesa-200 px-1.5 py-0.5 text-xs">
-                brew install yt-dlp
-              </code>
-            </li>
-            <li>
-              Na pasta do projeto:{" "}
-              <code className="rounded bg-mesa-200 px-1.5 py-0.5 text-xs">
-                npm run dev
-              </code>
-            </li>
-            <li>
-              Abre{" "}
-              <code className="rounded bg-mesa-200 px-1.5 py-0.5 text-xs">
-                localhost:3000/admin/youtube
-              </code>{" "}
-              e usa daí.
-            </li>
-          </ol>
         </div>
-      ) : (
-        <>
-          <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-            <p className="font-medium">⚠ Uso responsável</p>
-            <p className="mt-1 text-justify hyphens-auto">
-              O download viola os Termos de Serviço do YouTube e pode infringir
-              direitos autorais. Use apenas conteúdo próprio, em domínio público,
-              com licença Creative Commons, ou com permissão explícita do autor.
-              Você é responsável pelo uso que fizer do arquivo baixado.
-            </p>
-          </div>
-          <YouTubeBaixarForm />
-        </>
       )}
+
+      <div className="mb-6 rounded-2xl border border-mesa-200 bg-mesa-50 p-4 text-sm text-mesa-700">
+        <p className="font-medium">⚠ Uso responsável</p>
+        <p className="mt-1 text-justify hyphens-auto">
+          O download pode infringir direitos autorais e os Termos do YouTube.
+          Use apenas conteúdo próprio, em domínio público, com licença Creative
+          Commons, ou com permissão do autor. Você é responsável pelo uso.
+        </p>
+      </div>
+
+      <YouTubeBaixarForm />
     </AdminShell>
   );
 }

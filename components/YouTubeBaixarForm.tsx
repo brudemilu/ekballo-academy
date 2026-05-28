@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 
-type Meta = {
+type Resultado = {
   videoId: string;
   title: string;
-  author: string;
+  link: string;
   durationSec: number;
-  thumbnailUrl: string;
+  filesize?: number;
 };
 
 function fmtDuracao(seg: number): string {
+  if (!seg) return "";
   const h = Math.floor(seg / 3600);
   const m = Math.floor((seg % 3600) / 60);
   const s = seg % 60;
@@ -18,40 +19,36 @@ function fmtDuracao(seg: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+function fmtTamanho(bytes?: number): string {
+  if (!bytes) return "";
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
 export function YouTubeBaixarForm() {
   const [url, setUrl] = useState("");
-  const [meta, setMeta] = useState<Meta | null>(null);
-  const [loadingMeta, setLoadingMeta] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [dica, setDica] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<Resultado | null>(null);
+  const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
-  async function consultar() {
-    setError(null);
-    setDica(null);
-    setMeta(null);
+  async function buscar() {
+    setErro(null);
+    setResultado(null);
     if (!url.trim()) return;
-    setLoadingMeta(true);
+    setCarregando(true);
     try {
-      const res = await fetch(
-        `/api/admin/youtube-meta?url=${encodeURIComponent(url)}`,
-      );
+      const res = await fetch(`/api/admin/youtube-mp3?url=${encodeURIComponent(url)}`);
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Erro ao consultar o vídeo");
-        if (data.dica) setDica(data.dica);
+        setErro(data.error || "Erro ao processar o vídeo");
       } else {
-        setMeta(data.meta);
+        setResultado(data);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro de rede");
+      setErro(e instanceof Error ? e.message : "Erro de rede");
     } finally {
-      setLoadingMeta(false);
+      setCarregando(false);
     }
   }
-
-  const downloadHref = meta
-    ? `/api/admin/youtube-mp3?url=${encodeURIComponent(url)}`
-    : "";
 
   return (
     <div className="space-y-4">
@@ -63,73 +60,65 @@ export function YouTubeBaixarForm() {
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              consultar();
+              buscar();
             }
           }}
-          placeholder="https://www.youtube.com/watch?v=..."
+          placeholder="Cole o link do YouTube aqui…"
           className="flex-1 rounded-xl border border-mesa-200 bg-white px-4 py-3 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
         />
         <button
           type="button"
-          onClick={consultar}
-          disabled={!url.trim() || loadingMeta}
-          className="rounded-xl bg-mesa-700 px-6 py-3 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={buscar}
+          disabled={!url.trim() || carregando}
+          className="rounded-xl bg-laranja-600 px-6 py-3 text-sm font-medium text-white hover:bg-laranja-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loadingMeta ? "Consultando…" : "Consultar"}
+          {carregando ? "Convertendo…" : "Converter em MP3"}
         </button>
       </div>
 
-      {error && (
+      {carregando && (
+        <p className="text-sm text-mesa-500">
+          Convertendo o áudio… pode levar de 5 a 30 segundos.
+        </p>
+      )}
+
+      {erro && (
         <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
-          <p className="font-medium">Erro: {error}</p>
-          {dica && <p className="mt-1 text-xs">💡 {dica}</p>}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={consultar}
-              className="rounded-full bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-800"
-            >
-              🔄 Tentar de novo
-            </button>
-            {(error.toLowerCase().includes("bot") ||
-              error.toLowerCase().includes("sign in")) && (
-              <span className="text-xs text-red-700">
-                Bloqueio do YouTube no servidor. Tente algumas vezes ou abra no
-                seu Mac em <code>npm run dev</code>.
-              </span>
-            )}
-          </div>
+          <p className="font-medium">Não deu certo</p>
+          <p className="mt-1">{erro}</p>
+          <button
+            type="button"
+            onClick={buscar}
+            className="mt-3 rounded-full bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-800"
+          >
+            🔄 Tentar de novo
+          </button>
         </div>
       )}
 
-      {meta && (
-        <div className="overflow-hidden rounded-2xl border border-mesa-200 bg-white shadow-sm">
-          <div className="flex flex-col sm:flex-row">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={meta.thumbnailUrl}
-              alt={meta.title}
-              className="h-48 w-full object-cover sm:h-auto sm:w-72"
-            />
-            <div className="flex-1 p-5">
-              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-mesa-500">
-                {meta.author} · {fmtDuracao(meta.durationSec)}
-              </p>
-              <h2 className="mb-4 font-serif text-xl font-semibold text-mesa-800">
-                {meta.title}
-              </h2>
-              <a
-                href={downloadHref}
-                className="inline-flex items-center gap-2 rounded-full bg-laranja-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-laranja-700"
-              >
-                ⬇ Baixar MP3 (128 kbps)
-              </a>
-              <p className="mt-3 text-xs text-mesa-500">
-                Vídeos longos podem levar 1-5 minutos pra processar. Não feche a
-                aba.
-              </p>
-            </div>
-          </div>
+      {resultado && (
+        <div className="rounded-2xl border border-oliveira-200 bg-oliveira-50 p-5">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-oliveira-700">
+            Pronto pra baixar
+            {resultado.durationSec ? ` · ${fmtDuracao(resultado.durationSec)}` : ""}
+            {resultado.filesize ? ` · ${fmtTamanho(resultado.filesize)}` : ""}
+          </p>
+          <h2 className="mb-4 font-serif text-xl font-semibold text-mesa-800">
+            {resultado.title}
+          </h2>
+          <a
+            href={resultado.link}
+            download
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-laranja-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-laranja-700"
+          >
+            ⬇ Baixar MP3
+          </a>
+          <p className="mt-3 text-xs text-mesa-500">
+            Se o áudio abrir tocando em vez de baixar, clique com o botão direito
+            no link e escolha &ldquo;Salvar como&rdquo;.
+          </p>
         </div>
       )}
     </div>
