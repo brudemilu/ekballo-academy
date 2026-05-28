@@ -20,19 +20,45 @@ const API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 export type AspectRatio = "1:1" | "4:5" | "9:16" | "16:9" | "3:4";
 
-const ESTILO_CINEMATOGRAFICO = [
-  "cinematic photography, ultra detailed, 35mm film aesthetic",
-  "soft volumetric god rays, warm golden hour light",
-  "deep atmospheric depth, moody and reverent mood",
-  "rich shadows with delicate highlights, painterly quality",
-  "subtle film grain, refined color grading with warm amber and deep navy tones",
-  "centered composition with generous negative space in the middle for typography overlay",
-  "no text, no letters, no watermarks, no logos, no people staring at camera",
-  "sacred, contemplative, biblical atmosphere",
+// Estilo fotográfico moderno. Só paisagem/natureza/luz/textura — NUNCA
+// pessoas, rostos ou figuras religiosas. O Flux (Pollinations) não tem campo
+// negative_prompt separado, então as exclusões vão embutidas no texto.
+const ESTILO_MODERNO = [
+  "modern cinematic landscape photography, ultra detailed, high resolution, 35mm",
+  "natural scenery only — vast skies, mountains, ocean, fields, forests, deserts, rivers, clouds, mist, light",
+  "soft volumetric god rays, warm golden hour or serene blue hour light",
+  "deep atmospheric depth, contemplative and reverent mood",
+  "clean modern color grading, gentle film grain, elegant minimalism",
+  "wide minimalist composition with generous empty negative space for typography overlay",
+].join(", ");
+
+// Exclusões fortes — repetidas pra o Flux levar a sério.
+const EXCLUSOES = [
+  "no people",
+  "no person",
+  "no human",
+  "no human figure",
+  "no face",
+  "no faces",
+  "no portrait",
+  "no hands",
+  "no crowd",
+  "no jesus",
+  "no christ figure",
+  "no crucifix",
+  "no crucifixion",
+  "no cross with a body",
+  "no religious statue",
+  "no saints",
+  "no text",
+  "no letters",
+  "no words",
+  "no watermark",
+  "no logo",
 ].join(", ");
 
 function buildPrompt(tema: string, aspect: AspectRatio): string {
-  return `${tema.trim()}. ${ESTILO_CINEMATOGRAFICO}. Aspect ratio ${aspect}.`;
+  return `${tema.trim()}. ${ESTILO_MODERNO}. ${EXCLUSOES}. Aspect ratio ${aspect}.`;
 }
 
 function dimensoesPorAspect(aspect: AspectRatio): { w: number; h: number } {
@@ -56,6 +82,8 @@ type GerarParams = {
   aspect: AspectRatio;
   /** Sobrescreve o modelo do env (só usado quando backend=gemini). */
   model?: string;
+  /** Seed pra variar a foto de forma determinística (ex.: dia do ano, nº capítulo). */
+  seed?: number;
 };
 
 export type GerarResult = {
@@ -68,7 +96,7 @@ export type GerarResult = {
 // ----------------------------------------------------------------------------
 // Backend 1: Pollinations.ai (grátis, sem chave)
 // ----------------------------------------------------------------------------
-function gerarPollinations({ tema, aspect }: GerarParams): GerarResult {
+function gerarPollinations({ tema, aspect, seed }: GerarParams): GerarResult {
   const { w, h } = dimensoesPorAspect(aspect);
   const prompt = buildPrompt(tema, aspect);
   const params = new URLSearchParams({
@@ -79,6 +107,9 @@ function gerarPollinations({ tema, aspect }: GerarParams): GerarResult {
     enhance: "true",
     private: "true",
   });
+  if (typeof seed === "number" && Number.isFinite(seed)) {
+    params.set("seed", String(Math.abs(Math.trunc(seed))));
+  }
   const src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?${params.toString()}`;
   return { src, backend: "pollinations" };
 }

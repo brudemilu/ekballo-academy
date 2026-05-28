@@ -27,6 +27,8 @@ export type CinemaPayload = {
   brand?: string;
   /** Tema do fundo IA. Vazio = sem chamar IA (fica em gradiente). */
   bgTema?: string;
+  /** Seed pra variar a foto de forma determinística (dia do ano, nº capítulo). */
+  bgSeed?: number;
 };
 
 const COR_CREAM = "#F5EDDE";
@@ -52,7 +54,11 @@ export async function renderCinematografico(
 ) {
   const aspect = formato === "story" ? "9:16" : "1:1";
   const fundo = payload.bgTema
-    ? await gerarFundoSafe({ tema: payload.bgTema, aspect })
+    ? await gerarFundoSafe({
+        tema: payload.bgTema,
+        aspect,
+        seed: payload.bgSeed,
+      })
     : null;
 
   const verseText = `“${payload.verseText.trim()}”`;

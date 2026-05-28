@@ -94,6 +94,7 @@ export async function GET(req: NextRequest) {
         topLabel: dev.tema,
         subRef: `— ${dev.autor}`,
         bgTema,
+        bgSeed: diaAno,
       },
       formato,
     );
@@ -129,15 +130,44 @@ type Dev = {
   autor: string;
 };
 
-// Deriva um prompt de fundo a partir do tema mensal + título do devocional.
-// Ex: tema="Espírito Santo", título="O selo da promessa"
-//   → "Espírito Santo: o selo da promessa — atmosfera bíblica contemplativa"
+// Mapeia cada tema mensal pra uma CENA DE NATUREZA/PAISAGEM — nunca pessoas
+// nem figuras religiosas. As exclusões fortes ficam no lib/imagen, aqui só
+// damos a cena. A variação por dia vem do seed (dia_ano).
+const CENA_POR_TEMA: Record<string, string> = {
+  Recomeço:
+    "vast sunrise over a calm horizon, first light breaking through soft clouds, new dawn",
+  Coração:
+    "serene still lake at dawn reflecting a warm sky, gentle ripples, quiet water",
+  Família:
+    "warm countryside path lined with trees at golden hour, cozy distant home lights",
+  "Cruz e vida nova":
+    "empty hilltop at sunrise with dramatic sky, green shoots emerging from soil, renewal",
+  Honra:
+    "majestic mountain peaks bathed in golden light, vast valley below, grandeur",
+  "Espírito Santo":
+    "wind moving through a golden wheat field, soft light, flowing air and clouds",
+  Propósito:
+    "long winding road through open landscape toward distant mountains at sunrise",
+  Mordomia:
+    "fertile green fields and terraced farmland under soft morning light, abundance",
+  Arrependimento:
+    "gentle rain clearing over a quiet valley, mist lifting, soft light returning",
+  Igreja:
+    "grove of strong trees standing together in warm forest light, rays through canopy",
+  Perseverança:
+    "lone tree on a windswept cliff against a dramatic sky, steadfast, resilient",
+  Emanuel:
+    "peaceful starry winter night over snowy hills, warm light glowing on the horizon",
+};
+
+// Deriva um prompt de fundo a partir do tema mensal. Usa a cena de natureza
+// mapeada; se o tema não estiver no mapa, cai num pôr do sol genérico.
 function temaFundoDoDevocional(d: Dev): string {
-  const base = d.tema?.trim() || "atmosfera bíblica";
-  const titulo = d.titulo?.trim();
-  return titulo
-    ? `${base}: ${titulo.toLowerCase()}, atmosfera bíblica contemplativa`
-    : `${base}, atmosfera bíblica contemplativa`;
+  const base = d.tema?.trim() || "";
+  return (
+    CENA_POR_TEMA[base] ||
+    "tranquil natural landscape at golden hour, soft light, wide open sky"
+  );
 }
 
 // ============================================================================

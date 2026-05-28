@@ -98,7 +98,9 @@ export async function GET(req: NextRequest) {
   const w = 1080;
   const h = formato === "story" ? 1920 : 1080;
 
-  const bgTema = url.searchParams.get("bg") || `${livro.nome}, atmosfera bíblica reverente`;
+  const bgTema =
+    url.searchParams.get("bg") ||
+    "tranquil natural landscape at golden hour, wide open sky, soft light, contemplative";
 
   const jsx =
     tema === "cinematografico"
@@ -108,6 +110,7 @@ export async function GET(req: NextRequest) {
             ref: refLabel,
             subRef: versao,
             bgTema,
+            bgSeed: livroId * 1000 + cap,
           },
           formato,
         )

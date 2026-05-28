@@ -22,7 +22,7 @@ export function CapituloLeitor({
 }) {
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [tema, setTema] = useState<"classico" | "moderno" | "cinematografico">(
-    "classico",
+    "cinematografico",
   );
 
   function toggle(numero: number) {
@@ -147,6 +147,18 @@ export function CapituloLeitor({
               <div className="flex items-center gap-1.5 rounded-full bg-mesa-100 p-1">
                 <button
                   type="button"
+                  onClick={() => setTema("cinematografico")}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                    tema === "cinematografico"
+                      ? "bg-mesa-700 text-mesa-50"
+                      : "text-mesa-600 hover:text-mesa-800"
+                  }`}
+                  title="Foto de fundo moderna (gerada por IA, leva alguns segundos)"
+                >
+                  Moderno
+                </button>
+                <button
+                  type="button"
                   onClick={() => setTema("classico")}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                     tema === "classico"
@@ -165,19 +177,7 @@ export function CapituloLeitor({
                       : "text-mesa-600 hover:text-mesa-800"
                   }`}
                 >
-                  Moderno
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTema("cinematografico")}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                    tema === "cinematografico"
-                      ? "bg-mesa-700 text-mesa-50"
-                      : "text-mesa-600 hover:text-mesa-800"
-                  }`}
-                  title="Fundo gerado por IA (mais lento)"
-                >
-                  Cinematográfico
+                  Bloco
                 </button>
               </div>
             </div>

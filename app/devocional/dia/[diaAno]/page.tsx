@@ -118,19 +118,19 @@ export default async function DevocionalDiaPage({
             WhatsApp ou story.
           </p>
 
-          {/* Templates: Pergaminho · Bloco · Reflexão · Cinematográfico */}
+          {/* Templates: Moderno (foto) em destaque, depois os de cor sólida */}
           {(
-            ["pergaminho", "bloco", "reflexao", "cinematografico"] as const
+            ["cinematografico", "pergaminho", "bloco", "reflexao"] as const
           ).map((tema) => (
             <div key={tema} className="mb-4 last:mb-0">
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-mesa-500">
-                {tema === "pergaminho"
-                  ? "Pergaminho · clássico"
-                  : tema === "bloco"
-                    ? "Bloco · moderno"
-                    : tema === "reflexao"
-                      ? "Reflexão · suave"
-                      : "Cinematográfico · IA (fundo gerado)"}
+                {tema === "cinematografico"
+                  ? "Moderno · com foto"
+                  : tema === "pergaminho"
+                    ? "Pergaminho · clássico"
+                    : tema === "bloco"
+                      ? "Bloco · cor sólida"
+                      : "Reflexão · suave"}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <a
