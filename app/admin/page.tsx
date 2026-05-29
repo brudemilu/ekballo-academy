@@ -29,7 +29,7 @@ export default async function AdminPage() {
 
   const cards = [
     { label: "Discípulos cadastrados", value: stats.totalAlunos, color: "text-mesa-700" },
-    { label: "Cursos publicados", value: stats.totalCursos, color: "text-mesa-700" },
+    { label: "Temáticas publicadas", value: stats.totalCursos, color: "text-mesa-700" },
     { label: "Respostas escritas", value: stats.totalRespostas, color: "text-oliveira-700" },
     { label: "Aguardando devolutiva", value: stats.respostasSemComentario, color: "text-amber-700" },
   ];
@@ -66,7 +66,7 @@ export default async function AdminPage() {
         <section className="mb-10">
           <div className="mb-4 flex items-baseline justify-between">
             <h2 className="font-serif text-2xl font-semibold text-mesa-800">
-              Cursos
+              Temáticas
             </h2>
             <Link
               href="/admin/cursos"
@@ -76,8 +76,8 @@ export default async function AdminPage() {
             </Link>
           </div>
           <p className="mb-5 text-sm text-mesa-600">
-            Clique em um curso pra abrir como discípulo e revisar o conteúdo, ou
-            entre em <Link href="/admin/cursos" className="underline decoration-mesa-300 hover:text-mesa-800">Cursos</Link> pra
+            Clique em uma temática pra abrir como discípulo e revisar o conteúdo, ou
+            entre em <Link href="/admin/cursos" className="underline decoration-mesa-300 hover:text-mesa-800">Temáticas</Link> pra
             ver matrículas, progresso e gargalos.
           </p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -113,7 +113,7 @@ export default async function AdminPage() {
                       </span>
                     )}
                     <span className="rounded-full bg-bege-100 px-2.5 py-0.5 text-xs font-medium text-bege-700">
-                      Vista de aluno
+                      Vista de discípulo
                     </span>
                   </div>
                   <h3 className="mb-2 font-serif text-xl font-semibold text-mesa-800 group-hover:text-mesa-900">

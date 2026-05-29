@@ -86,7 +86,7 @@ export default function Home() {
               </div>
               <div>
                 <p className="font-serif text-3xl font-semibold text-oliveira-600">12</p>
-                <p className="mt-1 text-xs text-bege-600">cursos publicados</p>
+                <p className="mt-1 text-xs text-bege-600">temáticas publicadas</p>
               </div>
               <div>
                 <p className="font-serif text-3xl font-semibold text-bege-700">7 anos</p>
@@ -148,7 +148,7 @@ export default function Home() {
               {
                 num: "02",
                 title: "Formação",
-                text: "Cursos, livros, atividades de reflexão escrita com devolutiva pastoral. Cada resposta é lida, cada caminhada acompanhada. A formação não é informação — é transformação.",
+                text: "Temáticas, livros, atividades de reflexão escrita com devolutiva pastoral. Cada resposta é lida, cada caminhada acompanhada. A formação não é informação — é transformação.",
                 cor: "from-bege-100 to-bege-50",
                 accent: "bg-bege-700",
                 img: IMG_BIBLIA,
@@ -191,7 +191,7 @@ export default function Home() {
                 Uma plataforma para a caminhada inteira.
               </h2>
               <p className="mb-8 text-lg leading-relaxed text-bege-700">
-                Cursos de discipulado, livros com questões de reflexão, atividades escritas com devolutiva do líder. Tudo num só lugar, no seu ritmo, com a comunidade Ekballo ao redor.
+                Temáticas de discipulado, livros com questões de reflexão, atividades escritas com devolutiva do líder. Tudo num só lugar, no seu ritmo, com a comunidade Ekballo ao redor.
               </p>
               <ul className="space-y-4">
                 {[

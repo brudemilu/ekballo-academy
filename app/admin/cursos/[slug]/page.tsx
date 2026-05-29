@@ -34,11 +34,11 @@ export default async function AdminCursoProgressaoPage({
         href="/admin/cursos"
         className="mb-6 inline-block text-sm text-mesa-600 hover:text-mesa-800"
       >
-        ← Todos os cursos
+        ← Todas as temáticas
       </Link>
 
       <div className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-        Progresso do curso
+        Progresso da temática
       </div>
       <h1 className="mb-2 font-serif text-4xl font-semibold text-mesa-800">
         {curso.titulo}

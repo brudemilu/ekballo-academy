@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 // Número oficial do WhatsApp da Ekballo (Pr. Bruno) — formato internacional sem + ou espaços
 const WHATSAPP_NUMERO = "5531994108839";
 const MENSAGEM_PADRAO =
-  "Olá Pr. Bruno! Vim pela Ekballo Academy e gostaria de saber mais sobre os cursos.";
+  "Olá Pr. Bruno! Vim pela Ekballo Academy e gostaria de saber mais sobre as temáticas.";
 
 // Rotas onde o botão flutuante NÃO aparece (atrapalha leitura / sobrepõe UI).
 // Páginas internas de estudo: leitor de aula, leitor da Bíblia e detalhe
@@ -56,7 +56,7 @@ export function WhatsAppFloat() {
             </button>
           </div>
           <p className="mb-4 text-sm leading-relaxed text-bege-700">
-            Quer tirar dúvida sobre os cursos, falar sobre discipulado ou se conectar com a comunidade? Manda mensagem.
+            Quer tirar dúvida sobre as temáticas, falar sobre discipulado ou se conectar com a comunidade? Manda mensagem.
           </p>
           <a
             href={link}

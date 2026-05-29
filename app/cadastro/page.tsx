@@ -195,7 +195,7 @@ export default function CadastroPage() {
                 placeholder="(11) 99999-8888"
               />
               <p className="mt-1.5 text-xs text-mesa-500">
-                Usaremos para te avisar sobre novos cursos e devolutivas pelo WhatsApp.
+                Usaremos para te avisar sobre novas temáticas e devolutivas pelo WhatsApp.
               </p>
             </div>
 

@@ -114,7 +114,7 @@ export function PerfilForm({
           className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
         />
         <p className="mt-1.5 text-xs text-mesa-500">
-          Usamos pra avisar sobre devolutivas, novos cursos e lembretes.
+          Usamos pra avisar sobre devolutivas, novas temáticas e lembretes.
         </p>
       </div>
 

@@ -66,8 +66,8 @@ export default async function DashboardPage() {
             Olá, {greetingName(session.profile?.nome)}.
           </h1>
           <p className="mt-3 max-w-2xl text-mesa-700">
-            Aqui está sua trilha. Escolha um curso, faça no seu ritmo, deixe sua
-            reflexão. O líder vai ler e te responder.
+            Aqui está sua trilha. Escolha uma temática, faça no seu ritmo, deixe
+            sua reflexão. O líder vai ler e te responder.
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
               Sua matrícula ainda não foi liberada.
             </p>
             <p className="mt-2 mx-auto max-w-md text-sm text-mesa-500">
-              Seu líder pastoral vai te matricular nos cursos da sua trilha. Quando isso acontecer, eles aparecem aqui.
+              Seu líder pastoral vai te matricular nas temáticas da sua trilha. Quando isso acontecer, elas aparecem aqui.
             </p>
           </div>
         ) : (

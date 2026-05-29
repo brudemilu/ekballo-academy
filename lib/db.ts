@@ -629,7 +629,7 @@ export async function listEmailTemplates(): Promise<EmailTemplate[]> {
       {
         id: "mock-2",
         chave: "boas-vindas-curso",
-        descricao: "Email enviado ao aluno matriculado em um curso.",
+        descricao: "Email enviado ao discípulo matriculado em uma temática.",
         assunto: "Bem-vindo(a) ao curso {{nome_curso}}",
         corpo_html: "<p>Mock template.</p>",
         corpo_texto: "Mock template.",
@@ -641,7 +641,7 @@ export async function listEmailTemplates(): Promise<EmailTemplate[]> {
       {
         id: "mock-3",
         chave: "lembrete-inatividade",
-        descricao: "Lembrete pra aluno inativo há N dias.",
+        descricao: "Lembrete pra discípulo inativo há N dias.",
         assunto: "Sentimos sua falta no curso {{nome_curso}}",
         corpo_html: "<p>Mock template.</p>",
         corpo_texto: "Mock template.",
@@ -689,7 +689,7 @@ export async function updateEmailTemplate(
 // -------- ADMIN: MENSAGENS (broadcast) --------
 
 export type MensagemRich = Mensagem & {
-  destino_label: string; // "Todos", "Curso: X", "Aluno: Y"
+  destino_label: string; // "Todos", "Temática: X", "Discípulo: Y"
 };
 
 export async function listMensagens(limit = 50): Promise<MensagemRich[]> {
@@ -731,10 +731,10 @@ export async function listMensagens(limit = 50): Promise<MensagemRich[]> {
     ...m,
     destino_label:
       m.destino_tipo === "todos"
-        ? "Todos os alunos"
+        ? "Todos os discípulos"
         : m.destino_tipo === "curso"
-          ? `Curso: ${cursoMap.get(m.destino_id || "") || "?"}`
-          : `Aluno: ${alunoMap.get(m.destino_id || "") || "?"}`,
+          ? `Temática: ${cursoMap.get(m.destino_id || "") || "?"}`
+          : `Discípulo: ${alunoMap.get(m.destino_id || "") || "?"}`,
   }));
 }
 
@@ -755,21 +755,21 @@ export async function getMensagemComDestinatarios(
   const mensagem = mensagemRow as Mensagem;
 
   // Label do destino
-  let destino_label = "Todos os alunos";
+  let destino_label = "Todos os discípulos";
   if (mensagem.destino_tipo === "curso" && mensagem.destino_id) {
     const { data } = await supabase
       .from("cursos")
       .select("titulo")
       .eq("id", mensagem.destino_id)
       .single();
-    destino_label = `Curso: ${data?.titulo || "?"}`;
+    destino_label = `Temática: ${data?.titulo || "?"}`;
   } else if (mensagem.destino_tipo === "aluno" && mensagem.destino_id) {
     const { data } = await supabase
       .from("profiles")
       .select("nome, email")
       .eq("id", mensagem.destino_id)
       .single();
-    destino_label = `Aluno: ${data?.nome || data?.email || "?"}`;
+    destino_label = `Discípulo: ${data?.nome || data?.email || "?"}`;
   }
 
   const { data: destRows } = await supabase

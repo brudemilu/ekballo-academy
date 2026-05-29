@@ -16,10 +16,10 @@ export default async function AdminCursosPage() {
         Conteúdo
       </p>
       <h1 className="mb-2 font-serif text-4xl font-semibold text-mesa-800">
-        Cursos
+        Temáticas
       </h1>
       <p className="mb-8 text-sm text-mesa-600">
-        Clique em um curso pra ver progresso por aula, por discípulo e onde estão
+        Clique em uma temática pra ver progresso por aula, por discípulo e onde estão
         os gargalos. Para criar ou editar conteúdo (aulas, atividades), use o
         Supabase.
       </p>

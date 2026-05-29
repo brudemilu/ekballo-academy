@@ -166,7 +166,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
           <div className="grid gap-2 sm:grid-cols-3">
             {([
               { v: "todos", label: "Todos os discípulos" },
-              { v: "curso", label: "Discípulos de um curso" },
+              { v: "curso", label: "Discípulos de uma temática" },
               { v: "aluno", label: "Discípulo específico" },
             ] as { v: DestinoTipo; label: string }[]).map((opt) => (
               <label
@@ -199,7 +199,7 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
               onChange={(e) => setDestinoId(e.target.value)}
               className="mt-3 w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
             >
-              <option value="">Selecione um curso…</option>
+              <option value="">Selecione uma temática…</option>
               {cursos.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.titulo} ({c.matriculados} matriculado{c.matriculados === 1 ? "" : "s"})

@@ -58,11 +58,11 @@ export async function POST(req: NextRequest) {
     .select("titulo, slug, external_path")
     .eq("id", cursoId)
     .single();
-  const tituloCurso = curso?.titulo || "Curso";
+  const tituloCurso = curso?.titulo || "Temática";
   const url = curso?.external_path || (curso?.slug ? `/cursos/${curso.slug}` : "/dashboard");
 
   const push = await enviarPush([alunoId], {
-    title: "✨ Curso liberado",
+    title: "✨ Temática liberada",
     body: `Você foi matriculado em "${tituloCurso}". Toque pra começar.`,
     url,
     tag: `matricula-${cursoId}`,

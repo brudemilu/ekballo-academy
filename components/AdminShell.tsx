@@ -24,7 +24,7 @@ type Item = {
 
 const ITEMS: Item[] = [
   { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral" },
-  { key: "cursos", label: "Temática", href: "/admin/cursos", hint: "Progresso por curso e discípulo" },
+  { key: "cursos", label: "Temáticas", href: "/admin/cursos", hint: "Progresso por temática e discípulo" },
   { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas" },
   { key: "alunos", label: "Discípulos", href: "/admin/alunos", hint: "Matrículas e contatos" },
   { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email e WhatsApp" },

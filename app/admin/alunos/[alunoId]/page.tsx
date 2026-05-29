@@ -77,7 +77,7 @@ export default async function AdminAlunoPage({
         Matrículas
       </h2>
       <p className="mb-6 text-sm text-mesa-600">
-        Marque os cursos em que este discípulo deve ter acesso.
+        Marque as temáticas em que este discípulo deve ter acesso.
       </p>
 
       {cursos.length === 0 ? (
