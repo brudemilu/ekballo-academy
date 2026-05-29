@@ -78,6 +78,7 @@ const CAPAS: Record<string, CapaConfig> = {
     acentoCor: "#CFE0E6",
     preLabelCor: "#A8C4CE",
     rodapeCor: "#A8C4CE",
+    livroUrl: "https://m.media-amazon.com/images/I/71hF00oPVYL.jpg",
   },
 };
 
