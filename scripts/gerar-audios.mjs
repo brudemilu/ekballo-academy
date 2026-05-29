@@ -59,6 +59,34 @@ function fail(msg) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Erro sinalizando que a cota DIÁRIA do free tier acabou — não adianta insistir hoje.
+class QuotaDiariaError extends Error {}
+
+// POST ao Gemini com retry em erros transitórios (500/503/429-de-rate).
+// Em 429 de cota diária (FreeTier/PerDay), lança QuotaDiariaError para a rodada parar limpo.
+async function geminiPost(url, body, { tentativas = 3 } = {}) {
+  let ultimo = "";
+  for (let i = 0; i < tentativas; i++) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) return res.json();
+    const txt = await res.text();
+    if (res.status === 429 && /PerDay|FreeTier|per day/i.test(txt)) {
+      throw new QuotaDiariaError("cota diária do free tier esgotada");
+    }
+    ultimo = `HTTP ${res.status}: ${txt.slice(0, 200)}`;
+    if ([429, 500, 503].includes(res.status) && i < tentativas - 1) {
+      await sleep(3000 * (i + 1)); // backoff: 3s, 6s
+      continue;
+    }
+    break;
+  }
+  throw new Error(ultimo);
+}
+
 const supabase = DRY ? null : createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
 // ---------- Gemini: roteiro ----------
@@ -83,16 +111,10 @@ CONTEÚDO (base para o resumo):
 ${conteudo.slice(0, 12000)}`;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.9, maxOutputTokens: 2048 },
-    }),
+  const json = await geminiPost(url, {
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.9, maxOutputTokens: 2048 },
   });
-  if (!res.ok) throw new Error(`roteiro HTTP ${res.status}: ${await res.text()}`);
-  const json = await res.json();
   const txt = json?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "";
   // mantém só linhas "Ana:" / "Beto:"
   const linhas = txt
@@ -107,26 +129,20 @@ ${conteudo.slice(0, 12000)}`;
 async function gerarAudioPCM(roteiro) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent`;
   const texto = `Leia como um podcast em português do Brasil, natural, animado e com boa dicção:\n\n${roteiro}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: texto }] }],
-      generationConfig: {
-        responseModalities: ["AUDIO"],
-        speechConfig: {
-          multiSpeakerVoiceConfig: {
-            speakerVoiceConfigs: [
-              { speaker: HOSTS.a, voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICES[HOSTS.a] } } },
-              { speaker: HOSTS.b, voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICES[HOSTS.b] } } },
-            ],
-          },
+  const json = await geminiPost(url, {
+    contents: [{ parts: [{ text: texto }] }],
+    generationConfig: {
+      responseModalities: ["AUDIO"],
+      speechConfig: {
+        multiSpeakerVoiceConfig: {
+          speakerVoiceConfigs: [
+            { speaker: HOSTS.a, voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICES[HOSTS.a] } } },
+            { speaker: HOSTS.b, voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICES[HOSTS.b] } } },
+          ],
         },
       },
-    }),
+    },
   });
-  if (!res.ok) throw new Error(`tts HTTP ${res.status}: ${await res.text()}`);
-  const json = await res.json();
   const part = json?.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
   if (!part) throw new Error("TTS sem áudio: " + JSON.stringify(json).slice(0, 300));
   const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1]) || 24000;
@@ -217,6 +233,11 @@ async function main() {
         else if (antes && !FORCE) skip++;
         else ok++;
       } catch (e) {
+        if (e instanceof QuotaDiariaError) {
+          console.log(`\n⏸  Cota diária do free tier (10 áudios/dia) esgotada. Pare por hoje e rode de novo amanhã —\n   o script pula os que já têm áudio e continua de onde parou. (gerados nesta rodada: ${ok})`);
+          console.log(`\nFim. gerados=${ok} pulados=${skip} erros=${err}`);
+          return;
+        }
         err++;
         console.error("  ✗ ERRO:", e.message);
       }
