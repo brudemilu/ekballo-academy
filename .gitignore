@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Claude Code
 .claude/
+
+# Áudios gerados localmente pelo scripts/gerar-audios.mjs (ficam no Supabase Storage)
+scripts/audios-gerados/

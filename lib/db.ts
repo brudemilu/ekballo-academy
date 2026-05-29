@@ -157,6 +157,24 @@ export async function getMaterialUrl(materialPathOrUrl: string | null): Promise<
   return data.signedUrl;
 }
 
+// Resolve `aula.audio_url` (overview em podcast) para um link tocável.
+// Mesmo esquema do material: path no bucket privado `materiais-cursos`
+// (pasta `audios/`) → signed URL. Validade de 6h para cobrir a audição
+// inteira sem expirar no meio. http(s):// e rotas locais passam direto.
+export async function getAudioUrl(audioPathOrUrl: string | null | undefined): Promise<string | null> {
+  if (!audioPathOrUrl) return null;
+  if (/^https?:\/\//i.test(audioPathOrUrl)) return audioPathOrUrl;
+  if (audioPathOrUrl.startsWith("/")) return audioPathOrUrl;
+  if (isMockMode()) return null; // sem Storage no mock
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .storage
+    .from("materiais-cursos")
+    .createSignedUrl(audioPathOrUrl, 60 * 60 * 6);
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
+}
+
 // -------- ATIVIDADES --------
 
 export async function listAtividadesByAula(aulaId: string): Promise<Atividade[]> {
