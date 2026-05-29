@@ -10,6 +10,7 @@ import {
   getCursoBySlug,
   getAula,
   getMaterialUrl,
+  getAudioUrl,
   isMatriculado,
   listAtividadesByAula,
   listRespostasByAluno,
@@ -50,11 +51,12 @@ export default async function AulaPage({
     }
   }
 
-  const [atividades, respostas, concluida, materialUrl] = await Promise.all([
+  const [atividades, respostas, concluida, materialUrl, audioUrl] = await Promise.all([
     listAtividadesByAula(aulaId),
     listRespostasByAluno(session.userId),
     jaConcluiu(session.userId, aulaId),
     getMaterialUrl(aula.material_url),
+    getAudioUrl(aula.audio_url),
   ]);
 
   const respostasMap = new Map(respostas.map((r) => [r.atividade_id, r]));
@@ -139,6 +141,18 @@ export default async function AulaPage({
                 allowFullScreen
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               />
+            </div>
+          )}
+
+          {audioUrl && (
+            <div className="mb-8 rounded-xl border border-oliveira-200 bg-oliveira-50 p-4">
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-oliveira-700">
+                🎧 Ouça esta aula — conversa-resumo
+              </p>
+              <audio controls preload="none" className="w-full">
+                <source src={audioUrl} />
+                Seu navegador não suporta áudio.
+              </audio>
             </div>
           )}
 

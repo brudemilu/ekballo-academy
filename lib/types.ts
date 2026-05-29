@@ -31,6 +31,7 @@ export type Aula = {
   conteudo: string | null;
   video_url: string | null;
   material_url: string | null;
+  audio_url?: string | null;
   ordem: number;
   created_at: string;
 };
