@@ -62,9 +62,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Erro sinalizando que a cota DIÁRIA do free tier acabou — não adianta insistir hoje.
 class QuotaDiariaError extends Error {}
 
-// POST ao Gemini com retry em erros transitórios (500/503/429-de-rate).
-// Em 429 de cota diária (FreeTier/PerDay), lança QuotaDiariaError para a rodada parar limpo.
-async function geminiPost(url, body, { tentativas = 3 } = {}) {
+// POST ao Gemini com retry em erros transitórios. Distingue:
+//  - 429 com "PerDay" → cota DIÁRIA real do free tier → QuotaDiariaError (para a rodada).
+//  - 429 sem "PerDay" (rate por minuto) / 500 / 503 → espera (respeitando retryDelay) e tenta de novo.
+async function geminiPost(url, body, { tentativas = 6 } = {}) {
   let ultimo = "";
   for (let i = 0; i < tentativas; i++) {
     const res = await fetch(url, {
@@ -74,12 +75,14 @@ async function geminiPost(url, body, { tentativas = 3 } = {}) {
     });
     if (res.ok) return res.json();
     const txt = await res.text();
-    if (res.status === 429 && /PerDay|FreeTier|per day/i.test(txt)) {
+    if (res.status === 429 && /PerDay/i.test(txt)) {
       throw new QuotaDiariaError("cota diária do free tier esgotada");
     }
-    ultimo = `HTTP ${res.status}: ${txt.slice(0, 200)}`;
+    ultimo = `HTTP ${res.status}: ${txt.slice(0, 160)}`;
     if ([429, 500, 503].includes(res.status) && i < tentativas - 1) {
-      await sleep(3000 * (i + 1)); // backoff: 3s, 6s
+      const m = /"retryDelay":\s*"(\d+(?:\.\d+)?)s"/.exec(txt);
+      const espera = m ? Math.ceil(parseFloat(m[1]) * 1000) + 800 : 5000 * (i + 1);
+      await sleep(Math.min(espera, 65000)); // respeita retryDelay (rate por minuto), teto 65s
       continue;
     }
     break;
@@ -113,7 +116,8 @@ ${conteudo.slice(0, 12000)}`;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent`;
   const json = await geminiPost(url, {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.9, maxOutputTokens: 2048 },
+    // thinkingBudget: 0 evita que o "raciocínio" consuma o orçamento e trunque o diálogo.
+    generationConfig: { temperature: 0.9, maxOutputTokens: 3072, thinkingConfig: { thinkingBudget: 0 } },
   });
   const txt = json?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "";
   // mantém só linhas "Ana:" / "Beto:"
@@ -129,7 +133,7 @@ ${conteudo.slice(0, 12000)}`;
 async function gerarAudioPCM(roteiro) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent`;
   const texto = `Leia como um podcast em português do Brasil, natural, animado e com boa dicção:\n\n${roteiro}`;
-  const json = await geminiPost(url, {
+  const body = {
     contents: [{ parts: [{ text: texto }] }],
     generationConfig: {
       responseModalities: ["AUDIO"],
@@ -142,11 +146,18 @@ async function gerarAudioPCM(roteiro) {
         },
       },
     },
-  });
-  const part = json?.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
-  if (!part) throw new Error("TTS sem áudio: " + JSON.stringify(json).slice(0, 300));
-  const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1]) || 24000;
-  return { pcm: Buffer.from(part.inlineData.data, "base64"), rate };
+  };
+  // O TTS às vezes responde 200 SEM áudio (oscilação de demanda) — tenta de novo.
+  for (let tent = 0; tent < 4; tent++) {
+    const json = await geminiPost(url, body);
+    const part = json?.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
+    if (part) {
+      const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1]) || 24000;
+      return { pcm: Buffer.from(part.inlineData.data, "base64"), rate };
+    }
+    await sleep(5000 * (tent + 1));
+  }
+  throw new Error("TTS não retornou áudio após várias tentativas (alta demanda)");
 }
 
 // PCM s16le mono -> WAV
