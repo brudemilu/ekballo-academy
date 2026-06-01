@@ -13,6 +13,9 @@ type Props = {
   pergunta: string;
   respostaInicial?: string;
   comentarioLider?: string | null;
+  // "anotacao" = caderno de anotações do capítulo (o líder lê, mas não é obrigatório
+  // nem bloqueia a próxima aula). "reflexao" = pergunta de reflexão padrão.
+  variante?: "reflexao" | "anotacao";
 };
 
 export function AtividadeForm({
@@ -22,7 +25,9 @@ export function AtividadeForm({
   pergunta,
   respostaInicial,
   comentarioLider,
+  variante = "reflexao",
 }: Props) {
+  const ehAnotacao = variante === "anotacao";
   const router = useRouter();
   const [texto, setTexto] = useState(respostaInicial || "");
   const [salvando, startTransition] = useTransition();
@@ -74,11 +79,15 @@ export function AtividadeForm({
     <div className="rounded-2xl border border-mesa-200 bg-white p-6 sm:p-8">
       <div className="mb-2 flex items-center gap-2">
         <p className="text-xs font-medium uppercase tracking-wider text-mesa-500">
-          Reflexão {String(perguntaIndex + 1).padStart(2, "0")}
+          {ehAnotacao
+            ? "✍️ Anotações do capítulo"
+            : `Reflexão ${String(perguntaIndex + 1).padStart(2, "0")}`}
         </p>
-        <span className="rounded-full bg-laranja-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-laranja-700">
-          Obrigatória
-        </span>
+        {!ehAnotacao && (
+          <span className="rounded-full bg-laranja-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-laranja-700">
+            Obrigatória
+          </span>
+        )}
       </div>
       <h3 className="mb-5 font-serif text-xl font-semibold leading-snug text-mesa-800">
         {pergunta}
@@ -91,26 +100,42 @@ export function AtividadeForm({
           if (salvo === "ok") setSalvo("idle");
         }}
         rows={6}
-        placeholder="Escreva aqui sua reflexão..."
+        placeholder={
+          ehAnotacao
+            ? "Escreva aqui suas anotações sobre o capítulo — o que te marcou, dúvidas, aplicações..."
+            : "Escreva aqui sua reflexão..."
+        }
         className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/40 px-4 py-3 text-mesa-900 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
       />
 
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-mesa-500">
           {salvo === "ok"
-            ? "✓ Sua resposta está salva. O líder vai ler."
+            ? ehAnotacao
+              ? "✓ Anotações salvas. Seu líder pode ler."
+              : "✓ Sua resposta está salva. O líder vai ler."
             : salvando
               ? "Salvando..."
               : salvo === "erro"
                 ? "Erro ao salvar — tente novamente."
-                : "Resposta necessária para liberar a próxima aula."}
+                : ehAnotacao
+                  ? "Suas anotações ficam salvas e seu líder pode ler."
+                  : "Resposta necessária para liberar a próxima aula."}
         </p>
         <button
           onClick={handleSalvar}
           disabled={salvando || !texto.trim()}
           className="rounded-full bg-mesa-700 px-5 py-2 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-50"
         >
-          {salvando ? "Salvando..." : salvo === "ok" ? "Atualizar resposta" : "Salvar reflexão"}
+          {salvando
+            ? "Salvando..."
+            : salvo === "ok"
+              ? ehAnotacao
+                ? "Atualizar anotações"
+                : "Atualizar resposta"
+              : ehAnotacao
+                ? "Salvar anotações"
+                : "Salvar reflexão"}
         </button>
       </div>
 

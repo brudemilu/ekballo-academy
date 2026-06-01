@@ -80,7 +80,9 @@ export default async function AulaPage({
 
   const aulaConcluida = await aulaCompleta(session.userId, aula.id);
   const temMCs = atividades.some((a) => a.tipo === "multipla_escolha");
-  const temReflexoes = atividades.some((a) => a.tipo === "reflexao");
+  // "anotacao" é uma reflexão com razao='anotacao' — caderno do capítulo (não obrigatória).
+  const temReflexoes = atividades.some((a) => a.tipo === "reflexao" && a.razao !== "anotacao");
+  const temAnotacoes = atividades.some((a) => a.tipo === "reflexao" && a.razao === "anotacao");
   const temAtividades = atividades.length > 0;
 
   return (
@@ -171,14 +173,20 @@ export default async function AulaPage({
           <div className="mb-12 space-y-5">
             <div className="mb-2">
               <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-                {temMCs && temReflexoes
-                  ? "Questões e reflexões"
+                {temMCs && (temReflexoes || temAnotacoes)
+                  ? "Questões e anotações"
                   : temMCs
                     ? "Questões da aula"
-                    : "Reflexões da aula"}
+                    : temReflexoes
+                      ? "Reflexões da aula"
+                      : "Anotações do capítulo"}
               </p>
               <h2 className="font-serif text-2xl font-semibold text-mesa-800">
-                Responda todas as questões para liberar a próxima aula.
+                {temMCs
+                  ? "Responda todas as questões para liberar a próxima aula."
+                  : temReflexoes
+                    ? "Responda as reflexões da aula."
+                    : "Registre aqui o que este capítulo falou com você."}
               </h2>
             </div>
             {atividadesEnriquecidas.map(({ atividade, alternativas, alternativaSalvaId }, idx) => {
@@ -197,6 +205,7 @@ export default async function AulaPage({
                 );
               }
               const r = respostasMap.get(atividade.id);
+              const ehAnotacao = atividade.tipo === "reflexao" && atividade.razao === "anotacao";
               return (
                 <AtividadeForm
                   key={atividade.id}
@@ -206,6 +215,7 @@ export default async function AulaPage({
                   pergunta={atividade.pergunta}
                   respostaInicial={r?.texto || undefined}
                   comentarioLider={r?.comentario_lider}
+                  variante={ehAnotacao ? "anotacao" : "reflexao"}
                 />
               );
             })}
