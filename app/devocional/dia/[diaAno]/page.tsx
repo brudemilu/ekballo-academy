@@ -3,10 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { MarcarDevocionalForm } from "@/components/MarcarDevocionalForm";
+import { ReflexaoDevocionalForm } from "@/components/ReflexaoDevocionalForm";
 import { getCurrentSession } from "@/lib/db";
 import {
   getDevocionalAnualByDia,
   isDevocionalAnualMarcado,
+  getReflexaoAnual,
 } from "@/lib/devocionais";
 
 const MESES = [
@@ -30,6 +32,7 @@ export default async function DevocionalDiaPage({
   if (!devocional) notFound();
 
   const marcado = await isDevocionalAnualMarcado(session.userId, diaAno);
+  const reflexaoInicial = await getReflexaoAnual(session.userId, diaAno);
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -105,6 +108,14 @@ export default async function DevocionalDiaPage({
             diaAno={diaAno}
             totalDias={365}
             concluidoInicial={marcado}
+          />
+        </div>
+
+        {/* Reflexão pessoal — o que mais falou contigo (opcional) */}
+        <div className="mt-6 rounded-2xl border border-mesa-200 bg-white p-6">
+          <ReflexaoDevocionalForm
+            diaAno={diaAno}
+            textoInicial={reflexaoInicial}
           />
         </div>
 

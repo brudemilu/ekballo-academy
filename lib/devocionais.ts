@@ -258,6 +258,22 @@ export async function isDevocionalAnualMarcado(
   return !!data;
 }
 
+// Reflexão pessoal do aluno num dia (1..365). "" se não houver.
+export async function getReflexaoAnual(
+  alunoId: string,
+  diaAno: number
+): Promise<string> {
+  if (isMockMode()) return "";
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("devocional_anual_reflexao")
+    .select("texto")
+    .eq("aluno_id", alunoId)
+    .eq("dia_ano", diaAno)
+    .maybeSingle();
+  return (data as { texto: string } | null)?.texto ?? "";
+}
+
 // Formata "2026-05-25" → "25 de mai" (curto) ou "Segunda, 25 de maio" (longo)
 export function formatDataPt(dataStr: string, longo = false): string {
   const [y, m, d] = dataStr.split("-").map(Number);
