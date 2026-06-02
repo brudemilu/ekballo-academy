@@ -440,6 +440,21 @@ export async function listOutrasRespostasDoAluno(alunoId: string, excludeId: str
 
 // -------- ADMIN: ALUNOS --------
 
+// Ordena discípulos por nome em ordem alfabética (pt-BR, ignorando
+// maiúsculas/acentos). Quem ainda está sem nome vai para o fim,
+// desempatando pelo e-mail.
+function ordenarPorNome(
+  a: { nome: string | null; email: string },
+  b: { nome: string | null; email: string }
+): number {
+  const na = (a.nome || "").trim();
+  const nb = (b.nome || "").trim();
+  if (!na && !nb) return a.email.localeCompare(b.email, "pt-BR");
+  if (!na) return 1;
+  if (!nb) return -1;
+  return na.localeCompare(nb, "pt-BR", { sensitivity: "base" });
+}
+
 export async function listAllAlunos(): Promise<{
   id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string; respostasCount: number;
 }[]> {
@@ -447,20 +462,21 @@ export async function listAllAlunos(): Promise<{
     return MOCK_ALUNOS.map((a) => ({
       ...a,
       respostasCount: MOCK_RESPOSTAS.filter((r) => r.aluno_id === a.id).length,
-    })).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    })).sort(ordenarPorNome);
   }
   const supabase = await createClient();
   const { data: alunos } = await supabase
     .from("profiles")
-    .select("id, nome, email, telefone, turma, is_admin, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, nome, email, telefone, turma, is_admin, created_at");
   const { data: r } = await supabase.from("respostas").select("aluno_id");
   const map = new Map<string, number>();
   (r || []).forEach((x: { aluno_id: string }) => map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1));
-  return (alunos || []).map((a: { id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string }) => ({
-    ...a,
-    respostasCount: map.get(a.id) || 0,
-  }));
+  return (alunos || [])
+    .map((a: { id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string }) => ({
+      ...a,
+      respostasCount: map.get(a.id) || 0,
+    }))
+    .sort(ordenarPorNome);
 }
 
 // -------- ADMIN: CURSOS COM STATS --------

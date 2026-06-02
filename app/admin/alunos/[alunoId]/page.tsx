@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { MatriculaToggle } from "@/components/MatriculaToggle";
+import { AdminAlunoForm } from "@/components/AdminAlunoForm";
 import {
   getCurrentSession,
   getAlunoById,
@@ -72,6 +73,23 @@ export default async function AdminAlunoPage({
           </span>
         </div>
       </div>
+
+      <details className="mb-10 rounded-2xl border border-mesa-200 bg-white p-6">
+        <summary className="cursor-pointer select-none font-serif text-xl font-semibold text-mesa-800">
+          Editar cadastro
+        </summary>
+        <div className="mt-5">
+          <AdminAlunoForm
+            alunoId={alunoId}
+            initial={{
+              nome: aluno.nome || "",
+              email: aluno.email,
+              telefone: aluno.telefone || "",
+              turma: aluno.turma || "",
+            }}
+          />
+        </div>
+      </details>
 
       <h2 className="mb-2 font-serif text-2xl font-semibold text-mesa-800">
         Matrículas
