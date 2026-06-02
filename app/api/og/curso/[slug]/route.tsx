@@ -80,6 +80,18 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#A8C4CE",
     livroUrl: "https://m.media-amazon.com/images/I/71hF00oPVYL.jpg",
   },
+  "o-desafio-de-todo-lider": {
+    preLabel: "ESTUDO · LIDERANÇA CRISTÃ",
+    titulo: "O Desafio\nde Todo\nLíder",
+    subtitulo: "Da visão à ação",
+    rodape: "A partir do livro de Elias Dantas, Ph.D.",
+    bg: "linear-gradient(135deg, #241A12 0%, #4A3624 55%, #7E5C34 100%)",
+    textoCor: "#F8F1E4",
+    acentoCor: "#E9D2A4",
+    preLabelCor: "#D4B985",
+    rodapeCor: "#D4B985",
+    livroUrl: "/capas/o-desafio-de-todo-lider.png",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;
@@ -128,6 +140,12 @@ export async function GET(
   const h = 900;
 
   const layoutLivro = !!config.livroUrl;
+  // Capas locais (em /public) começam com "/"; precisam do origin pro Satori buscar.
+  const livroSrc = config.livroUrl
+    ? config.livroUrl.startsWith("/")
+      ? `${origin}${config.livroUrl}`
+      : config.livroUrl
+    : undefined;
 
   return new ImageResponse(
     (
@@ -190,7 +208,7 @@ export async function GET(
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={config.livroUrl!}
+              src={livroSrc!}
               alt=""
               width={460}
               height={690}
