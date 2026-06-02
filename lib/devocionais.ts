@@ -274,6 +274,108 @@ export async function getReflexaoAnual(
   return (data as { texto: string } | null)?.texto ?? "";
 }
 
+// ---------------------------------------------------------------
+// Reflexões dos alunos (devolutiva pastoral) — visão admin
+// A RLS (policy "devocional_reflexao_admin_read") permite que o
+// admin leia a reflexão de qualquer aluno. Esta função agrega todas
+// as reflexões com nome/email do autor e o devocional do dia.
+// ---------------------------------------------------------------
+
+export type ReflexaoAnualAdmin = {
+  aluno_id: string;
+  aluno_nome: string | null;
+  aluno_email: string;
+  dia_ano: number;
+  texto: string;
+  atualizado_em: string;
+  devocional_titulo: string | null;
+  devocional_tema: string | null;
+  mes: number | null;
+  dia: number | null;
+};
+
+export async function listReflexoesAnualAdmin(
+  limit = 300
+): Promise<ReflexaoAnualAdmin[]> {
+  if (isMockMode()) {
+    return [
+      {
+        aluno_id: "mock-aluno-1",
+        aluno_nome: "Aluno Exemplo",
+        aluno_email: "exemplo@ekballo.com",
+        dia_ano: 1,
+        texto:
+          "Essa palavra falou comigo porque me lembrou que cada dia é um recomeço.\n\n(reflexão mock — entre na produção pra ver as reais)",
+        atualizado_em: new Date().toISOString(),
+        devocional_titulo: "Cristo te fez novo",
+        devocional_tema: "Recomeço",
+        mes: 1,
+        dia: 1,
+      },
+    ];
+  }
+
+  const supabase = await createClient();
+  const { data: reflexoes } = await supabase
+    .from("devocional_anual_reflexao")
+    .select("aluno_id, dia_ano, texto, atualizado_em")
+    .order("atualizado_em", { ascending: false })
+    .limit(limit);
+
+  const rows = (reflexoes || []) as {
+    aluno_id: string;
+    dia_ano: number;
+    texto: string;
+    atualizado_em: string;
+  }[];
+  if (rows.length === 0) return [];
+
+  const alunoIds = [...new Set(rows.map((r) => r.aluno_id))];
+  const diaAnos = [...new Set(rows.map((r) => r.dia_ano))];
+
+  const [perfisRes, devocsRes] = await Promise.all([
+    supabase.from("profiles").select("id, nome, email").in("id", alunoIds),
+    supabase
+      .from("devocional_anual")
+      .select("dia_ano, titulo, tema, mes, dia")
+      .in("dia_ano", diaAnos),
+  ]);
+
+  const perfilMap = new Map(
+    ((perfisRes.data || []) as {
+      id: string;
+      nome: string | null;
+      email: string;
+    }[]).map((p) => [p.id, p])
+  );
+  const devocMap = new Map(
+    ((devocsRes.data || []) as {
+      dia_ano: number;
+      titulo: string;
+      tema: string;
+      mes: number;
+      dia: number;
+    }[]).map((d) => [d.dia_ano, d])
+  );
+
+  return rows.map((r) => {
+    const p = perfilMap.get(r.aluno_id);
+    const d = devocMap.get(r.dia_ano);
+    return {
+      aluno_id: r.aluno_id,
+      aluno_nome: p?.nome ?? null,
+      aluno_email: p?.email ?? "—",
+      dia_ano: r.dia_ano,
+      texto: r.texto,
+      atualizado_em: r.atualizado_em,
+      devocional_titulo: d?.titulo ?? null,
+      devocional_tema: d?.tema ?? null,
+      mes: d?.mes ?? null,
+      dia: d?.dia ?? null,
+    };
+  });
+}
+
 // Formata "2026-05-25" → "25 de mai" (curto) ou "Segunda, 25 de maio" (longo)
 export function formatDataPt(dataStr: string, longo = false): string {
   const [y, m, d] = dataStr.split("-").map(Number);

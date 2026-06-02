@@ -61,6 +61,22 @@ export default async function AdminPage() {
         ))}
       </div>
 
+      {/* Atalhos rápidos */}
+      <div className="mb-10 flex flex-wrap gap-3">
+        <Link
+          href="/admin/devocionais"
+          className="rounded-full border border-mesa-200 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:border-mesa-300 hover:bg-mesa-100"
+        >
+          📖 Devocionais
+        </Link>
+        <Link
+          href="/admin/devocionais/reflexoes"
+          className="rounded-full border border-mesa-200 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:border-mesa-300 hover:bg-mesa-100"
+        >
+          💬 Reflexões dos devocionais
+        </Link>
+      </div>
+
       {/* Meus cursos — vista de discípulo pra revisar conteúdo */}
       {cursos.length > 0 && (
         <section className="mb-10">

@@ -28,12 +28,20 @@ export default async function AdminDevocionaisPage() {
             Devocionais
           </h1>
         </div>
-        <Link
-          href="/admin/devocionais/novo"
-          className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
-        >
-          + Novo devocional
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/devocionais/reflexoes"
+            className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 hover:bg-mesa-100"
+          >
+            💬 Reflexões dos discípulos
+          </Link>
+          <Link
+            href="/admin/devocionais/novo"
+            className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+          >
+            + Novo devocional
+          </Link>
+        </div>
       </div>
 
       {!temHoje && (
