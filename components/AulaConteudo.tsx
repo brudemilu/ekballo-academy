@@ -384,6 +384,7 @@ function ImagemModal({
 }) {
   const [carregando, setCarregando] = useState(true);
   const [formato, setFormato] = useState<Formato>("feed");
+  const [compartilhando, setCompartilhando] = useState(false);
   const preview = imgUrl(texto, livroTitulo, autor, formato, false);
   const baixar = imgUrl(texto, livroTitulo, autor, formato, true);
 
@@ -391,6 +392,36 @@ function ImagemModal({
     if (f === formato) return;
     setCarregando(true);
     setFormato(f);
+  }
+
+  // Compartilha o arquivo da imagem pela folha nativa (volta sozinho pro app).
+  // Se o navegador não suportar, baixa a imagem.
+  async function compartilhar() {
+    setCompartilhando(true);
+    try {
+      const res = await fetch(preview);
+      const blob = await res.blob();
+      const file = new File([blob], "ekballo-trecho.png", { type: "image/png" });
+      const nav = navigator as Navigator & {
+        canShare?: (data?: ShareData) => boolean;
+      };
+      if (nav.canShare && nav.canShare({ files: [file] })) {
+        await nav.share({
+          files: [file],
+          title: livroTitulo,
+          text: autor ? `${texto} — ${autor}` : texto,
+        });
+      } else {
+        const a = document.createElement("a");
+        a.href = baixar;
+        a.download = "ekballo-trecho.png";
+        a.click();
+      }
+    } catch {
+      /* usuário cancelou ou falhou — ignora */
+    } finally {
+      setCompartilhando(false);
+    }
   }
 
   return (
@@ -462,17 +493,23 @@ function ImagemModal({
             download
             className="flex-1 rounded-full bg-mesa-700 py-2.5 text-center text-sm font-medium text-mesa-50 hover:bg-mesa-800"
           >
-            Baixar imagem
+            Baixar
           </a>
-          <a
-            href={preview}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-mesa-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-mesa-700 hover:bg-mesa-50"
+          <button
+            onClick={compartilhar}
+            disabled={compartilhando}
+            className="flex-1 rounded-full border border-mesa-300 bg-white py-2.5 text-center text-sm font-medium text-mesa-700 hover:bg-mesa-50 disabled:opacity-60"
           >
-            Abrir
-          </a>
+            {compartilhando ? "Abrindo…" : "Compartilhar"}
+          </button>
         </div>
+
+        <button
+          onClick={onClose}
+          className="mt-3 w-full py-1 text-center text-sm font-medium text-mesa-500 hover:text-mesa-700"
+        >
+          ← Voltar para a aula
+        </button>
       </div>
     </div>
   );
