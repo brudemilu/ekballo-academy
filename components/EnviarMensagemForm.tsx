@@ -15,15 +15,22 @@ type Curso = {
   matriculados: number;
   alunosComTelefone?: number;
 };
+type Template = {
+  id: string;
+  titulo: string;
+  corpo: string;
+  descricao: string | null;
+};
 
 type Props = {
   alunos: Aluno[];
   cursos: Curso[];
+  templates: Template[];
 };
 
 type DestinoTipo = "todos" | "curso" | "aluno";
 
-export function EnviarMensagemForm({ alunos, cursos }: Props) {
+export function EnviarMensagemForm({ alunos, cursos, templates }: Props) {
   const router = useRouter();
   const [destinoTipo, setDestinoTipo] = useState<DestinoTipo>("todos");
   const [destinoId, setDestinoId] = useState<string>("");
@@ -33,12 +40,24 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
   const [assunto, setAssunto] = useState("");
   const [corpoHtml, setCorpoHtml] = useState("");
   const [corpoTexto, setCorpoTexto] = useState("");
+  const [templateId, setTemplateId] = useState("");
   const [enviando, startTransition] = useTransition();
   const [resultado, setResultado] = useState<
-    | { tipo: "ok"; total: number; enviados: number; erros: number; mensagemId: string }
+    | { tipo: "ok"; total: number; enviados: number; erros: number; enfileirados: number; mensagemId: string }
     | { tipo: "erro"; mensagem: string }
     | null
   >(null);
+
+  // Aplica um template: usa o título como assunto e o corpo como texto
+  // (HTML simples com quebras viram <br>). {{nome}}/{{curso}} são trocados no envio.
+  function aplicarTemplate(id: string) {
+    setTemplateId(id);
+    const t = templates.find((x) => x.id === id);
+    if (!t) return;
+    setAssunto(t.titulo);
+    setCorpoTexto(t.corpo);
+    setCorpoHtml(t.corpo.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>\n"));
+  }
 
   function handleEnviar() {
     setResultado(null);
@@ -108,12 +127,14 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
           total: json.total_destinatarios,
           enviados: json.total_enviados,
           erros: json.total_erros,
+          enfileirados: json.whatsapp_enfileirados ?? 0,
           mensagemId: json.mensagem_id,
         });
         // Limpa form em sucesso
         setAssunto("");
         setCorpoHtml("");
         setCorpoTexto("");
+        setTemplateId("");
         router.refresh();
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -158,6 +179,33 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
   return (
     <div className="rounded-2xl border border-mesa-200 bg-white p-6 sm:p-8">
       <div className="space-y-5">
+        {/* Template (preenche assunto + corpo) */}
+        {templates.length > 0 && (
+          <div>
+            <label className="mb-2 block text-sm font-medium text-mesa-700">
+              Template (opcional)
+            </label>
+            <select
+              value={templateId}
+              onChange={(e) => aplicarTemplate(e.target.value)}
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
+            >
+              <option value="">Escrever do zero…</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.titulo}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-mesa-500">
+              Escolher um template preenche o assunto e a mensagem. Use{" "}
+              <code className="rounded bg-mesa-100 px-1">{"{{nome}}"}</code> e{" "}
+              <code className="rounded bg-mesa-100 px-1">{"{{curso}}"}</code> — são trocados pelo
+              nome do discípulo e pela temática no envio.
+            </p>
+          </div>
+        )}
+
         {/* Destinatário */}
         <div>
           <label className="mb-2 block text-sm font-medium text-mesa-700">
@@ -274,6 +322,19 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
               No WhatsApp a mensagem vai como texto plano (o assunto vira título em negrito; o HTML é convertido).
             </p>
           )}
+          {canalWhatsapp && totalComTelefone > 0 && (
+            <p className="mt-2 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-700">
+              📨 O WhatsApp entra numa <strong>fila e sai 1 por minuto</strong> (proteção contra
+              bloqueio do número). {totalComTelefone}{" "}
+              {totalComTelefone === 1 ? "mensagem" : "mensagens"} ≈{" "}
+              <strong>
+                {totalComTelefone < 60
+                  ? `${totalComTelefone} min`
+                  : `${Math.round((totalComTelefone / 60) * 10) / 10} h`}
+              </strong>{" "}
+              para concluir. Email e push saem na hora.
+            </p>
+          )}
         </div>
 
         {/* Assunto */}
@@ -328,6 +389,11 @@ export function EnviarMensagemForm({ alunos, cursos }: Props) {
           {resultado?.tipo === "ok" && (
             <span className="text-oliveira-700">
               ✓ Enviado pra {resultado.enviados}/{resultado.total}
+              {resultado.enfileirados > 0 && (
+                <span className="text-mesa-700">
+                  {" "}· {resultado.enfileirados} na fila do WhatsApp (1/min)
+                </span>
+              )}
               {resultado.erros > 0 && (
                 <span className="text-red-700"> · {resultado.erros} erros</span>
               )}

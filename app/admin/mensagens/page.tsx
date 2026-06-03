@@ -2,11 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { EnviarMensagemForm } from "@/components/EnviarMensagemForm";
+import { TemplatesMensagemManager } from "@/components/TemplatesMensagemManager";
+import { WhatsAppFilaPainel } from "@/components/WhatsAppFilaPainel";
 import {
   getCurrentSession,
   listAllAlunos,
   listCursosWithStats,
   listMensagens,
+  listMensagemTemplates,
 } from "@/lib/db";
 
 export default async function AdminMensagensPage() {
@@ -14,10 +17,11 @@ export default async function AdminMensagensPage() {
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const [alunos, cursos, mensagens] = await Promise.all([
+  const [alunos, cursos, mensagens, templates] = await Promise.all([
     listAllAlunos(),
     listCursosWithStats(),
     listMensagens(50),
+    listMensagemTemplates(),
   ]);
 
   const alunosNonAdmin = alunos.filter((a) => !a.is_admin);
@@ -49,7 +53,43 @@ export default async function AdminMensagensPage() {
           matriculados: c.matriculados,
           alunosComTelefone: c.alunosComTelefone,
         }))}
+        templates={templates.map((t) => ({
+          id: t.id,
+          titulo: t.titulo,
+          corpo: t.corpo,
+          descricao: t.descricao,
+        }))}
       />
+
+      <div className="mt-12">
+        <h2 className="mb-2 font-serif text-2xl font-semibold text-mesa-800">
+          Fila do WhatsApp
+        </h2>
+        <p className="mb-4 text-sm text-mesa-600">
+          Os envios individuais de WhatsApp saem 1 por minuto para proteger o número.
+          Acompanhe e cancele os pendentes aqui.
+        </p>
+        <WhatsAppFilaPainel />
+      </div>
+
+      <div className="mt-12">
+        <h2 className="mb-2 font-serif text-2xl font-semibold text-mesa-800">
+          Templates de mensagem
+        </h2>
+        <p className="mb-4 text-sm text-mesa-600">
+          Textos prontos para reusar no envio (ex.: lembrete de inatividade). Use{" "}
+          <code className="rounded bg-mesa-100 px-1">{"{{nome}}"}</code> e{" "}
+          <code className="rounded bg-mesa-100 px-1">{"{{curso}}"}</code> para personalizar.
+        </p>
+        <TemplatesMensagemManager
+          inicial={templates.map((t) => ({
+            id: t.id,
+            titulo: t.titulo,
+            corpo: t.corpo,
+            descricao: t.descricao,
+          }))}
+        />
+      </div>
 
       <div className="mt-12">
         <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">

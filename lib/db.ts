@@ -758,6 +758,45 @@ export async function updateEmailTemplate(
   await supabase.from("email_templates").update(patch).eq("chave", chave);
 }
 
+// -------- TEMPLATES DE MENSAGEM (texto curto, WhatsApp/push) --------
+
+export type MensagemTemplate = {
+  id: string;
+  titulo: string;
+  corpo: string;
+  descricao: string | null;
+  ativo: boolean;
+};
+
+export async function listMensagemTemplates(): Promise<MensagemTemplate[]> {
+  if (isMockMode()) {
+    return [
+      {
+        id: "mock-1",
+        titulo: "Lembrete: dias sem acessar",
+        corpo:
+          "Olá {{nome}}! 👋 Faz alguns dias que você não entra na plataforma. Que tal retomar a leitura de onde parou? 📖",
+        descricao: "Reengajamento de quem está há dias sem acessar.",
+        ativo: true,
+      },
+      {
+        id: "mock-2",
+        titulo: "Continue a leitura do livro",
+        corpo:
+          'Oi {{nome}}! Sua próxima aula de "{{curso}}" está te esperando. Continue firme nos estudos 💪.',
+        descricao: "Incentivo para seguir no curso.",
+        ativo: true,
+      },
+    ];
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("mensagem_templates")
+    .select("id, titulo, corpo, descricao, ativo")
+    .order("titulo", { ascending: true });
+  return (data || []) as MensagemTemplate[];
+}
+
 // -------- ADMIN: MENSAGENS (broadcast) --------
 
 export type MensagemRich = Mensagem & {

@@ -19,9 +19,8 @@ const FUNCTIONS_BASE = SUPABASE_URL.replace(
   ".functions.supabase.co"
 );
 const EDGE_EMAIL_URL = `${FUNCTIONS_BASE}/enviar-email`;
-// WhatsApp via Evolution GO (substituiu a Z-API). A edge function mantém o
-// mesmo contrato { destinatario, mensagem } -> { status, message_id }.
-const EDGE_WHATSAPP_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-evolution`;
+// WhatsApp não dispara mais daqui: os envios individuais entram em
+// `whatsapp_fila` e saem ~1/min via pg_cron (edge processar-whatsapp-fila).
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -156,6 +155,17 @@ export async function POST(req: NextRequest) {
       { erro: "nenhum destinatário válido encontrado pros canais selecionados" },
       { status: 400 }
     );
+  }
+
+  // Título do curso (pra substituir {{curso}} nos templates de WhatsApp).
+  let cursoTitulo = "";
+  if (destino_tipo === "curso" && destino_id) {
+    const { data: c } = await admin
+      .from("cursos")
+      .select("titulo")
+      .eq("id", destino_id)
+      .single();
+    cursoTitulo = c?.titulo || "";
   }
 
   // 5) Buscar autor (admin que está enviando)
@@ -296,76 +306,42 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // -------- WHATSAPP --------
+  // -------- WHATSAPP (vai pra FILA: ~1 envio/min via pg_cron) --------
+  // Em vez de disparar tudo de uma vez (risco de ban do número), cada
+  // destinatário com telefone válido vira uma linha em `whatsapp_fila`.
+  // A edge `processar-whatsapp-fila`, tocada pelo pg_cron, envia 1 por minuto
+  // e então atualiza whatsapp_status em mensagens_destinatarios.
+  let totalEnfileirados = 0;
   if (querWhatsapp) {
     const mensagemTexto = (corpo_texto && corpo_texto.trim()) || htmlParaTexto(corpo_html);
-    // WhatsApp não tem campo "assunto", então prefixamos com o assunto pra dar contexto.
-    const mensagemFinal = assunto?.trim()
+    const baseMensagem = assunto?.trim()
       ? `*${assunto.trim()}*\n\n${mensagemTexto}`
       : mensagemTexto;
 
-    for (const chunk of chunks) {
-      const results = await Promise.all(
-        chunk.map(async (d) => {
-          const digits = (d.telefone || "").replace(/\D+/g, "");
-          if (digits.length < 10) {
-            return { aluno_id: d.id, skip: true as const };
-          }
-          try {
-            const resp = await fetch(EDGE_WHATSAPP_URL, {
-              method: "POST",
-              headers: {
-                "x-internal-secret": INTERNAL_SECRET,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                destinatario: digits,
-                mensagem: mensagemFinal,
-              }),
-            });
-            const json = (await resp.json().catch(() => ({}))) as {
-              status?: string;
-              message_id?: string;
-              evolution_status?: number;
-              evolution_body?: unknown;
-              erro?: string;
-            };
-            if (resp.ok && json.status === "enviado") {
-              return { aluno_id: d.id, ok: true as const };
-            }
-            const erro = json.erro || JSON.stringify(json.evolution_body) || `HTTP ${resp.status}`;
-            return { aluno_id: d.id, ok: false as const, erro };
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            return { aluno_id: d.id, ok: false as const, erro: msg };
-          }
-        })
-      );
+    const filaRows = destinatarios
+      .map((d) => {
+        const digits = (d.telefone || "").replace(/\D+/g, "");
+        if (digits.length < 10) return null;
+        const primeiroNome = (d.nome || "").trim().split(/\s+/)[0] || "";
+        const corpo = baseMensagem
+          .replace(/\{\{\s*nome\s*\}\}/gi, primeiroNome)
+          .replace(/\{\{\s*curso\s*\}\}/gi, cursoTitulo || "seus estudos");
+        return {
+          mensagem_id: mensagemId,
+          aluno_id: d.id,
+          telefone: digits,
+          corpo,
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
 
-      await Promise.all(
-        results.map((r) => {
-          if ("skip" in r) return Promise.resolve(null);
-          if (r.ok) {
-            totalEnviados++;
-            return admin
-              .from("mensagens_destinatarios")
-              .update({
-                whatsapp_status: "enviado",
-                whatsapp_enviado_em: new Date().toISOString(),
-              })
-              .eq("mensagem_id", mensagemId)
-              .eq("aluno_id", r.aluno_id);
-          }
-          totalErros++;
-          return admin
-            .from("mensagens_destinatarios")
-            .update({
-              whatsapp_status: "erro",
-            })
-            .eq("mensagem_id", mensagemId)
-            .eq("aluno_id", r.aluno_id);
-        })
-      );
+    if (filaRows.length) {
+      const { error: filaErr } = await admin.from("whatsapp_fila").insert(filaRows);
+      if (filaErr) {
+        console.error("falha ao enfileirar whatsapp", filaErr);
+      } else {
+        totalEnfileirados = filaRows.length;
+      }
     }
   }
 
@@ -404,5 +380,6 @@ export async function POST(req: NextRequest) {
     total_enviados: totalEnviados,
     total_erros: totalErros,
     push_enviados: pushEnviados,
+    whatsapp_enfileirados: totalEnfileirados,
   });
 }
