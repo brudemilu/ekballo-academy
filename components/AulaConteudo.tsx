@@ -382,25 +382,57 @@ function ImagemModal({
   autor: string | null;
   onClose: () => void;
 }) {
-  const [carregando, setCarregando] = useState(true);
   const [formato, setFormato] = useState<Formato>("feed");
+  const [estado, setEstado] = useState<"carregando" | "ok" | "erro">("carregando");
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
   const [compartilhando, setCompartilhando] = useState(false);
-  const preview = imgUrl(texto, livroTitulo, autor, formato, false);
-  const baixar = imgUrl(texto, livroTitulo, autor, formato, true);
+  const blobRef = useRef<Blob | null>(null);
 
-  function trocarFormato(f: Formato) {
-    if (f === formato) return;
-    setCarregando(true);
-    setFormato(f);
+  // Busca a imagem como blob (estado de carregando/erro confiável; o <img>
+  // recebe um object URL, sem depender de timing de onLoad/onError no iOS).
+  useEffect(() => {
+    let cancelado = false;
+    let urlCriada: string | null = null;
+    setEstado("carregando");
+    setBlobUrl(null);
+    blobRef.current = null;
+    fetch(imgUrl(texto, livroTitulo, autor, formato, false))
+      .then((r) => {
+        if (!r.ok) throw new Error("falha");
+        return r.blob();
+      })
+      .then((blob) => {
+        if (cancelado) return;
+        blobRef.current = blob;
+        urlCriada = URL.createObjectURL(blob);
+        setBlobUrl(urlCriada);
+        setEstado("ok");
+      })
+      .catch(() => {
+        if (!cancelado) setEstado("erro");
+      });
+    return () => {
+      cancelado = true;
+      if (urlCriada) URL.revokeObjectURL(urlCriada);
+    };
+  }, [texto, livroTitulo, autor, formato, tentativa]);
+
+  function baixar() {
+    if (!blobUrl) return;
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = "ekballo-trecho.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
-  // Compartilha o arquivo da imagem pela folha nativa (volta sozinho pro app).
-  // Se o navegador não suportar, baixa a imagem.
   async function compartilhar() {
+    const blob = blobRef.current;
+    if (!blob) return;
     setCompartilhando(true);
     try {
-      const res = await fetch(preview);
-      const blob = await res.blob();
       const file = new File([blob], "ekballo-trecho.png", { type: "image/png" });
       const nav = navigator as Navigator & {
         canShare?: (data?: ShareData) => boolean;
@@ -412,13 +444,10 @@ function ImagemModal({
           text: autor ? `${texto} — ${autor}` : texto,
         });
       } else {
-        const a = document.createElement("a");
-        a.href = baixar;
-        a.download = "ekballo-trecho.png";
-        a.click();
+        baixar();
       }
     } catch {
-      /* usuário cancelou ou falhou — ignora */
+      /* usuário cancelou — ignora */
     } finally {
       setCompartilhando(false);
     }
@@ -426,11 +455,11 @@ function ImagemModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/70 p-4"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-md flex-col rounded-2xl bg-white p-5 shadow-2xl"
+        className="my-auto w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
@@ -448,13 +477,13 @@ function ImagemModal({
 
         {/* Seletor de formato */}
         <div className="mb-4 flex gap-2">
-          {([
+          {[
             { f: "feed" as Formato, rotulo: "Feed (quadrado)" },
             { f: "story" as Formato, rotulo: "Story (vertical)" },
-          ]).map(({ f, rotulo }) => (
+          ].map(({ f, rotulo }) => (
             <button
               key={f}
-              onClick={() => trocarFormato(f)}
+              onClick={() => setFormato(f)}
               className={`flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition ${
                 formato === f
                   ? "bg-mesa-700 text-mesa-50"
@@ -467,38 +496,48 @@ function ImagemModal({
         </div>
 
         <div
-          className={`relative mb-4 w-full flex-1 overflow-hidden rounded-xl bg-mesa-900 ${
-            formato === "story" ? "aspect-[9/16]" : "aspect-square"
-          } mx-auto`}
-          style={formato === "story" ? { maxWidth: 260 } : undefined}
+          className={`relative mx-auto mb-4 w-full overflow-hidden rounded-xl bg-mesa-900 ${
+            formato === "story" ? "aspect-[9/16] max-w-[240px]" : "aspect-square"
+          }`}
         >
-          {carregando && (
+          {estado === "carregando" && (
             <div className="absolute inset-0 flex items-center justify-center text-sm text-mesa-300">
               Gerando imagem…
             </div>
           )}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            key={formato}
-            src={preview}
-            alt="Imagem gerada do trecho marcado"
-            className="h-full w-full object-cover"
-            onLoad={() => setCarregando(false)}
-          />
+          {estado === "erro" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
+              <p className="text-sm text-mesa-200">Não consegui gerar a imagem.</p>
+              <button
+                onClick={() => setTentativa((t) => t + 1)}
+                className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-mesa-800"
+              >
+                Tentar de novo
+              </button>
+            </div>
+          )}
+          {estado === "ok" && blobUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={blobUrl}
+              alt="Imagem gerada do trecho marcado"
+              className="h-full w-full object-cover"
+            />
+          )}
         </div>
 
         <div className="flex gap-2">
-          <a
-            href={baixar}
-            download
-            className="flex-1 rounded-full bg-mesa-700 py-2.5 text-center text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+          <button
+            onClick={baixar}
+            disabled={estado !== "ok"}
+            className="flex-1 rounded-full bg-mesa-700 py-2.5 text-center text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-50"
           >
             Baixar
-          </a>
+          </button>
           <button
             onClick={compartilhar}
-            disabled={compartilhando}
-            className="flex-1 rounded-full border border-mesa-300 bg-white py-2.5 text-center text-sm font-medium text-mesa-700 hover:bg-mesa-50 disabled:opacity-60"
+            disabled={estado !== "ok" || compartilhando}
+            className="flex-1 rounded-full border border-mesa-300 bg-white py-2.5 text-center text-sm font-medium text-mesa-700 hover:bg-mesa-50 disabled:opacity-50"
           >
             {compartilhando ? "Abrindo…" : "Compartilhar"}
           </button>
