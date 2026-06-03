@@ -352,16 +352,19 @@ export function AulaConteudo({
   );
 }
 
+type Formato = "feed" | "story";
+
 function imgUrl(
   texto: string,
   livroTitulo: string,
   autor: string | null,
+  formato: Formato,
   download = false
 ): string {
   const params = new URLSearchParams({
     verso: texto,
     ref: livroTitulo,
-    f: "feed",
+    f: formato,
   });
   if (autor) params.set("sub", `— ${autor}`);
   if (download) params.set("dl", "1");
@@ -380,8 +383,15 @@ function ImagemModal({
   onClose: () => void;
 }) {
   const [carregando, setCarregando] = useState(true);
-  const preview = imgUrl(texto, livroTitulo, autor, false);
-  const baixar = imgUrl(texto, livroTitulo, autor, true);
+  const [formato, setFormato] = useState<Formato>("feed");
+  const preview = imgUrl(texto, livroTitulo, autor, formato, false);
+  const baixar = imgUrl(texto, livroTitulo, autor, formato, true);
+
+  function trocarFormato(f: Formato) {
+    if (f === formato) return;
+    setCarregando(true);
+    setFormato(f);
+  }
 
   return (
     <div
@@ -389,7 +399,7 @@ function ImagemModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl"
+        className="flex max-h-[90vh] w-full max-w-md flex-col rounded-2xl bg-white p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
@@ -405,7 +415,32 @@ function ImagemModal({
           </button>
         </div>
 
-        <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-mesa-900">
+        {/* Seletor de formato */}
+        <div className="mb-4 flex gap-2">
+          {([
+            { f: "feed" as Formato, rotulo: "Feed (quadrado)" },
+            { f: "story" as Formato, rotulo: "Story (vertical)" },
+          ]).map(({ f, rotulo }) => (
+            <button
+              key={f}
+              onClick={() => trocarFormato(f)}
+              className={`flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                formato === f
+                  ? "bg-mesa-700 text-mesa-50"
+                  : "border border-mesa-200 bg-white text-mesa-700 hover:bg-mesa-50"
+              }`}
+            >
+              {rotulo}
+            </button>
+          ))}
+        </div>
+
+        <div
+          className={`relative mb-4 w-full flex-1 overflow-hidden rounded-xl bg-mesa-900 ${
+            formato === "story" ? "aspect-[9/16]" : "aspect-square"
+          } mx-auto`}
+          style={formato === "story" ? { maxWidth: 260 } : undefined}
+        >
           {carregando && (
             <div className="absolute inset-0 flex items-center justify-center text-sm text-mesa-300">
               Gerando imagem…
@@ -413,6 +448,7 @@ function ImagemModal({
           )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            key={formato}
             src={preview}
             alt="Imagem gerada do trecho marcado"
             className="h-full w-full object-cover"
