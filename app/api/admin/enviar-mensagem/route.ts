@@ -19,7 +19,9 @@ const FUNCTIONS_BASE = SUPABASE_URL.replace(
   ".functions.supabase.co"
 );
 const EDGE_EMAIL_URL = `${FUNCTIONS_BASE}/enviar-email`;
-const EDGE_WHATSAPP_URL = `${FUNCTIONS_BASE}/enviar-whatsapp`;
+// WhatsApp via Evolution GO (substituiu a Z-API). A edge function mantém o
+// mesmo contrato { destinatario, mensagem } -> { status, message_id }.
+const EDGE_WHATSAPP_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-evolution`;
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -297,7 +299,7 @@ export async function POST(req: NextRequest) {
   // -------- WHATSAPP --------
   if (querWhatsapp) {
     const mensagemTexto = (corpo_texto && corpo_texto.trim()) || htmlParaTexto(corpo_html);
-    // Z-API não tem campo "assunto", então prefixamos com o assunto pra dar contexto.
+    // WhatsApp não tem campo "assunto", então prefixamos com o assunto pra dar contexto.
     const mensagemFinal = assunto?.trim()
       ? `*${assunto.trim()}*\n\n${mensagemTexto}`
       : mensagemTexto;
@@ -324,14 +326,14 @@ export async function POST(req: NextRequest) {
             const json = (await resp.json().catch(() => ({}))) as {
               status?: string;
               message_id?: string;
-              zapi_status?: number;
-              zapi_body?: unknown;
+              evolution_status?: number;
+              evolution_body?: unknown;
               erro?: string;
             };
             if (resp.ok && json.status === "enviado") {
               return { aluno_id: d.id, ok: true as const };
             }
-            const erro = json.erro || JSON.stringify(json.zapi_body) || `HTTP ${resp.status}`;
+            const erro = json.erro || JSON.stringify(json.evolution_body) || `HTTP ${resp.status}`;
             return { aluno_id: d.id, ok: false as const, erro };
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
