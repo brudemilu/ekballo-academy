@@ -15,6 +15,7 @@ export const MOCK_PROFILE: Profile = {
   email: "bruno@ekballo.com.br",
   telefone: "5511999990001",
   is_admin: true,
+  papel: "master",
   turma: "Mesa 01",
   created_at: "2026-04-01T10:00:00Z",
 };

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { permissaoDaRota, rotaSoMaster } from "@/lib/permissoes";
 
 export async function updateSession(request: NextRequest) {
   // Em modo mock, libera tudo (sem bater no Supabase)
@@ -58,7 +59,7 @@ export async function updateSession(request: NextRequest) {
   if (user && isProtectedAdmin) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, papel")
       .eq("id", user.id)
       .single();
 
@@ -66,6 +67,27 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
+    }
+
+    // Gating granular por papel. Registros antigos sem papel = master (legado).
+    const papel = (profile.papel as string) || "master";
+    if (papel !== "master") {
+      const negar = () => {
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin";
+        return NextResponse.redirect(url);
+      };
+      if (rotaSoMaster(path)) return negar();
+      const perm = permissaoDaRota(path);
+      if (perm) {
+        const { data: temPerm } = await supabase
+          .from("papel_permissoes")
+          .select("permissao")
+          .eq("papel", papel)
+          .eq("permissao", perm)
+          .maybeSingle();
+        if (!temPerm) return negar();
+      }
     }
   }
 

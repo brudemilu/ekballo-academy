@@ -40,6 +40,7 @@ import type {
   Mensagem,
   MensagemDestinatario,
 } from "@/lib/types";
+import { PERMISSOES, type Permissao } from "@/lib/permissoes";
 
 // -------- AUTH / PROFILE --------
 
@@ -68,6 +69,42 @@ export async function getCurrentSession(): Promise<{
     profile: profile as Profile | null,
     email: user.email || "",
   };
+}
+
+// -------- PAPÉIS / PERMISSÕES --------
+
+// Conjunto de permissões de um papel. master = tudo; discipulo = nada;
+// coordenador/lider = conforme a matriz no banco.
+export async function getPermissoesPapel(
+  papel: string | null | undefined
+): Promise<Set<Permissao>> {
+  const todas = PERMISSOES.map((p) => p.chave);
+  if (papel === "master") return new Set(todas);
+  if (!papel || papel === "discipulo") return new Set();
+  if (isMockMode()) return new Set(todas);
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("papel_permissoes")
+    .select("permissao")
+    .eq("papel", papel);
+  return new Set((data || []).map((r: { permissao: string }) => r.permissao as Permissao));
+}
+
+// Matriz completa { coordenador: [...], lider: [...] } para a tela de admin.
+export async function getMatrizPermissoes(): Promise<Record<string, Permissao[]>> {
+  if (isMockMode()) {
+    return {
+      coordenador: ["discipulos", "acompanhamento", "conteudo"],
+      lider: ["acompanhamento"],
+    };
+  }
+  const supabase = await createClient();
+  const { data } = await supabase.from("papel_permissoes").select("papel, permissao");
+  const m: Record<string, Permissao[]> = {};
+  (data || []).forEach((r: { papel: string; permissao: string }) => {
+    (m[r.papel] ||= []).push(r.permissao as Permissao);
+  });
+  return m;
 }
 
 // -------- CURSOS --------

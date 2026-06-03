@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { getPermissoesPapel } from "@/lib/db";
+import { TAB_PERMISSAO } from "@/lib/permissoes";
 
 export type AdminTab =
   | "painel"
@@ -13,7 +15,8 @@ export type AdminTab =
   | "mensagens"
   | "templates"
   | "imagens"
-  | "youtube";
+  | "youtube"
+  | "permissoes";
 
 type Item = {
   key: AdminTab;
@@ -33,18 +36,36 @@ const ITEMS: Item[] = [
   { key: "youtube", label: "YouTube", href: "/admin/youtube", hint: "Baixar áudio em MP3" },
 ];
 
-export function AdminShell({
+export async function AdminShell({
   current,
   session,
   children,
 }: {
   current: AdminTab;
   session: {
-    profile: { nome: string | null; email: string } | null;
+    profile: { nome: string | null; email: string; papel?: string; is_admin?: boolean } | null;
     email: string;
   };
   children: ReactNode;
 }) {
+  // Registros antigos com is_admin e sem papel = master (legado).
+  const papel =
+    session.profile?.papel || (session.profile?.is_admin ? "master" : "discipulo");
+  const permissoes = await getPermissoesPapel(papel);
+
+  const itens = ITEMS.filter((it) => {
+    const perm = TAB_PERMISSAO[it.key];
+    return !perm || papel === "master" || permissoes.has(perm);
+  });
+  if (papel === "master") {
+    itens.push({
+      key: "permissoes",
+      label: "Permissões",
+      href: "/admin/permissoes",
+      hint: "Papéis e acessos",
+    });
+  }
+
   return (
     <main className="min-h-screen bg-mesa-50">
       <header className="border-b border-mesa-200 bg-white/80 backdrop-blur">
@@ -68,7 +89,7 @@ export function AdminShell({
               Painel pastoral
             </p>
             <ul className="space-y-1">
-              {ITEMS.map((it) => {
+              {itens.map((it) => {
                 const ativo = it.key === current;
                 return (
                   <li key={it.key}>
@@ -100,7 +121,7 @@ export function AdminShell({
           {/* Mobile/tablet: pills horizontais com scroll */}
           <nav className="md:hidden">
             <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2">
-              {ITEMS.map((it) => {
+              {itens.map((it) => {
                 const ativo = it.key === current;
                 return (
                   <li key={it.key} className="flex-none">

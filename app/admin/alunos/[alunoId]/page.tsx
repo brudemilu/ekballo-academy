@@ -10,6 +10,7 @@ import {
   listMatriculasByAluno,
 } from "@/lib/db";
 import { displayTelefone } from "@/lib/telefone";
+import { nomePapel } from "@/lib/permissoes";
 
 export default async function AdminAlunoPage({
   params,
@@ -20,6 +21,10 @@ export default async function AdminAlunoPage({
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
+
+  const souMaster =
+    session.profile?.papel === "master" ||
+    (!!session.profile?.is_admin && !session.profile?.papel);
 
   const aluno = await getAlunoById(alunoId);
   if (!aluno) notFound();
@@ -59,8 +64,8 @@ export default async function AdminAlunoPage({
             </span>
           )}
           {aluno.is_admin && (
-            <span className="rounded-full bg-oliveira-100 px-3 py-1 text-oliveira-700">
-              Admin
+            <span className="rounded-full bg-oliveira-100 px-3 py-1 font-medium text-oliveira-700">
+              {nomePapel(aluno.papel)}
             </span>
           )}
           {!aluno.telefone && !aluno.is_admin && (
@@ -81,11 +86,13 @@ export default async function AdminAlunoPage({
         <div className="mt-5">
           <AdminAlunoForm
             alunoId={alunoId}
+            souMaster={souMaster}
             initial={{
               nome: aluno.nome || "",
               email: aluno.email,
               telefone: aluno.telefone || "",
               turma: aluno.turma || "",
+              papel: aluno.papel || "discipulo",
             }}
           />
         </div>

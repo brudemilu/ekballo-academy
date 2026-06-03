@@ -9,16 +9,18 @@ const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 // Admin edita o cadastro de um discípulo (nome, telefone, turma).
 // E-mail e is_admin não são editáveis por aqui.
 export async function POST(req: NextRequest) {
-  // 1) Admin only
+  // 1) Admin only — e descobrimos se quem edita é master (pode mudar papel)
+  let souMaster = MOCK; // no mock, libera tudo
   if (!MOCK) {
     const u = await createServerClient();
     const { data: { user } } = await u.auth.getUser();
     if (!user) return NextResponse.json({ erro: "não autenticado" }, { status: 401 });
-    const { data: profile } = await u.from("profiles").select("is_admin").eq("id", user.id).single();
+    const { data: profile } = await u.from("profiles").select("is_admin, papel").eq("id", user.id).single();
     if (!profile?.is_admin) return NextResponse.json({ erro: "acesso negado" }, { status: 403 });
+    souMaster = profile?.papel === "master" || (!!profile?.is_admin && !profile?.papel);
   }
 
-  let body: { alunoId?: string; nome?: string; telefone?: string; turma?: string };
+  let body: { alunoId?: string; nome?: string; telefone?: string; turma?: string; papel?: string };
   try {
     body = await req.json();
   } catch {
@@ -34,16 +36,21 @@ export async function POST(req: NextRequest) {
   const telefone = body.telefone && body.telefone.trim() ? body.telefone.trim() : null;
   const turma = body.turma && body.turma.trim() ? body.turma.trim() : null;
 
+  // Papel: só o master pode alterar. Mantém is_admin coerente com o papel.
+  const PAPEIS_VALIDOS = ["master", "coordenador", "lider", "discipulo"];
+  const update: Record<string, unknown> = { nome, telefone, turma };
+  if (souMaster && body.papel && PAPEIS_VALIDOS.includes(body.papel)) {
+    update.papel = body.papel;
+    update.is_admin = body.papel !== "discipulo";
+  }
+
   if (MOCK) return NextResponse.json({ ok: true, mock: true });
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
 
-  const { error } = await admin
-    .from("profiles")
-    .update({ nome, telefone, turma })
-    .eq("id", alunoId);
+  const { error } = await admin.from("profiles").update(update).eq("id", alunoId);
 
   if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });

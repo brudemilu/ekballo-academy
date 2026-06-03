@@ -6,17 +6,27 @@ import { formatTelefoneBR, normalizeTelefoneBR } from "@/lib/telefone";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
+const PAPEIS_OPCOES = [
+  { valor: "master", nome: "Master — acesso a tudo" },
+  { valor: "coordenador", nome: "Coordenador — gestão ampla" },
+  { valor: "lider", nome: "Líder — acesso restrito" },
+  { valor: "discipulo", nome: "Discípulo — sem painel" },
+];
+
 export function AdminAlunoForm({
   alunoId,
   initial,
+  souMaster = false,
 }: {
   alunoId: string;
-  initial: { nome: string; email: string; telefone: string; turma: string };
+  initial: { nome: string; email: string; telefone: string; turma: string; papel?: string };
+  souMaster?: boolean;
 }) {
   const router = useRouter();
   const [nome, setNome] = useState(initial.nome);
   const [telefone, setTelefone] = useState(formatTelefoneBR(initial.telefone));
   const [turma, setTurma] = useState(initial.turma);
+  const [papel, setPapel] = useState(initial.papel || "discipulo");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
@@ -62,6 +72,7 @@ export function AdminAlunoForm({
         nome: nomeTrim,
         telefone: telefoneNorm,
         turma: turma.trim(),
+        ...(souMaster ? { papel } : {}),
       }),
     });
 
@@ -139,6 +150,33 @@ export function AdminAlunoForm({
           />
         </div>
       </div>
+
+      {souMaster && (
+        <div>
+          <label htmlFor="ed-papel" className="mb-1.5 block text-sm font-medium text-mesa-700">
+            Papel (perfil de acesso)
+          </label>
+          <select
+            id="ed-papel"
+            value={papel}
+            onChange={(e) => setPapel(e.target.value)}
+            className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+          >
+            {PAPEIS_OPCOES.map((p) => (
+              <option key={p.valor} value={p.valor}>
+                {p.nome}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-mesa-500">
+            O que cada papel acessa é definido em{" "}
+            <a href="/admin/permissoes" className="underline hover:text-mesa-700">
+              Permissões
+            </a>
+            .
+          </p>
+        </div>
+      )}
 
       {erro && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
