@@ -5,6 +5,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { AtividadeForm } from "@/components/AtividadeForm";
 import { MultiplaEscolhaForm } from "@/components/MultiplaEscolhaForm";
 import { MarcarConcluida } from "@/components/MarcarConcluida";
+import { AulaConteudo } from "@/components/AulaConteudo";
 import {
   getCurrentSession,
   getCursoBySlug,
@@ -15,6 +16,7 @@ import {
   listAtividadesByAula,
   listRespostasByAluno,
   listAulasComStatus,
+  listDestaquesByAula,
   jaConcluiu,
   listAlternativasByAtividade,
   getRespostaAlternativa,
@@ -51,12 +53,13 @@ export default async function AulaPage({
     }
   }
 
-  const [atividades, respostas, concluida, materialUrl, audioUrl] = await Promise.all([
+  const [atividades, respostas, concluida, materialUrl, audioUrl, destaques] = await Promise.all([
     listAtividadesByAula(aulaId),
     listRespostasByAluno(session.userId),
     jaConcluiu(session.userId, aulaId),
     getMaterialUrl(aula.material_url),
     getAudioUrl(aula.audio_url),
+    listDestaquesByAula(session.userId, aulaId),
   ]);
 
   const respostasMap = new Map(respostas.map((r) => [r.atividade_id, r]));
@@ -159,13 +162,14 @@ export default async function AulaPage({
           )}
 
           {aula.conteudo && (
-            <div className="prose-mesa">
-              {(aula.conteudo as string).split("\n\n").map((paragrafo: string, i: number) => (
-                <p key={i} className="whitespace-pre-wrap">
-                  {paragrafo}
-                </p>
-              ))}
-            </div>
+            <AulaConteudo
+              conteudo={aula.conteudo as string}
+              aulaId={aula.id}
+              alunoId={session.userId}
+              livroTitulo={curso.titulo}
+              autor={curso.autor ?? null}
+              destaquesIniciais={destaques}
+            />
           )}
         </article>
 

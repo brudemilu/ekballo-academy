@@ -35,6 +35,7 @@ import type {
   Aula,
   Atividade,
   Alternativa,
+  Destaque,
   EmailTemplate,
   Mensagem,
   MensagemDestinatario,
@@ -136,6 +137,24 @@ export async function getAula(aulaId: string, cursoId: string): Promise<Aula | n
     .eq("curso_id", cursoId)
     .single();
   return data as Aula | null;
+}
+
+// -------- DESTAQUES (grifos do discípulo) --------
+
+export async function listDestaquesByAula(
+  alunoId: string,
+  aulaId: string
+): Promise<Destaque[]> {
+  if (isMockMode()) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("destaques_aula")
+    .select("*")
+    .eq("aluno_id", alunoId)
+    .eq("aula_id", aulaId)
+    .order("paragrafo", { ascending: true })
+    .order("inicio", { ascending: true });
+  return (data || []) as Destaque[];
 }
 
 // Resolve `aula.material_url` para um link utilizável pelo cliente.

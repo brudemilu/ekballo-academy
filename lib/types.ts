@@ -21,6 +21,8 @@ export type Curso = {
   // Quando preenchido, o card linka pra essa rota em vez de /cursos/[slug].
   // Usado pra "cursos" com interface custom (ex.: Bíblia → /biblia).
   external_path: string | null;
+  // Autor do livro em que o curso se baseia (creditado em imagens geradas).
+  autor?: string | null;
   created_at: string;
 };
 
@@ -66,6 +68,19 @@ export type Resposta = {
   comentario_lider_em: string | null;
   created_at: string;
   updated_at: string;
+};
+
+// Grifo do discípulo no conteúdo de uma aula.
+export type Destaque = {
+  id: string;
+  aula_id: string;
+  aluno_id: string;
+  paragrafo: number;
+  inicio: number;
+  fim: number;
+  texto: string;
+  cor: "amarelo" | "verde" | "rosa" | "azul";
+  criado_em: string;
 };
 
 export type EmailTemplateChave =
