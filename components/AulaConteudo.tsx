@@ -38,6 +38,81 @@ function faixasDeTitulo(texto: string): Faixa[] {
   return faixas;
 }
 
+// ---- Quadros (tabelas/boxes fiéis ao PDF) ----
+// Bloco que começa com "[quadro] Título" e tem linhas com colunas separadas
+// por " | ". Uma linha só de traços (--- | ---) marca a linha anterior como
+// cabeçalho.
+function ehQuadro(paragrafo: string): boolean {
+  return /^\[quadro\]/i.test(paragrafo.trim());
+}
+
+function parseQuadro(paragrafo: string): {
+  titulo: string;
+  header: string[] | null;
+  linhas: string[][];
+} {
+  const linhasTxt = paragrafo.split("\n");
+  const titulo = linhasTxt[0].replace(/^\[quadro\]\s*/i, "").trim();
+  const corpo = linhasTxt.slice(1).filter((l) => l.trim() !== "");
+  let header: string[] | null = null;
+  const linhas: string[][] = [];
+  for (const linha of corpo) {
+    const cells = linha.split("|").map((c) => c.trim());
+    const ehSeparador = cells.every((c) => c === "" || /^-{2,}$/.test(c));
+    if (ehSeparador && linhas.length > 0) {
+      header = linhas.pop() ?? null;
+      continue;
+    }
+    linhas.push(cells);
+  }
+  return { titulo, header, linhas };
+}
+
+function Quadro({ bloco }: { bloco: string }) {
+  const { titulo, header, linhas } = parseQuadro(bloco);
+  return (
+    <div className="my-6 overflow-hidden rounded-xl border border-mesa-300">
+      {titulo && (
+        <div className="bg-mesa-100 px-4 py-2.5 text-center text-sm font-semibold uppercase tracking-wide text-mesa-800">
+          {titulo}
+        </div>
+      )}
+      <table className="w-full border-collapse text-sm">
+        {header && (
+          <thead>
+            <tr>
+              {header.map((c, j) => (
+                <th
+                  key={j}
+                  className="border border-mesa-200 bg-mesa-50 px-3 py-2 text-center font-semibold text-mesa-800"
+                >
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {linhas.map((linha, i) => (
+            <tr key={i}>
+              {linha.map((c, j) => (
+                <td
+                  key={j}
+                  className={`border border-mesa-200 px-3 py-2 align-top text-mesa-700 ${
+                    linha.length === 2 && j === 0 ? "font-medium text-mesa-800" : ""
+                  }`}
+                >
+                  {c}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 type Segmento = { texto: string; titulo: boolean; cor?: Cor; id?: string };
 
 function montarSegmentos(
@@ -201,6 +276,9 @@ export function AulaConteudo({
         onTouchEnd={handleSelecao}
       >
         {paragrafos.map((paragrafo, i) => {
+          if (ehQuadro(paragrafo)) {
+            return <Quadro key={i} bloco={paragrafo} />;
+          }
           const titulos = faixasDeTitulo(paragrafo);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
