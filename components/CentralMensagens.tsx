@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { WhatsAppFilaPainel } from "@/components/WhatsAppFilaPainel";
 import { TemplatesMensagemManager } from "@/components/TemplatesMensagemManager";
+import { AutomacaoCampanhas } from "@/components/AutomacaoCampanhas";
 
 type Aluno = { id: string; nome: string | null; email: string; telefone: string | null };
 type Curso = { id: string; titulo: string; matriculados: number; alunosComTelefone?: number };
@@ -28,7 +29,7 @@ type Props = {
   mensagens: MensagemHist[];
 };
 
-type Aba = "enviar" | "fila" | "templates" | "historico" | "conexao";
+type Aba = "enviar" | "automacao" | "fila" | "templates" | "historico" | "conexao";
 type DestinoClasse = "discipulos" | "grupo" | "numero";
 type Escopo = "todos" | "curso" | "aluno";
 
@@ -40,6 +41,7 @@ const inputCls =
 export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props) {
   const [aba, setAba] = useState<Aba>("enviar");
   const [status, setStatus] = useState<Status | null>(null);
+  const [pendentesAuto, setPendentesAuto] = useState(0);
 
   const carregarStatus = useCallback(async () => {
     try {
@@ -51,12 +53,17 @@ export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props
   }, []);
   useEffect(() => {
     carregarStatus();
+    fetch("/api/admin/campanhas")
+      .then((r) => r.json())
+      .then((d) => setPendentesAuto((d.campanhas || []).length))
+      .catch(() => {});
   }, [carregarStatus]);
 
   const conectado = !!status?.loggedIn;
 
-  const abas: { k: Aba; label: string }[] = [
+  const abas: { k: Aba; label: string; badge?: number }[] = [
     { k: "enviar", label: "Enviar" },
+    { k: "automacao", label: "Automação", badge: pendentesAuto },
     { k: "fila", label: "Fila" },
     { k: "templates", label: "Templates" },
     { k: "historico", label: "Histórico" },
@@ -104,6 +111,11 @@ export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props
             }`}
           >
             {t.label}
+            {!!t.badge && t.badge > 0 && (
+              <span className="ml-1.5 rounded-full bg-laranja-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                {t.badge}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -116,6 +128,7 @@ export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props
           conectado={conectado}
         />
       )}
+      {aba === "automacao" && <AutomacaoCampanhas />}
       {aba === "fila" && <WhatsAppFilaPainel />}
       {aba === "templates" && (
         <TemplatesMensagemManager
