@@ -79,7 +79,12 @@ export async function GET(req: NextRequest) {
   const h = formato === "story" ? 1920 : 1080;
 
   // Tema do fundo IA: usa ?bg=... se passado, senão deriva do tema do devocional.
-  const bgTema = url.searchParams.get("bg") || temaFundoDoDevocional(dev);
+  // Foto de fundo: ?bg=<url> permite sobrescrever; senão usa a foto do tema.
+  const bgOverride = url.searchParams.get("bg");
+  const bgUrl =
+    bgOverride && /^https?:\/\//.test(bgOverride)
+      ? bgOverride
+      : fotoFundoDoDevocional(dev, url.origin);
 
   let jsx;
   if (template === "bloco") {
@@ -93,8 +98,7 @@ export async function GET(req: NextRequest) {
         ref: dev.versiculo_ref,
         topLabel: dev.tema,
         subRef: `— ${dev.autor}`,
-        bgTema,
-        bgSeed: diaAno,
+        bgUrl,
       },
       formato,
     );
@@ -130,44 +134,31 @@ type Dev = {
   autor: string;
 };
 
-// Mapeia cada tema mensal pra uma CENA DE NATUREZA/PAISAGEM — nunca pessoas
-// nem figuras religiosas. As exclusões fortes ficam no lib/imagen, aqui só
-// damos a cena. A variação por dia vem do seed (dia_ano).
-const CENA_POR_TEMA: Record<string, string> = {
-  Recomeço:
-    "vast sunrise over a calm horizon, first light breaking through soft clouds, new dawn",
-  Coração:
-    "serene still lake at dawn reflecting a warm sky, gentle ripples, quiet water",
-  Família:
-    "warm countryside path lined with trees at golden hour, cozy distant home lights",
-  "Cruz e vida nova":
-    "empty hilltop at sunrise with dramatic sky, green shoots emerging from soil, renewal",
-  Honra:
-    "majestic mountain peaks bathed in golden light, vast valley below, grandeur",
-  "Espírito Santo":
-    "wind moving through a golden wheat field, soft light, flowing air and clouds",
-  Propósito:
-    "long winding road through open landscape toward distant mountains at sunrise",
-  Mordomia:
-    "fertile green fields and terraced farmland under soft morning light, abundance",
-  Arrependimento:
-    "gentle rain clearing over a quiet valley, mist lifting, soft light returning",
-  Igreja:
-    "grove of strong trees standing together in warm forest light, rays through canopy",
-  Perseverança:
-    "lone tree on a windswept cliff against a dramatic sky, steadfast, resilient",
-  Emanuel:
-    "peaceful starry winter night over snowy hills, warm light glowing on the horizon",
+// Mapeia cada tema mensal pra uma FOTO REAL de paisagem (sem pessoas), servida
+// de public/fundos/. Mesmo esquema confiável da capa dos cursos: imagem
+// estática, sem IA, sem chave, sem rate-limit — nunca quebra. Pra trocar uma
+// foto, basta substituir o arquivo .jpg correspondente em public/fundos/.
+const FOTO_POR_TEMA: Record<string, string> = {
+  Recomeço: "recomeco",
+  Coração: "coracao",
+  Família: "familia",
+  "Cruz e vida nova": "cruz-vida-nova",
+  Honra: "honra",
+  "Espírito Santo": "espirito-santo",
+  Propósito: "proposito",
+  Mordomia: "mordomia",
+  Arrependimento: "arrependimento",
+  Igreja: "igreja",
+  Perseverança: "perseveranca",
+  Emanuel: "emanuel",
 };
 
-// Deriva um prompt de fundo a partir do tema mensal. Usa a cena de natureza
-// mapeada; se o tema não estiver no mapa, cai num pôr do sol genérico.
-function temaFundoDoDevocional(d: Dev): string {
-  const base = d.tema?.trim() || "";
-  return (
-    CENA_POR_TEMA[base] ||
-    "tranquil natural landscape at golden hour, soft light, wide open sky"
-  );
+// Resolve a URL ABSOLUTA da foto de fundo a partir do tema mensal. Se o tema
+// não estiver no mapa, usa o fundo genérico (fallback.jpg). O Satori precisa de
+// URL absoluta, daí o origin (igual a capa dos cursos faz com livroUrl local).
+function fotoFundoDoDevocional(d: Dev, origin: string): string {
+  const slug = FOTO_POR_TEMA[d.tema?.trim() || ""] || "fallback";
+  return `${origin}/fundos/${slug}.jpg`;
 }
 
 // ============================================================================

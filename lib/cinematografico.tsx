@@ -29,6 +29,13 @@ export type CinemaPayload = {
   bgTema?: string;
   /** Seed pra variar a foto de forma determinística (dia do ano, nº capítulo). */
   bgSeed?: number;
+  /**
+   * URL absoluta de uma FOTO REAL pra usar como fundo (igual à capa dos
+   * cursos). Quando definida, tem prioridade sobre bgTema e PULA a IA —
+   * 100% confiável, sem chave nem rate-limit. Use caminho absoluto
+   * (ex.: `${origin}/fundos/recomeco.jpg`).
+   */
+  bgUrl?: string;
 };
 
 const COR_CREAM = "#F5EDDE";
@@ -53,13 +60,17 @@ export async function renderCinematografico(
   formato: CinemaFormato,
 ) {
   const aspect = formato === "story" ? "9:16" : "1:1";
-  const fundo = payload.bgTema
-    ? await gerarFundoSafe({
-        tema: payload.bgTema,
-        aspect,
-        seed: payload.bgSeed,
-      })
-    : null;
+  // Foto real (bgUrl) vem primeiro: é o caminho confiável, igual à capa dos
+  // cursos. Só cai pra IA (bgTema) quando não há foto definida.
+  const fundo = payload.bgUrl
+    ? { src: payload.bgUrl, backend: "url" }
+    : payload.bgTema
+      ? await gerarFundoSafe({
+          tema: payload.bgTema,
+          aspect,
+          seed: payload.bgSeed,
+        })
+      : null;
 
   const verseText = `“${payload.verseText.trim()}”`;
   const verseSize = escalaVerso(verseText, formato);

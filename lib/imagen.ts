@@ -1,19 +1,25 @@
 /**
- * Helper para gerar imagens de fundo via dois backends possíveis:
+ * Helper para gerar imagens de fundo via backends possíveis:
  *
- *   - "pollinations" (DEFAULT)
- *       100% grátis, sem chave, sem limite. Usa Flux Schnell via
- *       https://image.pollinations.ai. Retornamos a URL diretamente — o
- *       Satori (ImageResponse) faz fetch ao renderizar.
+ *   - "cloudflare" (DEFAULT)
+ *       Cloudflare Workers AI (FLUX.1 schnell). Grátis até 10k neurons/dia
+ *       (~100 imagens), sem cartão. Precisa CLOUDFLARE_ACCOUNT_ID +
+ *       CLOUDFLARE_API_TOKEN. A imagem volta como data URL embutida (base64),
+ *       então o Satori não faz fetch externo — render resiliente.
+ *
+ *   - "pollinations"
+ *       Era grátis sem chave via https://image.pollinations.ai, mas em 2026 o
+ *       acesso anônimo foi descontinuado (endpoint legado responde 402 paywall
+ *       x402). Mantido só por compatibilidade — não funciona mais sem chave.
  *
  *   - "gemini"
  *       Google AI Studio (Imagen 4 ou Gemini Image). Precisa GEMINI_API_KEY
- *       e BILLING ATIVO no projeto (atualmente o free tier de imagem está
- *       zerado). Melhor qualidade fotográfica.
+ *       e BILLING ATIVO no projeto (o free tier de imagem foi zerado).
+ *       Melhor qualidade fotográfica.
  *
  * Edge-runtime compatível.
  *
- * Trocar backend: defina IMAGE_BACKEND=gemini no .env.local + Vercel.
+ * Trocar backend: defina IMAGE_BACKEND no .env.local + Vercel.
  */
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta";
@@ -182,6 +188,59 @@ async function gerarGemini(params: GerarParams): Promise<GerarResult | null> {
 }
 
 // ----------------------------------------------------------------------------
+// Backend 3: Cloudflare Workers AI — FLUX.1 schnell (grátis, 10k neurons/dia)
+// ----------------------------------------------------------------------------
+// flux-1-schnell devolve JPEG em base64 DENTRO de um JSON e gera sempre
+// 1024×1024 (não aceita width/height). O recorte pro formato final (1:1 feed
+// ou 9:16 story) é feito pelo objectFit:cover do <img> no template. Como
+// retornamos uma data URL embutida, o Satori não faz fetch externo — se a
+// chamada falhar, gerarFundoSafe captura e cai no gradiente (nunca quebra a
+// imagem inteira). Precisa CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN
+// (token com permissão Workers AI).
+async function gerarCloudflare(
+  params: GerarParams,
+): Promise<GerarResult | null> {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  if (!accountId || !apiToken) return null;
+
+  const model = params.model || "@cf/black-forest-labs/flux-1-schnell";
+  const prompt = buildPrompt(params.tema, params.aspect);
+  const seed =
+    typeof params.seed === "number" && Number.isFinite(params.seed)
+      ? Math.abs(Math.trunc(params.seed))
+      : undefined;
+
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt,
+      steps: 8, // máx do schnell; melhor qualidade ainda dentro do free tier
+      ...(seed !== undefined ? { seed } : {}),
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      `Cloudflare AI ${res.status}: ${(await res.text()).slice(0, 300)}`,
+    );
+  }
+  const json = await res.json();
+  const b64 = json?.result?.image;
+  if (!json?.success || !b64) {
+    throw new Error(
+      "Cloudflare AI: resposta sem imagem — " +
+        JSON.stringify(json?.errors || json).slice(0, 300),
+    );
+  }
+  return { src: `data:image/jpeg;base64,${b64}`, backend: "cloudflare" };
+}
+
+// ----------------------------------------------------------------------------
 // Dispatch público
 // ----------------------------------------------------------------------------
 
@@ -192,10 +251,11 @@ async function gerarGemini(params: GerarParams): Promise<GerarResult | null> {
 export async function gerarFundoCinematografico(
   params: GerarParams,
 ): Promise<GerarResult | null> {
-  const backend = (process.env.IMAGE_BACKEND || "pollinations").toLowerCase();
+  const backend = (process.env.IMAGE_BACKEND || "cloudflare").toLowerCase();
+  if (backend === "pollinations") return gerarPollinations(params);
   if (backend === "gemini") return gerarGemini(params);
-  // Default e qualquer valor desconhecido: pollinations.
-  return gerarPollinations(params);
+  // Default e qualquer valor desconhecido: cloudflare.
+  return gerarCloudflare(params);
 }
 
 /**
