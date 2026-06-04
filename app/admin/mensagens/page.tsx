@@ -4,6 +4,7 @@ import { AdminShell } from "@/components/AdminShell";
 import { EnviarMensagemForm } from "@/components/EnviarMensagemForm";
 import { TemplatesMensagemManager } from "@/components/TemplatesMensagemManager";
 import { WhatsAppFilaPainel } from "@/components/WhatsAppFilaPainel";
+import { WhatsAppPainel } from "@/components/WhatsAppPainel";
 import {
   getCurrentSession,
   listAllAlunos,
@@ -33,13 +34,31 @@ export default async function AdminMensagensPage() {
         Comunicação
       </p>
       <h1 className="mb-2 font-serif text-4xl font-semibold text-mesa-800">
-        Mensagens
+        Mensagens & WhatsApp
       </h1>
       <p className="mb-8 text-sm text-mesa-600">
-        Envie mensagens pra todos os discípulos, discípulos de um curso específico ou
-        alguém individual. Email e WhatsApp.
+        Conexão do WhatsApp, envio direto para números e grupos, e disparo para os
+        discípulos (email, WhatsApp e push) — tudo num lugar só.
       </p>
 
+      {/* WhatsApp: conexão (QR), envio avulso para número/grupo e lista de grupos */}
+      <div className="mb-12">
+        <h2 className="mb-2 font-serif text-2xl font-semibold text-mesa-800">
+          WhatsApp — conexão e envio direto
+        </h2>
+        <p className="mb-4 text-sm text-mesa-600">
+          Pareie o número, envie texto ou mídia direto para um contato ou grupo, e veja
+          seus grupos. Para falar com os discípulos em massa, use o formulário abaixo.
+        </p>
+        <WhatsAppPainel />
+      </div>
+
+      <h2 className="mb-2 font-serif text-2xl font-semibold text-mesa-800">
+        Enviar para os discípulos
+      </h2>
+      <p className="mb-4 text-sm text-mesa-600">
+        Para todos, por curso ou individual — email, WhatsApp (na fila 1/min) e push.
+      </p>
       <EnviarMensagemForm
         alunos={alunosNonAdmin.map((a) => ({
           id: a.id,

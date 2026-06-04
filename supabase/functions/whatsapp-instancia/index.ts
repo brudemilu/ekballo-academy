@@ -74,7 +74,9 @@ Deno.serve(async (req) => {
   }
 
   if (acao === "grupos") {
-    const { ok, status, body } = await evolutionFetch("/group/myall", { method: "GET" });
+    // /group/list busca a lista completa do servidor (em testes /group/myall
+    // retornava vazio mesmo conectado; /group/list traz todos os grupos).
+    const { ok, status, body } = await evolutionFetch("/group/list", { method: "GET" });
     if (!ok) return jsonResponse({ erro: "falha ao listar grupos", evolution_status: status }, 502);
     const data = ((body || {}) as { data?: unknown }).data;
     return jsonResponse({ grupos: Array.isArray(data) ? data : [] });

@@ -18,6 +18,7 @@ export function WhatsAppPainel() {
   const [conectando, setConectando] = useState(false);
   const [grupos, setGrupos] = useState<Grupo[] | null>(null);
   const [carregandoGrupos, setCarregandoGrupos] = useState(false);
+  const [buscaGrupo, setBuscaGrupo] = useState("");
 
   // form de envio
   const [destinatario, setDestinatario] = useState("");
@@ -319,14 +320,29 @@ export function WhatsAppPainel() {
           </button>
         </div>
 
+        {grupos && grupos.length > 8 && (
+          <input
+            value={buscaGrupo}
+            onChange={(e) => setBuscaGrupo(e.target.value)}
+            placeholder={`Buscar entre ${grupos.length} grupos…`}
+            className="mt-4 w-full rounded-xl border border-mesa-200 bg-white px-4 py-2.5 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
+          />
+        )}
+
         {grupos && (
-          <ul className="mt-4 divide-y divide-mesa-100">
+          <ul className="mt-3 max-h-96 divide-y divide-mesa-100 overflow-y-auto">
             {grupos.length === 0 && (
               <li className="py-4 text-sm text-mesa-500">
                 Nenhum grupo encontrado (ou o WhatsApp ainda não sincronizou).
               </li>
             )}
-            {grupos.map((g) => {
+            {grupos
+              .filter((g) =>
+                buscaGrupo.trim()
+                  ? nomeDoGrupo(g).toLowerCase().includes(buscaGrupo.trim().toLowerCase())
+                  : true
+              )
+              .map((g) => {
               const jid = jidDoGrupo(g);
               return (
                 <li key={jid} className="flex items-center justify-between gap-3 py-3">
