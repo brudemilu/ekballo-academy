@@ -4,6 +4,7 @@ import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { MarcarDevocionalForm } from "@/components/MarcarDevocionalForm";
 import { ReflexaoDevocionalForm } from "@/components/ReflexaoDevocionalForm";
+import { StoryDevocional } from "@/components/StoryDevocional";
 import { getCurrentSession } from "@/lib/db";
 import {
   getDevocionalAnualByDia,
@@ -167,6 +168,11 @@ export default async function DevocionalDiaPage({
                 >
                   👁 Ver
                 </a>
+                <StoryDevocional
+                  dia={diaAno}
+                  tema={tema}
+                  isAdmin={Boolean(session.profile?.is_admin)}
+                />
               </div>
             </div>
           ))}

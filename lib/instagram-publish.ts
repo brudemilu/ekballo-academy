@@ -92,6 +92,16 @@ export async function publicarInstagram(p: PublicarParams): Promise<{ id: string
   return { id };
 }
 
+/** Publica um Story de imagem (some em 24h). image_url tem que ser 9:16 público. */
+export async function publicarStory(params: { igUserId: string; token: string; imageUrl: string }): Promise<{ id: string }> {
+  if (!params.igUserId || !params.token) throw new Error("Instagram não configurado.");
+  const p: PublicarParams = { igUserId: params.igUserId, token: params.token, imageUrls: [params.imageUrl], legenda: "" };
+  const creationId = await criarContainer(p, { image_url: params.imageUrl, media_type: "STORIES" });
+  await esperarPronto(p, creationId);
+  const id = await publicar(p, creationId);
+  return { id };
+}
+
 export function instagramConfigurado(): boolean {
   return Boolean(process.env.IG_USER_ID && process.env.META_ACCESS_TOKEN);
 }
