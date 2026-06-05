@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: 253 248 236;  /* bege-50 (creme manteiga) */
-  --foreground: 34 22 8;      /* bege-900 (quase preto quente) */
+  --background: 246 245 243;  /* greige-50 (cinza quente claro) */
+  --foreground: 26 24 21;     /* greige-900 (quase preto quente) */
   --laranja: 213 84 22;       /* laranja-500 (terracota) */
-  --oliveira: 97 88 33;       /* oliveira-600 (warm olive) */
-  --bege-700: 94 61 23;       /* chocolate quente */
+  --oliveira: 107 102 96;     /* greige-600 (era oliva; agora cinza) */
+  --bege-700: 78 74 69;       /* greige-700 */
 }
 
 html, body {
@@ -68,18 +68,18 @@ body {
 }
 .lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px -12px rgba(94, 61, 23, 0.25);
+  box-shadow: 0 20px 40px -12px rgba(42, 39, 36, 0.22);
 }
 
-/* Shimmering text — agora numa paleta totalmente quente */
+/* Shimmering text — terracota deslizando sobre cinza quente */
 .shimmer-text {
   background: linear-gradient(
     90deg,
-    rgb(94, 61, 23) 0%,    /* chocolate quente */
+    rgb(78, 74, 69) 0%,    /* greige-700 */
     rgb(213, 84, 22) 25%,  /* terracota */
     rgb(180, 62, 14) 50%,  /* terracota profunda */
     rgb(213, 84, 22) 75%,  /* terracota */
-    rgb(94, 61, 23) 100%   /* chocolate quente */
+    rgb(78, 74, 69) 100%   /* greige-700 */
   );
   background-size: 200% auto;
   background-clip: text;
@@ -121,7 +121,7 @@ body {
 .prose-mesa h2 {
   font-family: Georgia, serif;
   font-size: 1.6rem;
-  color: #5E3D17;  /* chocolate quente */
+  color: #2A2724;  /* greige-800 (título forte) */
   margin-top: 2em;
   margin-bottom: 0.6em;
   font-weight: 600;
@@ -129,7 +129,7 @@ body {
 .prose-mesa h3 {
   font-family: Georgia, serif;
   font-size: 1.25rem;
-  color: #615821;  /* warm olive */
+  color: #88300B;  /* laranja-700 (subtítulo com acento terracota) */
   margin-top: 1.6em;
   margin-bottom: 0.5em;
   font-weight: 600;
@@ -138,7 +138,7 @@ body {
   border-left: 3px solid #D55416;  /* terracota */
   padding-left: 1.25rem;
   font-style: italic;
-  color: #5E3D17;
+  color: #4E4A45;  /* greige-700 */
   margin: 1.5em 0;
 }
 .prose-mesa ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.1em; }
@@ -155,7 +155,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 60%, rgba(34, 22, 8, 0.55) 100%);
+  background: linear-gradient(180deg, transparent 60%, rgba(26, 24, 21, 0.55) 100%);
   pointer-events: none;
 }
 

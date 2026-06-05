@@ -1,6 +1,6 @@
 export function Logo({ className = "", variant = "default" }: { className?: string; variant?: "default" | "light" }) {
-  const text = variant === "light" ? "#FFFFFF" : "#5E3D17";       // chocolate quente
-  const sub = variant === "light" ? "#FBDDC0" : "#B57E2F";        // creme / tostado
+  const text = variant === "light" ? "#FFFFFF" : "#2A2724";       // greige-800 (forte)
+  const sub = variant === "light" ? "#FBDDC0" : "#837E75";        // greige-500 (suave)
   const stroke = variant === "light" ? "#FFFFFF" : "#D55416";     // terracota
   const accent = variant === "light" ? "#FBDDC0" : "#D55416";     // terracota
 
