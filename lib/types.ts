@@ -26,6 +26,8 @@ export type Curso = {
   external_path: string | null;
   // Autor do livro em que o curso se baseia (creditado em imagens geradas).
   autor?: string | null;
+  // Quando true, todas as aulas ficam desbloqueadas (sem trava sequencial).
+  aulas_livres?: boolean | null;
   created_at: string;
 };
 

@@ -44,7 +44,7 @@ export default async function AulaPage({
   const aula = await getAula(aulaId, curso.id);
   if (!aula) notFound();
 
-  const aulasStatus = await listAulasComStatus(curso.id, session.userId);
+  const aulasStatus = await listAulasComStatus(curso.id, session.userId, curso.aulas_livres ?? false);
   // Admin pode acessar qualquer aula pra revisar; aluno depende do desbloqueio.
   if (!session.profile?.is_admin) {
     const aulaStatus = aulasStatus.find((a) => a.id === aulaId);

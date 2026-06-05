@@ -29,7 +29,7 @@ export default async function CursoPage({
   }
 
   const [aulasRaw, progresso] = await Promise.all([
-    listAulasComStatus(curso.id, session.userId),
+    listAulasComStatus(curso.id, session.userId, curso.aulas_livres ?? false),
     listProgressoByAluno(session.userId),
   ]);
 

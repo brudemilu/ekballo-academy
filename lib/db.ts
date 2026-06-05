@@ -665,13 +665,20 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
 // Calcula status (desbloqueada / bloqueada) de cada aula do curso para o aluno
 export type AulaComStatus = Aula & { desbloqueada: boolean; completa: boolean };
 
-export async function listAulasComStatus(cursoId: string, alunoId: string): Promise<AulaComStatus[]> {
+// aulasLivres = curso liberado (todas as aulas desbloqueadas, sem trava
+// sequencial). `completa` continua refletindo se o aluno respondeu, só o
+// `desbloqueada` é liberado.
+export async function listAulasComStatus(
+  cursoId: string,
+  alunoId: string,
+  aulasLivres = false,
+): Promise<AulaComStatus[]> {
   const aulas = await listAulasByCurso(cursoId);
   const result: AulaComStatus[] = [];
   let previousCompleta = true;
   for (const aula of aulas) {
     const completa = await aulaCompleta(alunoId, aula.id);
-    const desbloqueada = previousCompleta;
+    const desbloqueada = aulasLivres || previousCompleta;
     result.push({ ...aula, desbloqueada, completa });
     previousCompleta = completa;
   }
