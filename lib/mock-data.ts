@@ -301,3 +301,7 @@ export function addMockCarrossel(c: CarrosselInstagramMock) {
 export function listMockCarrosseis(): CarrosselInstagramMock[] {
   return MOCK_CARROSSEIS;
 }
+export function removeMockCarrossel(id: string) {
+  const i = MOCK_CARROSSEIS.findIndex((c) => c.id === id);
+  if (i >= 0) MOCK_CARROSSEIS.splice(i, 1);
+}

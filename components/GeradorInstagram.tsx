@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // Fontes pra prévia ao vivo (mesmas do servidor). Carregadas via @font-face.
 const FONT_FACES = `
@@ -151,6 +152,7 @@ function SlidePreview({ slide, index, total, size = 300 }: { slide: Slide; index
 }
 
 export function GeradorInstagram() {
+  const router = useRouter();
   const [tipo, setTipo] = useState<Tipo>("carrossel");
   const [conteudo, setConteudo] = useState("");
   const [montando, setMontando] = useState(false);
@@ -313,6 +315,7 @@ export function GeradorInstagram() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao salvar.");
       setSalvo(true);
+      router.refresh();
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro ao salvar.");
     } finally {
@@ -376,6 +379,7 @@ export function GeradorInstagram() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao agendar.");
       setAgendadoOk(true);
+      router.refresh();
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro ao agendar.");
     } finally {

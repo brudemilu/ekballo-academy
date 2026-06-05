@@ -1,14 +1,18 @@
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
-import { getCurrentSession } from "@/lib/db";
+import { getCurrentSession, listCarrosseisInstagram } from "@/lib/db";
 import { GeradorInstagram } from "@/components/GeradorInstagram";
+import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
 
 export const metadata = { title: "Instagram — Ekballo" };
+export const dynamic = "force-dynamic";
 
 export default async function AdminInstagramPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
+
+  const carrosseis = await listCarrosseisInstagram().catch(() => []);
 
   const configurado = Boolean(
     process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN,
@@ -38,6 +42,13 @@ export default async function AdminInstagramPage() {
       )}
 
       <GeradorInstagram />
+
+      <div className="mt-12">
+        <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
+          Agendados e rascunhos
+        </h2>
+        <ListaCarrosseisInstagram itens={carrosseis} />
+      </div>
     </AdminShell>
   );
 }

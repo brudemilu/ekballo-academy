@@ -30,6 +30,7 @@ import {
   setMockReflexao,
   addMockCarrossel,
   listMockCarrosseis,
+  removeMockCarrossel,
   type CarrosselInstagramMock,
 } from "@/lib/mock-data";
 import type {
@@ -1505,9 +1506,19 @@ export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("instagram_carrosseis")
-    .select("id, conteudo, slides, legenda, status, criado_em")
+    .select("id, conteudo, slides, legenda, status, agendado_para, criado_em")
     .order("criado_em", { ascending: false })
     .limit(50);
   if (error) throw new Error(error.message);
   return (data || []) as unknown as CarrosselInstagramMock[];
+}
+
+export async function deletarCarrosselInstagram(id: string): Promise<void> {
+  if (isMockMode()) {
+    removeMockCarrossel(id);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("instagram_carrosseis").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }

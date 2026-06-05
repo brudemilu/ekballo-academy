@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession, salvarCarrosselInstagram } from "@/lib/db";
+import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -50,6 +50,25 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Falha ao salvar." },
+      { status: 500 },
+    );
+  }
+}
+
+/** DELETE /api/admin/instagram?id=<uuid> — exclui rascunho/agendamento. */
+export async function DELETE(req: NextRequest) {
+  const session = await getCurrentSession();
+  if (!session?.profile?.is_admin) {
+    return NextResponse.json({ error: "não autorizado" }, { status: 401 });
+  }
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id obrigatório" }, { status: 400 });
+  try {
+    await deletarCarrosselInstagram(id);
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Falha ao excluir." },
       { status: 500 },
     );
   }
