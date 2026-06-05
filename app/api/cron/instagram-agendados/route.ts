@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     .eq("status", "agendado")
     .lte("agendado_para", new Date().toISOString())
     .order("agendado_para", { ascending: true })
-    .limit(3);
+    .limit(1);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!pendentes?.length) return NextResponse.json({ ok: true, publicados: 0 });

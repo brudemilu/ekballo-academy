@@ -47,6 +47,23 @@ async function publicar(p: PublicarParams, creationId: string): Promise<string> 
   return graphPost(`${p.igUserId}/media_publish`, { access_token: p.token, creation_id: creationId });
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Espera o container ficar pronto (FINISHED) antes de publicar. O Instagram
+// baixa/processa a imagem de forma assíncrona — publicar antes dá
+// "media is not ready". Faz polling do status_code.
+async function esperarPronto(p: PublicarParams, creationId: string): Promise<void> {
+  for (let i = 0; i < 20; i++) {
+    const res = await fetch(`${GRAPH}/${creationId}?fields=status_code&access_token=${encodeURIComponent(p.token)}`);
+    const json = (await res.json()) as { status_code?: string } & GraphErr;
+    const sc = json.status_code;
+    if (sc === "FINISHED") return;
+    if (sc === "ERROR" || sc === "EXPIRED") throw new Error(`a imagem falhou ao processar (${sc})`);
+    await sleep(2500);
+  }
+  throw new Error("tempo esgotado esperando a imagem ficar pronta");
+}
+
 /** Publica imagem única ou carrossel. Retorna o id do post publicado. */
 export async function publicarInstagram(p: PublicarParams): Promise<{ id: string }> {
   if (!p.igUserId || !p.token) throw new Error("Instagram não configurado (faltam token/ID).");
@@ -55,16 +72,20 @@ export async function publicarInstagram(p: PublicarParams): Promise<{ id: string
   let creationId: string;
   if (p.imageUrls.length === 1) {
     creationId = await criarContainer(p, { image_url: p.imageUrls[0], caption: p.legenda });
+    await esperarPronto(p, creationId);
   } else {
     const children: string[] = [];
     for (const url of p.imageUrls.slice(0, 10)) {
-      children.push(await criarContainer(p, { image_url: url, is_carousel_item: "true" }));
+      const child = await criarContainer(p, { image_url: url, is_carousel_item: "true" });
+      await esperarPronto(p, child); // cada filho precisa estar pronto
+      children.push(child);
     }
     creationId = await criarContainer(p, {
       media_type: "CAROUSEL",
       children: children.join(","),
       caption: p.legenda,
     });
+    await esperarPronto(p, creationId);
   }
 
   const id = await publicar(p, creationId);
