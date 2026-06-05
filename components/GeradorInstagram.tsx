@@ -157,6 +157,8 @@ export function GeradorInstagram() {
   const [legenda, setLegenda] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
+  const [publicando, setPublicando] = useState(false);
+  const [publicado, setPublicado] = useState<string | null>(null);
 
   async function montar() {
     setErro(null);
@@ -208,18 +210,51 @@ export function GeradorInstagram() {
     ]);
   }
 
+  function baixarUm(s: Slide, idx: number) {
+    const a = document.createElement("a");
+    a.href = `${ogSrc(s)}&dl=1`;
+    a.download = `slide-${idx + 1}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
   function baixarTodas() {
     slides.forEach((s, idx) => {
-      setTimeout(() => {
-        const a = document.createElement("a");
-        a.href = `${ogSrc(s)}&dl=1`;
-        a.download = "";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }, idx * 600);
+      setTimeout(() => baixarUm(s, idx), idx * 600);
     });
   }
+
+  // Celular (iPhone): baixar várias de uma vez não salva na galeria. A bandeja
+  // de compartilhar permite "Salvar imagens" todas de uma vez só.
+  async function salvarNoCelular() {
+    setErro(null);
+    try {
+      const files: File[] = [];
+      for (let idx = 0; idx < slides.length; idx++) {
+        const r = await fetch(`${ogSrc(slides[idx])}&dl=1`);
+        if (!r.ok) throw new Error("falha");
+        const b = await r.blob();
+        files.push(new File([b], `slide-${idx + 1}.png`, { type: "image/png" }));
+      }
+      const nav = navigator as Navigator & {
+        canShare?: (d: { files: File[] }) => boolean;
+        share?: (d: { files: File[]; title?: string }) => Promise<void>;
+      };
+      if (nav.canShare && nav.share && nav.canShare({ files })) {
+        await nav.share({ files, title: "Carrossel Ekballo" });
+        return;
+      }
+      baixarTodas(); // sem Web Share: cai no download normal
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return; // usuário cancelou
+      baixarTodas();
+    }
+  }
+
+  const podeCompartilhar =
+    typeof navigator !== "undefined" &&
+    typeof (navigator as Navigator & { share?: unknown }).share === "function";
 
   async function salvar() {
     setSalvando(true);
@@ -237,6 +272,31 @@ export function GeradorInstagram() {
       setErro(e instanceof Error ? e.message : "Erro ao salvar.");
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function publicar() {
+    const qtd = slides.length;
+    const ok = window.confirm(
+      `Publicar AGORA no Instagram?\n\n${qtd === 1 ? "1 imagem" : `Carrossel de ${qtd} imagens`} + legenda.\nIsso vai ao ar no perfil de verdade.`,
+    );
+    if (!ok) return;
+    setPublicando(true);
+    setErro(null);
+    setPublicado(null);
+    try {
+      const res = await fetch("/api/admin/instagram/publicar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slides, legenda }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Falha ao publicar.");
+      setPublicado(data.id || "ok");
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao publicar.");
+    } finally {
+      setPublicando(false);
     }
   }
 
@@ -359,6 +419,13 @@ export function GeradorInstagram() {
                     </select>
                   </div>
                   <div className="grow" />
+                  <button
+                    onClick={() => baixarUm(s, i)}
+                    title="Baixar esta imagem (PNG 1080×1080)"
+                    className="rounded-lg border border-mesa-200 px-3 py-2 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
+                  >
+                    ⬇️ Baixar
+                  </button>
                   {slides.length > 1 && (
                     <button
                       onClick={() => removerSlide(i)}
@@ -417,6 +484,15 @@ export function GeradorInstagram() {
             >
               ⬇️ Baixar {slides.length > 1 ? "todas as imagens" : "a imagem"}
             </button>
+            {podeCompartilhar && (
+              <button
+                onClick={salvarNoCelular}
+                title="Abre a bandeja do celular para salvar na galeria"
+                className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
+              >
+                📤 Salvar {slides.length > 1 ? "imagens" : "imagem"} (celular)
+              </button>
+            )}
             <button
               onClick={salvar}
               disabled={salvando}
@@ -425,9 +501,16 @@ export function GeradorInstagram() {
               {salvando ? "Salvando…" : "💾 Salvar rascunho"}
             </button>
             {salvo && <span className="text-sm text-oliveira-700">Rascunho salvo ✓</span>}
-            <span className="text-xs text-mesa-400">
-              Publicação automática no Instagram: pendente (setup Meta).
-            </span>
+            <button
+              onClick={publicar}
+              disabled={publicando}
+              className="rounded-full bg-gradient-to-r from-pink-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+            >
+              {publicando ? "Publicando…" : "📲 Publicar no Instagram"}
+            </button>
+            {publicado && (
+              <span className="text-sm font-medium text-oliveira-700">Publicado no Instagram ✓</span>
+            )}
           </div>
         </div>
       )}
