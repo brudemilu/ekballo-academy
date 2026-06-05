@@ -14,9 +14,12 @@ type SlideIn = {
   seed: number;
   top?: string;
   ref?: string;
+  /** Imagem enviada pelo usuário (modo upload) — usa direto, sem IA. */
+  imageUrl?: string;
 };
 
 function ogUrl(origin: string, s: SlideIn): string {
+  if (s.imageUrl) return s.imageUrl;
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,

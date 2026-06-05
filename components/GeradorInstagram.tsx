@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Fontes pra prévia ao vivo (mesmas do servidor). Carregadas via @font-face.
 const FONT_FACES = `
@@ -21,7 +21,9 @@ const FONT_CSS: Record<string, { fam: string; upper: boolean; style: string }> =
 
 type Modo = "circulo" | "grifo" | "marca" | "dourado" | "nenhum";
 type Fonte = "anton" | "bebas" | "dm-serif" | "cormorant";
-type Tipo = "carrossel" | "unico";
+type Tipo = "carrossel" | "unico" | "upload";
+
+type Upload = { url: string; preview: string; enviando: boolean; erro?: boolean };
 
 type Slide = {
   texto: string;
@@ -162,6 +164,46 @@ export function GeradorInstagram() {
   const [agendarData, setAgendarData] = useState("");
   const [agendando, setAgendando] = useState(false);
   const [agendadoOk, setAgendadoOk] = useState(false);
+  const [uploads, setUploads] = useState<Upload[]>([]);
+  const uploadsRef = useRef<Upload[]>([]);
+
+  // Slides que vão pro servidor: no modo upload, viram {imageUrl}; senão, os da IA.
+  function slidesParaEnvio() {
+    if (tipo === "upload") {
+      return uploads
+        .filter((u) => u.url)
+        .map((u) => ({ imageUrl: u.url, texto: "", prompt: "", modo: "nenhum", cor: "#C9A961", fonte: "anton", top: "", ref: "", seed: 0 }));
+    }
+    return slides;
+  }
+
+  async function enviarArquivos(files: FileList | null) {
+    if (!files?.length) return;
+    setSalvo(false);
+    setErro(null);
+    for (const file of Array.from(files)) {
+      const preview = URL.createObjectURL(file);
+      const idx = uploadsRef.current.length;
+      uploadsRef.current = [...uploadsRef.current, { url: "", preview, enviando: true }];
+      setUploads([...uploadsRef.current]);
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/admin/instagram/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Falha no upload.");
+        uploadsRef.current = uploadsRef.current.map((u, i) => (i === idx ? { ...u, url: data.url, enviando: false } : u));
+      } catch (e) {
+        uploadsRef.current = uploadsRef.current.map((u, i) => (i === idx ? { ...u, enviando: false, erro: true } : u));
+        setErro(e instanceof Error ? e.message : "Falha no upload.");
+      }
+      setUploads([...uploadsRef.current]);
+    }
+  }
+  function removerUpload(i: number) {
+    uploadsRef.current = uploadsRef.current.filter((_, idx) => idx !== i);
+    setUploads([...uploadsRef.current]);
+  }
 
   async function montar() {
     setErro(null);
@@ -266,7 +308,7 @@ export function GeradorInstagram() {
       const res = await fetch("/api/admin/instagram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, slides, legenda, tipo }),
+        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, tipo }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao salvar.");
@@ -279,7 +321,12 @@ export function GeradorInstagram() {
   }
 
   async function publicar() {
-    const qtd = slides.length;
+    const envio = slidesParaEnvio();
+    const qtd = envio.length;
+    if (!qtd) {
+      setErro("Nada pra publicar.");
+      return;
+    }
     const ok = window.confirm(
       `Publicar AGORA no Instagram?\n\n${qtd === 1 ? "1 imagem" : `Carrossel de ${qtd} imagens`} + legenda.\nIsso vai ao ar no perfil de verdade.`,
     );
@@ -291,7 +338,7 @@ export function GeradorInstagram() {
       const res = await fetch("/api/admin/instagram/publicar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slides, legenda }),
+        body: JSON.stringify({ slides: envio, legenda }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao publicar.");
@@ -324,7 +371,7 @@ export function GeradorInstagram() {
       const res = await fetch("/api/admin/instagram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, slides, legenda, agendadoPara: quando.toISOString() }),
+        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, agendadoPara: quando.toISOString() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao agendar.");
@@ -337,6 +384,7 @@ export function GeradorInstagram() {
   }
 
   const temSlides = slides.length > 0;
+  const temConteudo = tipo === "upload" ? uploads.length > 0 : temSlides;
 
   return (
     <div className="space-y-8">
@@ -346,8 +394,9 @@ export function GeradorInstagram() {
         {/* tipo de post */}
         <div className="mb-4 flex gap-2">
           {([
-            { v: "carrossel", label: "📚 Carrossel (vários slides)" },
-            { v: "unico", label: "🖼️ Imagem única" },
+            { v: "carrossel", label: "📚 Carrossel (IA)" },
+            { v: "unico", label: "🖼️ Imagem única (IA)" },
+            { v: "upload", label: "⬆️ Enviar minhas imagens" },
           ] as { v: Tipo; label: string }[]).map((opt) => (
             <button
               key={opt.v}
@@ -363,30 +412,80 @@ export function GeradorInstagram() {
           ))}
         </div>
 
-        <label className="mb-2 block text-sm font-medium text-mesa-700">Seu conteúdo</label>
-        <textarea
-          value={conteudo}
-          onChange={(e) => setConteudo(e.target.value)}
-          rows={5}
-          placeholder="Ex.: Essa nova estação não será construída apenas por estratégias humanas. Ela será sustentada pela glória de Deus…"
-          className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-mesa-800 outline-none focus:border-mesa-400"
-        />
-        <div className="mt-4 flex items-center gap-3">
-          <button
-            onClick={montar}
-            disabled={montando || conteudo.trim().length < 8}
-            className="rounded-full bg-laranja-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-laranja-700 disabled:opacity-40"
-          >
-            {montando ? "Montando com IA…" : tipo === "unico" ? "✨ Gerar imagem com IA" : "✨ Montar carrossel com IA"}
-          </button>
-          {erro && <span className="text-sm text-red-600">{erro}</span>}
-        </div>
+        {tipo !== "upload" ? (
+          <>
+            <label className="mb-2 block text-sm font-medium text-mesa-700">Seu conteúdo</label>
+            <textarea
+              value={conteudo}
+              onChange={(e) => setConteudo(e.target.value)}
+              rows={5}
+              placeholder="Ex.: Essa nova estação não será construída apenas por estratégias humanas. Ela será sustentada pela glória de Deus…"
+              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-mesa-800 outline-none focus:border-mesa-400"
+            />
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                onClick={montar}
+                disabled={montando || conteudo.trim().length < 8}
+                className="rounded-full bg-laranja-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-laranja-700 disabled:opacity-40"
+              >
+                {montando ? "Montando com IA…" : tipo === "unico" ? "✨ Gerar imagem com IA" : "✨ Montar carrossel com IA"}
+              </button>
+              {erro && <span className="text-sm text-red-600">{erro}</span>}
+            </div>
+          </>
+        ) : (
+          <>
+            <label className="mb-2 block text-sm font-medium text-mesa-700">
+              Suas imagens <span className="text-mesa-400">— JPG/PNG/WEBP, até 10 (vira carrossel)</span>
+            </label>
+            <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-mesa-300 bg-mesa-50 px-6 py-8 text-sm font-medium text-mesa-600 transition hover:border-mesa-400 hover:bg-mesa-100">
+              ⬆️ Clique para escolher imagens (ou arraste aqui)
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(e) => {
+                  enviarArquivos(e.target.files);
+                  e.target.value = "";
+                }}
+                className="hidden"
+              />
+            </label>
+            {erro && <p className="mt-3 text-sm text-red-600">{erro}</p>}
+          </>
+        )}
       </div>
 
-      {/* Slides */}
-      {temSlides && (
+      {/* Imagens enviadas (modo upload) */}
+      {tipo === "upload" && uploads.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {uploads.map((u, i) => (
+            <div key={i} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={u.preview} alt={`imagem ${i + 1}`} className="h-32 w-32 rounded-xl object-cover shadow" />
+              {u.enviando && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/45 text-xs text-white">enviando…</div>
+              )}
+              {u.erro && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-red-900/60 text-xs text-white">falhou</div>
+              )}
+              <button
+                onClick={() => removerUpload(i)}
+                className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-mesa-800 text-xs text-white"
+                title="Remover"
+              >
+                ✕
+              </button>
+              <div className="mt-1 text-center text-xs text-mesa-400">{i + 1}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Slides (IA) + ações */}
+      {temConteudo && (
         <div className="space-y-6">
-          {slides.map((s, i) => (
+          {tipo !== "upload" && slides.map((s, i) => (
             <div key={i} className="flex flex-col gap-5 rounded-2xl border border-mesa-200 bg-white p-5 md:flex-row">
               <SlidePreview slide={s} index={i} total={slides.length} />
 
@@ -514,20 +613,24 @@ export function GeradorInstagram() {
 
           {/* Ações */}
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={baixarTodas}
-              className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
-            >
-              ⬇️ Baixar {slides.length > 1 ? "todas as imagens" : "a imagem"}
-            </button>
-            {podeCompartilhar && (
-              <button
-                onClick={salvarNoCelular}
-                title="Abre a bandeja do celular para salvar na galeria"
-                className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
-              >
-                📤 Salvar {slides.length > 1 ? "imagens" : "imagem"} (celular)
-              </button>
+            {tipo !== "upload" && (
+              <>
+                <button
+                  onClick={baixarTodas}
+                  className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
+                >
+                  ⬇️ Baixar {slides.length > 1 ? "todas as imagens" : "a imagem"}
+                </button>
+                {podeCompartilhar && (
+                  <button
+                    onClick={salvarNoCelular}
+                    title="Abre a bandeja do celular para salvar na galeria"
+                    className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
+                  >
+                    📤 Salvar {slides.length > 1 ? "imagens" : "imagem"} (celular)
+                  </button>
+                )}
+              </>
             )}
             <button
               onClick={salvar}

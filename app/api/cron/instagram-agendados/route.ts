@@ -17,9 +17,11 @@ type SlideRow = {
   seed: number;
   top?: string;
   ref?: string;
+  imageUrl?: string;
 };
 
 function ogUrl(origin: string, s: SlideRow): string {
+  if (s.imageUrl) return s.imageUrl;
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,
