@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
+import { createClient } from "@/lib/supabase/server";
 import { publicarInstagram, instagramConfigurado } from "@/lib/instagram-publish";
 
 export const runtime = "nodejs";
@@ -54,10 +55,27 @@ export async function POST(req: NextRequest) {
 
   let slides: SlideIn[] = [];
   let legenda = "";
+  let postId: string | null = null;
   try {
     const body = await req.json();
-    slides = Array.isArray(body.slides) ? body.slides : [];
-    legenda = typeof body.legenda === "string" ? body.legenda : "";
+    postId = typeof body.id === "string" ? body.id : null;
+    if (postId) {
+      // republicar um post salvo: carrega slides+legenda do banco
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("instagram_carrosseis")
+        .select("slides, legenda")
+        .eq("id", postId)
+        .single();
+      if (error || !data) {
+        return NextResponse.json({ error: "Post não encontrado." }, { status: 404 });
+      }
+      slides = (Array.isArray(data.slides) ? data.slides : []) as SlideIn[];
+      legenda = typeof data.legenda === "string" ? data.legenda : "";
+    } else {
+      slides = Array.isArray(body.slides) ? body.slides : [];
+      legenda = typeof body.legenda === "string" ? body.legenda : "";
+    }
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
@@ -82,11 +100,20 @@ export async function POST(req: NextRequest) {
       imageUrls,
       legenda,
     });
+    if (postId) {
+      const supabase = await createClient();
+      await supabase
+        .from("instagram_carrosseis")
+        .update({ status: "publicado", publicado_em: new Date().toISOString(), ig_post_id: id, erro: null })
+        .eq("id", postId);
+    }
     return NextResponse.json({ ok: true, id });
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Falha ao publicar." },
-      { status: 502 },
-    );
+    const msg = e instanceof Error ? e.message : "Falha ao publicar.";
+    if (postId) {
+      const supabase = await createClient();
+      await supabase.from("instagram_carrosseis").update({ status: "erro", erro: msg }).eq("id", postId);
+    }
+    return NextResponse.json({ error: msg }, { status: 502 });
   }
 }
