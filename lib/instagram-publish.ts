@@ -10,7 +10,9 @@
  * `instagram_content_publish`.
  */
 
-const GRAPH = "https://graph.facebook.com/v21.0";
+// API do Instagram com login do Instagram (conta Criador/Comercial, SEM Página
+// do Facebook): base graph.instagram.com. Override por env se necessário.
+const GRAPH = process.env.META_GRAPH_BASE || "https://graph.instagram.com/v21.0";
 
 export type PublicarParams = {
   igUserId: string;
