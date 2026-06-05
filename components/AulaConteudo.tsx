@@ -308,7 +308,7 @@ export function AulaConteudo({
                         padding: "0 1px",
                         cursor: "pointer",
                         fontWeight: seg.titulo ? 700 : undefined,
-                        color: seg.titulo ? "#5E3D17" : undefined,
+                        color: seg.titulo ? "#2A2724" : undefined,
                       }}
                     >
                       {seg.texto}
@@ -317,7 +317,7 @@ export function AulaConteudo({
                 }
                 if (seg.titulo) {
                   return (
-                    <strong key={j} style={{ fontWeight: 700, color: "#5E3D17" }}>
+                    <strong key={j} style={{ fontWeight: 700, color: "#2A2724" }}>
                       {seg.texto}
                     </strong>
                   );

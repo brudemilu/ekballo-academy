@@ -8,20 +8,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ==================== PALETA EKBALLO · QUENTE ====================
-        // Bege creme-mel — fundos, textos, neutros (era "mesa")
-        // Mais quente: vai do creme manteiga ao chocolate quente
+        // ============ PALETA EKBALLO · TERRACOTA + CINZA QUENTE ============
+        // Neutro = CINZA QUENTE (greige): fundos, textos, bordas, superfícies.
+        // Mantém o nome "bege" por compatibilidade (era creme-mel; agora greige).
+        // Sub-tom levemente quente (R>G>B) pra casar com o terracota, sem frieza.
         bege: {
-          50: "#FDF8EC",   // creme manteiga
-          100: "#FAEED4",  // mel claro
-          200: "#F4DBA8",  // mel
-          300: "#EBC279",  // âmbar quente
-          400: "#D9A04C",  // caramelo
-          500: "#B57E2F",  // tostado
-          600: "#8C5C20",  // caramelo profundo
-          700: "#5E3D17",  // chocolate quente
-          800: "#3D2710",  // marrom profundo
-          900: "#221608",  // quase preto quente
+          50: "#F6F5F3",   // fundo de página (greige clarinho)
+          100: "#ECEAE7",  // superfície / banda
+          200: "#DAD6D0",  // borda suave
+          300: "#C6C1B9",  // borda forte / divisor
+          400: "#A8A29A",  // ícones / muted
+          500: "#837E75",  // texto secundário
+          600: "#6B6660",  // texto suave
+          700: "#4E4A45",  // texto secundário forte
+          800: "#2A2724",  // títulos / texto forte
+          900: "#1A1815",  // quase-preto quente
         },
         // Laranja terracota / pôr-do-sol — primary, CTA, energia
         // Mais profundo, mais saturado, sensação de barro queimado
@@ -37,32 +38,33 @@ export default {
           800: "#5C2008",
           900: "#341204",
         },
-        // Oliveira salva quente — natureza, vida, secundário
-        // Verde com sub-tom de mostarda/khaki, sem o frio do azul
+        // Oliveira — antes verde-oliva (secundário). Na paleta laranja+cinza o
+        // verde sai de cena: colapsado no MESMO cinza quente do "bege". Mantido
+        // como alias só por compatibilidade com classes oliveira-* existentes.
         oliveira: {
-          50: "#F4F3E2",
-          100: "#E4E1B5",
-          200: "#CDC783",
-          300: "#B0A654",
-          400: "#928731",
-          500: "#766B22",
-          600: "#615821",   // signature warm olive
-          700: "#46411A",
-          800: "#2D2A12",
-          900: "#161408",
+          50: "#F6F5F3",
+          100: "#ECEAE7",
+          200: "#DAD6D0",
+          300: "#C6C1B9",
+          400: "#A8A29A",
+          500: "#837E75",
+          600: "#6B6660",
+          700: "#4E4A45",
+          800: "#2A2724",
+          900: "#1A1815",
         },
-        // Alias mesa → bege (compatibilidade)
+        // Alias mesa → bege (compatibilidade) — mesmo cinza quente
         mesa: {
-          50: "#FDF8EC",
-          100: "#FAEED4",
-          200: "#F4DBA8",
-          300: "#EBC279",
-          400: "#D9A04C",
-          500: "#B57E2F",
-          600: "#8C5C20",
-          700: "#5E3D17",
-          800: "#3D2710",
-          900: "#221608",
+          50: "#F6F5F3",
+          100: "#ECEAE7",
+          200: "#DAD6D0",
+          300: "#C6C1B9",
+          400: "#A8A29A",
+          500: "#837E75",
+          600: "#6B6660",
+          700: "#4E4A45",
+          800: "#2A2724",
+          900: "#1A1815",
         },
       },
       fontFamily: {
