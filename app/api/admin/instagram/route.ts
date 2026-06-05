@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
 
-  let body: { conteudo?: string; slides?: unknown[]; legenda?: string };
+  let body: { conteudo?: string; slides?: unknown[]; legenda?: string; agendadoPara?: string };
   try {
     body = await req.json();
   } catch {
@@ -25,14 +25,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Nada pra salvar — monte o carrossel primeiro." }, { status: 400 });
   }
 
+  // valida a data de agendamento (se houver): tem que ser no futuro
+  let agendadoPara: string | null = null;
+  if (body.agendadoPara) {
+    const t = new Date(body.agendadoPara).getTime();
+    if (Number.isNaN(t)) {
+      return NextResponse.json({ error: "Data de agendamento inválida." }, { status: 400 });
+    }
+    if (t < Date.now() - 60_000) {
+      return NextResponse.json({ error: "A data de agendamento já passou." }, { status: 400 });
+    }
+    agendadoPara = new Date(t).toISOString();
+  }
+
   try {
     const { id } = await salvarCarrosselInstagram({
       conteudo: typeof body.conteudo === "string" ? body.conteudo : "",
       // o facade aceita o formato dos slides do editor
       slides: slides as never,
       legenda: typeof body.legenda === "string" ? body.legenda : "",
+      agendadoPara,
     });
-    return NextResponse.json({ ok: true, id });
+    return NextResponse.json({ ok: true, id, agendado: Boolean(agendadoPara) });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Falha ao salvar." },

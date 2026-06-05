@@ -291,6 +291,7 @@ export type CarrosselInstagramMock = {
   slides: CarrosselSlideMock[];
   legenda: string;
   status: string;
+  agendado_para?: string;
   criado_em: string;
 };
 const MOCK_CARROSSEIS: CarrosselInstagramMock[] = [];

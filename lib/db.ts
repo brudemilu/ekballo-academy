@@ -1462,11 +1462,15 @@ export type CarrosselInstagramInput = {
   conteudo: string;
   slides: CarrosselInstagramMock["slides"];
   legenda: string;
+  /** ISO. Se presente, salva como "agendado" pra essa data/hora. */
+  agendadoPara?: string | null;
 };
 
 export async function salvarCarrosselInstagram(
   input: CarrosselInstagramInput,
 ): Promise<{ id: string }> {
+  const agendado = Boolean(input.agendadoPara);
+  const status = agendado ? "agendado" : "rascunho";
   if (isMockMode()) {
     const id = crypto.randomUUID();
     addMockCarrossel({
@@ -1474,7 +1478,8 @@ export async function salvarCarrosselInstagram(
       conteudo: input.conteudo,
       slides: input.slides,
       legenda: input.legenda,
-      status: "rascunho",
+      status,
+      agendado_para: input.agendadoPara || undefined,
       criado_em: new Date().toISOString(),
     });
     return { id };
@@ -1486,7 +1491,8 @@ export async function salvarCarrosselInstagram(
       conteudo: input.conteudo,
       slides: input.slides,
       legenda: input.legenda,
-      status: "rascunho",
+      status,
+      agendado_para: input.agendadoPara || null,
     })
     .select("id")
     .single();

@@ -159,6 +159,9 @@ export function GeradorInstagram() {
   const [salvo, setSalvo] = useState(false);
   const [publicando, setPublicando] = useState(false);
   const [publicado, setPublicado] = useState<string | null>(null);
+  const [agendarData, setAgendarData] = useState("");
+  const [agendando, setAgendando] = useState(false);
+  const [agendadoOk, setAgendadoOk] = useState(false);
 
   async function montar() {
     setErro(null);
@@ -297,6 +300,39 @@ export function GeradorInstagram() {
       setErro(e instanceof Error ? e.message : "Erro ao publicar.");
     } finally {
       setPublicando(false);
+    }
+  }
+
+  async function agendar() {
+    if (!agendarData) {
+      setErro("Escolha a data e a hora do agendamento.");
+      return;
+    }
+    const quando = new Date(agendarData);
+    if (quando.getTime() < Date.now()) {
+      setErro("Escolha uma data/hora no futuro.");
+      return;
+    }
+    const ok = window.confirm(
+      `Agendar publicação para ${quando.toLocaleString("pt-BR")}?\n\nNa hora marcada, o post vai ao ar automaticamente.`,
+    );
+    if (!ok) return;
+    setAgendando(true);
+    setErro(null);
+    setAgendadoOk(false);
+    try {
+      const res = await fetch("/api/admin/instagram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conteudo, slides, legenda, agendadoPara: quando.toISOString() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Falha ao agendar.");
+      setAgendadoOk(true);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao agendar.");
+    } finally {
+      setAgendando(false);
     }
   }
 
@@ -510,6 +546,32 @@ export function GeradorInstagram() {
             </button>
             {publicado && (
               <span className="text-sm font-medium text-oliveira-700">Publicado no Instagram ✓</span>
+            )}
+          </div>
+
+          {/* Agendamento */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-mesa-200 bg-mesa-50 px-4 py-3">
+            <span className="text-sm font-medium text-mesa-700">🗓️ Ou agende:</span>
+            <input
+              type="datetime-local"
+              value={agendarData}
+              onChange={(e) => {
+                setAgendarData(e.target.value);
+                setAgendadoOk(false);
+              }}
+              className="rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800"
+            />
+            <button
+              onClick={agendar}
+              disabled={agendando}
+              className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-mesa-800 disabled:opacity-40"
+            >
+              {agendando ? "Agendando…" : "Agendar publicação"}
+            </button>
+            {agendadoOk && (
+              <span className="text-sm font-medium text-oliveira-700">
+                Agendado ✓ — vai ao ar sozinho na hora marcada
+              </span>
             )}
           </div>
         </div>
