@@ -16,6 +16,7 @@ export type AdminTab =
   | "whatsapp"
   | "templates"
   | "imagens"
+  | "instagram"
   | "youtube"
   | "permissoes";
 
@@ -34,6 +35,7 @@ const ITEMS: Item[] = [
   { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email, WhatsApp e grupos" },
   { key: "templates", label: "Templates", href: "/admin/templates", hint: "Emails automáticos" },
   { key: "imagens", label: "Imagens", href: "/admin/imagens", hint: "Gerador cinematográfico IA" },
+  { key: "instagram", label: "Instagram", href: "/admin/instagram", hint: "Gerar carrossel e postar" },
   { key: "youtube", label: "YouTube", href: "/admin/youtube", hint: "Baixar áudio em MP3" },
 ];
 

@@ -28,6 +28,9 @@ import {
   getMockMcAnswer,
   setMockMcAnswer,
   setMockReflexao,
+  addMockCarrossel,
+  listMockCarrosseis,
+  type CarrosselInstagramMock,
 } from "@/lib/mock-data";
 import type {
   Profile,
@@ -1450,4 +1453,55 @@ export async function getAlunoProgressoNoCurso(
         : 0,
     aulas: aulasProgresso,
   };
+}
+
+// =============================================================
+// Carrosséis de Instagram (rascunhos)
+// =============================================================
+export type CarrosselInstagramInput = {
+  conteudo: string;
+  slides: CarrosselInstagramMock["slides"];
+  legenda: string;
+};
+
+export async function salvarCarrosselInstagram(
+  input: CarrosselInstagramInput,
+): Promise<{ id: string }> {
+  if (isMockMode()) {
+    const id = crypto.randomUUID();
+    addMockCarrossel({
+      id,
+      conteudo: input.conteudo,
+      slides: input.slides,
+      legenda: input.legenda,
+      status: "rascunho",
+      criado_em: new Date().toISOString(),
+    });
+    return { id };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("instagram_carrosseis")
+    .insert({
+      conteudo: input.conteudo,
+      slides: input.slides,
+      legenda: input.legenda,
+      status: "rascunho",
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return { id: data.id as string };
+}
+
+export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[]> {
+  if (isMockMode()) return listMockCarrosseis();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("instagram_carrosseis")
+    .select("id, conteudo, slides, legenda, status, criado_em")
+    .order("criado_em", { ascending: false })
+    .limit(50);
+  if (error) throw new Error(error.message);
+  return (data || []) as unknown as CarrosselInstagramMock[];
 }

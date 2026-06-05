@@ -271,3 +271,32 @@ export function aulaCompleta(alunoId: string, aulaId: string): boolean {
   }
   return true;
 }
+
+// ---------------------------------------------------------------------------
+// Carrosséis de Instagram (rascunhos) — estado mutável in-memory (modo mock).
+// ---------------------------------------------------------------------------
+export type CarrosselSlideMock = {
+  texto: string;
+  prompt: string;
+  modo: string;
+  cor: string;
+  fonte: string;
+  top?: string;
+  ref?: string;
+  seed?: number;
+};
+export type CarrosselInstagramMock = {
+  id: string;
+  conteudo: string;
+  slides: CarrosselSlideMock[];
+  legenda: string;
+  status: string;
+  criado_em: string;
+};
+const MOCK_CARROSSEIS: CarrosselInstagramMock[] = [];
+export function addMockCarrossel(c: CarrosselInstagramMock) {
+  MOCK_CARROSSEIS.unshift(c);
+}
+export function listMockCarrosseis(): CarrosselInstagramMock[] {
+  return MOCK_CARROSSEIS;
+}
