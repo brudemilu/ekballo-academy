@@ -25,6 +25,7 @@ const GATILHO_LABEL: Record<string, string> = {
   continue_curso: "Continue de onde parou",
   parabens: "Parabéns ao concluir",
   sumida: "Sumida (sem login)",
+  atividades_pendentes: "Faça as atividades (texto único por IA)",
 };
 
 export function AutomacaoCampanhas() {

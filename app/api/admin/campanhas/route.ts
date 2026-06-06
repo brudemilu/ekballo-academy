@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { gerarTextoLembrete } from "@/lib/mensagens-ia";
+
+// IA por pessoa pode levar alguns segundos por destinatário.
+export const maxDuration = 60;
 
 // Campanhas automáticas (sugeridas pelo detector diário) — aprovação manual.
 //   GET                                  -> campanhas pendentes + candidatos + templates
@@ -126,12 +130,30 @@ export async function POST(req: NextRequest) {
       .single();
     if (!tpl) return NextResponse.json({ erro: "template não encontrado" }, { status: 404 });
 
-    // Enfileira (whatsapp_fila processa 1/min)
-    const filaRows = finais.map((c) => ({
-      aluno_id: c.aluno_id,
-      telefone: c.telefone,
-      corpo: renderizar(tpl.corpo, c.nome, cursoTitulo),
-    }));
+    // Texto por pessoa: no lembrete de atividades, a IA reescreve com o mesmo
+    // sentido (texto único por discípulo). Nos demais gatilhos, usa o template.
+    type FilaRow = { aluno_id: string; telefone: string; corpo: string };
+    let filaRows: FilaRow[];
+    if (campanha.gatilho === "atividades_pendentes") {
+      filaRows = new Array(finais.length);
+      const CONC = 5; // gera em lotes p/ não estourar o tempo da função
+      for (let start = 0; start < finais.length; start += CONC) {
+        const lote = finais.slice(start, start + CONC);
+        await Promise.all(
+          lote.map(async (c, k) => {
+            const idx = start + k;
+            const corpo = await gerarTextoLembrete(primeiroNome(c.nome), cursoTitulo, idx);
+            filaRows[idx] = { aluno_id: c.aluno_id, telefone: c.telefone, corpo };
+          }),
+        );
+      }
+    } else {
+      filaRows = finais.map((c) => ({
+        aluno_id: c.aluno_id,
+        telefone: c.telefone,
+        corpo: renderizar(tpl.corpo, c.nome, cursoTitulo),
+      }));
+    }
     const { error: filaErr } = await db.from("whatsapp_fila").insert(filaRows);
     if (filaErr) return NextResponse.json({ erro: filaErr.message }, { status: 500 });
 
