@@ -4,8 +4,12 @@ import { getCurrentSession, listCompromissosManuais } from "@/lib/db";
 import { lerAgendaGoogle } from "@/lib/agenda";
 import { AgendaPainel } from "@/components/AgendaPainel";
 
+// Página sempre dinâmica: depende de login (cookies) e lê o Google Calendar ao vivo.
+export const dynamic = "force-dynamic";
+
 // Agenda pessoal do pastor/master: eventos do Google Calendar (via iCal) +
-// compromissos cadastrados manualmente no painel. Janela: próximos 45 dias.
+// compromissos cadastrados manualmente no painel. Janela: do início do mês
+// atual até ~12 meses à frente (cobre o ano, pra navegar no calendário).
 export default async function AgendaPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
@@ -14,9 +18,10 @@ export default async function AgendaPage() {
   if (papel !== "master") redirect("/admin");
 
   const agora = new Date();
-  const inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0, 0, 0);
-  const fim = new Date(inicio);
-  fim.setDate(fim.getDate() + 45);
+  // Começa no 1º dia do mês atual (pra o calendário do mês corrente ficar inteiro).
+  const inicio = new Date(agora.getFullYear(), agora.getMonth(), 1, 0, 0, 0);
+  // Vai até o fim do 12º mês à frente.
+  const fim = new Date(agora.getFullYear(), agora.getMonth() + 12, 0, 23, 59, 59);
 
   const [google, manuais] = await Promise.all([
     lerAgendaGoogle(inicio, fim),
@@ -35,8 +40,8 @@ export default async function AgendaPage() {
         Minha agenda
       </h1>
       <p className="mb-6 text-sm text-mesa-600">
-        Próximos 45 dias — seus eventos do Google Calendar e os compromissos que
-        você adicionar aqui.
+        Seus eventos do Google Calendar e os compromissos que você adicionar
+        aqui. Veja como lista (próximos) ou no calendário do mês.
       </p>
 
       {!googleConectado && (
