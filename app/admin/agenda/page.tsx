@@ -7,6 +7,7 @@ import {
 } from "@/lib/db";
 import { lerAgendaGoogle } from "@/lib/agenda";
 import { AgendaPainel } from "@/components/AgendaPainel";
+import { podeVerAgenda } from "@/lib/permissoes";
 
 // Página sempre dinâmica: depende de login (cookies) e lê o Google Calendar ao vivo.
 export const dynamic = "force-dynamic";
@@ -17,9 +18,16 @@ export const dynamic = "force-dynamic";
 export default async function AgendaPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  const papel =
-    session.profile?.papel || (session.profile?.is_admin ? "master" : "discipulo");
-  if (papel !== "master") redirect("/admin");
+  // Master + e-mails liberados (ex.: Débora). Demais não acessam.
+  if (
+    !podeVerAgenda(
+      session.profile?.papel,
+      session.profile?.is_admin,
+      session.profile?.email ?? session.email,
+    )
+  ) {
+    redirect("/dashboard");
+  }
 
   const agora = new Date();
   // Começa no 1º dia do mês atual (pra o calendário do mês corrente ficar inteiro).

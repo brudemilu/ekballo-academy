@@ -85,3 +85,18 @@ export function permissaoDaRota(path: string): Permissao | null {
     .sort((a, b) => b.prefixo.length - a.prefixo.length)[0];
   return match ? match.permissao : null;
 }
+
+// -------- AGENDA PESSOAL: acesso restrito --------
+// A agenda (/admin/agenda) é pessoal do pastor (master). Estes e-mails extras
+// também podem ver — e SÓ a agenda, nada mais do admin.
+export const AGENDA_EMAILS: string[] = ["deboramoreirabml@gmail.com"];
+
+export function podeVerAgenda(
+  papel: string | null | undefined,
+  isAdmin: boolean | null | undefined,
+  email: string | null | undefined,
+): boolean {
+  const ehMaster = papel === "master" || (!papel && !!isAdmin);
+  if (ehMaster) return true;
+  return !!email && AGENDA_EMAILS.includes(email.trim().toLowerCase());
+}
