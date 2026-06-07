@@ -76,6 +76,8 @@ export async function AdminShell({
     });
   }
 
+  const atual = itens.find((it) => it.key === current);
+
   return (
     <main className="min-h-screen bg-mesa-50">
       <header className="border-b border-mesa-200 bg-white/80 backdrop-blur">
@@ -128,28 +130,61 @@ export async function AdminShell({
             </ul>
           </nav>
 
-          {/* Mobile/tablet: pills horizontais com scroll */}
-          <nav className="md:hidden">
-            <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2">
+          {/* Mobile/tablet: menu suspenso nativo (<details>), claro e fixo no topo */}
+          <style>{`details.admin-mnav[open] .admin-mnav-seta{transform:rotate(180deg)}`}</style>
+          <details className="admin-mnav sticky top-2 z-20 md:hidden overflow-hidden rounded-xl border border-mesa-200 bg-white shadow-sm">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex min-w-0 items-center gap-2 text-sm">
+                <span className="font-medium uppercase tracking-[0.15em] text-[10px] text-mesa-400">
+                  Menu
+                </span>
+                <span className="text-mesa-300">·</span>
+                <span className="truncate font-semibold text-mesa-800">
+                  {atual?.label ?? "Painel"}
+                </span>
+              </span>
+              <svg
+                className="admin-mnav-seta h-5 w-5 flex-none text-mesa-500 transition-transform"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </summary>
+            <ul className="border-t border-mesa-100 p-2">
               {itens.map((it) => {
                 const ativo = it.key === current;
                 return (
-                  <li key={it.key} className="flex-none">
+                  <li key={it.key}>
                     <Link
                       href={it.href}
-                      className={`block whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-medium transition ${
+                      className={`block rounded-lg px-3 py-2.5 transition ${
                         ativo
                           ? "bg-mesa-700 text-mesa-50"
-                          : "border border-mesa-200 bg-white text-mesa-700 hover:bg-mesa-100"
+                          : "text-mesa-700 hover:bg-mesa-100 active:bg-mesa-100"
                       }`}
                     >
-                      {it.label}
+                      <p className="text-sm font-medium">{it.label}</p>
+                      {it.hint && (
+                        <p
+                          className={`mt-0.5 text-xs ${
+                            ativo ? "text-mesa-100/80" : "text-mesa-500"
+                          }`}
+                        >
+                          {it.hint}
+                        </p>
+                      )}
                     </Link>
                   </li>
                 );
               })}
             </ul>
-          </nav>
+          </details>
         </aside>
 
         <section className="mt-6 md:mt-0">{children}</section>
