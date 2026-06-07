@@ -39,6 +39,7 @@ type Cor = { bg: string; text: string };
 const COR_CINZA: Cor = { bg: "#ECEAE7", text: "#6B6660" };
 const COR_MANUAL: Cor = { bg: "#FBDDC0", text: "#88300B" };
 const COR_ROXO: Cor = { bg: "#EDE9FE", text: "#6D28D9" };
+const COR_LARANJA: Cor = { bg: "#FFEDD5", text: "#C2410C" };
 const PALETA: Cor[] = [
   { bg: "#DBEAFE", text: "#1D4ED8" }, // azul
   { bg: "#DCFCE7", text: "#15803D" }, // verde
@@ -58,6 +59,8 @@ function corDoEvento(ev: AgendaEvento): Cor {
   const nome = ev.agenda || "";
   if (!nome) return COR_CINZA;
   if (/imw\s*industrial/i.test(nome)) return COR_ROXO;
+  // Agenda principal (e-mail do Bruno) = laranja.
+  if (/brunosantospmb@gmail\.com/i.test(nome)) return COR_LARANJA;
   return PALETA[hashStr(nome) % PALETA.length];
 }
 
