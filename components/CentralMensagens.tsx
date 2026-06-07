@@ -29,7 +29,7 @@ type Props = {
   mensagens: MensagemHist[];
 };
 
-type Aba = "enviar" | "automacao" | "fila" | "templates" | "historico" | "conexao";
+type Aba = "enviar" | "agendadas" | "automacao" | "fila" | "templates" | "historico" | "conexao";
 type DestinoClasse = "discipulos" | "grupo" | "numero";
 type Escopo = "todos" | "curso" | "aluno";
 
@@ -42,6 +42,7 @@ export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props
   const [aba, setAba] = useState<Aba>("enviar");
   const [status, setStatus] = useState<Status | null>(null);
   const [pendentesAuto, setPendentesAuto] = useState(0);
+  const [pendentesAgendadas, setPendentesAgendadas] = useState(0);
 
   const carregarStatus = useCallback(async () => {
     try {
@@ -57,12 +58,17 @@ export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props
       .then((r) => r.json())
       .then((d) => setPendentesAuto((d.campanhas || []).length))
       .catch(() => {});
+    fetch("/api/admin/agendadas")
+      .then((r) => r.json())
+      .then((d) => setPendentesAgendadas((d.agendadas || []).length))
+      .catch(() => {});
   }, [carregarStatus]);
 
   const conectado = !!status?.loggedIn;
 
   const abas: { k: Aba; label: string; badge?: number }[] = [
     { k: "enviar", label: "Enviar" },
+    { k: "agendadas", label: "Agendadas", badge: pendentesAgendadas },
     { k: "automacao", label: "Automação", badge: pendentesAuto },
     { k: "fila", label: "Fila" },
     { k: "templates", label: "Templates" },
@@ -128,6 +134,7 @@ export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props
           conectado={conectado}
         />
       )}
+      {aba === "agendadas" && <AgendadasPainel />}
       {aba === "automacao" && <AutomacaoCampanhas />}
       {aba === "fila" && <WhatsAppFilaPainel />}
       {aba === "templates" && (
@@ -187,6 +194,7 @@ function Compositor({
   const [cWhats, setCWhats] = useState(true);
   const [cPush, setCPush] = useState(false);
 
+  const [agendarPara, setAgendarPara] = useState(""); // datetime-local; vazio = enviar agora
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
 
@@ -258,38 +266,90 @@ function Compositor({
       setResultado({ ok: false, texto: "Informe a URL da mídia." });
       return;
     }
+
+    // Monta o payload/descrição conforme o destino (sem disparar ainda).
+    let tipoAg: "broadcast" | "direto";
+    let payload: Record<string, unknown>;
+    let descricao: string;
+
+    if (classe === "discipulos") {
+      const canais: string[] = [];
+      if (cEmail) canais.push("email");
+      if (cWhats) canais.push("whatsapp");
+      if (cPush) canais.push("push");
+      if (!canais.length) {
+        setResultado({ ok: false, texto: "Selecione ao menos um canal." });
+        return;
+      }
+      if ((escopo === "curso" || escopo === "aluno") && !escopoId) {
+        setResultado({ ok: false, texto: "Selecione o curso/discípulo." });
+        return;
+      }
+      const corpoHtml = mensagem.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>\n");
+      tipoAg = "broadcast";
+      payload = {
+        destino_tipo: escopo,
+        destino_id: escopo === "todos" ? null : escopoId,
+        canais,
+        assunto: assunto || "Mensagem",
+        corpo_html: corpoHtml,
+        corpo_texto: mensagem,
+      };
+      const escopoLabel =
+        escopo === "todos" ? "Todos" : escopo === "curso" ? "Curso" : "Discípulo";
+      descricao = `Discípulos (${escopoLabel}) · ${canais.join(", ")}`;
+    } else {
+      const destinatario = classe === "grupo" ? grupoJid : numero;
+      if (!destinatario.trim()) {
+        setResultado({ ok: false, texto: classe === "grupo" ? "Escolha um grupo." : "Informe o número." });
+        return;
+      }
+      tipoAg = "direto";
+      payload =
+        conteudo === "texto"
+          ? { tipo: "texto", destinatario, mensagem }
+          : { tipo: "midia", destinatario, url: midiaUrl, midia_tipo: midiaTipo, legenda, filename };
+      descricao = `${classe === "grupo" ? "Grupo" : "Número"} ${grupoNome || destinatario} · ${conteudo}`;
+    }
+
     setEnviando(true);
     try {
-      if (classe === "discipulos") {
-        const canais: string[] = [];
-        if (cEmail) canais.push("email");
-        if (cWhats) canais.push("whatsapp");
-        if (cPush) canais.push("push");
-        if (!canais.length) {
-          setResultado({ ok: false, texto: "Selecione ao menos um canal." });
+      // ----- AGENDAR (data futura) -----
+      if (agendarPara) {
+        const quando = new Date(agendarPara);
+        if (isNaN(quando.getTime()) || quando.getTime() < Date.now() + 30_000) {
+          setResultado({ ok: false, texto: "Escolha um horário no futuro." });
           setEnviando(false);
           return;
         }
-        if ((escopo === "curso" || escopo === "aluno") && !escopoId) {
-          setResultado({ ok: false, texto: "Selecione o curso/discípulo." });
-          setEnviando(false);
-          return;
-        }
-        const corpoHtml = mensagem
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/\n/g, "<br>\n");
-        const r = await fetch("/api/admin/enviar-mensagem", {
+        const r = await fetch("/api/admin/agendadas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            destino_tipo: escopo,
-            destino_id: escopo === "todos" ? null : escopoId,
-            canais,
-            assunto: assunto || "Mensagem",
-            corpo_html: corpoHtml,
-            corpo_texto: mensagem,
+            acao: "criar",
+            tipo: tipoAg,
+            payload,
+            agendar_para: quando.toISOString(),
+            descricao,
           }),
+        });
+        const d = await r.json();
+        if (!r.ok) {
+          setResultado({ ok: false, texto: d.erro || `HTTP ${r.status}` });
+        } else {
+          setResultado({ ok: true, texto: `📅 Agendado para ${quando.toLocaleString("pt-BR")}.` });
+          setMensagem("");
+          setAgendarPara("");
+        }
+        return;
+      }
+
+      // ----- ENVIAR AGORA -----
+      if (tipoAg === "broadcast") {
+        const r = await fetch("/api/admin/enviar-mensagem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
         const d = await r.json();
         if (!r.ok) {
@@ -298,36 +358,14 @@ function Compositor({
           const fila = d.whatsapp_enfileirados
             ? ` · ${d.whatsapp_enfileirados} na fila do WhatsApp (1/min)`
             : "";
-          setResultado({
-            ok: true,
-            texto: `Enviado para ${d.total_enviados}/${d.total_destinatarios}${fila}.`,
-          });
+          setResultado({ ok: true, texto: `Enviado para ${d.total_enviados}/${d.total_destinatarios}${fila}.` });
           setMensagem("");
         }
       } else {
-        // grupo ou número (envio direto)
-        const destinatario = classe === "grupo" ? grupoJid : numero;
-        if (!destinatario.trim()) {
-          setResultado({ ok: false, texto: classe === "grupo" ? "Escolha um grupo." : "Informe o número." });
-          setEnviando(false);
-          return;
-        }
-        const payload =
-          conteudo === "texto"
-            ? { acao: "enviar", tipo: "texto", destinatario, mensagem }
-            : {
-                acao: "enviar",
-                tipo: "midia",
-                destinatario,
-                url: midiaUrl,
-                midia_tipo: midiaTipo,
-                legenda,
-                filename,
-              };
         const r = await fetch("/api/admin/whatsapp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ acao: "enviar", ...payload }),
         });
         const d = await r.json();
         if (r.ok && d.status === "enviado") {
@@ -640,6 +678,34 @@ function Compositor({
           </div>
         )}
 
+        {/* AGENDAR (opcional) */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-mesa-700">
+            Agendar para (opcional)
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="datetime-local"
+              value={agendarPara}
+              onChange={(e) => setAgendarPara(e.target.value)}
+              className={`${inputCls} sm:w-auto`}
+            />
+            {agendarPara && (
+              <button
+                type="button"
+                onClick={() => setAgendarPara("")}
+                className="text-xs text-mesa-500 underline"
+              >
+                limpar (enviar agora)
+              </button>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-mesa-500">
+            Deixe em branco para enviar na hora. Com data/hora, a mensagem fica agendada e
+            dispara sozinha no horário (veja na aba <strong>Agendadas</strong>).
+          </p>
+        </div>
+
         {/* AÇÃO */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-mesa-100 pt-5">
           <div className="text-sm">
@@ -659,13 +725,90 @@ function Compositor({
             disabled={enviando || (ehDireto && !conectado)}
             className="rounded-full bg-mesa-700 px-6 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:cursor-not-allowed disabled:bg-mesa-300"
           >
-            {enviando ? "Enviando…" : "Enviar"}
+            {enviando ? "Salvando…" : agendarPara ? "📅 Agendar" : "Enviar"}
           </button>
         </div>
         {ehDireto && !conectado && (
           <p className="text-right text-xs text-mesa-500">Conecte o WhatsApp (aba Conexão) para enviar a grupos/números.</p>
         )}
       </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// AGENDADAS
+// ----------------------------------------------------------------------------
+type Agendada = {
+  id: string;
+  tipo: string;
+  descricao: string | null;
+  agendar_para: string;
+  status: string;
+};
+function AgendadasPainel() {
+  const [itens, setItens] = useState<Agendada[] | null>(null);
+
+  const carregar = useCallback(async () => {
+    const r = await fetch("/api/admin/agendadas");
+    const d = await r.json();
+    setItens(d.agendadas || []);
+  }, []);
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  async function cancelar(id: string) {
+    if (!confirm("Cancelar este envio agendado?")) return;
+    await fetch("/api/admin/agendadas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ acao: "cancelar", id }),
+    });
+    carregar();
+  }
+
+  if (itens === null) return <p className="text-sm text-mesa-500">Carregando…</p>;
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-sm text-mesa-600">
+        🗓️ Mensagens programadas para o futuro. Elas disparam sozinhas no horário
+        (e-mail, WhatsApp e push, conforme você escolheu). Cancele aqui se mudar de ideia.
+      </div>
+      {itens.length === 0 ? (
+        <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-12 text-center">
+          <p className="font-serif text-lg text-mesa-500">Nada agendado.</p>
+          <p className="mt-1 text-sm text-mesa-400">
+            Use o campo &ldquo;Agendar para&rdquo; na aba Enviar.
+          </p>
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {itens.map((a) => (
+            <li
+              key={a.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-mesa-200 bg-white p-4"
+            >
+              <div className="min-w-0">
+                <p className="font-medium text-mesa-800">
+                  {new Date(a.agendar_para).toLocaleString("pt-BR")}
+                </p>
+                <p className="text-sm text-mesa-600">
+                  {a.descricao || (a.tipo === "direto" ? "Envio direto" : "Broadcast")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => cancelar(a.id)}
+                className="flex-none rounded-full border border-red-200 bg-white px-4 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"
+              >
+                Cancelar
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

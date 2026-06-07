@@ -21,8 +21,11 @@ const EDGE_TEXTO_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-evolution`;
 const EDGE_MIDIA_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-midia`;
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
-async function exigirAdmin(): Promise<NextResponse | null> {
+async function exigirAdmin(req?: NextRequest): Promise<NextResponse | null> {
   if (MOCK) return null;
+  // Chamada interna (agendador): autenticada por x-internal-secret, sem cookie.
+  const hdr = req?.headers.get("x-internal-secret");
+  if (hdr && hdr === INTERNAL_SECRET) return null;
   const userClient = await createServerClient();
   const {
     data: { user },
@@ -63,7 +66,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const negado = await exigirAdmin();
+  const negado = await exigirAdmin(req);
   if (negado) return negado;
 
   let body: Record<string, unknown>;

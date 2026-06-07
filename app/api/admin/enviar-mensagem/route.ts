@@ -9,6 +9,7 @@ type Body = {
   assunto: string;
   corpo_html: string;
   corpo_texto?: string | null;
+  autor_id?: string | null; // usado só em chamada interna (agendador)
 };
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -46,8 +47,12 @@ function htmlParaTexto(html: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  // 1) Auth: só admin
-  if (!MOCK) {
+  // Chamada interna (agendador): autenticada por x-internal-secret, sem cookie.
+  const hdrSecret = req.headers.get("x-internal-secret");
+  const chamadaInterna = !!hdrSecret && hdrSecret === INTERNAL_SECRET;
+
+  // 1) Auth: só admin (pulado quando é chamada interna do agendador)
+  if (!MOCK && !chamadaInterna) {
     const userClient = await createServerClient();
     const {
       data: { user },
@@ -168,9 +173,11 @@ export async function POST(req: NextRequest) {
     cursoTitulo = c?.titulo || "";
   }
 
-  // 5) Buscar autor (admin que está enviando)
+  // 5) Buscar autor (admin que está enviando; no agendador vem no body)
   let autorId: string | null = null;
-  {
+  if (chamadaInterna) {
+    autorId = body.autor_id ?? null;
+  } else {
     const userClient = await createServerClient();
     const {
       data: { user },
