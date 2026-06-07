@@ -516,12 +516,16 @@ function ordenarPorNome(
 }
 
 export async function listAllAlunos(): Promise<{
-  id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string; respostasCount: number;
+  id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string; respostasCount: number; tematicas: string[];
 }[]> {
   if (isMockMode()) {
     return MOCK_ALUNOS.map((a) => ({
       ...a,
       respostasCount: MOCK_RESPOSTAS.filter((r) => r.aluno_id === a.id).length,
+      tematicas: MOCK_MATRICULAS
+        .filter((m) => m.aluno_id === a.id)
+        .map((m) => MOCK_CURSOS.find((c) => c.id === m.curso_id)?.titulo)
+        .filter((t): t is string => !!t),
     })).sort(ordenarPorNome);
   }
   const supabase = await createClient();
@@ -531,10 +535,24 @@ export async function listAllAlunos(): Promise<{
   const { data: r } = await supabase.from("respostas").select("aluno_id");
   const map = new Map<string, number>();
   (r || []).forEach((x: { aluno_id: string }) => map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1));
+  // Temáticas = cursos em que o discípulo está matriculado (matriculas → cursos)
+  const { data: mats } = await supabase
+    .from("matriculas")
+    .select("aluno_id, curso:cursos!inner(titulo)");
+  type MatTit = { aluno_id: string; curso: { titulo: string } | null };
+  const temaMap = new Map<string, string[]>();
+  ((mats || []) as unknown as MatTit[]).forEach((m) => {
+    const titulo = m.curso?.titulo;
+    if (!titulo) return;
+    const arr = temaMap.get(m.aluno_id) || [];
+    if (!arr.includes(titulo)) arr.push(titulo);
+    temaMap.set(m.aluno_id, arr);
+  });
   return (alunos || [])
     .map((a: { id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string }) => ({
       ...a,
       respostasCount: map.get(a.id) || 0,
+      tematicas: temaMap.get(a.id) || [],
     }))
     .sort(ordenarPorNome);
 }

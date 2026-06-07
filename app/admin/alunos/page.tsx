@@ -48,7 +48,7 @@ export default async function AlunosPage() {
                   WhatsApp
                 </th>
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
-                  Turma
+                  Temática
                 </th>
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
                   Respostas
@@ -85,7 +85,20 @@ export default async function AlunosPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm text-mesa-600">
-                    {a.turma || "—"}
+                    {a.tematicas.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {a.tematicas.map((t) => (
+                          <span
+                            key={t}
+                            className="inline-block rounded-full bg-laranja-100 px-2 py-0.5 text-xs font-medium text-laranja-700"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-mesa-400">—</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-mesa-800">
                     {a.respostasCount}
