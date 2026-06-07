@@ -33,6 +33,34 @@ function rotuloDia(iso: string): string {
   return d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
 }
 
+// Cor por agenda: IMW Industrial = roxo; manual = terracota; demais por hash do
+// nome (estável). Sem nome de agenda = cinza neutro.
+type Cor = { bg: string; text: string };
+const COR_CINZA: Cor = { bg: "#ECEAE7", text: "#6B6660" };
+const COR_MANUAL: Cor = { bg: "#FBDDC0", text: "#88300B" };
+const COR_ROXO: Cor = { bg: "#EDE9FE", text: "#6D28D9" };
+const PALETA: Cor[] = [
+  { bg: "#DBEAFE", text: "#1D4ED8" }, // azul
+  { bg: "#DCFCE7", text: "#15803D" }, // verde
+  { bg: "#FCE7F3", text: "#BE185D" }, // rosa
+  { bg: "#CCFBF1", text: "#0F766E" }, // teal
+  { bg: "#FEF3C7", text: "#B45309" }, // âmbar
+  { bg: "#E0E7FF", text: "#4338CA" }, // índigo
+  { bg: "#FFE1E6", text: "#BE123C" }, // rosé
+];
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function corDoEvento(ev: AgendaEvento): Cor {
+  if (ev.fonte === "manual") return COR_MANUAL;
+  const nome = ev.agenda || "";
+  if (!nome) return COR_CINZA;
+  if (/imw\s*industrial/i.test(nome)) return COR_ROXO;
+  return PALETA[hashStr(nome) % PALETA.length];
+}
+
 export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
   const router = useRouter();
   const hoje = new Date();
@@ -149,6 +177,16 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
     g.itens.push(ev);
   }
 
+  // Agendas distintas presentes (pra legenda de cores).
+  const agendas: { nome: string; cor: Cor }[] = [];
+  const vistas = new Set<string>();
+  for (const ev of eventos) {
+    if (ev.fonte === "google" && ev.agenda && !vistas.has(ev.agenda)) {
+      vistas.add(ev.agenda);
+      agendas.push({ nome: ev.agenda, cor: corDoEvento(ev) });
+    }
+  }
+
   // ----- CALENDÁRIO (mês) -----
   const ano = mesRef.getFullYear();
   const mesIdx = mesRef.getMonth();
@@ -221,8 +259,14 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
                         </div>
                         <div className="flex flex-none items-center gap-2">
                           {ev.fonte === "google" ? (
-                            <span className="rounded-full bg-mesa-100 px-2 py-0.5 text-xs font-medium text-mesa-500">
-                              Google
+                            <span
+                              className="max-w-[160px] truncate rounded-full px-2 py-0.5 text-xs font-medium"
+                              style={{
+                                backgroundColor: corDoEvento(ev).bg,
+                                color: corDoEvento(ev).text,
+                              }}
+                            >
+                              {ev.agenda || "Google"}
                             </span>
                           ) : (
                             <button
@@ -266,6 +310,22 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
             </button>
           </div>
 
+          {/* legenda de cores por agenda */}
+          {agendas.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5">
+              {agendas.map((a) => (
+                <span key={a.nome} className="inline-flex items-center gap-1.5 text-xs text-mesa-600">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: a.cor.text }} />
+                  {a.nome}
+                </span>
+              ))}
+              <span className="inline-flex items-center gap-1.5 text-xs text-mesa-600">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COR_MANUAL.text }} />
+                Manual
+              </span>
+            </div>
+          )}
+
           {/* cabeçalho dos dias da semana */}
           <div className="grid grid-cols-7 gap-1 border-b border-mesa-100 pb-2 text-center text-xs font-semibold uppercase tracking-wider text-mesa-400">
             {DIAS_SEM.map((d) => (
@@ -303,12 +363,12 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
                           e.stopPropagation();
                           abrirEdicao(ev);
                         }}
-                        title={ev.titulo}
-                        className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] leading-tight ${
-                          ev.fonte === "manual"
-                            ? "bg-laranja-100 text-laranja-700 hover:bg-laranja-200"
-                            : "bg-mesa-100 text-mesa-600"
-                        }`}
+                        title={ev.agenda ? `${ev.titulo} · ${ev.agenda}` : ev.titulo}
+                        className="block w-full truncate rounded px-1 py-0.5 text-left text-[11px] leading-tight"
+                        style={{
+                          backgroundColor: corDoEvento(ev).bg,
+                          color: corDoEvento(ev).text,
+                        }}
                       >
                         {!ev.diaTodo && <span className="font-semibold">{horaFmt(ev.inicio)} </span>}
                         {ev.titulo}

@@ -19,6 +19,7 @@ export type AgendaEvento = {
   diaTodo: boolean;
   local: string | null;
   nota: string | null;
+  agenda: string | null; // nome da agenda do Google (pra cor); null = manual/principal
   fonte: "google" | "manual";
 };
 
@@ -48,6 +49,7 @@ function normaliza(
     diaTodo,
     local: ev.location ? ev.location.trim() : null,
     nota: null,
+    agenda: null,
     fonte: "google",
   };
 }
