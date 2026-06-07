@@ -55,6 +55,10 @@ export async function POST(req: NextRequest) {
   }
   const rows = [...porId.values()];
 
+  console.log(
+    `[sync] recebidos=${entradas.length} validos=${rows.length} de=${de} ate=${ate} agendas=${[...new Set(rows.map((r) => r.agenda))].join("|").slice(0, 200)}`,
+  );
+
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
   // Substitui a janela: apaga o que estava e grava o atual (propaga cancelamentos).
