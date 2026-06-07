@@ -647,6 +647,33 @@ export async function listCompromissosManuais(
   return ((data || []) as CompromissoRow[]).map(compToEvento);
 }
 
+// Eventos do Google sincronizados pelo Apps Script (todas as agendas, inclusive
+// compartilhadas). Lidos da tabela agenda_google (RLS admin).
+export async function listGoogleSincronizados(
+  inicioISO: string,
+  fimISO: string,
+): Promise<AgendaEvento[]> {
+  if (isMockMode()) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("agenda_google")
+    .select("id, titulo, inicio, fim, dia_todo, local")
+    .gte("inicio", inicioISO)
+    .lte("inicio", fimISO)
+    .order("inicio", { ascending: true });
+  type Row = { id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null };
+  return ((data || []) as Row[]).map((r) => ({
+    id: `gs:${r.id}`,
+    titulo: r.titulo,
+    inicio: r.inicio,
+    fim: r.fim,
+    diaTodo: r.dia_todo,
+    local: r.local,
+    nota: null,
+    fonte: "google" as const,
+  }));
+}
+
 export async function addCompromisso(input: {
   titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null; criado_por?: string | null;
 }): Promise<void> {
