@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { getPermissoesPapel } from "@/lib/db";
-import { TAB_PERMISSAO } from "@/lib/permissoes";
+import { TAB_PERMISSAO, podeVerAgenda } from "@/lib/permissoes";
 
 export type AdminTab =
   | "painel"
@@ -75,23 +75,33 @@ export async function AdminShell({
     session.profile?.papel || (session.profile?.is_admin ? "master" : "discipulo");
   const permissoes = await getPermissoesPapel(papel);
 
-  const itens = ITEMS.filter((it) => {
+  const email = session.profile?.email || session.email;
+  const podeAgenda = podeVerAgenda(papel, session.profile?.is_admin, email);
+  const itemAgenda: Item = {
+    key: "agenda",
+    label: "Agenda",
+    href: "/admin/agenda",
+    hint: "Seus compromissos (Google + manuais)",
+  };
+
+  let itens = ITEMS.filter((it) => {
     const perm = TAB_PERMISSAO[it.key];
     return !perm || papel === "master" || permissoes.has(perm);
   });
+
   if (papel === "master") {
-    itens.push({
-      key: "agenda",
-      label: "Agenda",
-      href: "/admin/agenda",
-      hint: "Seus compromissos (Google + manuais)",
-    });
+    itens.push(itemAgenda);
     itens.push({
       key: "permissoes",
       label: "Permissões",
       href: "/admin/permissoes",
       hint: "Papéis e acessos",
     });
+  } else if (!session.profile?.is_admin && podeAgenda) {
+    // Acesso exclusivo à agenda (ex.: Débora): só vê a Agenda.
+    itens = [itemAgenda];
+  } else if (podeAgenda) {
+    itens.push(itemAgenda);
   }
 
   return (

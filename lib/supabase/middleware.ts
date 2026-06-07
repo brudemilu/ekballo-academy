@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { permissaoDaRota, rotaSoMaster } from "@/lib/permissoes";
+import { permissaoDaRota, rotaSoMaster, podeVerAgenda } from "@/lib/permissoes";
 
 export async function updateSession(request: NextRequest) {
   // Em modo mock, libera tudo (sem bater no Supabase)
@@ -62,6 +62,17 @@ export async function updateSession(request: NextRequest) {
       .select("is_admin, papel")
       .eq("id", user.id)
       .single();
+
+    // Agenda pessoal: master + e-mails liberados (ex.: Débora) — mesmo sem ser
+    // admin. Tratado ANTES do gate geral; só vale para /admin/agenda.
+    if (path.startsWith("/admin/agenda")) {
+      if (podeVerAgenda(profile?.papel, profile?.is_admin, user.email)) {
+        return supabaseResponse;
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = profile?.is_admin ? "/admin" : "/dashboard";
+      return NextResponse.redirect(url);
+    }
 
     if (!profile?.is_admin) {
       const url = request.nextUrl.clone();
