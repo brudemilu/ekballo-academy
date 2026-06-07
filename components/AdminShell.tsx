@@ -18,6 +18,7 @@ export type AdminTab =
   | "imagens"
   | "instagram"
   | "youtube"
+  | "agenda"
   | "permissoes";
 
 type Item = {
@@ -61,6 +62,12 @@ export async function AdminShell({
     return !perm || papel === "master" || permissoes.has(perm);
   });
   if (papel === "master") {
+    itens.push({
+      key: "agenda",
+      label: "Agenda",
+      href: "/admin/agenda",
+      hint: "Seus compromissos (Google + manuais)",
+    });
     itens.push({
       key: "permissoes",
       label: "Permissões",
