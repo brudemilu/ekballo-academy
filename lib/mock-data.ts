@@ -305,3 +305,50 @@ export function removeMockCarrossel(id: string) {
   const i = MOCK_CARROSSEIS.findIndex((c) => c.id === id);
   if (i >= 0) MOCK_CARROSSEIS.splice(i, 1);
 }
+
+// ---- Compromissos da agenda pessoal (mock mutável) ----
+export type CompromissoMock = {
+  id: string;
+  titulo: string;
+  inicio: string; // ISO
+  fim: string | null;
+  dia_todo: boolean;
+  local: string | null;
+  nota: string | null;
+};
+function _emDias(dias: number, h = 9, m = 0): string {
+  const x = new Date();
+  x.setDate(x.getDate() + dias);
+  x.setHours(h, m, 0, 0);
+  return x.toISOString();
+}
+const MOCK_COMPROMISSOS: CompromissoMock[] = [
+  {
+    id: "comp-mock-1",
+    titulo: "Reunião de liderança",
+    inicio: _emDias(1, 19, 30),
+    fim: _emDias(1, 21, 0),
+    dia_todo: false,
+    local: "Sede Ekballo",
+    nota: null,
+  },
+  {
+    id: "comp-mock-2",
+    titulo: "Aniversário da Débora",
+    inicio: _emDias(3, 0, 0),
+    fim: null,
+    dia_todo: true,
+    local: null,
+    nota: "Comprar presente 🎁",
+  },
+];
+export function listMockCompromissos(): CompromissoMock[] {
+  return MOCK_COMPROMISSOS;
+}
+export function addMockCompromisso(c: CompromissoMock) {
+  MOCK_COMPROMISSOS.push(c);
+}
+export function removeMockCompromisso(id: string) {
+  const i = MOCK_COMPROMISSOS.findIndex((c) => c.id === id);
+  if (i >= 0) MOCK_COMPROMISSOS.splice(i, 1);
+}

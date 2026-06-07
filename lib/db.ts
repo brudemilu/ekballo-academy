@@ -32,7 +32,11 @@ import {
   listMockCarrosseis,
   removeMockCarrossel,
   type CarrosselInstagramMock,
+  listMockCompromissos,
+  addMockCompromisso,
+  removeMockCompromisso,
 } from "@/lib/mock-data";
+import type { AgendaEvento } from "@/lib/agenda";
 import type {
   Profile,
   Curso,
@@ -601,6 +605,80 @@ export async function listCursosWithStats(): Promise<{
     concluidos: map.get((c as Curso).id)?.concluidas || 0,
     alunosComTelefone: map.get((c as Curso).id)?.comTel || 0,
   }));
+}
+
+// -------- AGENDA PESSOAL (compromissos manuais) --------
+
+type CompromissoRow = {
+  id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null;
+};
+
+function compToEvento(c: CompromissoRow): AgendaEvento {
+  return {
+    id: c.id,
+    titulo: c.titulo,
+    inicio: c.inicio,
+    fim: c.fim,
+    diaTodo: c.dia_todo,
+    local: c.local,
+    fonte: "manual",
+  };
+}
+
+// Lista os compromissos MANUAIS (do banco) cuja data de início cai na janela.
+export async function listCompromissosManuais(
+  inicioISO: string,
+  fimISO: string,
+): Promise<AgendaEvento[]> {
+  if (isMockMode()) {
+    return listMockCompromissos()
+      .filter((c) => c.inicio >= inicioISO && c.inicio <= fimISO)
+      .map(compToEvento);
+  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("compromissos")
+    .select("id, titulo, inicio, fim, dia_todo, local")
+    .gte("inicio", inicioISO)
+    .lte("inicio", fimISO)
+    .order("inicio", { ascending: true });
+  return ((data || []) as CompromissoRow[]).map(compToEvento);
+}
+
+export async function addCompromisso(input: {
+  titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null; criado_por?: string | null;
+}): Promise<void> {
+  if (isMockMode()) {
+    addMockCompromisso({
+      id: `comp-${Date.now()}`,
+      titulo: input.titulo,
+      inicio: input.inicio,
+      fim: input.fim,
+      dia_todo: input.dia_todo,
+      local: input.local,
+      nota: input.nota,
+    });
+    return;
+  }
+  const supabase = await createClient();
+  await supabase.from("compromissos").insert({
+    titulo: input.titulo,
+    inicio: input.inicio,
+    fim: input.fim,
+    dia_todo: input.dia_todo,
+    local: input.local,
+    nota: input.nota,
+    criado_por: input.criado_por ?? null,
+  });
+}
+
+export async function deleteCompromisso(id: string): Promise<void> {
+  if (isMockMode()) {
+    removeMockCompromisso(id);
+    return;
+  }
+  const supabase = await createClient();
+  await supabase.from("compromissos").delete().eq("id", id);
 }
 
 // -------- ALTERNATIVAS (MC) --------
