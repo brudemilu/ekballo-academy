@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
-import { getCurrentSession, listCompromissosManuais } from "@/lib/db";
+import {
+  getCurrentSession,
+  listCompromissosManuais,
+  listGoogleSincronizados,
+} from "@/lib/db";
 import { lerAgendaGoogle } from "@/lib/agenda";
 import { AgendaPainel } from "@/components/AgendaPainel";
 
@@ -23,13 +27,18 @@ export default async function AgendaPage() {
   // Vai até o fim do 12º mês à frente.
   const fim = new Date(agora.getFullYear(), agora.getMonth() + 12, 0, 23, 59, 59);
 
-  const [google, manuais] = await Promise.all([
-    lerAgendaGoogle(inicio, fim),
+  const [sincronizados, manuais] = await Promise.all([
+    // Eventos sincronizados pelo script = TODAS as agendas (inclusive compartilhadas).
+    listGoogleSincronizados(inicio.toISOString(), fim.toISOString()),
     listCompromissosManuais(inicio.toISOString(), fim.toISOString()),
   ]);
 
+  // Se o script ainda não sincronizou nada, cai no iCal (só a agenda principal).
+  const google =
+    sincronizados.length > 0 ? sincronizados : await lerAgendaGoogle(inicio, fim);
+
   const eventos = [...google, ...manuais].sort((a, b) => a.inicio.localeCompare(b.inicio));
-  const googleConectado = !!process.env.GOOGLE_AGENDA_ICAL_URL;
+  const googleConectado = google.length > 0 || !!process.env.GOOGLE_AGENDA_ICAL_URL;
 
   return (
     <AdminShell current="agenda" session={session}>
