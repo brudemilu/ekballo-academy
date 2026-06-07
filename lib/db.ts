@@ -623,6 +623,7 @@ function compToEvento(c: CompromissoRow): AgendaEvento {
     diaTodo: c.dia_todo,
     local: c.local,
     nota: c.nota,
+    agenda: null,
     fonte: "manual",
   };
 }
@@ -653,15 +654,29 @@ export async function listGoogleSincronizados(
   inicioISO: string,
   fimISO: string,
 ): Promise<AgendaEvento[]> {
-  if (isMockMode()) return [];
+  if (isMockMode()) {
+    const mk = (dias: number, h: number, titulo: string, agenda: string, diaTodo = false): AgendaEvento => {
+      const d = new Date();
+      d.setDate(d.getDate() + dias);
+      d.setHours(h, 0, 0, 0);
+      return { id: `gs:mock-${dias}-${titulo}`, titulo, inicio: d.toISOString(), fim: null, diaTodo, local: null, nota: null, agenda, fonte: "google" };
+    };
+    return [
+      mk(0, 20, "Reunião IMW", "IMW Industrial"),
+      mk(1, 9, "Visita pastoral", "Família"),
+      mk(2, 14, "Comitê", "IMW Industrial"),
+      mk(4, 19, "Ensaio louvor", "Ministério de Louvor"),
+      mk(6, 0, "Feriado", "Família", true),
+    ];
+  }
   const supabase = await createClient();
   const { data } = await supabase
     .from("agenda_google")
-    .select("id, titulo, inicio, fim, dia_todo, local")
+    .select("id, titulo, inicio, fim, dia_todo, local, agenda")
     .gte("inicio", inicioISO)
     .lte("inicio", fimISO)
     .order("inicio", { ascending: true });
-  type Row = { id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null };
+  type Row = { id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; agenda: string | null };
   return ((data || []) as Row[]).map((r) => ({
     id: `gs:${r.id}`,
     titulo: r.titulo,
@@ -670,6 +685,7 @@ export async function listGoogleSincronizados(
     diaTodo: r.dia_todo,
     local: r.local,
     nota: null,
+    agenda: r.agenda,
     fonte: "google" as const,
   }));
 }
