@@ -52,20 +52,18 @@ function normaliza(
   };
 }
 
-/**
- * Lê os eventos do Google Calendar (via iCal) entre `inicio` e `fim`.
- * Retorna [] se GOOGLE_AGENDA_ICAL_URL não estiver setado ou em qualquer erro.
- */
-export async function lerAgendaGoogle(
+// Lê UM feed iCal e expande os eventos na janela. `feedIdx` deixa os ids
+// únicos entre feeds diferentes (cada agenda é um feed).
+async function lerUmIcal(
+  url: string,
   inicio: Date,
   fim: Date,
+  feedIdx: number,
 ): Promise<AgendaEvento[]> {
-  const url = process.env.GOOGLE_AGENDA_ICAL_URL;
-  if (!url) return [];
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
-      console.error("[agenda] iCal HTTP", res.status);
+      console.error("[agenda] iCal HTTP", res.status, url.slice(0, 70));
       return [];
     }
     const ics = await res.text();
@@ -80,14 +78,44 @@ export async function lerAgendaGoogle(
     })({ ics, maxIterations: 2000 });
 
     const { events, occurrences } = expander.between(inicio, fim);
+    const base = feedIdx * 1_000_000;
     const out: AgendaEvento[] = [];
-    events.forEach((ev, i) => out.push(normaliza(ev, ev.startDate, ev.endDate, i)));
+    events.forEach((ev, i) => out.push(normaliza(ev, ev.startDate, ev.endDate, base + i)));
     occurrences.forEach((oc, i) =>
-      out.push(normaliza(oc.item, oc.startDate, oc.endDate, 10000 + i)),
+      out.push(normaliza(oc.item, oc.startDate, oc.endDate, base + 500_000 + i)),
     );
     return out;
   } catch (err) {
     console.error("[agenda] erro ao ler iCal:", err instanceof Error ? err.message : err);
+    return [];
+  }
+}
+
+/**
+ * Lê os eventos do Google Calendar entre `inicio` e `fim`, de UMA OU MAIS
+ * agendas. GOOGLE_AGENDA_ICAL_URL pode conter vários links iCal separados por
+ * vírgula, espaço ou quebra de linha (uma agenda por link). Os eventos de
+ * todas as agendas são lidos em paralelo e juntados.
+ * Retorna [] se a env não estiver setada ou em qualquer erro.
+ */
+export async function lerAgendaGoogle(
+  inicio: Date,
+  fim: Date,
+): Promise<AgendaEvento[]> {
+  const raw = process.env.GOOGLE_AGENDA_ICAL_URL;
+  if (!raw) return [];
+  const urls = raw
+    .split(/[\s,]+/)
+    .map((u) => u.trim())
+    .filter((u) => /^https?:\/\//i.test(u));
+  if (urls.length === 0) return [];
+  try {
+    const listas = await Promise.all(
+      urls.map((u, i) => lerUmIcal(u, inicio, fim, i)),
+    );
+    return listas.flat();
+  } catch (err) {
+    console.error("[agenda] erro ao ler agendas:", err instanceof Error ? err.message : err);
     return [];
   }
 }
