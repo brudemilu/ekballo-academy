@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { getCurrentSession, listCarrosseisInstagram } from "@/lib/db";
-import { GeradorInstagram } from "@/components/GeradorInstagram";
+import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
 
 export const metadata = { title: "Instagram — Ekballo" };
@@ -41,7 +41,7 @@ export default async function AdminInstagramPage() {
         </div>
       )}
 
-      <GeradorInstagram />
+      <InstagramStudio />
 
       <div className="mt-12">
         <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
