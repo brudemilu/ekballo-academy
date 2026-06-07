@@ -5,6 +5,19 @@
 // =============================================================
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
+
+// Cliente service-role (ignora RLS). Usado só nas funções da AGENDA, cujo acesso
+// já é controlado na página/API por podeVerAgenda (master + e-mails liberados,
+// ex.: Débora). Necessário porque as tabelas da agenda têm RLS só-admin e a
+// Débora (não-admin) precisa ler/escrever a agenda.
+function agendaSR() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } },
+  );
+}
 import {
   MOCK_PROFILE,
   MOCK_ALUNOS,
@@ -641,7 +654,7 @@ export async function listCompromissosManuais(
       .filter((c) => c.inicio >= inicioISO && c.inicio <= fimISO)
       .map((c) => compToEvento(c, c.autor ?? null));
   }
-  const supabase = await createClient();
+  const supabase = agendaSR();
   const { data } = await supabase
     .from("compromissos")
     .select("id, titulo, inicio, fim, dia_todo, local, nota, criador:profiles(nome, papel, is_admin)")
@@ -678,7 +691,7 @@ export async function listGoogleSincronizados(
       mk(6, 0, "Feriado", "Família", true),
     ];
   }
-  const supabase = await createClient();
+  const supabase = agendaSR();
   const { data } = await supabase
     .from("agenda_google")
     .select("id, titulo, inicio, fim, dia_todo, local, agenda")
@@ -715,7 +728,7 @@ export async function addCompromisso(input: {
     });
     return;
   }
-  const supabase = await createClient();
+  const supabase = agendaSR();
   await supabase.from("compromissos").insert({
     titulo: input.titulo,
     inicio: input.inicio,
@@ -735,7 +748,7 @@ export async function updateCompromisso(
     updateMockCompromisso(id, input);
     return;
   }
-  const supabase = await createClient();
+  const supabase = agendaSR();
   await supabase
     .from("compromissos")
     .update({
@@ -754,7 +767,7 @@ export async function deleteCompromisso(id: string): Promise<void> {
     removeMockCompromisso(id);
     return;
   }
-  const supabase = await createClient();
+  const supabase = agendaSR();
   await supabase.from("compromissos").delete().eq("id", id);
 }
 
