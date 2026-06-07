@@ -9,6 +9,7 @@ import {
   getMaterialUrl,
 } from "@/lib/db";
 import { getDevocionalDoDia } from "@/lib/devocionais";
+import { podeVerAgenda } from "@/lib/permissoes";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
 function greetingName(nome?: string | null): string {
@@ -27,6 +28,12 @@ export default async function DashboardPage() {
     listMatriculasByAluno(session.userId),
     getDevocionalDoDia(),
   ]);
+
+  const mostrarAgenda = podeVerAgenda(
+    session.profile?.papel,
+    session.profile?.is_admin,
+    session.profile?.email ?? session.email,
+  );
 
   const matriculasMap = new Map(matriculas.map((m) => [m.curso_id, m]));
   // Admin vê todos os cursos publicados; aluno comum só os que foi matriculado.
@@ -70,6 +77,27 @@ export default async function DashboardPage() {
             sua reflexão. O líder vai ler e te responder.
           </p>
         </div>
+
+        {/* Minha agenda (só pra quem tem acesso, ex.: Débora) */}
+        {mostrarAgenda && (
+          <Link
+            href="/admin/agenda"
+            className="mb-10 flex items-center justify-between gap-3 rounded-2xl border border-mesa-300 bg-white px-6 py-5 transition hover:border-laranja-300 hover:shadow-md"
+          >
+            <div className="min-w-0">
+              <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
+                Pessoal
+              </p>
+              <h2 className="font-serif text-xl font-semibold text-mesa-800">
+                📅 Minha agenda
+              </h2>
+              <p className="mt-1 text-sm text-mesa-600">
+                Seus compromissos e os do Google Calendar, num lugar só.
+              </p>
+            </div>
+            <span className="flex-none text-2xl text-laranja-600">→</span>
+          </Link>
+        )}
 
         {/* Devocional de hoje (destaque no topo) */}
         {devocional && (
