@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getCurrentSession,
   addCompromisso,
+  updateCompromisso,
   deleteCompromisso,
 } from "@/lib/db";
 
 // Agenda pessoal — compromissos manuais.
 //   POST   {titulo, inicio(ISO), fim?(ISO), diaTodo?, local?, nota?}  -> cria
+//   PATCH  {id, titulo, inicio(ISO), diaTodo?, local?, nota?}         -> edita
 //   DELETE {id}                                                       -> remove
 // Só admin.
 
@@ -40,6 +42,30 @@ export async function POST(req: NextRequest) {
     local: String(body.local || "").trim() || null,
     nota: String(body.nota || "").trim() || null,
     criado_por: session!.userId,
+  });
+  return NextResponse.json({ ok: true });
+}
+
+export async function PATCH(req: NextRequest) {
+  const { erro } = await exigirAdmin();
+  if (erro) return erro;
+
+  const body = await req.json().catch(() => ({}));
+  const id = String(body.id || "").trim();
+  const titulo = String(body.titulo || "").trim();
+  const inicio = String(body.inicio || "").trim();
+  if (!id) return NextResponse.json({ erro: "id obrigatório" }, { status: 400 });
+  if (!titulo || !inicio || Number.isNaN(Date.parse(inicio))) {
+    return NextResponse.json({ erro: "título e início válidos são obrigatórios" }, { status: 400 });
+  }
+
+  await updateCompromisso(id, {
+    titulo,
+    inicio,
+    fim: body.fim && !Number.isNaN(Date.parse(body.fim)) ? String(body.fim) : null,
+    dia_todo: !!body.diaTodo,
+    local: String(body.local || "").trim() || null,
+    nota: String(body.nota || "").trim() || null,
   });
   return NextResponse.json({ ok: true });
 }

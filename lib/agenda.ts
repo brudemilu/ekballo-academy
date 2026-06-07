@@ -18,6 +18,7 @@ export type AgendaEvento = {
   fim: string | null; // ISO
   diaTodo: boolean;
   local: string | null;
+  nota: string | null;
   fonte: "google" | "manual";
 };
 
@@ -46,6 +47,7 @@ function normaliza(
     fim: end ? end.toJSDate().toISOString() : null,
     diaTodo,
     local: ev.location ? ev.location.trim() : null,
+    nota: null,
     fonte: "google",
   };
 }

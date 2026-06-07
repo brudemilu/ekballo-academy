@@ -341,12 +341,37 @@ const MOCK_COMPROMISSOS: CompromissoMock[] = [
     local: null,
     nota: "Comprar presente 🎁",
   },
+  {
+    id: "comp-mock-3",
+    titulo: "Retiro de líderes",
+    inicio: _emDias(40, 8, 0),
+    fim: null,
+    dia_todo: false,
+    local: "Chácara",
+    nota: null,
+  },
+  {
+    id: "comp-mock-4",
+    titulo: "Conferência Ekballo",
+    inicio: _emDias(75, 0, 0),
+    fim: null,
+    dia_todo: true,
+    local: null,
+    nota: null,
+  },
 ];
 export function listMockCompromissos(): CompromissoMock[] {
   return MOCK_COMPROMISSOS;
 }
 export function addMockCompromisso(c: CompromissoMock) {
   MOCK_COMPROMISSOS.push(c);
+}
+export function updateMockCompromisso(
+  id: string,
+  patch: { titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null },
+) {
+  const c = MOCK_COMPROMISSOS.find((x) => x.id === id);
+  if (c) Object.assign(c, patch);
 }
 export function removeMockCompromisso(id: string) {
   const i = MOCK_COMPROMISSOS.findIndex((c) => c.id === id);

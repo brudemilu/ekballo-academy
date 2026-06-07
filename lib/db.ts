@@ -34,6 +34,7 @@ import {
   type CarrosselInstagramMock,
   listMockCompromissos,
   addMockCompromisso,
+  updateMockCompromisso,
   removeMockCompromisso,
 } from "@/lib/mock-data";
 import type { AgendaEvento } from "@/lib/agenda";
@@ -610,7 +611,7 @@ export async function listCursosWithStats(): Promise<{
 // -------- AGENDA PESSOAL (compromissos manuais) --------
 
 type CompromissoRow = {
-  id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null;
+  id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null;
 };
 
 function compToEvento(c: CompromissoRow): AgendaEvento {
@@ -621,6 +622,7 @@ function compToEvento(c: CompromissoRow): AgendaEvento {
     fim: c.fim,
     diaTodo: c.dia_todo,
     local: c.local,
+    nota: c.nota,
     fonte: "manual",
   };
 }
@@ -638,7 +640,7 @@ export async function listCompromissosManuais(
   const supabase = await createClient();
   const { data } = await supabase
     .from("compromissos")
-    .select("id, titulo, inicio, fim, dia_todo, local")
+    .select("id, titulo, inicio, fim, dia_todo, local, nota")
     .gte("inicio", inicioISO)
     .lte("inicio", fimISO)
     .order("inicio", { ascending: true });
@@ -670,6 +672,28 @@ export async function addCompromisso(input: {
     nota: input.nota,
     criado_por: input.criado_por ?? null,
   });
+}
+
+export async function updateCompromisso(
+  id: string,
+  input: { titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null },
+): Promise<void> {
+  if (isMockMode()) {
+    updateMockCompromisso(id, input);
+    return;
+  }
+  const supabase = await createClient();
+  await supabase
+    .from("compromissos")
+    .update({
+      titulo: input.titulo,
+      inicio: input.inicio,
+      fim: input.fim,
+      dia_todo: input.dia_todo,
+      local: input.local,
+      nota: input.nota,
+    })
+    .eq("id", id);
 }
 
 export async function deleteCompromisso(id: string): Promise<void> {
