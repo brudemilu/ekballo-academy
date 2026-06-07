@@ -26,11 +26,25 @@ export async function GET(req: NextRequest) {
   const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await admin()
     .from("compromissos")
-    .select("id, titulo, inicio, fim, dia_todo, local, nota")
+    .select("id, titulo, inicio, fim, dia_todo, local, nota, criador:profiles(papel, is_admin)")
     .gte("inicio", desde)
     .order("inicio", { ascending: true });
   if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
-  return NextResponse.json({ compromissos: data || [] });
+  // Só empurra pro Google os compromissos criados pelo MASTER (dono da agenda).
+  // Os de outras pessoas (ex.: Débora) ficam no painel, em rosa.
+  type Cr = { papel: string | null; is_admin: boolean | null };
+  const ehMaster = (c: Cr | Cr[] | null | undefined) => {
+    const cr = Array.isArray(c) ? c[0] : c;
+    return cr?.papel === "master" || (!!cr?.is_admin && !cr?.papel);
+  };
+  const compromissos = (data || [])
+    .filter((r) => ehMaster((r as { criador?: Cr | Cr[] | null }).criador))
+    .map((r) => {
+      const o = { ...(r as Record<string, unknown>) };
+      delete o.criador;
+      return o;
+    });
+  return NextResponse.json({ compromissos });
 }
 
 export async function POST(req: NextRequest) {

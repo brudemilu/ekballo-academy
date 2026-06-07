@@ -315,6 +315,7 @@ export type CompromissoMock = {
   dia_todo: boolean;
   local: string | null;
   nota: string | null;
+  autor?: string; // nome de quem criou (não-master) — pra testar a cor rosa
 };
 function _emDias(dias: number, h = 9, m = 0): string {
   const x = new Date();
@@ -340,6 +341,16 @@ const MOCK_COMPROMISSOS: CompromissoMock[] = [
     dia_todo: true,
     local: null,
     nota: "Comprar presente 🎁",
+  },
+  {
+    id: "comp-mock-deb",
+    titulo: "Reunião de casais",
+    inicio: _emDias(2, 20, 0),
+    fim: null,
+    dia_todo: false,
+    local: "Casa",
+    nota: null,
+    autor: "Débora",
   },
   {
     id: "comp-mock-3",
