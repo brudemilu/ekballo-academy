@@ -5,16 +5,22 @@ import {
   updateCompromisso,
   deleteCompromisso,
 } from "@/lib/db";
+import { podeVerAgenda } from "@/lib/permissoes";
 
 // Agenda pessoal — compromissos manuais.
 //   POST   {titulo, inicio(ISO), fim?(ISO), diaTodo?, local?, nota?}  -> cria
 //   PATCH  {id, titulo, inicio(ISO), diaTodo?, local?, nota?}         -> edita
 //   DELETE {id}                                                       -> remove
-// Só admin.
+// Quem pode ver a agenda (master + e-mails liberados, ex.: Débora).
 
 async function exigirAdmin() {
   const session = await getCurrentSession();
-  if (!session?.profile?.is_admin) {
+  const pode = podeVerAgenda(
+    session?.profile?.papel,
+    session?.profile?.is_admin,
+    session?.profile?.email ?? session?.email,
+  );
+  if (!session || !pode) {
     return { erro: NextResponse.json({ erro: "não autorizado" }, { status: 403 }), session: null };
   }
   return { erro: null, session };
