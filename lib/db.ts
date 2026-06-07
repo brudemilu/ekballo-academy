@@ -614,7 +614,9 @@ type CompromissoRow = {
   id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null;
 };
 
-function compToEvento(c: CompromissoRow): AgendaEvento {
+// autor = nome de quem criou, só quando NÃO é o master (ex.: Débora) — pra
+// pintar de rosa e mostrar "por Fulana". Master/owner = null (cor padrão).
+function compToEvento(c: CompromissoRow, autor: string | null): AgendaEvento {
   return {
     id: c.id,
     titulo: c.titulo,
@@ -624,6 +626,7 @@ function compToEvento(c: CompromissoRow): AgendaEvento {
     local: c.local,
     nota: c.nota,
     agenda: null,
+    autor,
     fonte: "manual",
   };
 }
@@ -636,16 +639,22 @@ export async function listCompromissosManuais(
   if (isMockMode()) {
     return listMockCompromissos()
       .filter((c) => c.inicio >= inicioISO && c.inicio <= fimISO)
-      .map(compToEvento);
+      .map((c) => compToEvento(c, c.autor ?? null));
   }
   const supabase = await createClient();
   const { data } = await supabase
     .from("compromissos")
-    .select("id, titulo, inicio, fim, dia_todo, local, nota")
+    .select("id, titulo, inicio, fim, dia_todo, local, nota, criador:profiles(nome, papel, is_admin)")
     .gte("inicio", inicioISO)
     .lte("inicio", fimISO)
     .order("inicio", { ascending: true });
-  return ((data || []) as CompromissoRow[]).map(compToEvento);
+  type Criador = { nome: string | null; papel: string | null; is_admin: boolean | null };
+  type RowCom = CompromissoRow & { criador: Criador | Criador[] | null };
+  return ((data || []) as RowCom[]).map((r) => {
+    const cr = Array.isArray(r.criador) ? r.criador[0] : r.criador;
+    const ehMaster = cr?.papel === "master" || (!!cr?.is_admin && !cr?.papel);
+    return compToEvento(r, ehMaster ? null : cr?.nome ?? null);
+  });
 }
 
 // Eventos do Google sincronizados pelo Apps Script (todas as agendas, inclusive
@@ -659,7 +668,7 @@ export async function listGoogleSincronizados(
       const d = new Date();
       d.setDate(d.getDate() + dias);
       d.setHours(h, 0, 0, 0);
-      return { id: `gs:mock-${dias}-${titulo}`, titulo, inicio: d.toISOString(), fim: null, diaTodo, local: null, nota: null, agenda, fonte: "google" };
+      return { id: `gs:mock-${dias}-${titulo}`, titulo, inicio: d.toISOString(), fim: null, diaTodo, local: null, nota: null, agenda, autor: null, fonte: "google" };
     };
     return [
       mk(0, 20, "Reunião IMW", "IMW Industrial"),
@@ -686,6 +695,7 @@ export async function listGoogleSincronizados(
     local: r.local,
     nota: null,
     agenda: r.agenda,
+    autor: null,
     fonte: "google" as const,
   }));
 }

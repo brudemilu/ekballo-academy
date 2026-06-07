@@ -40,6 +40,7 @@ const COR_CINZA: Cor = { bg: "#ECEAE7", text: "#6B6660" };
 const COR_MANUAL: Cor = { bg: "#FBDDC0", text: "#88300B" };
 const COR_ROXO: Cor = { bg: "#EDE9FE", text: "#6D28D9" };
 const COR_LARANJA: Cor = { bg: "#FFEDD5", text: "#C2410C" };
+const COR_ROSA: Cor = { bg: "#FCE7F3", text: "#DB2777" }; // manual de outra pessoa (ex.: Débora)
 const PALETA: Cor[] = [
   { bg: "#DBEAFE", text: "#1D4ED8" }, // azul
   { bg: "#DCFCE7", text: "#15803D" }, // verde
@@ -55,7 +56,7 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 function corDoEvento(ev: AgendaEvento): Cor {
-  if (ev.fonte === "manual") return COR_MANUAL;
+  if (ev.fonte === "manual") return ev.autor ? COR_ROSA : COR_MANUAL;
   const nome = ev.agenda || "";
   if (!nome) return COR_CINZA;
   if (/imw\s*industrial/i.test(nome)) return COR_ROXO;
@@ -189,6 +190,13 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
       agendas.push({ nome: ev.agenda, cor: corDoEvento(ev) });
     }
   }
+  // Autores distintos de compromissos manuais (ex.: Débora) — pra legenda.
+  const autores: string[] = [];
+  for (const ev of eventos) {
+    if (ev.fonte === "manual" && ev.autor && !autores.includes(ev.autor)) {
+      autores.push(ev.autor);
+    }
+  }
 
   // ----- CALENDÁRIO (mês) -----
   const ano = mesRef.getFullYear();
@@ -259,6 +267,11 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
                           <p className="font-medium text-mesa-800">{ev.titulo}</p>
                           {ev.local && <p className="mt-0.5 text-xs text-mesa-500">📍 {ev.local}</p>}
                           {ev.nota && <p className="mt-0.5 text-xs text-mesa-500">{ev.nota}</p>}
+                          {ev.autor && (
+                            <p className="mt-0.5 text-xs font-medium" style={{ color: COR_ROSA.text }}>
+                              ✍️ adicionado por {ev.autor}
+                            </p>
+                          )}
                         </div>
                         <div className="flex flex-none items-center gap-2">
                           {ev.fonte === "google" ? (
@@ -326,6 +339,12 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COR_MANUAL.text }} />
                 Manual
               </span>
+              {autores.map((a) => (
+                <span key={a} className="inline-flex items-center gap-1.5 text-xs text-mesa-600">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COR_ROSA.text }} />
+                  por {a}
+                </span>
+              ))}
             </div>
           )}
 
@@ -366,7 +385,13 @@ export function AgendaPainel({ eventos }: { eventos: AgendaEvento[] }) {
                           e.stopPropagation();
                           abrirEdicao(ev);
                         }}
-                        title={ev.agenda ? `${ev.titulo} · ${ev.agenda}` : ev.titulo}
+                        title={
+                          ev.agenda
+                            ? `${ev.titulo} · ${ev.agenda}`
+                            : ev.autor
+                              ? `${ev.titulo} · por ${ev.autor}`
+                              : ev.titulo
+                        }
                         className="block w-full truncate rounded px-1 py-0.5 text-left text-[11px] leading-tight"
                         style={{
                           backgroundColor: corDoEvento(ev).bg,
