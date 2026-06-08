@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addCompromisso } from "@/lib/db";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
-import { baixarAudioBase64, transcreverAudio } from "@/lib/agenda-audio";
+import { transcreverAudio } from "@/lib/agenda-audio";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -38,8 +38,10 @@ function extrair(body: Record<string, unknown>) {
 
   const audioMessage = obj(message.audioMessage ?? message.AudioMessage);
   const hasAudio = Object.keys(audioMessage).length > 0;
+  // o Evolution GO já manda o áudio decodificado em base64 no próprio payload
+  const audioB64 = str(message.base64 ?? message.Base64);
 
-  return { fromMe, isGrupo, selfChat, text, hasAudio, message };
+  return { fromMe, isGrupo, selfChat, text, hasAudio, audioB64, message };
 }
 
 async function responder(numero: string, mensagem: string) {
@@ -85,7 +87,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }); // ignora payloads estranhos
   }
 
-  const { fromMe, isGrupo, selfChat, text, hasAudio, message } = extrair(body);
+  const { fromMe, isGrupo, selfChat, text, hasAudio, audioB64 } = extrair(body);
 
   // Responde sempre no TELEFONE do dono (1º da allowlist) — o chat vem como
   // @lid (privacidade do WhatsApp), não dá pra responder nele de forma confiável.
@@ -103,19 +105,13 @@ export async function POST(req: NextRequest) {
   if (m) {
     pedido = m[1].trim();
   } else if (hasAudio && selfChat) {
-    // DEBUG temporário: guarda o payload do áudio pra inspecionar o download
-    try {
-      const { createServiceClient } = await import("@/lib/supabase/service");
-      await createServiceClient().from("_debug_wpp").insert({ raw: body });
-    } catch {}
-    // áudio mandado pra você mesmo: baixa, transcreve (a IA filtra se é compromisso)
-    const b64 = await baixarAudioBase64(message);
-    if (!b64) {
-      await responder(numero, "🎙️ Recebi seu áudio, mas não consegui baixá-lo. Tenta de novo?");
-      return NextResponse.json({ ok: true, audio: "download_fail" });
+    // áudio pra você mesmo: o Evolution já manda o base64; transcreve (a IA filtra)
+    if (!audioB64) {
+      await responder(numero, "🎙️ Recebi seu áudio, mas veio sem o conteúdo. Tenta de novo?");
+      return NextResponse.json({ ok: true, audio: "sem_base64" });
     }
     try {
-      pedido = await transcreverAudio(b64);
+      pedido = await transcreverAudio(audioB64);
     } catch (e) {
       console.log("[audio] transcrever erro:", e instanceof Error ? e.message : e);
     }
