@@ -38,6 +38,8 @@ export const PAPEL_FILE = "paper.jpg";
 export const GRUNGE_FILE = "grunge.png";
 export const BRUSH_FILE = "brush.png";
 export const SPLATTER_FILE = "splatter.png";
+/** Respingos cor-de-papel — "comem" o topo da foto pra fundir foto+papel. */
+export const PAPER_SPECKS_FILE = "paper-specks.png";
 
 const COR_NAVY = "#1B2A4A";
 const COR_GOLD = "#C0892B";
@@ -59,6 +61,7 @@ export type SlideRenderPayload = {
   grungeSrc?: string;
   brushSrc?: string;
   splatterSrc?: string;
+  paperSpecksSrc?: string;
   fonteKey: FonteKey;
   realce: RealceModo;
   /** Cor do destaque — no template papel é sempre dourado (ignora hex custom). */
@@ -172,15 +175,26 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           height={BAND}
           style={{ position: "absolute", left: 0, top: 0, width: W, height: BAND, objectFit: "cover" }}
         />
-        {/* foto emerge do papel: topo dela funde no creme */}
+        {/* foto emerge do papel: topo dela funde no creme (fade alto) */}
         <div
           style={{
             display: "flex",
             position: "absolute",
             inset: 0,
-            background: `linear-gradient(180deg, ${COR_PAPEL} 0%, rgba(244,234,203,0.65) 14%, rgba(244,234,203,0) 38%)`,
+            background: `linear-gradient(180deg, ${COR_PAPEL} 0%, rgba(244,234,203,0.88) 16%, rgba(244,234,203,0.45) 36%, rgba(244,234,203,0) 60%)`,
           }}
         />
+        {/* respingos cor-de-papel "comendo" o topo da foto → funde foto+papel */}
+        {p.paperSpecksSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={p.paperSpecksSrc}
+            alt=""
+            width={W}
+            height={Math.round(BAND * 0.7)}
+            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.12), width: W, height: Math.round(BAND * 0.7), objectFit: "cover" }}
+          />
+        ) : null}
         {/* fade lateral suave */}
         <div
           style={{
