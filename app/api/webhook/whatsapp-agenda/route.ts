@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addCompromisso } from "@/lib/db";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
-import { createServiceClient } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -51,20 +50,6 @@ function extrair(body: Record<string, unknown>) {
   return { fromMe, chatNum: num, sendNum: num, text, isGrupo: isGrupoFlag };
 }
 
-function permitido(numero: string): boolean {
-  const lista = (process.env.AGENDA_WHATSAPP_DONOS || "")
-    .split(/[\s,]+/)
-    .map((n) => n.replace(/\D/g, ""))
-    .filter(Boolean);
-  if (!lista.length) return false;
-  // casa por sufixo (tolera 55 / 9º dígito a mais ou a menos)
-  return lista.some((n) => {
-    const a = numero.slice(-8);
-    const b = n.slice(-8);
-    return a && a === b;
-  });
-}
-
 async function responder(numero: string, mensagem: string) {
   const base = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(".supabase.co", ".functions.supabase.co");
   const secret = process.env.INTERNAL_SECRET;
@@ -108,24 +93,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }); // ignora payloads estranhos
   }
 
-  const { chatNum, sendNum, text, isGrupo } = extrair(body);
-  // log temporário pra acertar o formato do Evolution GO no 1º teste
-  console.log("[agenda-wpp] raw:", JSON.stringify(body).slice(0, 700));
-  console.log("[agenda-wpp] extr:", JSON.stringify({ chatNum, sendNum, isGrupo, text: text.slice(0, 100) }));
+  const { fromMe, text, isGrupo } = extrair(body);
 
-  // DEBUG temporário: grava payload + extração pra inspecionar o shape real
-  try {
-    await createServiceClient().from("_debug_wpp").insert({ raw: body, extr: { chatNum, sendNum, isGrupo, text } });
-  } catch {
-    /* best-effort */
-  }
+  // Responde sempre no TELEFONE do dono (1º da allowlist) — o chat vem como
+  // @lid (privacidade do WhatsApp), não dá pra responder nele de forma confiável.
+  const donoNum = (process.env.AGENDA_WHATSAPP_DONOS || "").split(/[\s,]+/)[0].replace(/\D/g, "");
 
-  const numero = chatNum || sendNum; // pra onde responder (self-chat)
-
-  // ignora grupo, vazio, ou de número não autorizado (confere chat e remetente)
-  if (isGrupo || !text || (!permitido(chatNum) && !permitido(sendNum))) {
+  // Autoriza por fromMe: a instância é o número do próprio dono, então só as
+  // mensagens ENVIADAS por ele (fromMe) viram compromisso. Ignora grupo e vazio.
+  if (isGrupo || !text || !fromMe) {
     return NextResponse.json({ ok: true, ignorado: true });
   }
+
+  const numero = donoNum;
 
   // exige o gatilho "agenda" no início — evita parsear toda mensagem do seu
   // WhatsApp e evita loop (a confirmação começa com ✅/🤔/⚠️, não com "agenda").
