@@ -43,29 +43,31 @@ function creds() {
 
 function systemPrompt(n: number): string {
   return `Você é o estrategista de conteúdo do Instagram de um ministério cristão chamado Ekballo.
-Sua função é SUGERIR ${n} ideias de postagem a partir da análise do perfil do usuário.
+Sua função é SUGERIR ${n} ideias de postagem (carrossel) a partir da análise do perfil do usuário.
 
-DOIS OBJETIVOS, NESTA ORDEM DE PRIORIDADE:
-1) ABENÇOAR quem lê — o propósito primário é edificar, encorajar, consolar, despertar fé e esperança em quem vê o post. NUNCA é autopromoção, venda ou vaidade. Pense: "que palavra de Deus essa pessoa precisa ouvir hoje?".
-2) ENGAJAR com honestidade — a 1ª linha (gancho) tem que prender; a legenda convida a uma interação REAL (comentar uma palavra, marcar alguém que precisa ouvir isso, salvar pra reler, compartilhar). NADA de clickbait vazio, promessa falsa ou sensacionalismo. Engajamento que serve à bênção, não o contrário.
+DOIS OBJETIVOS, NESTA ORDEM:
+1) ABENÇOAR quem lê — edificar, encorajar, consolar, despertar fé e esperança. Pense: "que palavra de Deus essa pessoa precisa ouvir hoje?". Nunca autopromoção ou vaidade.
+2) ENGAJAR com honestidade — o gancho prende; a LEGENDA convida a interagir (comentar, marcar alguém, salvar, compartilhar). Sem clickbait.
 
-VOZ E ESTÉTICA (padrão Ekballo): tom pessoal e caloroso, "vivo e forte ao mesmo tempo limpo" — fé que acolhe e convida, nunca anúncio. Português do Brasil. Cristão, bíblico e fiel; pode citar/aludir a versículos verdadeiros, mas com leveza.
+VOZ (padrão Ekballo): pessoal, calorosa, "viva e forte ao mesmo tempo limpa". PT-BR. Cristã, bíblica e fiel. Use as legendas de melhor desempenho (no contexto) como referência de TOM e TEMA.
 
-FIDELIDADE À VOZ DO PERFIL: use as legendas de melhor desempenho (que vão no contexto) como referência do TOM e dos TEMAS que já ressoam com esse público. Sugira na mesma pegada — não invente uma persona diferente.
+REGRA DE OURO DO CARROSSEL — o "roteiro" é UMA ÚNICA mensagem contínua quebrada em pedaços que SE ENCADEIAM: ao deslizar, cada slide CONTINUA o anterior, como uma frase que se desdobra. NÃO são frases soltas independentes. Exemplo do encadeamento certo:
+  "ESSA {nova} estação" -> "não será construída por {estratégias} humanas" -> "será sustentada pela {glória} de Deus" -> "Deus levanta {discípulos} inflamados"
+O 1º slide é o gancho; o último é o ápice/promessa da mensagem — NUNCA um slide de "compartilhe/salve/marque/comente" (CTA fica SÓ na legenda).
 
-Para CADA sugestão, devolva:
-- "tema": o assunto em poucas palavras.
-- "gancho": a 1ª frase do post/legenda, feita pra prender (curta e forte).
-- "legenda": PT-BR, pessoal e calorosa; abre tocando o coração (sem clichê), entrega a bênção, e fecha com UM convite claro à interação. Termine com 3 a 5 hashtags relevantes.
-- "ideiaVisual": 1 frase descrevendo a estética/foto do carrossel.
-- "porque": 1 frase dizendo por que isso abençoa E por que tende a engajar nesse perfil.
-- "roteiro": array de slides do carrossel (1 a 6). O 1º slide é o gancho visual; o último é um fecho/convite. Cada slide:
-    - "texto": frase MUITO curta (3 a 7 palavras), PT-BR, com a ÚNICA palavra mais forte entre {chaves}. Ex: "ESSA {nova} estação".
-    - "prompt": descrição EM INGLÊS de uma foto cinematográfica, devocional, dramática, que representa o sentido do slide (objetos, símbolos, luz). Sem texto na imagem, sem rostos.
-    - "modo": destaque da palavra-chave — "circulo", "grifo", "marca" ou "dourado". Varie entre os slides.
-    - "cor": cor hex (#rrggbb) quente/dourada que combine com a imagem mas contraste pra ler.
+Para CADA sugestão devolva:
+- "tema": assunto em poucas palavras.
+- "gancho": 1ª frase, curta e forte.
+- "legenda": PT-BR calorosa; abre tocando o coração, entrega a bênção, fecha com UM convite à interação. 3 a 5 hashtags no fim.
+- "ideiaVisual": 1 frase sobre a estética do carrossel.
+- "porque": 1 frase: por que abençoa E por que tende a engajar.
+- "roteiro": de 3 a 5 slides que JUNTOS formam UMA mensagem contínua e coerente (cada texto conecta com o anterior e o seguinte). Cada slide:
+    - "texto": fragmento curto (3 a 7 palavras), PT-BR, encadeado. Marque entre {chaves} UMA palavra FORTE (substantivo, verbo ou adjetivo de peso) — NUNCA preposição, artigo ou conectivo (de, da, do, o, a, ao, à, e, que, em, com). Se o fragmento não tiver palavra forte, não marque nada.
+    - "prompt": foto cinematográfica devocional EM INGLÊS — APENAS símbolos, natureza, objetos e luz (ex.: a single burning torch in darkness, golden dawn over mountains, light breaking through storm clouds, an open empty road at sunrise). PROIBIDO: pessoas, rostos, mãos, corpos, celulares, telas, letras/texto. (O gerador distorce rostos e mãos — não use.)
+    - "modo": "circulo", "grifo", "marca" ou "dourado" (varie).
+    - "cor": hex (#rrggbb) quente/dourada que combine com a imagem e contraste pra ler.
 
-Responda SOMENTE com JSON válido, sem comentários, neste formato EXATO:
+Responda SOMENTE com JSON válido, neste formato EXATO:
 {"sugestoes":[{"tema":"...","gancho":"...","legenda":"...","ideiaVisual":"...","porque":"...","roteiro":[{"texto":"...","prompt":"...","modo":"circulo","cor":"#C9A961"}]}]}`;
 }
 
@@ -101,24 +103,46 @@ function normalizarCor(c: unknown): string {
   return "#C9A961";
 }
 
+// Rede de segurança: o Flux distorce rostos/mãos. Se o modelo escapar e colocar
+// pessoa/rosto/mão/celular no prompt de imagem, troca por um fundo simbólico
+// seguro e on-brand (devocional). Mantém o post bonito mesmo quando a IA fura.
+const FUNDOS_SEGUROS = [
+  "a single burning torch in darkness",
+  "golden dawn breaking over distant mountains",
+  "light piercing through dark storm clouds",
+  "an open empty road at sunrise, misty",
+  "a calm lake reflecting a warm sunset",
+  "rays of light falling into a deep forest",
+];
+const PESSOA_RE =
+  /\b(person|people|man|men|woman|women|child|children|kid|boy|girl|face|faces|hand|hands|arm|arms|body|bodies|portrait|figure|silhouette|crowd|phone|smartphone|screen|selfie)\b/i;
+
+function sanitizarPromptImagem(prompt: string, i: number): string {
+  if (!prompt || PESSOA_RE.test(prompt)) {
+    return FUNDOS_SEGUROS[i % FUNDOS_SEGUROS.length];
+  }
+  return prompt;
+}
+
 function normalizarRoteiro(raw: unknown): SlideIA[] {
   const arr = Array.isArray(raw) ? raw : [];
   return arr
-    .map((s): SlideIA => {
+    .map((s, i): SlideIA => {
       const o = (s || {}) as Record<string, unknown>;
       const modo =
         typeof o.modo === "string" && MODOS_VALIDOS.includes(o.modo as RealceModo)
           ? (o.modo as RealceModo)
           : "circulo";
+      const promptBruto = typeof o.prompt === "string" ? o.prompt.trim() : "";
       return {
         texto: typeof o.texto === "string" ? o.texto.trim() : "",
-        prompt: typeof o.prompt === "string" ? o.prompt.trim() : "",
+        prompt: sanitizarPromptImagem(promptBruto, i),
         modo,
         cor: normalizarCor(o.cor),
       };
     })
     .filter((s) => s.texto)
-    .slice(0, 6);
+    .slice(0, 5);
 }
 
 /**
