@@ -1,17 +1,19 @@
 /**
- * Render compartilhado dos slides do carrossel de Instagram.
+ * Render compartilhado dos slides do carrossel de Instagram — TEMPLATE "PAPEL".
  *
- * Retorna JSX pronto pro ImageResponse (Vercel @vercel/og / Satori). A rota
- * [app/api/og/instagram/route.tsx](app/api/og/instagram/route.tsx) carrega a
- * fonte (registrada como "Display") e o fundo, e chama renderSlideInstagram().
+ * Inspirado no padrão aprovado pelo Bruno (peça "A IGREJA QUE IMPACTAVA todo
+ * mundo."): fundo de papel creme, tipografia navy + dourado (display pesado +
+ * palavra manuscrita), foto cinematográfica só na faixa de baixo (multidão de
+ * costas no nascer do sol), assinatura no topo. Formato retrato 4:5 (1080×1350).
  *
- * Estilo: fundo (foto IA ou local) + scrim escuro + tipografia caixa-alta;
- * a palavra marcada com {chaves} no texto é destacada conforme `realce`.
+ * Marcadores no texto:
+ *   {palavra}   → destaque (dourado / realce).
+ *   ((frase))   → fonte manuscrita (Script), com sublinhado à mão (o "todo mundo.").
  *
  * Limitações do Satori que moldam o código (não repetir o erro):
- *  - NÃO estica SVG (img/inline/background) → o "círculo" é border+borderRadius.
+ *  - NÃO estica SVG (img/inline/background) → "círculo" é border+borderRadius.
  *  - some com a borda se borderRadius > ~metade da altura → manter raio seguro.
- *  - ignora text-decoration:underline → o grifo é uma barrinha desenhada à mão.
+ *  - ignora text-decoration:underline → o sublinhado é uma barrinha desenhada.
  */
 
 export type FonteKey = "anton" | "bebas" | "dm-serif" | "cormorant";
@@ -27,27 +29,36 @@ export const FONTES: Record<
   cormorant: { file: "cormorant-italic.ttf", style: "italic", upper: false, label: "Cormorant" },
 };
 
-const COR_CREAM = "#F5EDDE";
-const COR_GOLD = "#C9A961";
-const COR_INK = "#0B0F1A";
-const SOMBRA = "0 2px 12px rgba(0,0,0,0.92), 0 0 36px rgba(0,0,0,0.65)";
+/** Fonte manuscrita/brush (assinatura + fecho ((...))). Carregada como "Script".
+ *  Kaushan Script — estática (NÃO variável; o Satori não suporta variáveis). */
+export const SCRIPT_FONT_FILE = "kaushan.ttf";
+/** Papel de fundo (asset fixo em public/fundos). */
+export const PAPEL_FILE = "paper.jpg";
+
+const COR_NAVY = "#1B2A4A";
+const COR_GOLD = "#C0892B";
+const COR_PAPEL = "#F4EACB";
+
+export const TAMANHO_W = 1080;
+export const TAMANHO_H = 1350;
+// compat: alguns lugares ainda importam TAMANHO_SLIDE
+export const TAMANHO_SLIDE = TAMANHO_W;
 
 export type SlideRenderPayload = {
-  /** Texto do slide. A palavra entre {chaves} vira o destaque. */
+  /** Texto do slide. {chave}=destaque dourado; ((frase))=manuscrita. */
   texto: string;
-  /** URL/data-URL do fundo (foto IA já gerada ou caminho local). */
+  /** URL/data-URL da FOTO da faixa de baixo (Flux já gerada ou caminho local). */
   bgSrc: string;
+  /** URL absoluta do papel de fundo. */
+  paperSrc: string;
   fonteKey: FonteKey;
   realce: RealceModo;
-  /** Cor do destaque (hex com #). */
-  cor: string;
-  /** Rótulo opcional no topo. */
+  /** Cor do destaque — no template papel é sempre dourado (ignora hex custom). */
+  cor?: string;
+  /** Assinatura no topo (default: Ekballo). */
   top?: string;
-  /** Referência opcional no rodapé. */
+  /** Referência opcional (rodapé pequeno, sobre a faixa). */
   ref?: string;
-  /** Carrossel sem emenda: total de slides e índice (fatiamento da foto). */
-  n?: number;
-  i?: number;
 };
 
 export function sanitizeCor(input: string | null | undefined): string {
@@ -56,68 +67,143 @@ export function sanitizeCor(input: string | null | undefined): string {
   return COR_GOLD;
 }
 
-export const TAMANHO_SLIDE = 1080;
+type DisplayWord = { t: string; accent: boolean };
 
-export function renderSlideInstagram(p: SlideRenderPayload) {
-  const f = FONTES[p.fonteKey] || FONTES.anton;
-  const n = Math.max(1, p.n || 1);
-  const i = Math.min(n - 1, Math.max(0, p.i || 0));
-  const S = TAMANHO_SLIDE;
-  const panoW = n * S;
-  const cor = p.cor;
-
-  const plain = p.texto.replace(/[{}]/g, "");
-  const base = f.upper ? 132 : 84;
-  const len = plain.length;
-  const size = len > 60 ? base * 0.62 : len > 36 ? base * 0.78 : len > 18 ? base * 0.92 : base;
-
-  type Word = { t: string; accent: boolean };
-  const words: Word[] = [];
-  for (const seg of p.texto.split(/(\{[^}]*\})/)) {
+/** Separa o texto em (1) frase manuscrita ((...)) e (2) palavras display, marcando {chave}. */
+function parseTexto(texto: string, upper: boolean): { words: DisplayWord[]; script: string } {
+  let script = "";
+  const semScript = texto.replace(/\(\(([^)]*)\)\)/g, (_, frase) => {
+    script = (script ? script + " " : "") + String(frase).trim();
+    return " ";
+  });
+  const words: DisplayWord[] = [];
+  for (const seg of semScript.split(/(\{[^}]*\})/)) {
     if (!seg) continue;
     const accent = seg.startsWith("{") && seg.endsWith("}");
     const inner = accent ? seg.slice(1, -1) : seg;
     for (const w of inner.split(/\s+/)) {
-      if (w) words.push({ t: f.upper ? w.toUpperCase() : w, accent });
+      if (w) words.push({ t: upper ? w.toUpperCase() : w, accent });
     }
   }
+  return { words, script: script.trim() };
+}
+
+export function renderSlideInstagram(p: SlideRenderPayload) {
+  const f = FONTES[p.fonteKey] || FONTES.anton;
+  const gold = COR_GOLD; // template papel: paleta fixa navy/dourado
+  const W = TAMANHO_W;
+  const H = TAMANHO_H;
+  const BAND = Math.round(H * 0.36); // faixa da foto embaixo
+
+  const { words, script } = parseTexto(p.texto, f.upper);
+
+  const plain = p.texto.replace(/[{}()]/g, "");
+  const base = 150;
+  const len = plain.length;
+  const size =
+    len > 64 ? base * 0.52 : len > 44 ? base * 0.64 : len > 28 ? base * 0.78 : len > 14 ? base * 0.92 : base;
+  const scriptSize = Math.round(size * 0.72);
 
   const baseW = {
     display: "flex",
     fontFamily: "Display",
     fontStyle: f.style,
     fontSize: size,
-    letterSpacing: f.upper ? 2 : -0.5,
+    letterSpacing: f.upper ? 1 : -0.5,
+    color: COR_NAVY,
   } as const;
 
   return (
-    <div style={{ display: "flex", position: "relative", width: "100%", height: "100%", overflow: "hidden", backgroundColor: COR_INK }}>
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        backgroundColor: COR_PAPEL,
+      }}
+    >
+      {/* papel */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={p.bgSrc}
+        src={p.paperSrc}
         alt=""
-        width={panoW}
-        height={S}
-        style={{ position: "absolute", top: 0, left: -(i * S), width: panoW, height: S, objectFit: "cover" }}
+        width={W}
+        height={H}
+        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover" }}
       />
+      {/* luz quente canto sup-esq */}
       <div
         style={{
           display: "flex",
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(180deg, rgba(8,11,20,0.80) 0%, rgba(8,11,20,0.45) 26%, rgba(8,11,20,0.50) 50%, rgba(8,11,20,0.45) 74%, rgba(8,11,20,0.90) 100%)",
+            "radial-gradient(60% 45% at 18% 12%, rgba(255,243,210,0.55) 0%, rgba(255,243,210,0) 60%)",
         }}
       />
+      {/* vinheta suave */}
       <div
         style={{
           display: "flex",
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(ellipse 70% 42% at 50% 50%, rgba(6,9,15,0.62) 0%, rgba(6,9,15,0.32) 55%, rgba(6,9,15,0) 100%)",
+            "radial-gradient(75% 60% at 50% 42%, rgba(80,55,15,0) 55%, rgba(70,48,12,0.14) 100%)",
         }}
       />
+
+      {/* FAIXA DA FOTO (embaixo) */}
+      <div style={{ display: "flex", position: "absolute", left: 0, bottom: 0, width: W, height: BAND }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={p.bgSrc}
+          alt=""
+          width={W}
+          height={BAND}
+          style={{ position: "absolute", left: 0, top: 0, width: W, height: BAND, objectFit: "cover" }}
+        />
+        {/* foto emerge do papel: topo dela funde no creme */}
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(180deg, ${COR_PAPEL} 0%, rgba(244,234,203,0.65) 14%, rgba(244,234,203,0) 38%)`,
+          }}
+        />
+        {/* fade lateral suave */}
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(90deg, ${COR_PAPEL} 0%, rgba(244,234,203,0) 12%, rgba(244,234,203,0) 88%, ${COR_PAPEL} 100%)`,
+          }}
+        />
+        {p.ref ? (
+          <div
+            style={{
+              display: "flex",
+              position: "absolute",
+              left: 0,
+              bottom: 26,
+              width: W,
+              justifyContent: "center",
+              fontFamily: "Display",
+              fontSize: 22,
+              letterSpacing: 6,
+              color: "#F5EDDE",
+              textTransform: "uppercase",
+            }}
+          >
+            {p.ref}
+          </div>
+        ) : null}
+      </div>
+
+      {/* CONTEÚDO */}
       <div
         style={{
           display: "flex",
@@ -125,43 +211,54 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "relative",
           width: "100%",
           height: "100%",
-          padding: "96px 80px",
-          justifyContent: "space-between",
+          padding: "70px 80px",
+          paddingBottom: BAND - 40,
+          justifyContent: "flex-start",
           alignItems: "center",
           textAlign: "center",
         }}
       >
-        {p.top ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, color: cor, fontFamily: "Display", fontStyle: f.style, fontSize: 22, letterSpacing: 8, textTransform: "uppercase" }}>
-            <div style={{ display: "flex", width: 36, height: 1, backgroundColor: cor }} />
-            <div style={{ display: "flex" }}>{p.top}</div>
-            <div style={{ display: "flex", width: 36, height: 1, backgroundColor: cor }} />
+        {/* assinatura topo */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 10 }}>
+          <div style={{ display: "flex", fontFamily: "Script", fontSize: 46, color: COR_NAVY }}>
+            {p.top || "Ekballo"}
           </div>
-        ) : (
-          <div style={{ display: "flex", width: 7, height: 7, borderRadius: 999, backgroundColor: cor }} />
-        )}
+          <div style={{ display: "flex", width: 120, height: 2, marginTop: 6, backgroundColor: gold }} />
+        </div>
 
-        <div style={{ display: "flex", flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 30, paddingBottom: 30 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", justifyContent: "center", columnGap: Math.round(size * 0.24), rowGap: Math.round(size * 0.06), maxWidth: "100%" }}>
+        {/* bloco de texto */}
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "center",
+              columnGap: Math.round(size * 0.22),
+              rowGap: Math.round(size * 0.04),
+              maxWidth: "100%",
+              lineHeight: 1,
+            }}
+          >
             {words.map((w, idx) => {
               if (w.accent && p.realce === "circulo") {
                 return (
-                  <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 34px", border: `6px solid ${cor}`, borderRadius: 56, transform: "rotate(-3deg)" }}>
-                    <div style={{ ...baseW, color: COR_CREAM, textShadow: SOMBRA, transform: "rotate(3deg)" }}>{w.t}</div>
+                  <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "10px 30px", border: `7px solid ${gold}`, borderRadius: 60, transform: "rotate(-2deg)" }}>
+                    <div style={{ ...baseW, color: gold, transform: "rotate(2deg)" }}>{w.t}</div>
                   </div>
                 );
               }
               if (w.accent && p.realce === "grifo") {
                 return (
                   <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <div style={{ ...baseW, color: COR_CREAM, textShadow: SOMBRA }}>{w.t}</div>
-                    <div style={{ display: "flex", alignSelf: "stretch", height: 7, marginTop: -Math.round(size * 0.14), borderRadius: 3, backgroundColor: cor }} />
+                    <div style={{ ...baseW, color: gold }}>{w.t}</div>
+                    <div style={{ display: "flex", alignSelf: "stretch", height: 12, marginTop: -Math.round(size * 0.12), borderRadius: 6, backgroundColor: gold, opacity: 0.85 }} />
                   </div>
                 );
               }
-              let st: Record<string, unknown> = { ...baseW, color: COR_CREAM, textShadow: SOMBRA };
-              if (w.accent && p.realce === "marca") st = { ...baseW, color: COR_INK, backgroundColor: cor, padding: "0 16px", borderRadius: 4 };
-              else if (w.accent && p.realce === "dourado") st = { ...baseW, color: cor, textShadow: SOMBRA };
+              let st: Record<string, unknown> = { ...baseW };
+              if (w.accent && p.realce === "marca") st = { ...baseW, color: "#FFF7E6", backgroundColor: gold, padding: "0 18px", borderRadius: 6 };
+              else if (w.accent) st = { ...baseW, color: gold }; // dourado / nenhum → destaque dourado
               return (
                 <div key={idx} style={st}>
                   {w.t}
@@ -169,21 +266,16 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
               );
             })}
           </div>
-        </div>
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, minHeight: 30 }}>
-          {p.ref ? (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ display: "flex", width: 40, height: 1, backgroundColor: cor }} />
-                <div style={{ display: "flex", width: 6, height: 6, backgroundColor: cor, transform: "rotate(45deg)" }} />
-                <div style={{ display: "flex", width: 40, height: 1, backgroundColor: cor }} />
+          {/* fecho manuscrito ((...)) */}
+          {script ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: Math.round(size * 0.12) }}>
+              <div style={{ display: "flex", fontFamily: "Script", fontSize: scriptSize, color: COR_NAVY, transform: "rotate(-2deg)" }}>
+                {script}
               </div>
-              <div style={{ display: "flex", fontFamily: "Display", fontStyle: f.style, fontSize: 22, letterSpacing: 6, color: COR_CREAM, textTransform: "uppercase" }}>{p.ref}</div>
-            </>
-          ) : (
-            <div style={{ display: "flex", width: 6, height: 6, borderRadius: 999, backgroundColor: cor }} />
-          )}
+              <div style={{ display: "flex", width: Math.round(scriptSize * Math.min(script.length, 12) * 0.42), height: 9, marginTop: 4, borderRadius: 5, backgroundColor: COR_NAVY }} />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
