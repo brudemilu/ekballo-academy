@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addCompromisso } from "@/lib/db";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -111,6 +112,13 @@ export async function POST(req: NextRequest) {
   // log temporário pra acertar o formato do Evolution GO no 1º teste
   console.log("[agenda-wpp] raw:", JSON.stringify(body).slice(0, 700));
   console.log("[agenda-wpp] extr:", JSON.stringify({ chatNum, sendNum, isGrupo, text: text.slice(0, 100) }));
+
+  // DEBUG temporário: grava payload + extração pra inspecionar o shape real
+  try {
+    await createServiceClient().from("_debug_wpp").insert({ raw: body, extr: { chatNum, sendNum, isGrupo, text } });
+  } catch {
+    /* best-effort */
+  }
 
   const numero = chatNum || sendNum; // pra onde responder (self-chat)
 
