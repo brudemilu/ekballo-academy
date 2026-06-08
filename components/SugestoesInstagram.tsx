@@ -162,7 +162,7 @@ function CardSugestao({ s, onUsar }: { s: Sugestao; onUsar: () => void }) {
 
       <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-mesa-500">
         <span>🗓️ Melhor: <strong className="text-mesa-700">{s.melhorHorario}</strong></span>
-        <span>🖼️ {s.roteiro.length} slide{s.roteiro.length > 1 ? "s" : ""}</span>
+        <span>🖼️ {s.roteiro.length === 1 ? "Imagem única" : `Carrossel de ${s.roteiro.length}`}</span>
         {s.ideiaVisual && <span>🎨 {s.ideiaVisual}</span>}
       </div>
 

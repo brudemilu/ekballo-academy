@@ -51,7 +51,11 @@ DOIS OBJETIVOS, NESTA ORDEM:
 
 VOZ (padrão Ekballo): pessoal, calorosa, "viva e forte ao mesmo tempo limpa". PT-BR. Cristã, bíblica e fiel. Use as legendas de melhor desempenho (no contexto) como referência de TOM e TEMA.
 
-REGRA DE OURO DO CARROSSEL — o "roteiro" é UMA ÚNICA mensagem contínua quebrada em pedaços que SE ENCADEIAM: ao deslizar, cada slide CONTINUA o anterior, como uma frase que se desdobra. NÃO são frases soltas independentes. Exemplo do encadeamento certo:
+QUANTOS SLIDES — você DECIDE o tamanho pela mensagem, com intenção; NÃO force número nem encha de slides:
+  - Se a ideia se resolve numa ÚNICA frase/imagem de impacto (um versículo curto, uma frase que não precisa de desdobramento), use 1 slide (imagem única). NÃO transforme em carrossel só por transformar.
+  - Se ela se desdobra em etapas, use de 2 a 5 slides.
+  - VARIE os formatos entre as ${n} sugestões: misture imagem única E carrossel conforme cada ideia pedir — não faça todas do mesmo tamanho.
+Quando houver 2+ slides, eles formam UMA ÚNICA mensagem contínua e ENCADEADA: ao deslizar, cada slide CONTINUA o anterior, como uma frase que se desdobra — NÃO são frases soltas independentes. Exemplo do encadeamento certo:
   "ESSA {nova} estação" -> "não será construída por {estratégias} humanas" -> "será sustentada pela {glória} de Deus" -> "Deus levanta {discípulos} inflamados"
 O 1º slide é o gancho; o último é o ápice/promessa da mensagem — NUNCA um slide de "compartilhe/salve/marque/comente" (CTA fica SÓ na legenda).
 
@@ -61,7 +65,7 @@ Para CADA sugestão devolva:
 - "legenda": PT-BR calorosa; abre tocando o coração, entrega a bênção, fecha com UM convite à interação. 3 a 5 hashtags no fim.
 - "ideiaVisual": 1 frase sobre a estética do carrossel.
 - "porque": 1 frase: por que abençoa E por que tende a engajar.
-- "roteiro": de 3 a 5 slides que JUNTOS formam UMA mensagem contínua e coerente (cada texto conecta com o anterior e o seguinte). Cada slide:
+- "roteiro": de 1 a 5 slides (você escolhe o número pela regra acima). Com 2+, eles formam UMA mensagem contínua e coerente (cada texto conecta com o anterior e o seguinte). Cada slide:
     - "texto": fragmento curto (3 a 7 palavras), PT-BR, encadeado. Marque entre {chaves} UMA palavra FORTE (substantivo, verbo ou adjetivo de peso) — NUNCA preposição, artigo ou conectivo (de, da, do, o, a, ao, à, e, que, em, com). Se o fragmento não tiver palavra forte, não marque nada.
     - "prompt": foto cinematográfica devocional EM INGLÊS — APENAS símbolos, natureza, objetos e luz (ex.: a single burning torch in darkness, golden dawn over mountains, light breaking through storm clouds, an open empty road at sunrise). PROIBIDO: pessoas, rostos, mãos, corpos, celulares, telas, letras/texto. (O gerador distorce rostos e mãos — não use.)
     - "modo": "circulo", "grifo", "marca" ou "dourado" (varie).
