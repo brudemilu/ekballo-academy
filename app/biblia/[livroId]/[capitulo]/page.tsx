@@ -153,6 +153,7 @@ export default async function CapituloPage({
             numero: v.versiculo,
             texto: v.texto,
           }))}
+          isAdmin={!!session.profile?.is_admin}
         />
       </div>
     </main>

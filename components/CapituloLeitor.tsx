@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { PostarInstagram } from "@/components/PostarInstagram";
 
 type Versiculo = { numero: number; texto: string };
 
@@ -12,6 +13,7 @@ export function CapituloLeitor({
   capitulosTotal,
   versao,
   versiculos,
+  isAdmin = false,
 }: {
   livroId: number;
   livroNome: string;
@@ -19,6 +21,7 @@ export function CapituloLeitor({
   capitulosTotal: number;
   versao: string;
   versiculos: Versiculo[];
+  isAdmin?: boolean;
 }) {
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [tema, setTema] = useState<"classico" | "moderno" | "cinematografico">(
@@ -205,6 +208,16 @@ export function CapituloLeitor({
               >
                 ⬇ Story (9:16)
               </a>
+              {isAdmin && sel.size > 0 && (
+                <PostarInstagram
+                  imageUrl={genUrl("feed")}
+                  legendaInicial={`"${Array.from(sel)
+                    .sort((a, b) => a - b)
+                    .map((n) => versiculos.find((v) => v.numero === n)?.texto)
+                    .filter(Boolean)
+                    .join(" ")}"\n\n${refLabel} · ${versao}\n\n#biblia #ekballo #palavradedeus`}
+                />
+              )}
               {/* Preview separado pra quem quer ver antes de salvar */}
               <a
                 href={genUrl("feed")}
