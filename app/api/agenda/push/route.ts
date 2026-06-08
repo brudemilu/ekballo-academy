@@ -26,24 +26,31 @@ export async function GET(req: NextRequest) {
   const desde = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await admin()
     .from("compromissos")
-    .select("id, titulo, inicio, fim, dia_todo, local, nota, criador:profiles(papel, is_admin)")
+    .select("id, titulo, inicio, fim, dia_todo, local, nota, criador:profiles(nome, papel, is_admin)")
     .gte("inicio", desde)
     .order("inicio", { ascending: true });
   if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
-  // Só empurra pro Google os compromissos criados pelo MASTER (dono da agenda).
-  // Os de outras pessoas (ex.: Débora) ficam no painel, em rosa.
-  type Cr = { papel: string | null; is_admin: boolean | null };
-  const ehMaster = (c: Cr | Cr[] | null | undefined) => {
-    const cr = Array.isArray(c) ? c[0] : c;
-    return cr?.papel === "master" || (!!cr?.is_admin && !cr?.papel);
-  };
-  const compromissos = (data || [])
-    .filter((r) => ehMaster((r as { criador?: Cr | Cr[] | null }).criador))
-    .map((r) => {
-      const o = { ...(r as Record<string, unknown>) };
-      delete o.criador;
-      return o;
-    });
+  // TODOS os compromissos vão pro Google. Os criados por quem NÃO é o master
+  // (ex.: Débora) levam o nome de quem criou no título — ex.: "Reunião (Débora)"
+  // — pra aparecer, na agenda e no Google, que foi ela.
+  type Cr = { nome: string | null; papel: string | null; is_admin: boolean | null };
+  const compromissos = (data || []).map((r) => {
+    const row = r as Record<string, unknown> & { criador?: Cr | Cr[] | null };
+    const cr = Array.isArray(row.criador) ? row.criador[0] : row.criador;
+    const ehMaster = cr?.papel === "master" || (!!cr?.is_admin && !cr?.papel);
+    const primeiro = cr?.nome ? cr.nome.trim().split(/\s+/)[0] : null;
+    const titulo =
+      !ehMaster && primeiro ? `${String(row.titulo)} (${primeiro})` : String(row.titulo);
+    return {
+      id: row.id,
+      titulo,
+      inicio: row.inicio,
+      fim: row.fim,
+      dia_todo: row.dia_todo,
+      local: row.local,
+      nota: row.nota,
+    };
+  });
   return NextResponse.json({ compromissos });
 }
 
