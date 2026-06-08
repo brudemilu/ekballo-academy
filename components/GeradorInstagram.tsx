@@ -37,6 +37,18 @@ type Slide = {
   seed: number;
 };
 
+/**
+ * Roteiro vindo de fora (ex.: uma sugestão da IA) pra pré-preencher o editor.
+ * `nonce` muda a cada "usar ideia" pra disparar o preenchimento mesmo quando o
+ * conteúdo é igual ao anterior.
+ */
+export type RoteiroInicial = {
+  nonce: number;
+  conteudo: string;
+  legenda: string;
+  slides: { texto: string; prompt: string; modo: Modo; cor: string }[];
+};
+
 const MODOS: { v: Modo; label: string }[] = [
   { v: "circulo", label: "Círculo" },
   { v: "grifo", label: "Grifo" },
@@ -151,7 +163,7 @@ function SlidePreview({ slide, index, total, size = 300 }: { slide: Slide; index
   );
 }
 
-export function GeradorInstagram() {
+export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroInicial } = {}) {
   const router = useRouter();
   const [tipo, setTipo] = useState<Tipo>("carrossel");
   const [conteudo, setConteudo] = useState("");
@@ -168,6 +180,27 @@ export function GeradorInstagram() {
   const [agendadoOk, setAgendadoOk] = useState(false);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const uploadsRef = useRef<Upload[]>([]);
+
+  // Pré-preenche o editor quando chega um roteiro de fora (sugestão da IA).
+  useEffect(() => {
+    if (!roteiroInicial) return;
+    const novos: Slide[] = roteiroInicial.slides.map((s) => ({
+      texto: s.texto,
+      prompt: s.prompt,
+      modo: s.modo || "circulo",
+      cor: s.cor || "#C9A961",
+      fonte: "anton" as Fonte,
+      top: "",
+      ref: "",
+      seed: novoSeed(),
+    }));
+    setTipo(novos.length === 1 ? "unico" : "carrossel");
+    setSlides(novos);
+    setLegenda(roteiroInicial.legenda || "");
+    setConteudo(roteiroInicial.conteudo || "");
+    setSalvo(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roteiroInicial?.nonce]);
 
   // Slides que vão pro servidor: no modo upload, viram {imageUrl}; senão, os da IA.
   function slidesParaEnvio() {
