@@ -98,9 +98,14 @@ export async function GET(req: NextRequest) {
   const w = 1080;
   const h = formato === "story" ? 1920 : 1080;
 
-  const bgTema =
-    url.searchParams.get("bg") ||
-    "tranquil natural landscape at golden hour, wide open sky, soft light, contemplative";
+  // Fundo do cinematográfico: foto real auto-hospedada (public/fundos), variando
+  // por livro/capítulo. Confiável — sem IA (o backend antigo morreu e dava 500).
+  const FUNDOS = [
+    "recomeco", "coracao", "familia", "cruz-vida-nova", "honra", "espirito-santo",
+    "proposito", "mordomia", "arrependimento", "igreja", "perseveranca", "emanuel",
+  ];
+  const bgSeed = livroId * 1000 + cap;
+  const bgUrl = `${url.origin}/fundos/${FUNDOS[bgSeed % FUNDOS.length]}.jpg`;
 
   const jsx =
     tema === "cinematografico"
@@ -109,8 +114,8 @@ export async function GET(req: NextRequest) {
             verseText: texto,
             ref: refLabel,
             subRef: versao,
-            bgTema,
-            bgSeed: livroId * 1000 + cap,
+            bgUrl,
+            bgSeed,
           },
           formato,
         )

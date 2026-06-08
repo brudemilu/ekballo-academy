@@ -5,6 +5,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { MarcarDevocionalForm } from "@/components/MarcarDevocionalForm";
 import { ReflexaoDevocionalForm } from "@/components/ReflexaoDevocionalForm";
 import { StoryDevocional } from "@/components/StoryDevocional";
+import { PostarInstagram } from "@/components/PostarInstagram";
 import { getCurrentSession } from "@/lib/db";
 import {
   getDevocionalAnualByDia,
@@ -173,6 +174,12 @@ export default async function DevocionalDiaPage({
                   tema={tema}
                   isAdmin={Boolean(session.profile?.is_admin)}
                 />
+                {session.profile?.is_admin && (
+                  <PostarInstagram
+                    imageUrl={`/api/og/devocional?dia=${diaAno}&f=feed&tema=${tema}`}
+                    legendaInicial={`"${devocional.versiculo_texto}"\n\n${devocional.versiculo_ref} · ${devocional.versiculo_versao}\n\n${devocional.titulo}\n\n#devocional #ekballo`}
+                  />
+                )}
               </div>
             </div>
           ))}
