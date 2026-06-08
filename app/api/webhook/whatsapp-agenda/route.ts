@@ -11,16 +11,44 @@ export const maxDuration = 30;
 // números na allowlist (AGENDA_WHATSAPP_DONOS) — senão qualquer um criaria
 // compromisso. Responde a confirmação via a edge function de envio.
 
+function obj(v: unknown): Record<string, unknown> {
+  return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
+}
+function str(v: unknown): string {
+  return typeof v === "string" ? v : "";
+}
+
+// Extrai texto/remetente de formatos variados (Evolution API e Evolution GO/
+// whatsmeow têm shapes diferentes). Defensivo: tenta vários caminhos.
 function extrair(body: Record<string, unknown>) {
-  const data = (body.data ?? body) as Record<string, unknown>;
-  const key = (data.key ?? {}) as Record<string, unknown>;
-  const fromMe = key.fromMe === true;
-  const remoteJid = String(key.remoteJid || data.remoteJid || "");
-  const msg = (data.message ?? {}) as Record<string, unknown>;
-  const ext = (msg.extendedTextMessage ?? {}) as Record<string, unknown>;
-  const text = String(msg.conversation || ext.text || data.text || data.body || "").trim();
-  const numero = remoteJid.split("@")[0].replace(/\D/g, "");
-  return { fromMe, numero, text, isGrupo: remoteJid.includes("@g.us") };
+  const data = obj(body.data ?? body);
+  const key = obj(data.key);
+  const info = obj(data.Info ?? data.info); // whatsmeow
+  const msg = obj(data.message ?? data.Message);
+
+  const fromMe = key.fromMe === true || info.IsFromMe === true || data.fromMe === true;
+
+  const remoteJid = str(
+    key.remoteJid || data.remoteJid || info.Chat || info.RemoteJid || data.chat || data.from,
+  );
+  const participant = str(key.participant || info.Sender || data.participant || data.sender);
+
+  const ext = obj(msg.extendedTextMessage ?? msg.ExtendedTextMessage);
+  const text = String(
+    msg.conversation ||
+      msg.Conversation ||
+      ext.text ||
+      ext.Text ||
+      data.text ||
+      data.body ||
+      data.Body ||
+      body.text ||
+      "",
+  ).trim();
+
+  const chatNum = remoteJid.split("@")[0].replace(/\D/g, "");
+  const sendNum = participant.split("@")[0].replace(/\D/g, "");
+  return { fromMe, chatNum, sendNum, text, isGrupo: remoteJid.includes("@g.us") };
 }
 
 function permitido(numero: string): boolean {
@@ -80,16 +108,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }); // ignora payloads estranhos
   }
 
-  const { fromMe, numero, text, isGrupo } = extrair(body);
+  const { chatNum, sendNum, text, isGrupo } = extrair(body);
+  // log temporário pra acertar o formato do Evolution GO no 1º teste
+  console.log("[agenda-wpp] raw:", JSON.stringify(body).slice(0, 700));
+  console.log("[agenda-wpp] extr:", JSON.stringify({ chatNum, sendNum, isGrupo, text: text.slice(0, 100) }));
 
-  // só mensagens recebidas (não as que o próprio bot enviou), de número
-  // autorizado, fora de grupo, e com texto.
-  if (fromMe || isGrupo || !text || !permitido(numero)) {
+  const numero = chatNum || sendNum; // pra onde responder (self-chat)
+
+  // ignora grupo, vazio, ou de número não autorizado (confere chat e remetente)
+  if (isGrupo || !text || (!permitido(chatNum) && !permitido(sendNum))) {
     return NextResponse.json({ ok: true, ignorado: true });
   }
 
+  // exige o gatilho "agenda" no início — evita parsear toda mensagem do seu
+  // WhatsApp e evita loop (a confirmação começa com ✅/🤔/⚠️, não com "agenda").
+  const m = text.match(/^\s*agenda[:,\s-]+([\s\S]+)/i);
+  if (!m) {
+    return NextResponse.json({ ok: true, semGatilho: true });
+  }
+  const pedido = m[1].trim();
+
   try {
-    const c = await parseCompromissoIA(text);
+    const c = await parseCompromissoIA(pedido);
     if (!c.entendi || !c.inicio) {
       await responder(
         numero,
