@@ -11,44 +11,43 @@ export const maxDuration = 30;
 // números na allowlist (AGENDA_WHATSAPP_DONOS) — senão qualquer um criaria
 // compromisso. Responde a confirmação via a edge function de envio.
 
-function obj(v: unknown): Record<string, unknown> {
-  return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
-}
-function str(v: unknown): string {
-  return typeof v === "string" ? v : "";
-}
-
-// Extrai texto/remetente de formatos variados (Evolution API e Evolution GO/
-// whatsmeow têm shapes diferentes). Defensivo: tenta vários caminhos.
+// Varre o payload inteiro (recursivo) coletando candidatos — robusto a qualquer
+// shape do Evolution GO/whatsmeow sem precisar adivinhar nomes de campo.
 function extrair(body: Record<string, unknown>) {
-  const data = obj(body.data ?? body);
-  const key = obj(data.key);
-  const info = obj(data.Info ?? data.info); // whatsmeow
-  const msg = obj(data.message ?? data.Message);
+  const textos: string[] = [];
+  const jids: string[] = [];
+  let fromMe = false;
+  let isGrupoFlag = false;
 
-  const fromMe = key.fromMe === true || info.IsFromMe === true || data.fromMe === true;
+  const TEXT_KEYS = /^(conversation|text|body|caption|message)$/i;
+  const JID_KEYS = /(jid|remote|chat|^from$|sender|participant|number)/i;
 
-  const remoteJid = str(
-    key.remoteJid || data.remoteJid || info.Chat || info.RemoteJid || data.chat || data.from,
-  );
-  const participant = str(key.participant || info.Sender || data.participant || data.sender);
+  function walk(node: unknown, depth: number) {
+    if (!node || typeof node !== "object" || depth > 8) return;
+    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+      if (typeof v === "string") {
+        if (/@(s\.whatsapp\.net|g\.us|lid|c\.us)/i.test(v)) {
+          jids.push(v);
+          if (v.includes("@g.us")) isGrupoFlag = true;
+        } else if (JID_KEYS.test(k) && /\d{8,}/.test(v)) {
+          jids.push(v);
+        }
+        if (TEXT_KEYS.test(k) && v.trim()) textos.push(v.trim());
+      } else if (typeof v === "boolean") {
+        if (/fromme/i.test(k) && v) fromMe = true;
+      } else if (v && typeof v === "object") {
+        walk(v, depth + 1);
+      }
+    }
+  }
+  walk(body, 0);
 
-  const ext = obj(msg.extendedTextMessage ?? msg.ExtendedTextMessage);
-  const text = String(
-    msg.conversation ||
-      msg.Conversation ||
-      ext.text ||
-      ext.Text ||
-      data.text ||
-      data.body ||
-      data.Body ||
-      body.text ||
-      "",
-  ).trim();
-
-  const chatNum = remoteJid.split("@")[0].replace(/\D/g, "");
-  const sendNum = participant.split("@")[0].replace(/\D/g, "");
-  return { fromMe, chatNum, sendNum, text, isGrupo: remoteJid.includes("@g.us") };
+  // texto = o maior candidato (mensagem real costuma ser o maior)
+  const text = textos.sort((a, b) => b.length - a.length)[0] || "";
+  // número = primeiro JID que não é de grupo (o remetente/chat)
+  const jid = jids.find((j) => !j.includes("@g.us")) || jids[0] || "";
+  const num = jid.split(/[@:]/)[0].replace(/\D/g, "");
+  return { fromMe, chatNum: num, sendNum: num, text, isGrupo: isGrupoFlag };
 }
 
 function permitido(numero: string): boolean {
