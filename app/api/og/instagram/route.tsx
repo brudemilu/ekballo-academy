@@ -6,6 +6,9 @@ import {
   FONTES,
   SCRIPT_FONT_FILE,
   PAPEL_FILE,
+  GRUNGE_FILE,
+  BRUSH_FILE,
+  SPLATTER_FILE,
   TAMANHO_W,
   TAMANHO_H,
   type FonteKey,
@@ -94,8 +97,11 @@ export async function GET(req: NextRequest) {
   ]);
 
   const paperSrc = `${url.origin}/fundos/${PAPEL_FILE}`;
+  const grungeSrc = `${url.origin}/texturas/${GRUNGE_FILE}`;
+  const brushSrc = `${url.origin}/texturas/${BRUSH_FILE}`;
+  const splatterSrc = `${url.origin}/texturas/${SPLATTER_FILE}`;
 
-  const jsx = renderSlideInstagram({ texto: verso, bgSrc, paperSrc, fonteKey, realce, cor, top, ref });
+  const jsx = renderSlideInstagram({ texto: verso, bgSrc, paperSrc, grungeSrc, brushSrc, splatterSrc, fonteKey, realce, cor, top, ref });
 
   const filename = sanitizeFilename(`${verso.replace(/[{}()]/g, "").slice(0, 40)}.png`);
 

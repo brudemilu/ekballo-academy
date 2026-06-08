@@ -34,6 +34,10 @@ export const FONTES: Record<
 export const SCRIPT_FONT_FILE = "kaushan.ttf";
 /** Papel de fundo (asset fixo em public/fundos). */
 export const PAPEL_FILE = "paper.jpg";
+/** Texturas (public/texturas): grão de grunge, pincelada dourada, respingos. */
+export const GRUNGE_FILE = "grunge.png";
+export const BRUSH_FILE = "brush.png";
+export const SPLATTER_FILE = "splatter.png";
 
 const COR_NAVY = "#1B2A4A";
 const COR_GOLD = "#C0892B";
@@ -51,6 +55,10 @@ export type SlideRenderPayload = {
   bgSrc: string;
   /** URL absoluta do papel de fundo. */
   paperSrc: string;
+  /** URLs absolutas das texturas (grunge, pincelada dourada, respingos). */
+  grungeSrc?: string;
+  brushSrc?: string;
+  splatterSrc?: string;
   fonteKey: FonteKey;
   realce: RealceModo;
   /** Cor do destaque — no template papel é sempre dourado (ignora hex custom). */
@@ -182,6 +190,17 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
             background: `linear-gradient(90deg, ${COR_PAPEL} 0%, rgba(244,234,203,0) 12%, rgba(244,234,203,0) 88%, ${COR_PAPEL} 100%)`,
           }}
         />
+        {/* respingos de tinta na transição (azul/dourado) */}
+        {p.splatterSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={p.splatterSrc}
+            alt=""
+            width={W}
+            height={Math.round(BAND * 0.85)}
+            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.34), width: W, height: Math.round(BAND * 0.85), objectFit: "cover", opacity: 0.55 }}
+          />
+        ) : null}
         {p.ref ? (
           <div
             style={{
@@ -256,11 +275,29 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
                   </div>
                 );
               }
-              let st: Record<string, unknown> = { ...baseW };
-              if (w.accent && p.realce === "marca") st = { ...baseW, color: "#FFF7E6", backgroundColor: gold, padding: "0 18px", borderRadius: 6 };
-              else if (w.accent) st = { ...baseW, color: gold }; // dourado / nenhum → destaque dourado
+              if (w.accent && p.realce === "marca") {
+                return (
+                  <div key={idx} style={{ ...baseW, color: "#FFF7E6", backgroundColor: gold, padding: "0 18px", borderRadius: 6 }}>{w.t}</div>
+                );
+              }
+              // default (dourado/nenhum): palavra dourada + PINCELADA dourada por baixo
+              if (w.accent) {
+                const bw = Math.round(w.t.length * size * 0.62 + 30);
+                const bh = Math.round(size * 0.55);
+                return (
+                  <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <div style={{ ...baseW, color: gold }}>{w.t}</div>
+                    {p.brushSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.brushSrc} alt="" width={bw} height={bh} style={{ marginTop: -Math.round(size * 0.2), width: bw, height: bh, objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ display: "flex", alignSelf: "stretch", height: 12, marginTop: -Math.round(size * 0.12), borderRadius: 6, backgroundColor: gold }} />
+                    )}
+                  </div>
+                );
+              }
               return (
-                <div key={idx} style={st}>
+                <div key={idx} style={baseW}>
                   {w.t}
                 </div>
               );
@@ -278,6 +315,18 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           ) : null}
         </div>
       </div>
+
+      {/* grão de grunge por cima de tudo (textura sutil em papel e letras) */}
+      {p.grungeSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={p.grungeSrc}
+          alt=""
+          width={W}
+          height={H}
+          style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.1 }}
+        />
+      ) : null}
     </div>
   );
 }
