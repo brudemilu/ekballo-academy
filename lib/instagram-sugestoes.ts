@@ -148,9 +148,16 @@ export async function gerarSugestoes(resumo: PerfilResumo, n = 3): Promise<Suges
   }
   const json = await res.json();
   const raw = json?.result?.response;
-  if (typeof raw !== "string") throw new Error("resposta inesperada do modelo");
-
-  const parsed = extrairJSON(raw) as { sugestoes?: unknown[] };
+  // A Cloudflare passou a devolver `response` já como objeto JSON quando a
+  // saída é JSON (antes vinha string). Aceita os dois casos.
+  let parsed: { sugestoes?: unknown[] };
+  if (raw && typeof raw === "object") {
+    parsed = raw as { sugestoes?: unknown[] };
+  } else if (typeof raw === "string") {
+    parsed = extrairJSON(raw) as { sugestoes?: unknown[] };
+  } else {
+    throw new Error("resposta inesperada do modelo");
+  }
   const lista = Array.isArray(parsed.sugestoes) ? parsed.sugestoes : [];
 
   const sugestoes: SugestaoPost[] = lista
