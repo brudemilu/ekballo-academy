@@ -138,9 +138,16 @@ export async function gerarCarrosselIA(
   if (!res.ok) throw new Error(`Cloudflare texto ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const json = await res.json();
   const raw = json?.result?.response;
-  if (typeof raw !== "string") throw new Error("resposta inesperada do modelo");
-
-  const parsed = extrairJSON(raw) as { slides?: unknown[]; legenda?: unknown };
+  // A Cloudflare passou a devolver `response` já como objeto JSON quando a
+  // saída é JSON (antes vinha string). Aceita os dois casos.
+  let parsed: { slides?: unknown[]; legenda?: unknown };
+  if (raw && typeof raw === "object") {
+    parsed = raw as { slides?: unknown[]; legenda?: unknown };
+  } else if (typeof raw === "string") {
+    parsed = extrairJSON(raw) as { slides?: unknown[]; legenda?: unknown };
+  } else {
+    throw new Error("resposta inesperada do modelo");
+  }
   const slidesRaw = Array.isArray(parsed.slides) ? parsed.slides : [];
   const slides: SlideIA[] = slidesRaw
     .map((s) => {
