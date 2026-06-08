@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addCompromisso } from "@/lib/db";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
+import { baixarAudioBase64, transcreverAudio } from "@/lib/agenda-audio";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 // Webhook do Evolution: "manda no zap → cai na agenda".
 // O Evolution é configurado pra POSTar o evento messages.upsert aqui.
@@ -11,43 +12,34 @@ export const maxDuration = 30;
 // números na allowlist (AGENDA_WHATSAPP_DONOS) — senão qualquer um criaria
 // compromisso. Responde a confirmação via a edge function de envio.
 
-// Varre o payload inteiro (recursivo) coletando candidatos — robusto a qualquer
-// shape do Evolution GO/whatsmeow sem precisar adivinhar nomes de campo.
+function obj(v: unknown): Record<string, unknown> {
+  return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
+}
+function str(v: unknown): string {
+  return typeof v === "string" ? v : "";
+}
+
+// Shape do Evolution GO: body.data.Info {Chat,Sender,IsFromMe,IsGroup} +
+// body.data.Message {conversation|extendedTextMessage.text|audioMessage}.
 function extrair(body: Record<string, unknown>) {
-  const textos: string[] = [];
-  const jids: string[] = [];
-  let fromMe = false;
-  let isGrupoFlag = false;
+  const data = obj(body.data ?? body);
+  const info = obj(data.Info);
+  const message = obj(data.Message ?? data.message);
 
-  const TEXT_KEYS = /^(conversation|text|body|caption|message)$/i;
-  const JID_KEYS = /(jid|remote|chat|^from$|sender|participant|number)/i;
+  const fromMe = info.IsFromMe === true || obj(data.key).fromMe === true;
+  const chat = str(info.Chat || data.remoteJid);
+  const sender = str(info.Sender || chat);
+  const isGrupo = info.IsGroup === true || chat.includes("@g.us");
+  // self-chat = mensagem pra você mesmo (remetente == conversa)
+  const selfChat = !!chat && chat === sender;
 
-  function walk(node: unknown, depth: number) {
-    if (!node || typeof node !== "object" || depth > 8) return;
-    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
-      if (typeof v === "string") {
-        if (/@(s\.whatsapp\.net|g\.us|lid|c\.us)/i.test(v)) {
-          jids.push(v);
-          if (v.includes("@g.us")) isGrupoFlag = true;
-        } else if (JID_KEYS.test(k) && /\d{8,}/.test(v)) {
-          jids.push(v);
-        }
-        if (TEXT_KEYS.test(k) && v.trim()) textos.push(v.trim());
-      } else if (typeof v === "boolean") {
-        if (/fromme/i.test(k) && v) fromMe = true;
-      } else if (v && typeof v === "object") {
-        walk(v, depth + 1);
-      }
-    }
-  }
-  walk(body, 0);
+  const ext = obj(message.extendedTextMessage);
+  const text = str(message.conversation || ext.text || data.text || data.body).trim();
 
-  // texto = o maior candidato (mensagem real costuma ser o maior)
-  const text = textos.sort((a, b) => b.length - a.length)[0] || "";
-  // número = primeiro JID que não é de grupo (o remetente/chat)
-  const jid = jids.find((j) => !j.includes("@g.us")) || jids[0] || "";
-  const num = jid.split(/[@:]/)[0].replace(/\D/g, "");
-  return { fromMe, chatNum: num, sendNum: num, text, isGrupo: isGrupoFlag };
+  const audioMessage = obj(message.audioMessage ?? message.AudioMessage);
+  const hasAudio = Object.keys(audioMessage).length > 0;
+
+  return { fromMe, isGrupo, selfChat, text, hasAudio, message };
 }
 
 async function responder(numero: string, mensagem: string) {
@@ -93,27 +85,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }); // ignora payloads estranhos
   }
 
-  const { fromMe, text, isGrupo } = extrair(body);
+  const { fromMe, isGrupo, selfChat, text, hasAudio, message } = extrair(body);
 
   // Responde sempre no TELEFONE do dono (1º da allowlist) — o chat vem como
   // @lid (privacidade do WhatsApp), não dá pra responder nele de forma confiável.
   const donoNum = (process.env.AGENDA_WHATSAPP_DONOS || "").split(/[\s,]+/)[0].replace(/\D/g, "");
+  const numero = donoNum;
 
-  // Autoriza por fromMe: a instância é o número do próprio dono, então só as
-  // mensagens ENVIADAS por ele (fromMe) viram compromisso. Ignora grupo e vazio.
-  if (isGrupo || !text || !fromMe) {
+  // Autoriza por fromMe (a instância é o número do dono). Ignora grupos.
+  if (isGrupo || !fromMe) {
     return NextResponse.json({ ok: true, ignorado: true });
   }
 
-  const numero = donoNum;
-
-  // exige o gatilho "agenda" no início — evita parsear toda mensagem do seu
-  // WhatsApp e evita loop (a confirmação começa com ✅/🤔/⚠️, não com "agenda").
+  // Define o "pedido": TEXTO começando com "agenda", OU ÁUDIO na conversa "Você".
+  let pedido = "";
   const m = text.match(/^\s*agenda[:,\s-]+([\s\S]+)/i);
-  if (!m) {
+  if (m) {
+    pedido = m[1].trim();
+  } else if (hasAudio && selfChat) {
+    // áudio mandado pra você mesmo: baixa, transcreve (a IA filtra se é compromisso)
+    const b64 = await baixarAudioBase64(message);
+    if (!b64) {
+      await responder(numero, "🎙️ Recebi seu áudio, mas não consegui baixá-lo. Tenta de novo?");
+      return NextResponse.json({ ok: true, audio: "download_fail" });
+    }
+    try {
+      pedido = await transcreverAudio(b64);
+    } catch (e) {
+      console.log("[audio] transcrever erro:", e instanceof Error ? e.message : e);
+    }
+    console.log("[audio] transcrição:", pedido.slice(0, 120));
+    if (!pedido) {
+      await responder(numero, "🎙️ Não consegui entender o áudio. Pode falar de novo, devagar?");
+      return NextResponse.json({ ok: true, audio: "transcribe_fail" });
+    }
+  } else {
     return NextResponse.json({ ok: true, semGatilho: true });
   }
-  const pedido = m[1].trim();
 
   try {
     const c = await parseCompromissoIA(pedido);
