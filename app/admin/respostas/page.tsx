@@ -13,8 +13,12 @@ export default async function RespostasPage({
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
+  // Painel de trabalho: por padrão lista só o que aguarda devolutiva. Assim que a
+  // devolutiva é enviada, a reflexão sai daqui sozinha e passa a viver em "Já comentadas".
+  // ?filtro=pendentes (links/bookmarks antigos) cai no padrão.
+  const filtroNorm = filtro === "pendentes" ? undefined : filtro;
   const status =
-    filtro === "pendentes" ? "pendentes" : filtro === "comentadas" ? "comentadas" : undefined;
+    filtroNorm === "comentadas" ? "comentadas" : filtroNorm === "todas" ? undefined : "pendentes";
 
   const [respostas, cursos] = await Promise.all([
     listAllRespostas({ status, cursoSlug }),
@@ -41,14 +45,26 @@ export default async function RespostasPage({
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">
-        <FiltroLink filtro={undefined} atual={filtro}>
-          Todas ({respostas.length})
-        </FiltroLink>
-        <FiltroLink filtro="pendentes" atual={filtro}>
+        <FiltroLink
+          filtro={undefined}
+          atual={filtroNorm}
+          count={status === "pendentes" ? respostas.length : undefined}
+        >
           Aguardando devolutiva
         </FiltroLink>
-        <FiltroLink filtro="comentadas" atual={filtro}>
+        <FiltroLink
+          filtro="comentadas"
+          atual={filtroNorm}
+          count={status === "comentadas" ? respostas.length : undefined}
+        >
           Já comentadas
+        </FiltroLink>
+        <FiltroLink
+          filtro="todas"
+          atual={filtroNorm}
+          count={status === undefined ? respostas.length : undefined}
+        >
+          Todas
         </FiltroLink>
       </div>
 
@@ -58,14 +74,14 @@ export default async function RespostasPage({
             Filtrar por curso:
           </span>
           <Link
-            href={`/admin/respostas${filtro ? `?filtro=${filtro}` : ""}`}
+            href={`/admin/respostas${filtroNorm ? `?filtro=${filtroNorm}` : ""}`}
             className={`rounded-full px-3 py-1 text-xs ${!cursoSlug ? "bg-mesa-700 text-white" : "border border-mesa-200 bg-white text-mesa-700"}`}
           >
             Todos
           </Link>
           {cursos.map((c) => {
             const params = new URLSearchParams();
-            if (filtro) params.set("filtro", filtro);
+            if (filtroNorm) params.set("filtro", filtroNorm);
             params.set("curso", c.slug);
             return (
               <Link
@@ -83,7 +99,9 @@ export default async function RespostasPage({
       {respostas.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-20 text-center">
           <p className="font-serif text-xl text-mesa-500">
-            Nenhuma resposta no filtro escolhido.
+            {status === "pendentes"
+              ? "Tudo em dia — nenhuma reflexão aguardando devolutiva."
+              : "Nenhuma resposta no filtro escolhido."}
           </p>
         </div>
       ) : (
@@ -132,10 +150,12 @@ export default async function RespostasPage({
 function FiltroLink({
   filtro,
   atual,
+  count,
   children,
 }: {
   filtro?: string;
   atual?: string;
+  count?: number;
   children: React.ReactNode;
 }) {
   const ativo = filtro === atual;
@@ -149,6 +169,7 @@ function FiltroLink({
       }`}
     >
       {children}
+      {count !== undefined ? ` (${count})` : ""}
     </Link>
   );
 }
