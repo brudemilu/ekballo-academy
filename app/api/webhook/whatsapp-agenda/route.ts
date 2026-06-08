@@ -103,6 +103,11 @@ export async function POST(req: NextRequest) {
   if (m) {
     pedido = m[1].trim();
   } else if (hasAudio && selfChat) {
+    // DEBUG temporário: guarda o payload do áudio pra inspecionar o download
+    try {
+      const { createServiceClient } = await import("@/lib/supabase/service");
+      await createServiceClient().from("_debug_wpp").insert({ raw: body });
+    } catch {}
     // áudio mandado pra você mesmo: baixa, transcreve (a IA filtra se é compromisso)
     const b64 = await baixarAudioBase64(message);
     if (!b64) {
