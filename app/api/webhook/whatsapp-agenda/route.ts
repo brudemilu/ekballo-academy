@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
 
   // exige o gatilho "agenda" no início — evita parsear toda mensagem do seu
   // WhatsApp e evita loop (a confirmação começa com ✅/🤔/⚠️, não com "agenda").
-  const m = text.match(/^\s*agenda[:,\s-]+(.+)/is);
+  const m = text.match(/^\s*agenda[:,\s-]+([\s\S]+)/i);
   if (!m) {
     return NextResponse.json({ ok: true, semGatilho: true });
   }
