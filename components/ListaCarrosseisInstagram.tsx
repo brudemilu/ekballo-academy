@@ -10,6 +10,8 @@ type Item = {
   agendado_para?: string | null;
   slides?: unknown[];
   criado_em?: string;
+  tipo?: "carrossel" | "reel";
+  video_url?: string;
 };
 
 function badge(it: Item) {
@@ -85,9 +87,20 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
         return (
           <div key={it.id} className="flex items-center gap-4 rounded-2xl border border-mesa-200 bg-white p-4">
             <div className="flex-1">
-              <span className={`inline-block rounded-full border px-3 py-1 text-xs font-medium ${b.cls}`}>{b.txt}</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`inline-block rounded-full border px-3 py-1 text-xs font-medium ${b.cls}`}>{b.txt}</span>
+                {it.tipo === "reel" && (
+                  <span className="inline-block rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-700">🎬 Reel</span>
+                )}
+              </div>
               <p className="mt-2 line-clamp-2 text-sm text-mesa-700">{it.legenda || "(sem legenda)"}</p>
-              <p className="mt-1 text-xs text-mesa-400">{n} {n === 1 ? "imagem" : "imagens"}</p>
+              <p className="mt-1 text-xs text-mesa-400">
+                {it.tipo === "reel" ? (
+                  it.video_url ? <a href={it.video_url} target="_blank" rel="noreferrer" className="text-laranja-600 hover:underline">ver vídeo</a> : "vídeo"
+                ) : (
+                  `${n} ${n === 1 ? "imagem" : "imagens"}`
+                )}
+              </p>
             </div>
             {(it.status === "agendado" || it.status === "erro") && (
               <button

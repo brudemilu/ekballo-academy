@@ -52,16 +52,21 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // Espera o container ficar pronto (FINISHED) antes de publicar. O Instagram
 // baixa/processa a imagem de forma assíncrona — publicar antes dá
 // "media is not ready". Faz polling do status_code.
-async function esperarPronto(p: PublicarParams, creationId: string): Promise<void> {
-  for (let i = 0; i < 20; i++) {
+async function esperarPronto(
+  p: PublicarParams,
+  creationId: string,
+  tentativas = 20,
+  intervalo = 2500,
+): Promise<void> {
+  for (let i = 0; i < tentativas; i++) {
     const res = await fetch(`${GRAPH}/${creationId}?fields=status_code&access_token=${encodeURIComponent(p.token)}`);
     const json = (await res.json()) as { status_code?: string } & GraphErr;
     const sc = json.status_code;
     if (sc === "FINISHED") return;
-    if (sc === "ERROR" || sc === "EXPIRED") throw new Error(`a imagem falhou ao processar (${sc})`);
-    await sleep(2500);
+    if (sc === "ERROR" || sc === "EXPIRED") throw new Error(`a mídia falhou ao processar (${sc})`);
+    await sleep(intervalo);
   }
-  throw new Error("tempo esgotado esperando a imagem ficar pronta");
+  throw new Error("tempo esgotado esperando a mídia ficar pronta");
 }
 
 /** Publica imagem única ou carrossel. Retorna o id do post publicado. */
@@ -88,6 +93,32 @@ export async function publicarInstagram(p: PublicarParams): Promise<{ id: string
     await esperarPronto(p, creationId);
   }
 
+  const id = await publicar(p, creationId);
+  return { id };
+}
+
+/**
+ * Publica um REEL (vídeo). video_url tem que ser um MP4 público (H.264/AAC,
+ * 9:16, ~3–90s). O Meta baixa e PROCESSA o vídeo (demora mais que imagem),
+ * então o polling é mais longo. share_to_feed também mostra no feed.
+ */
+export async function publicarReel(params: {
+  igUserId: string;
+  token: string;
+  videoUrl: string;
+  legenda: string;
+}): Promise<{ id: string }> {
+  if (!params.igUserId || !params.token) throw new Error("Instagram não configurado (faltam token/ID).");
+  if (!params.videoUrl) throw new Error("Nenhum vídeo pra publicar.");
+  const p: PublicarParams = { igUserId: params.igUserId, token: params.token, imageUrls: [], legenda: params.legenda };
+  const creationId = await criarContainer(p, {
+    media_type: "REELS",
+    video_url: params.videoUrl,
+    caption: params.legenda,
+    share_to_feed: "true",
+  });
+  // vídeo demora a processar → mais tentativas (cabe no maxDuration 60).
+  await esperarPronto(p, creationId, 22, 2600);
   const id = await publicar(p, creationId);
   return { id };
 }
