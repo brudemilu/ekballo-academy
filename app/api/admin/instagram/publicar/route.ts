@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
-import { publicarInstagram, instagramConfigurado } from "@/lib/instagram-publish";
+import { publicarInstagram, publicarReel, instagramConfigurado } from "@/lib/instagram-publish";
 import { prepararImageUrls } from "@/lib/instagram-imagens";
 
 export const runtime = "nodejs";
@@ -40,15 +40,17 @@ export async function POST(req: NextRequest) {
   let slides: SlideIn[] = [];
   let legenda = "";
   let postId: string | null = null;
+  let tipo = "carrossel";
+  let videoUrl = "";
   try {
     const body = await req.json();
     postId = typeof body.id === "string" ? body.id : null;
     if (postId) {
-      // republicar um post salvo: carrega slides+legenda do banco
+      // republicar um post salvo: carrega do banco
       const supabase = await createClient();
       const { data, error } = await supabase
         .from("instagram_carrosseis")
-        .select("slides, legenda")
+        .select("slides, legenda, tipo, video_url")
         .eq("id", postId)
         .single();
       if (error || !data) {
@@ -56,18 +58,24 @@ export async function POST(req: NextRequest) {
       }
       slides = (Array.isArray(data.slides) ? data.slides : []) as SlideIn[];
       legenda = typeof data.legenda === "string" ? data.legenda : "";
+      tipo = data.tipo === "reel" ? "reel" : "carrossel";
+      videoUrl = typeof data.video_url === "string" ? data.video_url : "";
     } else {
+      tipo = body.tipo === "reel" ? "reel" : "carrossel";
       slides = Array.isArray(body.slides) ? body.slides : [];
       legenda = typeof body.legenda === "string" ? body.legenda : "";
+      videoUrl = typeof body.videoUrl === "string" ? body.videoUrl : "";
     }
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
-  if (!slides.length) {
+
+  const isReel = tipo === "reel";
+  if (isReel ? !videoUrl : !slides.length) {
     return NextResponse.json({ error: "Nada pra publicar." }, { status: 400 });
   }
 
-  // o Meta busca a imagem por URL pública — usa a origem da requisição (produção).
+  // o Meta busca a mídia por URL pública — usa a origem da requisição (produção).
   const origin = req.nextUrl.origin;
   if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
     return NextResponse.json(
@@ -75,15 +83,24 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const imageUrls = await prepararImageUrls(origin, slides);
+  // imagens: pré-gera e sobe no Storage (estático/rápido) pra o Meta não dar
+  // timeout buscando a rota OG (que gera por IA, ~10s). Reel não usa imagens.
+  const imageUrls = isReel ? [] : await prepararImageUrls(origin, slides);
 
   try {
-    const { id } = await publicarInstagram({
-      igUserId: process.env.IG_USER_ID!,
-      token: process.env.META_ACCESS_TOKEN!,
-      imageUrls,
-      legenda,
-    });
+    const { id } = isReel
+      ? await publicarReel({
+          igUserId: process.env.IG_USER_ID!,
+          token: process.env.META_ACCESS_TOKEN!,
+          videoUrl,
+          legenda,
+        })
+      : await publicarInstagram({
+          igUserId: process.env.IG_USER_ID!,
+          token: process.env.META_ACCESS_TOKEN!,
+          imageUrls,
+          legenda,
+        });
     if (postId) {
       const supabase = await createClient();
       await supabase

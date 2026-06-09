@@ -293,6 +293,8 @@ export type CarrosselInstagramMock = {
   status: string;
   agendado_para?: string;
   criado_em: string;
+  tipo?: "carrossel" | "reel";
+  video_url?: string;
 };
 const MOCK_CARROSSEIS: CarrosselInstagramMock[] = [];
 export function addMockCarrossel(c: CarrosselInstagramMock) {

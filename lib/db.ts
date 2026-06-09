@@ -1658,6 +1658,10 @@ export type CarrosselInstagramInput = {
   legenda: string;
   /** ISO. Se presente, salva como "agendado" pra essa data/hora. */
   agendadoPara?: string | null;
+  /** "carrossel" (default) | "reel". */
+  tipo?: "carrossel" | "reel";
+  /** URL pública do vídeo (quando tipo=reel). */
+  videoUrl?: string | null;
 };
 
 export async function salvarCarrosselInstagram(
@@ -1665,6 +1669,7 @@ export async function salvarCarrosselInstagram(
 ): Promise<{ id: string }> {
   const agendado = Boolean(input.agendadoPara);
   const status = agendado ? "agendado" : "rascunho";
+  const tipo = input.tipo === "reel" ? "reel" : "carrossel";
   if (isMockMode()) {
     const id = crypto.randomUUID();
     addMockCarrossel({
@@ -1674,6 +1679,8 @@ export async function salvarCarrosselInstagram(
       legenda: input.legenda,
       status,
       agendado_para: input.agendadoPara || undefined,
+      tipo,
+      video_url: input.videoUrl || undefined,
       criado_em: new Date().toISOString(),
     });
     return { id };
@@ -1687,6 +1694,8 @@ export async function salvarCarrosselInstagram(
       legenda: input.legenda,
       status,
       agendado_para: input.agendadoPara || null,
+      tipo,
+      video_url: input.videoUrl || null,
     })
     .select("id")
     .single();
@@ -1699,7 +1708,7 @@ export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("instagram_carrosseis")
-    .select("id, conteudo, slides, legenda, status, agendado_para, criado_em")
+    .select("id, conteudo, slides, legenda, status, agendado_para, criado_em, tipo, video_url")
     .order("criado_em", { ascending: false })
     .limit(50);
   if (error) throw new Error(error.message);

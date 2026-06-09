@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { publicarInstagram, instagramConfigurado } from "@/lib/instagram-publish";
+import { publicarInstagram, publicarReel, instagramConfigurado } from "@/lib/instagram-publish";
 import { prepararImageUrls } from "@/lib/instagram-imagens";
 
 export const runtime = "nodejs";
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   // pega os que já venceram (limite pequeno por execução)
   const { data: pendentes, error } = await supabase
     .from("instagram_carrosseis")
-    .select("id, slides, legenda")
+    .select("id, slides, legenda, tipo, video_url")
     .eq("status", "agendado")
     .lte("agendado_para", new Date().toISOString())
     .order("agendado_para", { ascending: true })
@@ -50,16 +50,29 @@ export async function GET(req: NextRequest) {
 
   const resultados: { id: string; ok: boolean; erro?: string }[] = [];
   for (const post of pendentes) {
+    const isReel = post.tipo === "reel";
     const slides = Array.isArray(post.slides) ? (post.slides as SlideRow[]) : [];
     try {
-      if (!slides.length) throw new Error("sem slides");
-      const imageUrls = await prepararImageUrls(origin, slides);
-      const { id: postId } = await publicarInstagram({
-        igUserId: process.env.IG_USER_ID!,
-        token: process.env.META_ACCESS_TOKEN!,
-        imageUrls,
-        legenda: post.legenda || "",
-      });
+      const { id: postId } = isReel
+        ? await (async () => {
+            if (!post.video_url) throw new Error("sem vídeo");
+            return publicarReel({
+              igUserId: process.env.IG_USER_ID!,
+              token: process.env.META_ACCESS_TOKEN!,
+              videoUrl: post.video_url,
+              legenda: post.legenda || "",
+            });
+          })()
+        : await (async () => {
+            if (!slides.length) throw new Error("sem slides");
+            const imageUrls = await prepararImageUrls(origin, slides);
+            return publicarInstagram({
+              igUserId: process.env.IG_USER_ID!,
+              token: process.env.META_ACCESS_TOKEN!,
+              imageUrls,
+              legenda: post.legenda || "",
+            });
+          })();
       await supabase
         .from("instagram_carrosseis")
         .update({ status: "publicado", publicado_em: new Date().toISOString(), ig_post_id: postId, erro: null })

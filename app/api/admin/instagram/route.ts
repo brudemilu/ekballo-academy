@@ -13,15 +13,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
 
-  let body: { conteudo?: string; slides?: unknown[]; legenda?: string; agendadoPara?: string };
+  let body: { conteudo?: string; slides?: unknown[]; legenda?: string; agendadoPara?: string; tipo?: string; videoUrl?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
 
+  const isReel = body.tipo === "reel";
   const slides = Array.isArray(body.slides) ? body.slides : [];
-  if (!slides.length) {
+  if (isReel) {
+    if (!body.videoUrl) {
+      return NextResponse.json({ error: "Envie um vídeo primeiro." }, { status: 400 });
+    }
+  } else if (!slides.length) {
     return NextResponse.json({ error: "Nada pra salvar — monte o carrossel primeiro." }, { status: 400 });
   }
 
@@ -45,6 +50,8 @@ export async function POST(req: NextRequest) {
       slides: slides as never,
       legenda: typeof body.legenda === "string" ? body.legenda : "",
       agendadoPara,
+      tipo: isReel ? "reel" : "carrossel",
+      videoUrl: isReel ? body.videoUrl : null,
     });
     return NextResponse.json({ ok: true, id, agendado: Boolean(agendadoPara) });
   } catch (e) {
