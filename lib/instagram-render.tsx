@@ -122,7 +122,6 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
   const gold = p.cor && /^#[0-9a-fA-F]{6}$/.test(p.cor) ? p.cor : COR_GOLD;
   const W = TAMANHO_W;
   const H = TAMANHO_H;
-  const BAND = Math.round(H * 0.4); // faixa da foto embaixo
 
   const { words, script } = parseTexto(p.texto, f.upper);
 
@@ -153,14 +152,33 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
         backgroundColor: COR_PAPEL,
       }}
     >
-      {/* papel */}
+      {/* FOTO como fundo do quadro INTEIRO */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={p.bgSrc}
+        alt=""
+        width={W}
+        height={H}
+        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover" }}
+      />
+      {/* papel MESCLADO por cima (mesmo tom/desgaste nas duas → vira uma coisa só) */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={p.paperSrc}
         alt=""
         width={W}
         height={H}
-        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover" }}
+        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.32 }}
+      />
+      {/* gradiente creme: topo = papel (área do texto), base REVELA a foto.
+          A transição é longa e suave → as duas imagens se fundem sem emenda. */}
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(180deg, ${COR_PAPEL} 0%, ${COR_PAPEL} 24%, rgba(244,234,203,0.82) 42%, rgba(244,234,203,0.32) 64%, rgba(244,234,203,0) 86%)`,
+        }}
       />
       {/* luz quente canto sup-esq */}
       <div
@@ -169,7 +187,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(60% 45% at 18% 12%, rgba(255,243,210,0.55) 0%, rgba(255,243,210,0) 60%)",
+            "radial-gradient(60% 45% at 18% 12%, rgba(255,243,210,0.5) 0%, rgba(255,243,210,0) 60%)",
         }}
       />
       {/* vinheta suave */}
@@ -179,81 +197,20 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(75% 60% at 50% 42%, rgba(80,55,15,0) 55%, rgba(70,48,12,0.14) 100%)",
+            "radial-gradient(78% 64% at 50% 44%, rgba(80,55,15,0) 58%, rgba(70,48,12,0.16) 100%)",
         }}
       />
-
-      {/* FAIXA DA FOTO (embaixo) */}
-      <div style={{ display: "flex", position: "absolute", left: 0, bottom: 0, width: W, height: BAND }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* respingos na zona de mescla (cor do tema) */}
+      {p.splatterSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={p.bgSrc}
+          src={p.splatterSrc}
           alt=""
           width={W}
-          height={BAND}
-          style={{ position: "absolute", left: 0, top: 0, width: W, height: BAND, objectFit: "cover" }}
+          height={Math.round(H * 0.42)}
+          style={{ position: "absolute", left: 0, top: Math.round(H * 0.4), width: W, height: Math.round(H * 0.42), objectFit: "cover", opacity: 0.4 }}
         />
-        {/* fade vertical gentil (base do blend, sem borda dura) */}
-        <div
-          style={{
-            display: "flex",
-            position: "absolute",
-            inset: 0,
-            background: `linear-gradient(180deg, ${COR_PAPEL} 0%, rgba(244,234,203,0.7) 12%, rgba(244,234,203,0) 48%)`,
-          }}
-        />
-        {/* NÉVOA irregular cor-de-papel: a foto vai APARECENDO de forma inconstante
-            (wisps de fumaça com gaps → dissolve orgânico, não faixa reta) */}
-        {p.fogSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.fogSrc}
-            alt=""
-            width={W}
-            height={BAND}
-            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.16), width: W, height: BAND, objectFit: "cover", opacity: 0.95 }}
-          />
-        ) : null}
-        {/* fade lateral suave */}
-        <div
-          style={{
-            display: "flex",
-            position: "absolute",
-            inset: 0,
-            background: `linear-gradient(90deg, ${COR_PAPEL} 0%, rgba(244,234,203,0) 14%, rgba(244,234,203,0) 86%, ${COR_PAPEL} 100%)`,
-          }}
-        />
-        {/* respingos de tinta na transição (cor do tema/azul) */}
-        {p.splatterSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.splatterSrc}
-            alt=""
-            width={W}
-            height={Math.round(BAND * 0.8)}
-            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.3), width: W, height: Math.round(BAND * 0.8), objectFit: "cover", opacity: 0.45 }}
-          />
-        ) : null}
-        {p.ref ? (
-          <div
-            style={{
-              display: "flex",
-              position: "absolute",
-              left: 0,
-              bottom: 26,
-              width: W,
-              justifyContent: "center",
-              fontFamily: "Display",
-              fontSize: 22,
-              letterSpacing: 6,
-              color: "#F5EDDE",
-              textTransform: "uppercase",
-            }}
-          >
-            {p.ref}
-          </div>
-        ) : null}
-      </div>
+      ) : null}
 
       {/* CONTEÚDO */}
       <div
@@ -263,22 +220,14 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "relative",
           width: "100%",
           height: "100%",
-          padding: "70px 80px",
-          paddingBottom: BAND - 40,
-          justifyContent: "flex-start",
+          padding: "80px 80px",
+          paddingBottom: Math.round(H * 0.42),
+          justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
         }}
       >
-        {/* assinatura topo */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 10 }}>
-          <div style={{ display: "flex", fontFamily: "Script", fontSize: 46, color: COR_NAVY }}>
-            {p.top || "Ekballo"}
-          </div>
-          <div style={{ display: "flex", width: 120, height: 2, marginTop: 6, backgroundColor: gold }} />
-        </div>
-
-        {/* bloco de texto */}
+        {/* bloco de texto (sem assinatura) */}
         <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div
             style={{
