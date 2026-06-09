@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram } from "@/lib/db";
+import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram, reagendarCarrosselInstagram } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -76,6 +76,39 @@ export async function DELETE(req: NextRequest) {
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Falha ao excluir." },
+      { status: 500 },
+    );
+  }
+}
+
+/** PATCH /api/admin/instagram — reagenda um post: { id, agendadoPara } */
+export async function PATCH(req: NextRequest) {
+  const session = await getCurrentSession();
+  if (!session?.profile?.is_admin) {
+    return NextResponse.json({ error: "não autorizado" }, { status: 401 });
+  }
+  let body: { id?: string; agendadoPara?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
+  if (!body.id || !body.agendadoPara) {
+    return NextResponse.json({ error: "id e agendadoPara são obrigatórios" }, { status: 400 });
+  }
+  const t = new Date(body.agendadoPara).getTime();
+  if (Number.isNaN(t)) {
+    return NextResponse.json({ error: "Data inválida." }, { status: 400 });
+  }
+  if (t < Date.now() - 60_000) {
+    return NextResponse.json({ error: "Escolha uma data/hora no futuro." }, { status: 400 });
+  }
+  try {
+    await reagendarCarrosselInstagram(body.id, new Date(t).toISOString());
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Falha ao reagendar." },
       { status: 500 },
     );
   }

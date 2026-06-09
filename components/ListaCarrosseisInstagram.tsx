@@ -29,6 +29,40 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
   const [lista, setLista] = useState(itens);
   const [excluindo, setExcluindo] = useState<string | null>(null);
   const [publicandoId, setPublicandoId] = useState<string | null>(null);
+  const [quando, setQuando] = useState<Record<string, string>>({});
+  const [reagendandoId, setReagendandoId] = useState<string | null>(null);
+
+  async function reagendar(it: Item) {
+    const val = quando[it.id];
+    if (!val) {
+      alert("Escolha a nova data e hora.");
+      return;
+    }
+    const dt = new Date(val);
+    if (dt.getTime() < Date.now()) {
+      alert("Escolha uma data/hora no futuro.");
+      return;
+    }
+    setReagendandoId(it.id);
+    try {
+      const res = await fetch("/api/admin/instagram", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: it.id, agendadoPara: dt.toISOString() }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d?.error || "Falha");
+      setLista((prev) =>
+        prev.map((x) => (x.id === it.id ? { ...x, status: "agendado", agendado_para: dt.toISOString() } : x)),
+      );
+      router.refresh();
+      alert("Reagendado ✓");
+    } catch (e) {
+      alert("Não consegui reagendar: " + (e instanceof Error ? e.message : "erro"));
+    } finally {
+      setReagendandoId(null);
+    }
+  }
 
   async function publicar(it: Item) {
     if (!window.confirm("Publicar AGORA no Instagram? Vai ao ar de verdade no perfil.")) return;
@@ -85,39 +119,58 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
         const b = badge(it);
         const n = Array.isArray(it.slides) ? it.slides.length : 0;
         return (
-          <div key={it.id} className="flex items-center gap-4 rounded-2xl border border-mesa-200 bg-white p-4">
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`inline-block rounded-full border px-3 py-1 text-xs font-medium ${b.cls}`}>{b.txt}</span>
-                {it.tipo === "reel" && (
-                  <span className="inline-block rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-700">🎬 Reel</span>
-                )}
+          <div key={it.id} className="rounded-2xl border border-mesa-200 bg-white p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-block rounded-full border px-3 py-1 text-xs font-medium ${b.cls}`}>{b.txt}</span>
+                  {it.tipo === "reel" && (
+                    <span className="inline-block rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-700">🎬 Reel</span>
+                  )}
+                </div>
+                <p className="mt-2 line-clamp-2 text-sm text-mesa-700">{it.legenda || "(sem legenda)"}</p>
+                <p className="mt-1 text-xs text-mesa-400">
+                  {it.tipo === "reel" ? (
+                    it.video_url ? <a href={it.video_url} target="_blank" rel="noreferrer" className="text-laranja-600 hover:underline">ver vídeo</a> : "vídeo"
+                  ) : (
+                    `${n} ${n === 1 ? "imagem" : "imagens"}`
+                  )}
+                </p>
               </div>
-              <p className="mt-2 line-clamp-2 text-sm text-mesa-700">{it.legenda || "(sem legenda)"}</p>
-              <p className="mt-1 text-xs text-mesa-400">
-                {it.tipo === "reel" ? (
-                  it.video_url ? <a href={it.video_url} target="_blank" rel="noreferrer" className="text-laranja-600 hover:underline">ver vídeo</a> : "vídeo"
-                ) : (
-                  `${n} ${n === 1 ? "imagem" : "imagens"}`
-                )}
-              </p>
-            </div>
-            {(it.status === "agendado" || it.status === "erro") && (
+              {(it.status === "agendado" || it.status === "erro") && (
+                <button
+                  onClick={() => publicar(it)}
+                  disabled={publicandoId === it.id}
+                  className="shrink-0 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {publicandoId === it.id ? "Publicando…" : "📲 Publicar agora"}
+                </button>
+              )}
               <button
-                onClick={() => publicar(it)}
-                disabled={publicandoId === it.id}
-                className="shrink-0 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                onClick={() => excluir(it)}
+                disabled={excluindo === it.id}
+                className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm text-red-500 transition hover:bg-red-50 disabled:opacity-40"
               >
-                {publicandoId === it.id ? "Publicando…" : "📲 Publicar agora"}
+                {excluindo === it.id ? "…" : it.status === "agendado" ? "Cancelar" : "Excluir"}
               </button>
-            )}
-            <button
-              onClick={() => excluir(it)}
-              disabled={excluindo === it.id}
-              className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm text-red-500 transition hover:bg-red-50 disabled:opacity-40"
-            >
-              {excluindo === it.id ? "…" : it.status === "agendado" ? "Cancelar" : "Excluir"}
-            </button>
+            </div>
+            {/* Reagendar */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-mesa-100 pt-3">
+              <span className="text-xs font-medium text-mesa-500">🗓️ Reagendar:</span>
+              <input
+                type="datetime-local"
+                value={quando[it.id] || ""}
+                onChange={(e) => setQuando((q) => ({ ...q, [it.id]: e.target.value }))}
+                className="rounded-lg border border-mesa-200 bg-mesa-50 px-2 py-1 text-xs text-mesa-800"
+              />
+              <button
+                onClick={() => reagendar(it)}
+                disabled={reagendandoId === it.id}
+                className="rounded-lg border border-mesa-300 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:bg-mesa-100 disabled:opacity-50"
+              >
+                {reagendandoId === it.id ? "…" : "Reagendar"}
+              </button>
+            </div>
           </div>
         );
       })}
