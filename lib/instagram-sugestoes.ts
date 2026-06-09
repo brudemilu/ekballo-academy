@@ -17,7 +17,11 @@ import type { RealceModo } from "@/lib/instagram-render";
 const CF_BASE = "https://api.cloudflare.com/client/v4/accounts";
 const MODOS_VALIDOS: RealceModo[] = ["circulo", "grifo", "marca", "dourado", "nenhum"];
 
+export type Pilar = "curiosidade" | "postura" | "reflexao" | "versiculo";
+
 export type SugestaoPost = {
+  /** Pilar de conteúdo da sugestão. */
+  pilar: Pilar;
   /** Tema curto da postagem. */
   tema: string;
   /** Primeira frase, pensada pra prender. */
@@ -49,7 +53,13 @@ DOIS OBJETIVOS, NESTA ORDEM:
 1) ABENÇOAR quem lê — edificar, encorajar, consolar, despertar fé e esperança. Pense: "que palavra de Deus essa pessoa precisa ouvir hoje?". Nunca autopromoção ou vaidade.
 2) ENGAJAR com honestidade — o gancho prende; a LEGENDA convida a interagir (comentar, marcar alguém, salvar, compartilhar). Sem clickbait.
 
-VOZ (padrão Ekballo): pessoal, calorosa, "viva e forte ao mesmo tempo limpa". PT-BR. Cristã, bíblica e fiel. Use as legendas de melhor desempenho (no contexto) como referência de TOM e TEMA.
+PILARES DE CONTEÚDO — distribua as ${n} sugestões entre estes pilares (VARIE, não repita o mesmo pilar em todas). Cada sugestão declara seu "pilar":
+  - "curiosidade": curiosidade bíblica/histórica, "você sabia?", fato sobre um personagem, lugar, palavra original (hebraico/grego) ou costume da Bíblia — algo que prende e ensina.
+  - "postura": postura/atitude em Cristo no dia a dia (perdão, humildade, coragem, integridade, fé na prática, descanso, gratidão).
+  - "reflexao": mensagem de encorajamento, fé, esperança e bênção (o coração do perfil).
+  - "versiculo": um versículo forte como peça central, com uma aplicação curta pra vida.
+
+VOZ (padrão Ekballo): pessoal, calorosa, VIVA — "forte e ao mesmo tempo limpa". PT-BR. Cristã, bíblica e fiel. Use as legendas de melhor desempenho (no contexto) como referência de TOM e TEMA.
 
 QUANTOS SLIDES — você DECIDE o tamanho pela mensagem, com intenção; NÃO force número nem encha de slides:
   - Se a ideia se resolve numa ÚNICA frase/imagem de impacto (um versículo curto, uma frase que não precisa de desdobramento), use 1 slide (imagem única). NÃO transforme em carrossel só por transformar.
@@ -60,19 +70,20 @@ Quando houver 2+ slides, eles formam UMA ÚNICA mensagem contínua e ENCADEADA: 
 O 1º slide é o gancho; o último é o ápice/promessa da mensagem — NUNCA um slide de "compartilhe/salve/marque/comente" (CTA fica SÓ na legenda).
 
 Para CADA sugestão devolva:
+- "pilar": um de "curiosidade" | "postura" | "reflexao" | "versiculo".
 - "tema": assunto em poucas palavras.
 - "gancho": 1ª frase, curta e forte.
-- "legenda": PT-BR calorosa; abre tocando o coração, entrega a bênção, fecha com UM convite à interação. 3 a 5 hashtags no fim.
+- "legenda": PT-BR calorosa e viva; abre tocando o coração ou despertando curiosidade, entrega o conteúdo, fecha com UM convite à interação. 3 a 5 hashtags no fim.
 - "ideiaVisual": 1 frase sobre a estética do carrossel.
-- "porque": 1 frase: por que abençoa E por que tende a engajar.
+- "porque": 1 frase: por que vale a pena E por que tende a engajar.
 - "roteiro": de 1 a 5 slides (você escolhe o número pela regra acima). Com 2+, eles formam UMA mensagem contínua e coerente (cada texto conecta com o anterior e o seguinte). Cada slide:
-    - "texto": fragmento curto (3 a 7 palavras), PT-BR, encadeado. Marque entre {chaves} UMA palavra FORTE (substantivo, verbo ou adjetivo de peso) — NUNCA preposição, artigo ou conectivo (de, da, do, o, a, ao, à, e, que, em, com). Se o fragmento não tiver palavra forte, não marque nada.
-    - "prompt": foto cinematográfica devocional EM INGLÊS — APENAS símbolos, natureza, objetos e luz (ex.: a single burning torch in darkness, golden dawn over mountains, light breaking through storm clouds, an open empty road at sunrise). PROIBIDO: pessoas, rostos, mãos, corpos, celulares, telas, letras/texto. (O gerador distorce rostos e mãos — não use.)
-    - "modo": "circulo", "grifo", "marca" ou "dourado" (varie).
-    - "cor": hex (#rrggbb) quente/dourada que combine com a imagem e contraste pra ler.
+    - "texto": fragmento curto (3 a 7 palavras), PT-BR, encadeado. Marque entre {chaves} UMA palavra FORTE (substantivo, verbo ou adjetivo de peso) — NUNCA preposição, artigo ou conectivo (de, da, do, o, a, ao, à, e, que, em, com). Opcional: você pode envolver UMA expressão curta de fecho entre ((parênteses duplos)) — ela vira caligrafia manuscrita (use no máximo uma vez, no último slide, ex.: "todo ((mundo.))").
+    - "prompt": em INGLÊS — descreva uma FOTO REAL FORTE e marcante que representa o sentido do slide (será usada pra BUSCAR a foto num banco). O que importa é o IMPACTO e a EMOÇÃO da cena, NÃO a cor: NÃO force sempre dourado/pôr do sol — VARIE cenário, luz e tom conforme a mensagem (mountains, ocean waves, storm clouds, forest, desert, open road, starry sky, fire, city at night, rays of light through trees, cliffs, rain, snow...). Use 2 a 5 palavras-chave fortes (ex.: "stormy mountain peak", "vast starry night sky", "ocean waves crashing on rocks"). PESSOAS só DE COSTAS / em silhueta / multidão por trás / distantes — NUNCA rosto em close, selfie, retrato ou mãos em destaque.
+    - "modo": "dourado" (recomendado), "grifo", "marca" ou "circulo" (varie pouco; o dourado é o padrão do template).
+    - "cor": hex (#rrggbb) — pode mandar "#C0892B" (o template usa dourado fixo, mas mantenha o campo).
 
 Responda SOMENTE com JSON válido, neste formato EXATO:
-{"sugestoes":[{"tema":"...","gancho":"...","legenda":"...","ideiaVisual":"...","porque":"...","roteiro":[{"texto":"...","prompt":"...","modo":"circulo","cor":"#C9A961"}]}]}`;
+{"sugestoes":[{"pilar":"reflexao","tema":"...","gancho":"...","legenda":"...","ideiaVisual":"...","porque":"...","roteiro":[{"texto":"...","prompt":"...","modo":"dourado","cor":"#C0892B"}]}]}`;
 }
 
 function contextoPerfil(resumo: PerfilResumo): string {
@@ -107,23 +118,31 @@ function normalizarCor(c: unknown): string {
   return "#C9A961";
 }
 
-// Rede de segurança: o Flux distorce rostos/mãos. Se o modelo escapar e colocar
-// pessoa/rosto/mão/celular no prompt de imagem, troca por um fundo simbólico
-// seguro e on-brand (devocional). Mantém o post bonito mesmo quando a IA fura.
+// Rede de segurança das imagens. O Flux distorce ROSTO/MÃO em close, mas faz
+// muito bem gente DE COSTAS / silhueta / multidão (o herói do template). Então:
+//  - close-up de rosto/mão/selfie/retrato → troca por um fundo seguro;
+//  - pessoa/multidão sem qualificador seguro → ANEXA "de costas, silhueta";
+//  - resto passa.
 const FUNDOS_SEGUROS = [
-  "a single burning torch in darkness",
-  "golden dawn breaking over distant mountains",
-  "light piercing through dark storm clouds",
-  "an open empty road at sunrise, misty",
-  "a calm lake reflecting a warm sunset",
-  "rays of light falling into a deep forest",
+  "a crowd seen from behind facing a glowing city skyline at golden sunrise, warm backlight, film grain",
+  "golden dawn breaking over distant mountains, atmospheric, cinematic",
+  "warm rays of light piercing through clouds over an open road at sunrise",
+  "a calm lake reflecting a golden sunset, serene, cinematic",
+  "silhouettes of people from behind raising hands toward a bright golden sky",
+  "a single burning torch glowing in soft darkness, warm light",
 ];
-const PESSOA_RE =
-  /\b(person|people|man|men|woman|women|child|children|kid|boy|girl|face|faces|hand|hands|arm|arms|body|bodies|portrait|figure|silhouette|crowd|phone|smartphone|screen|selfie)\b/i;
+// close-up / rosto / mão / selfie → distorce, melhor trocar.
+const HARD_RE = /\b(close-?up|selfie|portrait|facial|eyes|mouth|teeth|smiling face|a face|the face|hands? holding|fingers)\b/i;
+// menção a pessoas que o Flux faz bem SE de costas/silhueta.
+const PESSOA_RE = /\b(person|people|man|men|woman|women|child|children|kid|boy|girl|crowd|figure|figures|worshipper|worshippers|congregation|believer|believers)\b/i;
+// qualificadores que tornam a pessoa segura (sem rosto nítido).
+const SEGURO_RE = /\b(behind|back view|backs?|silhouette|silhouettes|distant|faceless|from afar|aerial|from above)\b/i;
 
 function sanitizarPromptImagem(prompt: string, i: number): string {
-  if (!prompt || PESSOA_RE.test(prompt)) {
-    return FUNDOS_SEGUROS[i % FUNDOS_SEGUROS.length];
+  if (!prompt) return FUNDOS_SEGUROS[i % FUNDOS_SEGUROS.length];
+  if (HARD_RE.test(prompt)) return FUNDOS_SEGUROS[i % FUNDOS_SEGUROS.length];
+  if (PESSOA_RE.test(prompt) && !SEGURO_RE.test(prompt)) {
+    return `${prompt}, people seen from behind, silhouettes, faces not visible`;
   }
   return prompt;
 }
@@ -167,7 +186,7 @@ export async function gerarSugestoes(resumo: PerfilResumo, n = 3): Promise<Suges
           { role: "system", content: systemPrompt(n) },
           { role: "user", content: contextoPerfil(resumo) },
         ],
-        max_tokens: 2600,
+        max_tokens: 2800,
       }),
     },
   );
@@ -188,10 +207,13 @@ export async function gerarSugestoes(resumo: PerfilResumo, n = 3): Promise<Suges
   }
   const lista = Array.isArray(parsed.sugestoes) ? parsed.sugestoes : [];
 
+  const PILARES_VALIDOS: Pilar[] = ["curiosidade", "postura", "reflexao", "versiculo"];
   const sugestoes: SugestaoPost[] = lista
     .map((s): SugestaoPost => {
       const o = (s || {}) as Record<string, unknown>;
+      const pilar = typeof o.pilar === "string" && PILARES_VALIDOS.includes(o.pilar as Pilar) ? (o.pilar as Pilar) : "reflexao";
       return {
+        pilar,
         tema: typeof o.tema === "string" ? o.tema.trim() : "",
         gancho: typeof o.gancho === "string" ? o.gancho.trim() : "",
         legenda: typeof o.legenda === "string" ? o.legenda.trim() : "",

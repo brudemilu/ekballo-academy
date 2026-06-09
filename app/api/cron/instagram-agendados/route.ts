@@ -17,6 +17,7 @@ type SlideRow = {
   seed: number;
   top?: string;
   ref?: string;
+  tema?: string;
   imageUrl?: string;
 };
 
@@ -27,12 +28,10 @@ function ogUrl(origin: string, s: SlideRow): string {
     prompt: s.prompt,
     modo: s.modo,
     realce: s.modo,
-    cor: s.cor,
     fonte: s.fonte,
     seed: String(s.seed),
-    n: "1",
-    i: "0",
   });
+  if (s.tema) p.set("tema", s.tema);
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
   return `${origin}/api/og/instagram?${p.toString()}`;

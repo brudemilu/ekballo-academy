@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { TEMAS, TEMA_PADRAO, type TemaKey } from "@/lib/instagram-render";
 
 // Fontes pra prévia ao vivo (mesmas do servidor). Carregadas via @font-face.
 const FONT_FACES = `
@@ -10,16 +11,6 @@ const FONT_FACES = `
 @font-face { font-family: 'DMSerifPv'; src: url('/fonts/dm-serif.ttf'); }
 @font-face { font-family: 'CormorantPv'; src: url('/fonts/cormorant-italic.ttf'); font-style: italic; }
 `;
-const CREAM = "#F5EDDE";
-const INK = "#0B0F1A";
-const SOMBRA = "0 2px 12px rgba(0,0,0,0.92), 0 0 36px rgba(0,0,0,0.65)";
-const FONT_CSS: Record<string, { fam: string; upper: boolean; style: string }> = {
-  anton: { fam: "AntonPv", upper: true, style: "normal" },
-  bebas: { fam: "BebasPv", upper: true, style: "normal" },
-  "dm-serif": { fam: "DMSerifPv", upper: false, style: "normal" },
-  cormorant: { fam: "CormorantPv", upper: false, style: "italic" },
-};
-
 type Modo = "circulo" | "grifo" | "marca" | "dourado" | "nenhum";
 type Fonte = "anton" | "bebas" | "dm-serif" | "cormorant";
 type Tipo = "carrossel" | "unico" | "upload";
@@ -68,91 +59,52 @@ function novoSeed() {
   return Math.floor(Math.random() * 1_000_000);
 }
 
-function ogSrc(s: Slide): string {
+function ogSrc(s: Slide, tema: TemaKey): string {
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,
     modo: s.modo,
     realce: s.modo,
-    cor: s.cor,
+    tema, // a cor vem do TEMA (não mais do hex do modelo)
     fonte: s.fonte,
     seed: String(s.seed),
-    n: "1",
-    i: "0",
   });
   if (s.top.trim()) p.set("top", s.top.trim());
   if (s.ref.trim()) p.set("ref", s.ref.trim());
   return `/api/og/instagram?${p.toString()}`;
 }
 
-// Prévia AO VIVO: um quadro 1080px (igual ao servidor) escalado pra `size`.
-// Texto/destaque/cor/fonte = CSS do navegador (instantâneo). Só o FUNDO (imagem
-// Flux) vai ao servidor — e só quando muda o prompt/seed.
-function SlidePreview({ slide, index, total, size = 300 }: { slide: Slide; index: number; total: number; size?: number }) {
-  const scale = size / 1080;
-  const f = FONT_CSS[slide.fonte] || FONT_CSS.anton;
-  const cor = slide.cor;
-
-  // fundo: só depende de prompt+seed (texto não refaz a imagem). Debounce no prompt.
-  const alvoBg = `/api/og/instagram?bg=1&fonte=anton&prompt=${encodeURIComponent(slide.prompt)}&seed=${slide.seed}`;
-  const [bg, setBg] = useState(alvoBg);
+// Prévia WYSIWYG: renderiza a imagem REAL da rota OG (template papel 4:5),
+// com debounce. Evita divergência preview×Satori. A foto (Flux) é cacheada por
+// prompt+seed, então editar só o texto re-renderiza rápido (sem regenerar foto).
+function SlidePreview({ slide, tema, index, total, size = 300 }: { slide: Slide; tema: TemaKey; index: number; total: number; size?: number }) {
+  const W = size;
+  const H = Math.round(size * 1.25); // retrato 4:5
+  const alvo = ogSrc(slide, tema);
+  const [src, setSrc] = useState(alvo);
   const [carregando, setCarregando] = useState(true);
   useEffect(() => {
-    const t = setTimeout(() => setBg(alvoBg), 500);
+    setCarregando(true);
+    const t = setTimeout(() => setSrc(alvo), 600);
     return () => clearTimeout(t);
-  }, [alvoBg]);
-  useEffect(() => { setCarregando(true); }, [bg]);
-
-  // tamanho do texto (mesma fórmula do servidor)
-  const plain = slide.texto.replace(/[{}]/g, "");
-  const base = f.upper ? 132 : 84;
-  const len = plain.length;
-  const fs = len > 60 ? base * 0.62 : len > 36 ? base * 0.78 : len > 18 ? base * 0.92 : base;
-
-  // palavras (marca {chave})
-  const words: { t: string; accent: boolean }[] = [];
-  for (const seg of slide.texto.split(/(\{[^}]*\})/)) {
-    if (!seg) continue;
-    const accent = seg.startsWith("{") && seg.endsWith("}");
-    const inner = accent ? seg.slice(1, -1) : seg;
-    for (const w of inner.split(/\s+/)) if (w) words.push({ t: f.upper ? w.toUpperCase() : w, accent });
-  }
-
-  const baseW = { fontFamily: f.fam, fontStyle: f.style, fontSize: fs, letterSpacing: f.upper ? 2 : -0.5, lineHeight: 1, color: CREAM, textShadow: SOMBRA } as const;
-
-  function palavra(w: { t: string; accent: boolean }, k: number) {
-    if (w.accent && slide.modo === "circulo")
-      return <span key={k} style={{ display: "inline-flex", alignItems: "center", padding: "16px 34px", border: `6px solid ${cor}`, borderRadius: 56, transform: "rotate(-3deg)" }}><span style={{ ...baseW, display: "inline-block", transform: "rotate(3deg)" }}>{w.t}</span></span>;
-    if (w.accent && slide.modo === "grifo")
-      return <span key={k} style={{ display: "inline-flex", flexDirection: "column", alignItems: "center" }}><span style={baseW}>{w.t}</span><span style={{ alignSelf: "stretch", height: 7, marginTop: -fs * 0.14, borderRadius: 3, background: cor }} /></span>;
-    if (w.accent && slide.modo === "marca")
-      return <span key={k} style={{ ...baseW, color: INK, background: cor, padding: "0 16px", borderRadius: 4 }}>{w.t}</span>;
-    if (w.accent && slide.modo === "dourado")
-      return <span key={k} style={{ ...baseW, color: cor }}>{w.t}</span>;
-    return <span key={k} style={baseW}>{w.t}</span>;
-  }
+  }, [alvo]);
 
   return (
     <div className="shrink-0">
-      <div style={{ width: size, height: size, position: "relative", overflow: "hidden", borderRadius: 14, background: INK, boxShadow: "0 8px 30px rgba(0,0,0,0.45)" }}>
-        <div style={{ position: "absolute", top: 0, left: 0, width: 1080, height: 1080, transform: `scale(${scale})`, transformOrigin: "top left" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={bg} alt="" width={1080} height={1080} onLoad={() => setCarregando(false)} onError={() => setCarregando(false)} style={{ position: "absolute", top: 0, left: 0, width: 1080, height: 1080, objectFit: "cover" }} />
-          <div style={{ position: "absolute", top: 0, left: 0, width: 1080, height: 1080, background: "linear-gradient(180deg, rgba(8,11,20,0.80) 0%, rgba(8,11,20,0.45) 26%, rgba(8,11,20,0.50) 50%, rgba(8,11,20,0.45) 74%, rgba(8,11,20,0.90) 100%)" }} />
-          <div style={{ position: "absolute", top: 0, left: 0, width: 1080, height: 1080, background: "radial-gradient(ellipse 70% 42% at 50% 50%, rgba(6,9,15,0.62) 0%, rgba(6,9,15,0.32) 55%, rgba(6,9,15,0) 100%)" }} />
-          <div style={{ position: "absolute", top: 0, left: 0, width: 1080, height: 1080, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center", textAlign: "center", boxSizing: "border-box" }}>
-            <div style={{ width: 7, height: 7, borderRadius: 999, background: cor }} />
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "30px 0" }}>
-              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", columnGap: fs * 0.24, rowGap: fs * 0.12, maxWidth: "100%" }}>
-                {words.map((w, k) => palavra(w, k))}
-              </div>
-            </div>
-            <div style={{ width: 6, height: 6, borderRadius: 999, background: cor }} />
-          </div>
-        </div>
+      <div style={{ width: W, height: H, position: "relative", overflow: "hidden", borderRadius: 14, background: "#F4EACB", boxShadow: "0 8px 30px rgba(0,0,0,0.25)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt=""
+          width={W}
+          height={H}
+          onLoad={() => setCarregando(false)}
+          onError={() => setCarregando(false)}
+          style={{ width: W, height: H, objectFit: "cover", display: "block" }}
+        />
         {carregando && (
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.35)", color: "#fff", fontSize: 13, fontWeight: 500 }}>
-            gerando fundo…
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(244,234,203,0.55)", color: "#1B2A4A", fontSize: 13, fontWeight: 600 }}>
+            gerando arte…
           </div>
         )}
       </div>
@@ -180,6 +132,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
   const [agendadoOk, setAgendadoOk] = useState(false);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const uploadsRef = useRef<Upload[]>([]);
+  const [tema, setTema] = useState<TemaKey>(TEMA_PADRAO); // cor do post (opção)
 
   // Pré-preenche o editor quando chega um roteiro de fora (sugestão da IA).
   useEffect(() => {
@@ -207,9 +160,10 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     if (tipo === "upload") {
       return uploads
         .filter((u) => u.url)
-        .map((u) => ({ imageUrl: u.url, texto: "", prompt: "", modo: "nenhum", cor: "#C9A961", fonte: "anton", top: "", ref: "", seed: 0 }));
+        .map((u) => ({ imageUrl: u.url, texto: "", prompt: "", modo: "nenhum", cor: "#C9A961", fonte: "anton", top: "", ref: "", seed: 0, tema }));
     }
-    return slides;
+    // injeta o tema em cada slide pra persistir/publicar com a cor escolhida.
+    return slides.map((s) => ({ ...s, tema }));
   }
 
   async function enviarArquivos(files: FileList | null) {
@@ -292,7 +246,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
 
   function baixarUm(s: Slide, idx: number) {
     const a = document.createElement("a");
-    a.href = `${ogSrc(s)}&dl=1`;
+    a.href = `${ogSrc(s, tema)}&dl=1`;
     a.download = `slide-${idx + 1}.png`;
     document.body.appendChild(a);
     a.click();
@@ -312,7 +266,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     try {
       const files: File[] = [];
       for (let idx = 0; idx < slides.length; idx++) {
-        const r = await fetch(`${ogSrc(slides[idx])}&dl=1`);
+        const r = await fetch(`${ogSrc(slides[idx], tema)}&dl=1`);
         if (!r.ok) throw new Error("falha");
         const b = await r.blob();
         files.push(new File([b], `slide-${idx + 1}.png`, { type: "image/png" }));
@@ -449,6 +403,24 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
           ))}
         </div>
 
+        {/* tema de cor (opção do sistema) */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-mesa-700">🎨 Cor:</span>
+          {(Object.keys(TEMAS) as TemaKey[]).map((k) => (
+            <button
+              key={k}
+              onClick={() => setTema(k)}
+              title={TEMAS[k].label}
+              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                tema === k ? "border-mesa-700 bg-mesa-50 text-mesa-800" : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"
+              }`}
+            >
+              <span className="h-4 w-4 rounded-full" style={{ backgroundColor: TEMAS[k].cor }} />
+              {TEMAS[k].label}
+            </button>
+          ))}
+        </div>
+
         {tipo !== "upload" ? (
           <>
             <label className="mb-2 block text-sm font-medium text-mesa-700">Seu conteúdo</label>
@@ -524,7 +496,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
         <div className="space-y-6">
           {tipo !== "upload" && slides.map((s, i) => (
             <div key={i} className="flex flex-col gap-5 rounded-2xl border border-mesa-200 bg-white p-5 md:flex-row">
-              <SlidePreview slide={s} index={i} total={slides.length} />
+              <SlidePreview slide={s} tema={tema} index={i} total={slides.length} />
 
               <div className="flex-1 space-y-3">
                 <div>
