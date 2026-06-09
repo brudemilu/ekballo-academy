@@ -175,9 +175,14 @@ export function AulaConteudo({
   const [toolbar, setToolbar] = useState<ToolbarState>(null);
   const [salvando, setSalvando] = useState(false);
   const [modalTexto, setModalTexto] = useState<string | null>(null);
+  // Quando != null, a barra flutuante vira um campo de comentário.
+  const [comentEditor, setComentEditor] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const esconder = useCallback(() => setToolbar(null), []);
+  const esconder = useCallback(() => {
+    setToolbar(null);
+    setComentEditor(null);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => esconder();
@@ -219,7 +224,7 @@ export function AulaConteudo({
     return null;
   }
 
-  async function salvarGrifo(cor: Cor) {
+  async function salvarGrifo(cor: Cor, comentario: string | null = null) {
     if (!toolbar || toolbar.tipo !== "selecao") return;
     setSalvando(true);
     const base = {
@@ -230,6 +235,7 @@ export function AulaConteudo({
       fim: toolbar.fim,
       texto: toolbar.texto,
       cor,
+      comentario,
     };
     if (MOCK) {
       const novo: Destaque = { id: `mock-${Date.now()}`, criado_em: new Date().toISOString(), ...base };
@@ -245,6 +251,26 @@ export function AulaConteudo({
     }
     setSalvando(false);
     window.getSelection()?.removeAllRanges();
+    esconder();
+  }
+
+  // Salva o comentário do editor flutuante. Numa seleção nova, cria o grifo
+  // (cor padrão amarelo) já com o comentário; num grifo existente, só atualiza.
+  async function salvarComentario() {
+    if (!toolbar || comentEditor === null) return;
+    const texto = comentEditor.trim();
+    if (toolbar.tipo === "selecao") {
+      await salvarGrifo("amarelo", texto || null);
+      return;
+    }
+    const id = toolbar.id;
+    setSalvando(true);
+    if (!MOCK) {
+      const supabase = createClient();
+      await supabase.from("destaques_aula").update({ comentario: texto || null }).eq("id", id);
+    }
+    setDestaques((p) => p.map((d) => (d.id === id ? { ...d, comentario: texto || null } : d)));
+    setSalvando(false);
     esconder();
   }
 
@@ -345,7 +371,15 @@ export function AulaConteudo({
                   className="mt-1 h-3 w-3 flex-none rounded-full"
                   style={{ backgroundColor: CORES[d.cor as Cor]?.swatch }}
                 />
-                <p className="min-w-0 flex-1 text-sm text-mesa-700">{d.texto}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-mesa-700">{d.texto}</p>
+                  {d.comentario && (
+                    <p className="mt-1 flex items-start gap-1 text-xs italic text-mesa-500">
+                      <span aria-hidden>💬</span>
+                      <span>{d.comentario}</span>
+                    </p>
+                  )}
+                </div>
                 <div className="flex flex-none gap-1.5">
                   <button
                     onClick={() => abrirImagem(d.texto)}
@@ -375,45 +409,92 @@ export function AulaConteudo({
           style={{ left: toolbar.x, top: toolbar.y - 8 }}
           onMouseDown={(e) => e.preventDefault()}
         >
-          <div className="flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white px-2 py-1.5 shadow-lg">
-            {toolbar.tipo === "selecao" ? (
-              <>
-                {CORES_ORDEM.map((cor) => (
+          {comentEditor !== null ? (
+            <div className="w-64 rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg">
+              <textarea
+                autoFocus
+                value={comentEditor}
+                onChange={(e) => setComentEditor(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) salvarComentario();
+                  if (e.key === "Escape") setComentEditor(null);
+                }}
+                rows={3}
+                placeholder="Escreva seu comentário sobre este trecho…"
+                className="w-full resize-none rounded-lg border border-mesa-200 bg-mesa-50 px-2.5 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+              />
+              <div className="mt-1.5 flex items-center justify-end gap-1.5">
+                <button
+                  onClick={() => setComentEditor(null)}
+                  className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-500 hover:bg-mesa-100"
+                >
+                  Cancelar
+                </button>
+                <button
+                  disabled={salvando}
+                  onClick={salvarComentario}
+                  className="rounded-full bg-mesa-700 px-3 py-1 text-xs font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-50"
+                >
+                  {salvando ? "Salvando…" : "Salvar"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white px-2 py-1.5 shadow-lg">
+              {toolbar.tipo === "selecao" ? (
+                <>
+                  {CORES_ORDEM.map((cor) => (
+                    <button
+                      key={cor}
+                      disabled={salvando}
+                      onClick={() => salvarGrifo(cor)}
+                      title={`Marcar (${CORES[cor].nome})`}
+                      className="h-6 w-6 rounded-full border border-black/10 transition hover:scale-110 disabled:opacity-50"
+                      style={{ backgroundColor: CORES[cor].swatch }}
+                    />
+                  ))}
+                  <span className="mx-0.5 h-5 w-px bg-mesa-200" />
                   <button
-                    key={cor}
-                    disabled={salvando}
-                    onClick={() => salvarGrifo(cor)}
-                    title={`Marcar (${CORES[cor].nome})`}
-                    className="h-6 w-6 rounded-full border border-black/10 transition hover:scale-110 disabled:opacity-50"
-                    style={{ backgroundColor: CORES[cor].swatch }}
-                  />
-                ))}
-                <span className="mx-0.5 h-5 w-px bg-mesa-200" />
-                <button
-                  onClick={() => abrirImagem(toolbar.texto)}
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
-                >
-                  🖼 Imagem
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => abrirImagem(toolbar.texto)}
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
-                >
-                  🖼 Imagem
-                </button>
-                <span className="mx-0.5 h-5 w-px bg-mesa-200" />
-                <button
-                  onClick={() => removerGrifo(toolbar.id)}
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-                >
-                  Remover
-                </button>
-              </>
-            )}
-          </div>
+                    onClick={() => setComentEditor("")}
+                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                  >
+                    💬 Comentar
+                  </button>
+                  <button
+                    onClick={() => abrirImagem(toolbar.texto)}
+                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                  >
+                    🖼 Imagem
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      const d = destaques.find((x) => x.id === toolbar.id);
+                      setComentEditor(d?.comentario ?? "");
+                    }}
+                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                  >
+                    💬 Comentar
+                  </button>
+                  <button
+                    onClick={() => abrirImagem(toolbar.texto)}
+                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                  >
+                    🖼 Imagem
+                  </button>
+                  <span className="mx-0.5 h-5 w-px bg-mesa-200" />
+                  <button
+                    onClick={() => removerGrifo(toolbar.id)}
+                    className="rounded-full px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Remover
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
 
