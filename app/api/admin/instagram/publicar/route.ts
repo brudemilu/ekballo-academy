@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 import { publicarInstagram, instagramConfigurado } from "@/lib/instagram-publish";
+import { prepararImageUrls } from "@/lib/instagram-imagens";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -18,24 +19,6 @@ type SlideIn = {
   /** Imagem enviada pelo usuário (modo upload) — usa direto, sem IA. */
   imageUrl?: string;
 };
-
-function ogUrl(origin: string, s: SlideIn): string {
-  if (s.imageUrl) return s.imageUrl;
-  const p = new URLSearchParams({
-    verso: s.texto,
-    prompt: s.prompt,
-    modo: s.modo,
-    realce: s.modo,
-    cor: s.cor,
-    fonte: s.fonte,
-    seed: String(s.seed),
-    n: "1",
-    i: "0",
-  });
-  if (s.top?.trim()) p.set("top", s.top.trim());
-  if (s.ref?.trim()) p.set("ref", s.ref.trim());
-  return `${origin}/api/og/instagram?${p.toString()}`;
-}
 
 /**
  * POST /api/admin/instagram/publicar  { slides, legenda }
@@ -91,7 +74,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const imageUrls = slides.map((s) => ogUrl(origin, s));
+  const imageUrls = await prepararImageUrls(origin, slides);
 
   try {
     const { id } = await publicarInstagram({

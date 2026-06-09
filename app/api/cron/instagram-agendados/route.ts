@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { publicarInstagram, instagramConfigurado } from "@/lib/instagram-publish";
+import { prepararImageUrls } from "@/lib/instagram-imagens";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -19,24 +20,6 @@ type SlideRow = {
   ref?: string;
   imageUrl?: string;
 };
-
-function ogUrl(origin: string, s: SlideRow): string {
-  if (s.imageUrl) return s.imageUrl;
-  const p = new URLSearchParams({
-    verso: s.texto,
-    prompt: s.prompt,
-    modo: s.modo,
-    realce: s.modo,
-    cor: s.cor,
-    fonte: s.fonte,
-    seed: String(s.seed),
-    n: "1",
-    i: "0",
-  });
-  if (s.top?.trim()) p.set("top", s.top.trim());
-  if (s.ref?.trim()) p.set("ref", s.ref.trim());
-  return `${origin}/api/og/instagram?${p.toString()}`;
-}
 
 export async function GET(req: NextRequest) {
   // auth: o Vercel Cron envia "Authorization: Bearer <CRON_SECRET>"
@@ -69,7 +52,7 @@ export async function GET(req: NextRequest) {
     const slides = Array.isArray(post.slides) ? (post.slides as SlideRow[]) : [];
     try {
       if (!slides.length) throw new Error("sem slides");
-      const imageUrls = slides.map((s) => ogUrl(origin, s));
+      const imageUrls = await prepararImageUrls(origin, slides);
       const { id: postId } = await publicarInstagram({
         igUserId: process.env.IG_USER_ID!,
         token: process.env.META_ACCESS_TOKEN!,
