@@ -11,6 +11,7 @@
  * Tudo via as mesmas credenciais CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN.
  */
 import type { FonteKey, RealceModo } from "@/lib/instagram-render";
+import { chamarLLM } from "@/lib/llm";
 
 const CF_BASE = "https://api.cloudflare.com/client/v4/accounts";
 
@@ -118,36 +119,9 @@ export async function gerarCarrosselIA(
   conteudo: string,
   tipo: "carrossel" | "unico" = "carrossel",
 ): Promise<CarrosselIA> {
-  const { accountId, apiToken } = creds();
-  if (!accountId || !apiToken) throw new Error("Cloudflare não configurado");
-
-  const res = await fetch(
-    `${CF_BASE}/${accountId}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8-fast`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: buildSystemPrompt(tipo) },
-          { role: "user", content: conteudo.trim() },
-        ],
-        max_tokens: 1200,
-      }),
-    },
-  );
-  if (!res.ok) throw new Error(`Cloudflare texto ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const json = await res.json();
-  const raw = json?.result?.response;
-  // A Cloudflare passou a devolver `response` já como objeto JSON quando a
-  // saída é JSON (antes vinha string). Aceita os dois casos.
-  let parsed: { slides?: unknown[]; legenda?: unknown };
-  if (raw && typeof raw === "object") {
-    parsed = raw as { slides?: unknown[]; legenda?: unknown };
-  } else if (typeof raw === "string") {
-    parsed = extrairJSON(raw) as { slides?: unknown[]; legenda?: unknown };
-  } else {
-    throw new Error("resposta inesperada do modelo");
-  }
+  // Groq (sem teto) → Cloudflare (reserva). Mesmo modelo Llama 3.3 70B.
+  const texto = await chamarLLM(buildSystemPrompt(tipo), conteudo.trim(), 1200);
+  const parsed = extrairJSON(texto) as { slides?: unknown[]; legenda?: unknown };
   const slidesRaw = Array.isArray(parsed.slides) ? parsed.slides : [];
   const slides: SlideIA[] = slidesRaw
     .map((s) => {

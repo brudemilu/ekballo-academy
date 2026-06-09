@@ -13,8 +13,8 @@
 import type { SlideIA } from "@/lib/instagram";
 import type { PerfilResumo } from "@/lib/instagram-insights";
 import type { RealceModo } from "@/lib/instagram-render";
+import { chamarLLM } from "@/lib/llm";
 
-const CF_BASE = "https://api.cloudflare.com/client/v4/accounts";
 const MODOS_VALIDOS: RealceModo[] = ["circulo", "grifo", "marca", "dourado", "nenhum"];
 
 export type Pilar = "curiosidade" | "postura" | "reflexao" | "versiculo";
@@ -37,13 +37,6 @@ export type SugestaoPost = {
   /** Por que abençoa E por que tende a engajar. */
   porque: string;
 };
-
-function creds() {
-  return {
-    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
-    apiToken: process.env.CLOUDFLARE_API_TOKEN,
-  };
-}
 
 function systemPrompt(n: number): string {
   return `Você é o estrategista de conteúdo do Instagram de um ministério cristão chamado Ekballo.
@@ -173,38 +166,9 @@ function normalizarRoteiro(raw: unknown): SlideIA[] {
  * preenchido pela rota com o valor determinístico do resumo (não pelo modelo).
  */
 export async function gerarSugestoes(resumo: PerfilResumo, n = 3): Promise<SugestaoPost[]> {
-  const { accountId, apiToken } = creds();
-  if (!accountId || !apiToken) throw new Error("Cloudflare não configurado");
-
-  const res = await fetch(
-    `${CF_BASE}/${accountId}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8-fast`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: systemPrompt(n) },
-          { role: "user", content: contextoPerfil(resumo) },
-        ],
-        max_tokens: 2800,
-      }),
-    },
-  );
-  if (!res.ok) {
-    throw new Error(`Cloudflare texto ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  }
-  const json = await res.json();
-  const raw = json?.result?.response;
-  // A Cloudflare passou a devolver `response` já como objeto JSON quando a
-  // saída é JSON (antes vinha string). Aceita os dois casos.
-  let parsed: { sugestoes?: unknown[] };
-  if (raw && typeof raw === "object") {
-    parsed = raw as { sugestoes?: unknown[] };
-  } else if (typeof raw === "string") {
-    parsed = extrairJSON(raw) as { sugestoes?: unknown[] };
-  } else {
-    throw new Error("resposta inesperada do modelo");
-  }
+  // Groq (sem teto) → Cloudflare (reserva). Mesmo modelo Llama 3.3 70B.
+  const texto = await chamarLLM(systemPrompt(n), contextoPerfil(resumo), 2800);
+  const parsed = extrairJSON(texto) as { sugestoes?: unknown[] };
   const lista = Array.isArray(parsed.sugestoes) ? parsed.sugestoes : [];
 
   const PILARES_VALIDOS: Pilar[] = ["curiosidade", "postura", "reflexao", "versiculo"];
