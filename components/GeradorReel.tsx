@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { TEMAS, TEMA_PADRAO, type TemaKey } from "@/lib/instagram-render";
 
 /**
  * Reel por UPLOAD: sobe um vídeo pronto DIRETO pro Supabase Storage (via URL
@@ -25,6 +26,40 @@ export function GeradorReel() {
   const [agendando, setAgendando] = useState(false);
   const [agendadoOk, setAgendadoOk] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // modo "ia": gera vídeo de fundo (Pexels) + texto animado
+  const [modo, setModo] = useState<"upload" | "ia">("upload");
+  const [textoIA, setTextoIA] = useState("");
+  const [cenaIA, setCenaIA] = useState("");
+  const [temaIA, setTemaIA] = useState<TemaKey>(TEMA_PADRAO);
+  const [gerando, setGerando] = useState(false);
+
+  async function gerarComIA() {
+    if (textoIA.trim().length < 3) {
+      setErro("Escreva a mensagem do Reel.");
+      return;
+    }
+    setErro(null);
+    setGerando(true);
+    setVideoUrl("");
+    setPreviewLocal("");
+    setPublicado(false);
+    setAgendadoOk(false);
+    try {
+      const res = await fetch("/api/admin/instagram/reel-gerar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: textoIA, tema: temaIA, cena: cenaIA || textoIA, seed: Math.floor(Math.random() * 100000), duracao: 9 }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Falha ao gerar o Reel.");
+      setVideoUrl(data.videoUrl);
+      setPreviewLocal(data.videoUrl); // mostra o MP4 gerado no preview
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao gerar.");
+    } finally {
+      setGerando(false);
+    }
+  }
 
   async function enviarVideo(file: File) {
     setErro(null);
@@ -127,6 +162,69 @@ export function GeradorReel() {
 
   return (
     <div className="space-y-6">
+      {/* modo: subir vídeo OU gerar com IA */}
+      <div className="flex gap-2">
+        {([
+          { v: "upload", label: "⬆️ Subir vídeo" },
+          { v: "ia", label: "✨ Gerar com IA (vídeo + texto)" },
+        ] as { v: "upload" | "ia"; label: string }[]).map((opt) => (
+          <button
+            key={opt.v}
+            onClick={() => { setModo(opt.v); setErro(null); }}
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+              modo === opt.v ? "border-laranja-600 bg-laranja-50 text-laranja-700" : "border-mesa-200 bg-white text-mesa-600 hover:bg-mesa-100"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {modo === "ia" && (
+        <div className="rounded-2xl border border-mesa-200 bg-white p-6 space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-mesa-700">Mensagem do Reel <span className="text-mesa-400">— curta; {"{palavra}"} vira destaque, ((frase)) vira manuscrita</span></label>
+            <textarea
+              value={textoIA}
+              onChange={(e) => setTextoIA(e.target.value)}
+              rows={2}
+              placeholder="Ex.: Fé que move {montanhas}"
+              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-3 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+            />
+          </div>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="grow">
+              <label className="mb-1 block text-xs font-medium text-mesa-600">Cena do vídeo (inglês) <span className="text-mesa-400">— opcional; senão usa a mensagem</span></label>
+              <input
+                value={cenaIA}
+                onChange={(e) => setCenaIA(e.target.value)}
+                placeholder="golden mountains clouds"
+                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-mesa-700">🎨 Cor:</span>
+            {(Object.keys(TEMAS) as TemaKey[]).map((k) => (
+              <button key={k} onClick={() => setTemaIA(k)} title={TEMAS[k].label}
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${temaIA === k ? "border-mesa-700 bg-mesa-50 text-mesa-800" : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"}`}>
+                <span className="h-4 w-4 rounded-full" style={{ backgroundColor: TEMAS[k].cor }} />
+                {TEMAS[k].label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={gerarComIA}
+            disabled={gerando || textoIA.trim().length < 3}
+            className="rounded-full bg-laranja-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-laranja-700 disabled:opacity-40"
+          >
+            {gerando ? "Gerando o Reel… (pode levar ~20s)" : "✨ Gerar Reel"}
+          </button>
+          {erro && <p className="text-sm text-red-600">{erro}</p>}
+        </div>
+      )}
+
+      {modo === "upload" && (
       <div className="rounded-2xl border border-mesa-200 bg-white p-6">
         <label className="mb-2 block text-sm font-medium text-mesa-700">
           Vídeo do Reel <span className="text-mesa-400">— .mp4 ou .mov, vertical 9:16, até {MAX_MB}MB</span>
@@ -147,6 +245,7 @@ export function GeradorReel() {
         </label>
         {erro && <p className="mt-3 text-sm text-red-600">{erro}</p>}
       </div>
+      )}
 
       {previewLocal && (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-mesa-200 bg-white p-5">
