@@ -73,6 +73,42 @@ export async function buscarFotoPexels(prompt: string, seed: number): Promise<st
   }
 }
 
+// ----------------------------------------------------------------------------
+// VÍDEO (Reels) — clipe vertical real do Pexels (grátis/ilimitado).
+// ----------------------------------------------------------------------------
+const PEXELS_VIDEO_API = "https://api.pexels.com/videos/search";
+
+/**
+ * Devolve a URL de um arquivo de VÍDEO vertical (≤1080 de largura, melhor
+ * qualidade) que combina com a cena, ou null. Determinístico por seed.
+ */
+export async function buscarVideoPexels(prompt: string, seed: number): Promise<string | null> {
+  const key = process.env.PEXELS_API_KEY;
+  if (!key || !prompt.trim()) return null;
+  const q = querify(prompt);
+  try {
+    const url = `${PEXELS_VIDEO_API}?query=${encodeURIComponent(q)}&orientation=portrait&size=medium&per_page=24`;
+    const res = await fetch(url, { headers: { Authorization: key } });
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      videos?: { video_files?: { link?: string; width?: number; height?: number }[] }[];
+    };
+    const videos = (Array.isArray(json.videos) ? json.videos : []).filter((v) =>
+      (v.video_files || []).some((f) => f.link),
+    );
+    if (!videos.length) return null;
+    const v = videos[Math.abs(seed) % videos.length];
+    const files = (v.video_files || [])
+      .filter((f) => f.link)
+      .sort((a, b) => (a.width || 0) - (b.width || 0));
+    // prefere o MAIOR arquivo ≤1080; se não houver, usa o menor disponível.
+    const pick = [...files].reverse().find((f) => (f.width || 0) <= 1080) || files[0];
+    return pick?.link || null;
+  } catch {
+    return null;
+  }
+}
+
 export function pexelsConfigurado(): boolean {
   return Boolean(process.env.PEXELS_API_KEY);
 }
