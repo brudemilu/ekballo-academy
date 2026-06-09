@@ -40,10 +40,26 @@ export const BRUSH_FILE = "brush.png";
 export const SPLATTER_FILE = "splatter.png";
 /** Respingos cor-de-papel — "comem" o topo da foto pra fundir foto+papel. */
 export const PAPER_SPECKS_FILE = "paper-specks.png";
+/** Névoa irregular — dissolve a foto no papel de forma inconstante. */
+export const FOG_FILE = "fog.png";
 
 const COR_NAVY = "#1B2A4A";
 const COR_GOLD = "#C0892B";
 const COR_PAPEL = "#F4EACB";
+
+/**
+ * Temas de cor (OPÇÃO do sistema, não regra). Cada tema = cor de destaque + a
+ * pincelada na mesma cor. O texto principal fica navy (legível no papel).
+ */
+export type TemaKey = "dourado" | "terracota" | "azul" | "verde" | "vinho";
+export const TEMAS: Record<TemaKey, { cor: string; brush: string; label: string }> = {
+  terracota: { cor: "#C0562B", brush: "brush-terracota.png", label: "Terracota" },
+  dourado: { cor: "#C0892B", brush: "brush-dourado.png", label: "Dourado" },
+  azul: { cor: "#2C6E8F", brush: "brush-azul.png", label: "Azul-aço" },
+  verde: { cor: "#5E7B3A", brush: "brush-verde.png", label: "Verde-oliva" },
+  vinho: { cor: "#8E3B46", brush: "brush-vinho.png", label: "Vinho" },
+};
+export const TEMA_PADRAO: TemaKey = "terracota";
 
 export const TAMANHO_W = 1080;
 export const TAMANHO_H = 1350;
@@ -62,9 +78,10 @@ export type SlideRenderPayload = {
   brushSrc?: string;
   splatterSrc?: string;
   paperSpecksSrc?: string;
+  fogSrc?: string;
   fonteKey: FonteKey;
   realce: RealceModo;
-  /** Cor do destaque — no template papel é sempre dourado (ignora hex custom). */
+  /** Cor de destaque do tema escolhido (hex). Default = terracota. */
   cor?: string;
   /** Assinatura no topo (default: Ekballo). */
   top?: string;
@@ -101,10 +118,11 @@ function parseTexto(texto: string, upper: boolean): { words: DisplayWord[]; scri
 
 export function renderSlideInstagram(p: SlideRenderPayload) {
   const f = FONTES[p.fonteKey] || FONTES.anton;
-  const gold = COR_GOLD; // template papel: paleta fixa navy/dourado
+  // cor de destaque do TEMA (não mais dourado fixo); fallback dourado.
+  const gold = p.cor && /^#[0-9a-fA-F]{6}$/.test(p.cor) ? p.cor : COR_GOLD;
   const W = TAMANHO_W;
   const H = TAMANHO_H;
-  const BAND = Math.round(H * 0.36); // faixa da foto embaixo
+  const BAND = Math.round(H * 0.4); // faixa da foto embaixo
 
   const { words, script } = parseTexto(p.texto, f.upper);
 
@@ -175,24 +193,25 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           height={BAND}
           style={{ position: "absolute", left: 0, top: 0, width: W, height: BAND, objectFit: "cover" }}
         />
-        {/* foto emerge do papel: topo dela funde no creme (fade alto) */}
+        {/* fade vertical gentil (base do blend, sem borda dura) */}
         <div
           style={{
             display: "flex",
             position: "absolute",
             inset: 0,
-            background: `linear-gradient(180deg, ${COR_PAPEL} 0%, rgba(244,234,203,0.88) 16%, rgba(244,234,203,0.45) 36%, rgba(244,234,203,0) 60%)`,
+            background: `linear-gradient(180deg, ${COR_PAPEL} 0%, rgba(244,234,203,0.7) 12%, rgba(244,234,203,0) 48%)`,
           }}
         />
-        {/* respingos cor-de-papel "comendo" o topo da foto → funde foto+papel */}
-        {p.paperSpecksSrc ? (
+        {/* NÉVOA irregular cor-de-papel: a foto vai APARECENDO de forma inconstante
+            (wisps de fumaça com gaps → dissolve orgânico, não faixa reta) */}
+        {p.fogSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={p.paperSpecksSrc}
+            src={p.fogSrc}
             alt=""
             width={W}
-            height={Math.round(BAND * 0.7)}
-            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.12), width: W, height: Math.round(BAND * 0.7), objectFit: "cover" }}
+            height={BAND}
+            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.16), width: W, height: BAND, objectFit: "cover", opacity: 0.95 }}
           />
         ) : null}
         {/* fade lateral suave */}
@@ -201,18 +220,18 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
             display: "flex",
             position: "absolute",
             inset: 0,
-            background: `linear-gradient(90deg, ${COR_PAPEL} 0%, rgba(244,234,203,0) 12%, rgba(244,234,203,0) 88%, ${COR_PAPEL} 100%)`,
+            background: `linear-gradient(90deg, ${COR_PAPEL} 0%, rgba(244,234,203,0) 14%, rgba(244,234,203,0) 86%, ${COR_PAPEL} 100%)`,
           }}
         />
-        {/* respingos de tinta na transição (azul/dourado) */}
+        {/* respingos de tinta na transição (cor do tema/azul) */}
         {p.splatterSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={p.splatterSrc}
             alt=""
             width={W}
-            height={Math.round(BAND * 0.85)}
-            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.34), width: W, height: Math.round(BAND * 0.85), objectFit: "cover", opacity: 0.55 }}
+            height={Math.round(BAND * 0.8)}
+            style={{ position: "absolute", left: 0, top: -Math.round(BAND * 0.3), width: W, height: Math.round(BAND * 0.8), objectFit: "cover", opacity: 0.45 }}
           />
         ) : null}
         {p.ref ? (

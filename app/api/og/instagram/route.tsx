@@ -10,10 +10,14 @@ import {
   BRUSH_FILE,
   SPLATTER_FILE,
   PAPER_SPECKS_FILE,
+  FOG_FILE,
+  TEMAS,
+  TEMA_PADRAO,
   TAMANHO_W,
   TAMANHO_H,
   type FonteKey,
   type RealceModo,
+  type TemaKey,
 } from "@/lib/instagram-render";
 import { gerarFundoLivre } from "@/lib/instagram";
 
@@ -50,7 +54,12 @@ export async function GET(req: NextRequest) {
   const verso = (url.searchParams.get("verso") || "").trim();
   const fonteKey = (url.searchParams.get("fonte") || "anton") as FonteKey;
   const realce = (url.searchParams.get("realce") || "dourado") as RealceModo;
-  const cor = sanitizeCor(url.searchParams.get("cor"));
+  // tema de cor (opção do sistema): define cor de destaque + pincelada.
+  const temaKey = (url.searchParams.get("tema") || TEMA_PADRAO) as TemaKey;
+  const tema = TEMAS[temaKey] || TEMAS[TEMA_PADRAO];
+  // `cor` explícito sobrescreve o tema; senão usa a cor do tema.
+  const corParam = url.searchParams.get("cor");
+  const cor = corParam ? sanitizeCor(corParam) : tema.cor;
   const top = url.searchParams.get("top")?.trim() || undefined;
   const ref = url.searchParams.get("ref")?.trim() || undefined;
   const prompt = url.searchParams.get("prompt")?.trim() || "";
@@ -99,11 +108,12 @@ export async function GET(req: NextRequest) {
 
   const paperSrc = `${url.origin}/fundos/${PAPEL_FILE}`;
   const grungeSrc = `${url.origin}/texturas/${GRUNGE_FILE}`;
-  const brushSrc = `${url.origin}/texturas/${BRUSH_FILE}`;
+  const brushSrc = `${url.origin}/texturas/${tema.brush || BRUSH_FILE}`; // pincelada do tema
   const splatterSrc = `${url.origin}/texturas/${SPLATTER_FILE}`;
   const paperSpecksSrc = `${url.origin}/texturas/${PAPER_SPECKS_FILE}`;
+  const fogSrc = `${url.origin}/texturas/${FOG_FILE}`;
 
-  const jsx = renderSlideInstagram({ texto: verso, bgSrc, paperSrc, grungeSrc, brushSrc, splatterSrc, paperSpecksSrc, fonteKey, realce, cor, top, ref });
+  const jsx = renderSlideInstagram({ texto: verso, bgSrc, paperSrc, grungeSrc, brushSrc, splatterSrc, paperSpecksSrc, fogSrc, fonteKey, realce, cor, top, ref });
 
   const filename = sanitizeFilename(`${verso.replace(/[{}()]/g, "").slice(0, 40)}.png`);
 

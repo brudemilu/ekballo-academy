@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { TEMAS, TEMA_PADRAO, type TemaKey } from "@/lib/instagram-render";
 
 // Fontes pra prévia ao vivo (mesmas do servidor). Carregadas via @font-face.
 const FONT_FACES = `
@@ -58,17 +59,15 @@ function novoSeed() {
   return Math.floor(Math.random() * 1_000_000);
 }
 
-function ogSrc(s: Slide): string {
+function ogSrc(s: Slide, tema: TemaKey): string {
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,
     modo: s.modo,
     realce: s.modo,
-    cor: s.cor,
+    tema, // a cor vem do TEMA (não mais do hex do modelo)
     fonte: s.fonte,
     seed: String(s.seed),
-    n: "1",
-    i: "0",
   });
   if (s.top.trim()) p.set("top", s.top.trim());
   if (s.ref.trim()) p.set("ref", s.ref.trim());
@@ -78,10 +77,10 @@ function ogSrc(s: Slide): string {
 // Prévia WYSIWYG: renderiza a imagem REAL da rota OG (template papel 4:5),
 // com debounce. Evita divergência preview×Satori. A foto (Flux) é cacheada por
 // prompt+seed, então editar só o texto re-renderiza rápido (sem regenerar foto).
-function SlidePreview({ slide, index, total, size = 300 }: { slide: Slide; index: number; total: number; size?: number }) {
+function SlidePreview({ slide, tema, index, total, size = 300 }: { slide: Slide; tema: TemaKey; index: number; total: number; size?: number }) {
   const W = size;
   const H = Math.round(size * 1.25); // retrato 4:5
-  const alvo = ogSrc(slide);
+  const alvo = ogSrc(slide, tema);
   const [src, setSrc] = useState(alvo);
   const [carregando, setCarregando] = useState(true);
   useEffect(() => {
@@ -133,6 +132,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
   const [agendadoOk, setAgendadoOk] = useState(false);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const uploadsRef = useRef<Upload[]>([]);
+  const [tema, setTema] = useState<TemaKey>(TEMA_PADRAO); // cor do post (opção)
 
   // Pré-preenche o editor quando chega um roteiro de fora (sugestão da IA).
   useEffect(() => {
@@ -160,9 +160,10 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     if (tipo === "upload") {
       return uploads
         .filter((u) => u.url)
-        .map((u) => ({ imageUrl: u.url, texto: "", prompt: "", modo: "nenhum", cor: "#C9A961", fonte: "anton", top: "", ref: "", seed: 0 }));
+        .map((u) => ({ imageUrl: u.url, texto: "", prompt: "", modo: "nenhum", cor: "#C9A961", fonte: "anton", top: "", ref: "", seed: 0, tema }));
     }
-    return slides;
+    // injeta o tema em cada slide pra persistir/publicar com a cor escolhida.
+    return slides.map((s) => ({ ...s, tema }));
   }
 
   async function enviarArquivos(files: FileList | null) {
@@ -245,7 +246,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
 
   function baixarUm(s: Slide, idx: number) {
     const a = document.createElement("a");
-    a.href = `${ogSrc(s)}&dl=1`;
+    a.href = `${ogSrc(s, tema)}&dl=1`;
     a.download = `slide-${idx + 1}.png`;
     document.body.appendChild(a);
     a.click();
@@ -265,7 +266,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     try {
       const files: File[] = [];
       for (let idx = 0; idx < slides.length; idx++) {
-        const r = await fetch(`${ogSrc(slides[idx])}&dl=1`);
+        const r = await fetch(`${ogSrc(slides[idx], tema)}&dl=1`);
         if (!r.ok) throw new Error("falha");
         const b = await r.blob();
         files.push(new File([b], `slide-${idx + 1}.png`, { type: "image/png" }));
@@ -477,7 +478,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
         <div className="space-y-6">
           {tipo !== "upload" && slides.map((s, i) => (
             <div key={i} className="flex flex-col gap-5 rounded-2xl border border-mesa-200 bg-white p-5 md:flex-row">
-              <SlidePreview slide={s} index={i} total={slides.length} />
+              <SlidePreview slide={s} tema={tema} index={i} total={slides.length} />
 
               <div className="flex-1 space-y-3">
                 <div>
