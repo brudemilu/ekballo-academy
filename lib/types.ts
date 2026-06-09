@@ -85,6 +85,7 @@ export type Destaque = {
   fim: number;
   texto: string;
   cor: "amarelo" | "verde" | "rosa" | "azul";
+  comentario: string | null;
   criado_em: string;
 };
 
