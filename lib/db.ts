@@ -1724,3 +1724,21 @@ export async function deletarCarrosselInstagram(id: string): Promise<void> {
   const { error } = await supabase.from("instagram_carrosseis").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+/** Reagenda um post pra uma nova data/hora (volta pra "agendado", limpa erro). */
+export async function reagendarCarrosselInstagram(id: string, agendadoPara: string): Promise<void> {
+  if (isMockMode()) {
+    const c = listMockCarrosseis().find((x) => x.id === id);
+    if (c) {
+      c.status = "agendado";
+      c.agendado_para = agendadoPara;
+    }
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("instagram_carrosseis")
+    .update({ status: "agendado", agendado_para: agendadoPara, erro: null, publicado_em: null })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
