@@ -15,6 +15,7 @@ type SlideIn = {
   seed: number;
   top?: string;
   ref?: string;
+  tema?: string;
   /** Imagem enviada pelo usuário (modo upload) — usa direto, sem IA. */
   imageUrl?: string;
 };
@@ -26,12 +27,10 @@ function ogUrl(origin: string, s: SlideIn): string {
     prompt: s.prompt,
     modo: s.modo,
     realce: s.modo,
-    cor: s.cor,
     fonte: s.fonte,
     seed: String(s.seed),
-    n: "1",
-    i: "0",
   });
+  if (s.tema) p.set("tema", s.tema);
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
   return `${origin}/api/og/instagram?${p.toString()}`;

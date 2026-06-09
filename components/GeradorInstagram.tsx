@@ -403,6 +403,24 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
           ))}
         </div>
 
+        {/* tema de cor (opção do sistema) */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-mesa-700">🎨 Cor:</span>
+          {(Object.keys(TEMAS) as TemaKey[]).map((k) => (
+            <button
+              key={k}
+              onClick={() => setTema(k)}
+              title={TEMAS[k].label}
+              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                tema === k ? "border-mesa-700 bg-mesa-50 text-mesa-800" : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"
+              }`}
+            >
+              <span className="h-4 w-4 rounded-full" style={{ backgroundColor: TEMAS[k].cor }} />
+              {TEMAS[k].label}
+            </button>
+          ))}
+        </div>
+
         {tipo !== "upload" ? (
           <>
             <label className="mb-2 block text-sm font-medium text-mesa-700">Seu conteúdo</label>
