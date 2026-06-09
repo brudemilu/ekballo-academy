@@ -183,12 +183,12 @@ export function GeradorReel() {
       {modo === "ia" && (
         <div className="rounded-2xl border border-mesa-200 bg-white p-6 space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-mesa-700">Mensagem do Reel <span className="text-mesa-400">— curta; {"{palavra}"} vira destaque, ((frase)) vira manuscrita</span></label>
+            <label className="mb-2 block text-sm font-medium text-mesa-700">Mensagem do Reel <span className="text-mesa-400">— UMA frase por linha (aparecem em sequência no vídeo). {"{palavra}"} destaca; ((frase)) vira manuscrita</span></label>
             <textarea
               value={textoIA}
               onChange={(e) => setTextoIA(e.target.value)}
-              rows={2}
-              placeholder="Ex.: Fé que move {montanhas}"
+              rows={4}
+              placeholder={"Descanse no {Senhor}\nEle cuida de você\nEntregue o seu {fardo}"}
               className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-3 text-sm text-mesa-800 outline-none focus:border-mesa-400"
             />
           </div>

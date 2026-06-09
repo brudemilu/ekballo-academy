@@ -91,7 +91,7 @@ export async function buscarVideoPexels(prompt: string, seed: number): Promise<s
     const res = await fetch(url, { headers: { Authorization: key } });
     if (!res.ok) return null;
     const json = (await res.json()) as {
-      videos?: { video_files?: { link?: string; width?: number; height?: number }[] }[];
+      videos?: { video_files?: { link?: string; width?: number; height?: number; fps?: number }[] }[];
     };
     const videos = (Array.isArray(json.videos) ? json.videos : []).filter((v) =>
       (v.video_files || []).some((f) => f.link),
@@ -101,8 +101,11 @@ export async function buscarVideoPexels(prompt: string, seed: number): Promise<s
     const files = (v.video_files || [])
       .filter((f) => f.link)
       .sort((a, b) => (a.width || 0) - (b.width || 0));
-    // prefere o MAIOR arquivo ≤1080; se não houver, usa o menor disponível.
-    const pick = [...files].reverse().find((f) => (f.width || 0) <= 1080) || files[0];
+    // prefere arquivo ≤1080 e ≤31fps (mais leve = baixa rápido no Vercel);
+    // senão ≤1080 qualquer; senão o menor disponível.
+    const leves = files.filter((f) => (f.width || 0) <= 1080 && (f.fps || 30) <= 31);
+    const ate1080 = files.filter((f) => (f.width || 0) <= 1080);
+    const pick = leves[leves.length - 1] || ate1080[ate1080.length - 1] || files[0];
     return pick?.link || null;
   } catch {
     return null;
