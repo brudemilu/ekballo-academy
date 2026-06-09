@@ -11,6 +11,41 @@ import { buscarVideoPexels } from "@/lib/pexels";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+/** Divide a mensagem em PARTES que aparecem em sequência no reel. */
+function dividirEmPartes(t: string): string[] {
+  // 1) por linhas (cada linha = uma parte)
+  let p = t.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+  if (p.length >= 2) return p.slice(0, 5);
+  // 2) por " / " ou por fim de frase
+  p = t.split(/\s*\/\s*|(?<=[.!?…])\s+/).map((s) => s.trim()).filter(Boolean);
+  if (p.length >= 2) return p.slice(0, 5);
+  // 3) auto: mensagem longa numa linha → parte no meio
+  const words = t.trim().split(/\s+/);
+  if (words.length > 6) {
+    const mid = Math.ceil(words.length / 2);
+    return [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
+  }
+  return [t.trim()];
+}
+
+/** Baixa uma URL com timeout + retry (vídeo do Pexels pode oscilar). */
+async function baixar(url: string, tentativas = 3): Promise<Buffer> {
+  let ultimo: unknown;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 35000);
+      const r = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(to);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return Buffer.from(await r.arrayBuffer());
+    } catch (e) {
+      ultimo = e;
+    }
+  }
+  throw new Error(`download falhou: ${ultimo instanceof Error ? ultimo.message : "erro"}`);
+}
+
 /**
  * POST /api/admin/instagram/reel-gerar  { texto, tema?, cena, seed?, duracao? }
  * Gera um Reel "vídeo de fundo (Pexels) + texto animado": baixa um vídeo
@@ -46,43 +81,63 @@ export async function POST(req: NextRequest) {
   if (!ffmpegPath) return NextResponse.json({ error: "ffmpeg indisponível." }, { status: 500 });
 
   const id = crypto.randomUUID();
+  const partes = dividirEmPartes(texto);
+  // garante ~3s por parte (mas no máx 20s no total)
+  duracao = Math.min(20, Math.max(duracao, partes.length * 3));
   const videoIn = join(tmpdir(), `${id}-bg.mp4`);
-  const textIn = join(tmpdir(), `${id}-txt.png`);
+  const textIns = partes.map((_, i) => join(tmpdir(), `${id}-txt${i}.png`));
   const out = join(tmpdir(), `${id}-out.mp4`);
 
   try {
     // 1) vídeo de fundo (Pexels)
     const vurl = await buscarVideoPexels(cena, seed);
     if (!vurl) return NextResponse.json({ error: "Não achei um vídeo pra essa cena no Pexels." }, { status: 404 });
-    const vbuf = Buffer.from(await (await fetch(vurl)).arrayBuffer());
-    await writeFile(videoIn, vbuf);
+    await writeFile(videoIn, await baixar(vurl));
 
-    // 2) camada de texto (PNG transparente 1080x1920)
-    const params = new URLSearchParams({ verso: texto });
-    if (tema) params.set("tema", tema);
-    const tbuf = Buffer.from(await (await fetch(`${req.nextUrl.origin}/api/og/reel-texto?${params}`)).arrayBuffer());
-    await writeFile(textIn, tbuf);
+    // 2) uma camada de texto (PNG transparente 1080x1920) POR PARTE
+    await Promise.all(
+      partes.map(async (parte, i) => {
+        const params = new URLSearchParams({ verso: parte });
+        if (tema) params.set("tema", tema);
+        const buf = Buffer.from(await (await fetch(`${req.nextUrl.origin}/api/og/reel-texto?${params}`)).arrayBuffer());
+        await writeFile(textIns[i], buf);
+      }),
+    );
 
-    // 3) compõe com ffmpeg (vídeo loopado + texto fade-in + áudio silencioso)
+    // 3) compõe com ffmpeg: vídeo loopado + partes aparecendo EM SEQUÊNCIA
     try { await chmod(ffmpegPath, 0o755); } catch {}
-    const D = String(duracao);
-    const fc =
-      `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,trim=0:${D},setpts=PTS-STARTPTS[bg];` +
-      `[1:v]format=rgba,fade=t=in:st=0.4:d=0.9:alpha=1,trim=0:${D},setpts=PTS-STARTPTS[txt];` +
-      `[bg][txt]overlay=0:0[v]`;
-    const args = [
-      "-y", "-loglevel", "error",
-      "-stream_loop", "-1", "-i", videoIn,
-      "-loop", "1", "-i", textIn,
-      "-f", "lavfi", "-t", D, "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
+    const D = duracao;
+    const N = partes.length;
+    const seg = D / N;
+    let fc = `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,trim=0:${D},setpts=PTS-STARTPTS[bg];`;
+    for (let i = 0; i < N; i++) {
+      const si = i * seg;
+      const ei = (i + 1) * seg;
+      const fadeOut = N > 1 ? `,fade=t=out:st=${(ei - 0.5).toFixed(2)}:d=0.5:alpha=1` : "";
+      fc += `[${i + 1}:v]format=rgba,fade=t=in:st=${(si + 0.1).toFixed(2)}:d=0.55:alpha=1${fadeOut}[t${i}];`;
+    }
+    let prev = "bg";
+    for (let i = 0; i < N; i++) {
+      const si = (i * seg).toFixed(2);
+      const ei = (i === N - 1 ? D : (i + 1) * seg + 0.05).toFixed(2);
+      const lbl = i === N - 1 ? "v" : `o${i}`;
+      fc += `[${prev}][t${i}]overlay=0:0:enable='between(t,${si},${ei})'[${lbl}];`;
+      prev = lbl;
+    }
+    fc = fc.replace(/;$/, "");
+
+    const args: string[] = ["-y", "-loglevel", "error", "-stream_loop", "-1", "-i", videoIn];
+    for (const t of textIns) args.push("-loop", "1", "-i", t);
+    args.push("-f", "lavfi", "-t", String(D), "-i", "anullsrc=channel_layout=stereo:sample_rate=44100");
+    args.push(
       "-filter_complex", fc,
-      "-map", "[v]", "-map", "2:a",
-      "-t", D,
+      "-map", "[v]", "-map", `${N + 1}:a`,
+      "-t", String(D),
       "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p",
       "-c:a", "aac", "-b:a", "128k",
       "-movflags", "+faststart",
       out,
-    ];
+    );
     await new Promise<void>((resolve, reject) => {
       const p = spawn(ffmpegPath, args);
       let err = "";
@@ -108,7 +163,7 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   } finally {
-    for (const f of [videoIn, textIn, out]) {
+    for (const f of [videoIn, ...textIns, out]) {
       try { await unlink(f); } catch {}
     }
   }
