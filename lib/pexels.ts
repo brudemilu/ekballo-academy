@@ -1,0 +1,78 @@
+/**
+ * Busca de FOTO REAL no Pexels (banco de imagens grátis e ilimitado pro nosso
+ * uso) — substitui a geração por IA (Cloudflare Flux), que tem teto diário.
+ *
+ * A IA dá um "prompt" descritivo do sentido do slide; aqui a gente reduz isso a
+ * palavras-chave e busca uma foto real que combina (orientação retrato, pra 4:5).
+ * Mesma `seed` → mesma foto (escolha determinística), então mexer no texto não
+ * troca a imagem.
+ *
+ * Precisa de PEXELS_API_KEY (chave grátis em pexels.com/api). Sem chave → null
+ * (a rota cai no Cloudflare/fallback).
+ */
+
+const PEXELS_API = "https://api.pexels.com/v1/search";
+
+// Palavras de ESTILO/qualidade e stopwords — não ajudam a busca, atrapalham.
+const STOP = new Set(
+  (
+    "a an the of at in on to with and or from into toward towards facing seen not no " +
+    "cinematic photo photograph photography image picture vivid vibrant saturated rich " +
+    "tones tone color colors colours film grain atmospheric dramatic high resolution " +
+    "ultra detailed shot wide angle bokeh depth field backlight warm soft volumetric " +
+    "god rays mood elegant minimal minimalist composition negative space typography " +
+    "faces face visible distant aerial above"
+  ).split(/\s+/),
+);
+
+/** Reduz o prompt da IA a poucas palavras-chave fortes pra busca. */
+export function querify(prompt: string): string {
+  const words = prompt
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !STOP.has(w));
+  const q = words.slice(0, 5).join(" ").trim();
+  return q || prompt.replace(/[^a-zA-Z\s]/g, " ").trim().split(/\s+/).slice(0, 4).join(" ");
+}
+
+// cache em memória: query|seed → URL (evita repetir a busca a cada tweak de texto).
+const fotoCache = new Map<string, string>();
+
+/**
+ * Devolve a URL de uma foto do Pexels recortada em 1080×1350 (4:5), ou null.
+ */
+export async function buscarFotoPexels(prompt: string, seed: number): Promise<string | null> {
+  const key = process.env.PEXELS_API_KEY;
+  if (!key || !prompt.trim()) return null;
+
+  const q = querify(prompt);
+  const cacheKey = `${q}|${seed}`;
+  const cached = fotoCache.get(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const url = `${PEXELS_API}?query=${encodeURIComponent(q)}&orientation=portrait&size=large&per_page=24`;
+    const res = await fetch(url, { headers: { Authorization: key } });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { photos?: { src?: { original?: string } }[] };
+    const photos = Array.isArray(json.photos) ? json.photos : [];
+    if (!photos.length) return null;
+
+    const idx = Math.abs(seed) % photos.length;
+    const original = photos[idx]?.src?.original;
+    if (!original) return null;
+
+    // recorta exatamente 4:5 via params do CDN do Pexels.
+    const finalUrl = `${original}?auto=compress&cs=tinysrgb&w=1080&h=1350&fit=crop`;
+    fotoCache.set(cacheKey, finalUrl);
+    if (fotoCache.size > 200) fotoCache.delete(fotoCache.keys().next().value!);
+    return finalUrl;
+  } catch {
+    return null;
+  }
+}
+
+export function pexelsConfigurado(): boolean {
+  return Boolean(process.env.PEXELS_API_KEY);
+}

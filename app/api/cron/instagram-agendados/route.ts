@@ -18,6 +18,7 @@ type SlideRow = {
   seed: number;
   top?: string;
   ref?: string;
+  tema?: string;
   imageUrl?: string;
 };
 

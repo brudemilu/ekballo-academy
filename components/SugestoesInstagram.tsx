@@ -6,7 +6,17 @@ type Modo = "circulo" | "grifo" | "marca" | "dourado" | "nenhum";
 
 type SlideIA = { texto: string; prompt: string; modo: Modo; cor: string };
 
+type Pilar = "curiosidade" | "postura" | "reflexao" | "versiculo";
+
+const PILAR_LABEL: Record<Pilar, string> = {
+  curiosidade: "Curiosidade",
+  postura: "Postura em Cristo",
+  reflexao: "Reflexão",
+  versiculo: "Versículo",
+};
+
 type Sugestao = {
+  pilar: Pilar;
   tema: string;
   gancho: string;
   legenda: string;
@@ -143,8 +153,13 @@ function CardSugestao({ s, onUsar }: { s: Sugestao; onUsar: () => void }) {
     <div className="rounded-2xl border border-mesa-200 bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium uppercase tracking-wide text-laranja-700">{s.tema}</p>
-          <p className="mt-1 font-serif text-lg font-semibold text-mesa-800">“{s.gancho}”</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-laranja-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-laranja-700">
+              {PILAR_LABEL[s.pilar] || "Reflexão"}
+            </span>
+            <span className="text-xs font-medium uppercase tracking-wide text-mesa-500">{s.tema}</span>
+          </div>
+          <p className="mt-1.5 font-serif text-lg font-semibold text-mesa-800">“{s.gancho}”</p>
         </div>
         <button
           onClick={onUsar}

@@ -13,9 +13,10 @@ type SlidePub = {
   texto: string;
   prompt: string;
   modo: string;
-  cor: string;
+  cor?: string;
   fonte: string;
   seed: number;
+  tema?: string;
   top?: string;
   ref?: string;
   imageUrl?: string; // já é uma imagem pronta (modo upload) — usa direto
@@ -27,12 +28,11 @@ function ogUrlDoSlide(origin: string, s: SlidePub): string {
     prompt: s.prompt,
     modo: s.modo,
     realce: s.modo,
-    cor: s.cor,
     fonte: s.fonte,
     seed: String(s.seed),
-    n: "1",
-    i: "0",
   });
+  if (s.tema) p.set("tema", s.tema);
+  if (s.cor) p.set("cor", s.cor);
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
   return `${origin}/api/og/instagram?${p.toString()}`;
