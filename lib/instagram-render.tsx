@@ -126,14 +126,13 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
   const { words, script } = parseTexto(p.texto, f.upper);
 
   const plain = p.texto.replace(/[{}()]/g, "");
-  const base = 150;
+  // fonte GRANDE, proporcional à tela (preenche o quadro).
+  const base = 184;
   const len = plain.length;
   const size =
-    len > 64 ? base * 0.52 : len > 44 ? base * 0.64 : len > 28 ? base * 0.78 : len > 14 ? base * 0.92 : base;
-  const scriptSize = Math.round(size * 0.72);
+    len > 64 ? base * 0.56 : len > 44 ? base * 0.68 : len > 28 ? base * 0.82 : len > 14 ? base * 0.94 : base;
+  const scriptSize = Math.round(size * 0.74);
 
-  // halo creme: garante leitura do texto navy sobre a foto vibrante (some onde já é claro).
-  const HALO = "0 0 22px rgba(244,234,203,0.85), 0 2px 8px rgba(244,234,203,0.7)";
   const baseW = {
     display: "flex",
     fontFamily: "Display",
@@ -141,7 +140,6 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
     fontSize: size,
     letterSpacing: f.upper ? 1 : -0.5,
     color: COR_NAVY,
-    textShadow: HALO,
   } as const;
 
   return (
@@ -182,14 +180,14 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           background: `linear-gradient(180deg, rgba(244,234,203,0.28) 0%, rgba(244,234,203,0.12) 40%, rgba(244,234,203,0) 72%)`,
         }}
       />
-      {/* CLARÃO de papel atrás do texto (oval suave) → navy lê sempre,
-          foto vibra nas bordas/embaixo. É o que funde texto+foto+papel. */}
+      {/* clarão de papel BEM suave atrás do texto (só ajuda a leitura,
+          sem virar halo/sombra). foto vibra forte nas bordas/embaixo. */}
       <div
         style={{
           display: "flex",
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(62% 34% at 50% 41%, rgba(244,234,203,0.9) 0%, rgba(244,234,203,0.6) 42%, rgba(244,234,203,0.18) 70%, rgba(244,234,203,0) 88%)`,
+          background: `radial-gradient(72% 46% at 50% 48%, rgba(244,234,203,0.82) 0%, rgba(244,234,203,0.52) 44%, rgba(244,234,203,0.12) 70%, rgba(244,234,203,0) 84%)`,
         }}
       />
       {/* luz quente canto sup-esq */}
@@ -232,7 +230,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "relative",
           width: "100%",
           height: "100%",
-          padding: "90px 84px",
+          padding: "70px 52px",
           justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
@@ -300,7 +298,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           {/* fecho manuscrito ((...)) */}
           {script ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: Math.round(size * 0.12) }}>
-              <div style={{ display: "flex", fontFamily: "Script", fontSize: scriptSize, color: COR_NAVY, textShadow: HALO, transform: "rotate(-2deg)" }}>
+              <div style={{ display: "flex", fontFamily: "Script", fontSize: scriptSize, color: COR_NAVY, transform: "rotate(-2deg)" }}>
                 {script}
               </div>
               <div style={{ display: "flex", width: Math.round(scriptSize * Math.min(script.length, 12) * 0.42), height: 9, marginTop: 4, borderRadius: 5, backgroundColor: COR_NAVY }} />

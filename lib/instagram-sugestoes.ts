@@ -78,7 +78,7 @@ Para CADA sugestão devolva:
 - "porque": 1 frase: por que vale a pena E por que tende a engajar.
 - "roteiro": de 1 a 5 slides (você escolhe o número pela regra acima). Com 2+, eles formam UMA mensagem contínua e coerente (cada texto conecta com o anterior e o seguinte). Cada slide:
     - "texto": fragmento curto (3 a 7 palavras), PT-BR, encadeado. Marque entre {chaves} UMA palavra FORTE (substantivo, verbo ou adjetivo de peso) — NUNCA preposição, artigo ou conectivo (de, da, do, o, a, ao, à, e, que, em, com). Opcional: você pode envolver UMA expressão curta de fecho entre ((parênteses duplos)) — ela vira caligrafia manuscrita (use no máximo uma vez, no último slide, ex.: "todo ((mundo.))").
-    - "prompt": foto cinematográfica EM INGLÊS, CHEIA DE VIDA e CORES VIBRANTES (vibrant vivid saturated colors, rich tones), com luz dourada de nascer/pôr do sol, atmosférica (golden hour, warm backlight, film grain). PESSOAS são bem-vindas SE estiverem DE COSTAS, em silhueta, multidão vista por trás, ou figuras distantes (ex.: "a crowd seen from behind facing a glowing city skyline at vibrant golden sunrise"). PROIBIDO: rosto em close, selfie, retrato, mãos em destaque, celulares, telas, letras/texto. Símbolos/natureza/luz também valem (torch, mountains, open road, rays of light).
+    - "prompt": em INGLÊS — descreva uma FOTO REAL FORTE e marcante que representa o sentido do slide (será usada pra BUSCAR a foto num banco). O que importa é o IMPACTO e a EMOÇÃO da cena, NÃO a cor: NÃO force sempre dourado/pôr do sol — VARIE cenário, luz e tom conforme a mensagem (mountains, ocean waves, storm clouds, forest, desert, open road, starry sky, fire, city at night, rays of light through trees, cliffs, rain, snow...). Use 2 a 5 palavras-chave fortes (ex.: "stormy mountain peak", "vast starry night sky", "ocean waves crashing on rocks"). PESSOAS só DE COSTAS / em silhueta / multidão por trás / distantes — NUNCA rosto em close, selfie, retrato ou mãos em destaque.
     - "modo": "dourado" (recomendado), "grifo", "marca" ou "circulo" (varie pouco; o dourado é o padrão do template).
     - "cor": hex (#rrggbb) — pode mandar "#C0892B" (o template usa dourado fixo, mas mantenha o campo).
 
@@ -142,7 +142,7 @@ function sanitizarPromptImagem(prompt: string, i: number): string {
   if (!prompt) return FUNDOS_SEGUROS[i % FUNDOS_SEGUROS.length];
   if (HARD_RE.test(prompt)) return FUNDOS_SEGUROS[i % FUNDOS_SEGUROS.length];
   if (PESSOA_RE.test(prompt) && !SEGURO_RE.test(prompt)) {
-    return `${prompt}, people seen from behind, silhouettes, faces not visible, golden hour`;
+    return `${prompt}, people seen from behind, silhouettes, faces not visible`;
   }
   return prompt;
 }
