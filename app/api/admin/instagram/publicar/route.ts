@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
 import { publicarInstagram, publicarReel, instagramConfigurado } from "@/lib/instagram-publish";
+import { prepararImageUrls } from "@/lib/instagram-imagens";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -19,22 +20,6 @@ type SlideIn = {
   /** Imagem enviada pelo usuário (modo upload) — usa direto, sem IA. */
   imageUrl?: string;
 };
-
-function ogUrl(origin: string, s: SlideIn): string {
-  if (s.imageUrl) return s.imageUrl;
-  const p = new URLSearchParams({
-    verso: s.texto,
-    prompt: s.prompt,
-    modo: s.modo,
-    realce: s.modo,
-    fonte: s.fonte,
-    seed: String(s.seed),
-  });
-  if (s.tema) p.set("tema", s.tema);
-  if (s.top?.trim()) p.set("top", s.top.trim());
-  if (s.ref?.trim()) p.set("ref", s.ref.trim());
-  return `${origin}/api/og/instagram?${p.toString()}`;
-}
 
 /**
  * POST /api/admin/instagram/publicar  { slides, legenda }
@@ -98,6 +83,9 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
+  // imagens: pré-gera e sobe no Storage (estático/rápido) pra o Meta não dar
+  // timeout buscando a rota OG (que gera por IA, ~10s). Reel não usa imagens.
+  const imageUrls = isReel ? [] : await prepararImageUrls(origin, slides);
 
   try {
     const { id } = isReel
@@ -110,7 +98,7 @@ export async function POST(req: NextRequest) {
       : await publicarInstagram({
           igUserId: process.env.IG_USER_ID!,
           token: process.env.META_ACCESS_TOKEN!,
-          imageUrls: slides.map((s) => ogUrl(origin, s)),
+          imageUrls,
           legenda,
         });
     if (postId) {
