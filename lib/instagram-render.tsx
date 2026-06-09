@@ -132,6 +132,8 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
     len > 64 ? base * 0.52 : len > 44 ? base * 0.64 : len > 28 ? base * 0.78 : len > 14 ? base * 0.92 : base;
   const scriptSize = Math.round(size * 0.72);
 
+  // halo creme: garante leitura do texto navy sobre a foto vibrante (some onde já é claro).
+  const HALO = "0 0 22px rgba(244,234,203,0.85), 0 2px 8px rgba(244,234,203,0.7)";
   const baseW = {
     display: "flex",
     fontFamily: "Display",
@@ -139,6 +141,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
     fontSize: size,
     letterSpacing: f.upper ? 1 : -0.5,
     color: COR_NAVY,
+    textShadow: HALO,
   } as const;
 
   return (
@@ -168,16 +171,25 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
         alt=""
         width={W}
         height={H}
-        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.32 }}
+        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.16 }}
       />
-      {/* gradiente creme: topo = papel (área do texto), base REVELA a foto.
-          A transição é longa e suave → as duas imagens se fundem sem emenda. */}
+      {/* véu de papel BEM leve (mantém a foto vibrante, só amarra o tom) */}
       <div
         style={{
           display: "flex",
           position: "absolute",
           inset: 0,
-          background: `linear-gradient(180deg, ${COR_PAPEL} 0%, ${COR_PAPEL} 24%, rgba(244,234,203,0.82) 42%, rgba(244,234,203,0.32) 64%, rgba(244,234,203,0) 86%)`,
+          background: `linear-gradient(180deg, rgba(244,234,203,0.28) 0%, rgba(244,234,203,0.12) 40%, rgba(244,234,203,0) 72%)`,
+        }}
+      />
+      {/* CLARÃO de papel atrás do texto (oval suave) → navy lê sempre,
+          foto vibra nas bordas/embaixo. É o que funde texto+foto+papel. */}
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(62% 34% at 50% 41%, rgba(244,234,203,0.9) 0%, rgba(244,234,203,0.6) 42%, rgba(244,234,203,0.18) 70%, rgba(244,234,203,0) 88%)`,
         }}
       />
       {/* luz quente canto sup-esq */}
@@ -197,7 +209,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(78% 64% at 50% 44%, rgba(80,55,15,0) 58%, rgba(70,48,12,0.16) 100%)",
+            "radial-gradient(82% 70% at 50% 46%, rgba(80,55,15,0) 64%, rgba(70,48,12,0.1) 100%)",
         }}
       />
       {/* respingos na zona de mescla (cor do tema) */}
@@ -220,8 +232,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "relative",
           width: "100%",
           height: "100%",
-          padding: "80px 80px",
-          paddingBottom: Math.round(H * 0.42),
+          padding: "90px 84px",
           justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
@@ -289,7 +300,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           {/* fecho manuscrito ((...)) */}
           {script ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: Math.round(size * 0.12) }}>
-              <div style={{ display: "flex", fontFamily: "Script", fontSize: scriptSize, color: COR_NAVY, transform: "rotate(-2deg)" }}>
+              <div style={{ display: "flex", fontFamily: "Script", fontSize: scriptSize, color: COR_NAVY, textShadow: HALO, transform: "rotate(-2deg)" }}>
                 {script}
               </div>
               <div style={{ display: "flex", width: Math.round(scriptSize * Math.min(script.length, 12) * 0.42), height: 9, marginTop: 4, borderRadius: 5, backgroundColor: COR_NAVY }} />
