@@ -20,6 +20,7 @@ import {
   type TemaKey,
 } from "@/lib/instagram-render";
 import { gerarFundoLivre } from "@/lib/instagram";
+import { buscarFotoPexels } from "@/lib/pexels";
 
 // Rota OG do carrossel (template "papel" 4:5). Compõe texto navy/dourado sobre
 // papel creme + uma FOTO na faixa de baixo:
@@ -71,20 +72,27 @@ export async function GET(req: NextRequest) {
   if (!FONTES[fonteKey]) return new Response("fonte inválida", { status: 400 });
   if (!soFundo && !verso) return new Response("parâmetro 'verso' obrigatório", { status: 400 });
 
-  // resolve a foto da faixa
+  // resolve a foto: 1) Pexels (foto real, grátis e ILIMITADO) →
+  //                 2) Cloudflare Flux (IA, teto diário) como reserva →
+  //                 3) fallback local.
   let bgSrc = `${url.origin}/fundos/${foto}.jpg`;
   if (prompt) {
-    const key = `${prompt}|${seed}`;
-    let data = fundoCache.get(key);
-    if (!data) {
-      const gerado = await gerarFundoLivre(prompt, seed);
-      if (gerado) {
-        data = gerado;
-        fundoCache.set(key, data);
-        if (fundoCache.size > 120) fundoCache.delete(fundoCache.keys().next().value!);
+    const pex = await buscarFotoPexels(prompt, seed);
+    if (pex) {
+      bgSrc = pex;
+    } else {
+      const key = `${prompt}|${seed}`;
+      let data = fundoCache.get(key);
+      if (!data) {
+        const gerado = await gerarFundoLivre(prompt, seed);
+        if (gerado) {
+          data = gerado;
+          fundoCache.set(key, data);
+          if (fundoCache.size > 120) fundoCache.delete(fundoCache.keys().next().value!);
+        }
       }
+      if (data) bgSrc = data;
     }
-    if (data) bgSrc = data;
   }
 
   // modo "só fundo": devolve a foto crua (sem texto/papel) — usada pela prévia da foto.
