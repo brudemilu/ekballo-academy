@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
   let texto = "";
   let tema = "";
   let cena = "";
+  let musicaUrl = "";
   let seed = Math.floor(Math.random() * 1000);
   let duracao = 9;
   try {
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
     texto = typeof b.texto === "string" ? b.texto.trim() : "";
     tema = typeof b.tema === "string" ? b.tema : "";
     cena = typeof b.cena === "string" ? b.cena.trim() : "";
+    if (typeof b.musicaUrl === "string") musicaUrl = b.musicaUrl;
     if (typeof b.seed === "number") seed = Math.trunc(b.seed);
     if (typeof b.duracao === "number") duracao = Math.min(20, Math.max(6, Math.trunc(b.duracao)));
   } catch {
@@ -86,7 +88,9 @@ export async function POST(req: NextRequest) {
   duracao = Math.min(20, Math.max(duracao, partes.length * 3));
   const videoIn = join(tmpdir(), `${id}-bg.mp4`);
   const textIns = partes.map((_, i) => join(tmpdir(), `${id}-txt${i}.png`));
+  const musicIn = join(tmpdir(), `${id}-mus`);
   const out = join(tmpdir(), `${id}-out.mp4`);
+  let temMusica = false;
 
   try {
     // 1) vídeo de fundo (Pexels)
@@ -103,6 +107,16 @@ export async function POST(req: NextRequest) {
         await writeFile(textIns[i], buf);
       }),
     );
+
+    // 2b) música escolhida (opcional)
+    if (musicaUrl) {
+      try {
+        await writeFile(musicIn, await baixar(musicaUrl));
+        temMusica = true;
+      } catch {
+        temMusica = false; // se a faixa falhar, segue sem música
+      }
+    }
 
     // 3) compõe com ffmpeg: vídeo loopado + partes aparecendo EM SEQUÊNCIA
     try { await chmod(ffmpegPath, 0o755); } catch {}
@@ -126,12 +140,21 @@ export async function POST(req: NextRequest) {
     }
     fc = fc.replace(/;$/, "");
 
+    const audioIdx = N + 1; // input do áudio (música ou silêncio)
+    let audioMap = `${audioIdx}:a`;
+    if (temMusica) {
+      // música loopada, cortada na duração, com fade in/out e volume reduzido
+      fc += `;[${audioIdx}:a]atrim=0:${D},asetpts=PTS-STARTPTS,afade=t=in:st=0:d=1.2,afade=t=out:st=${(D - 1.5).toFixed(2)}:d=1.5,volume=0.85[a]`;
+      audioMap = "[a]";
+    }
+
     const args: string[] = ["-y", "-loglevel", "error", "-stream_loop", "-1", "-i", videoIn];
     for (const t of textIns) args.push("-loop", "1", "-i", t);
-    args.push("-f", "lavfi", "-t", String(D), "-i", "anullsrc=channel_layout=stereo:sample_rate=44100");
+    if (temMusica) args.push("-stream_loop", "-1", "-i", musicIn);
+    else args.push("-f", "lavfi", "-t", String(D), "-i", "anullsrc=channel_layout=stereo:sample_rate=44100");
     args.push(
       "-filter_complex", fc,
-      "-map", "[v]", "-map", `${N + 1}:a`,
+      "-map", "[v]", "-map", audioMap,
       "-t", String(D),
       "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p",
       "-c:a", "aac", "-b:a", "128k",
@@ -163,7 +186,7 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   } finally {
-    for (const f of [videoIn, ...textIns, out]) {
+    for (const f of [videoIn, ...textIns, musicIn, out]) {
       try { await unlink(f); } catch {}
     }
   }
