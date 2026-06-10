@@ -904,7 +904,9 @@ export async function listAulasComStatus(
     let previousCompleta = true;
     for (const aula of aulas) {
       const completa = await aulaCompleta(alunoId, aula.id);
-      result.push({ ...aula, desbloqueada: aulasLivres || previousCompleta, completa });
+      // Capítulos SEMPRE liberados: marcar como concluído é só indicador de
+      // leitura, nunca trava o próximo. (Bruno, jun/2026 — vale p/ todo curso.)
+      result.push({ ...aula, desbloqueada: true, completa });
       previousCompleta = completa;
     }
     return result;
@@ -957,7 +959,7 @@ export async function listAulasComStatus(
   let previousCompleta = true;
   for (const aula of aulas) {
     const completa = aulaCompletaEmMemoria(atvPorAula.get(aula.id) || [], respMap, corretaMap);
-    result.push({ ...aula, desbloqueada: aulasLivres || previousCompleta, completa });
+    result.push({ ...aula, desbloqueada: true, completa });
     previousCompleta = completa;
   }
   return result;

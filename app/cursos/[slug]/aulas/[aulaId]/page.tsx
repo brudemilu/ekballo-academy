@@ -80,9 +80,6 @@ export default async function AulaPage({
     })
   );
 
-  // `aulasStatus` já calculou a completude de cada aula em batch — reaproveita
-  // em vez de refazer o trabalho com outra rodada de queries.
-  const aulaConcluida = aulasStatus.find((a) => a.id === aula.id)?.completa ?? false;
   const temMCs = atividades.some((a) => a.tipo === "multipla_escolha");
   // "anotacao" é uma reflexão com razao='anotacao' — caderno do capítulo (não obrigatória).
   const temReflexoes = atividades.some((a) => a.tipo === "reflexao" && a.razao !== "anotacao");
@@ -114,7 +111,7 @@ export default async function AulaPage({
 
         <article className="mb-12 rounded-2xl border border-mesa-200 bg-white p-8 shadow-sm sm:p-12">
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-            Aula {String(curso.slug === "seja-um-lider-de-verdade" ? aula.ordem : indiceAtual + 1).padStart(2, "0")}
+            Aula {String(aula.ordem).padStart(2, "0")}
           </p>
           <h1 className="mb-8 font-serif text-4xl font-semibold leading-tight text-mesa-800">
             {aula.titulo}
@@ -188,9 +185,9 @@ export default async function AulaPage({
               </p>
               <h2 className="font-serif text-2xl font-semibold text-mesa-800">
                 {temMCs
-                  ? "Responda todas as questões para liberar a próxima aula."
+                  ? "Responda as questões deste capítulo."
                   : temReflexoes
-                    ? "Responda as reflexões da aula."
+                    ? "Responda as reflexões deste capítulo."
                     : "Registre aqui o que este capítulo falou com você."}
               </h2>
             </div>
@@ -248,27 +245,12 @@ export default async function AulaPage({
               </Link>
             )}
             {proxima && (
-              temAtividades && !aulaConcluida && !session.profile?.is_admin ? (
-                <span
-                  className="rounded-full border border-mesa-200 bg-mesa-100/60 px-5 py-2.5 text-sm font-medium text-mesa-500"
-                  title={
-                    temMCs && temReflexoes
-                      ? "Acerte as questões de múltipla escolha e responda todas as reflexões para liberar"
-                      : temMCs
-                        ? "Acerte todas as questões para liberar"
-                        : "Responda todas as reflexões para liberar"
-                  }
-                >
-                  🔒 Próxima aula bloqueada
-                </span>
-              ) : (
-                <Link
-                  href={`/cursos/${curso.slug}/aulas/${proxima.id}`}
-                  className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
-                >
-                  Próxima aula →
-                </Link>
-              )
+              <Link
+                href={`/cursos/${curso.slug}/aulas/${proxima.id}`}
+                className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+              >
+                Próximo capítulo →
+              </Link>
             )}
           </div>
         </div>
