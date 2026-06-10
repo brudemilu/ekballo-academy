@@ -113,12 +113,12 @@ function Quadro({ bloco }: { bloco: string }) {
   );
 }
 
-type Segmento = { texto: string; titulo: boolean; cor?: Cor; id?: string };
+type Segmento = { texto: string; titulo: boolean; cor?: Cor; id?: string; comentario?: string | null };
 
 function montarSegmentos(
   texto: string,
   titulos: Faixa[],
-  grifos: { start: number; end: number; cor: Cor; id: string }[]
+  grifos: { start: number; end: number; cor: Cor; id: string; comentario: string | null }[]
 ): Segmento[] {
   const pontos = new Set<number>([0, texto.length]);
   for (const f of titulos) {
@@ -137,7 +137,7 @@ function montarSegmentos(
     if (e <= s) continue;
     const titulo = titulos.some((f) => f.start <= s && f.end >= e);
     const g = grifos.find((x) => x.start <= s && x.end >= e);
-    segs.push({ texto: texto.slice(s, e), titulo, cor: g?.cor, id: g?.id });
+    segs.push({ texto: texto.slice(s, e), titulo, cor: g?.cor, id: g?.id, comentario: g?.comentario });
   }
   return segs;
 }
@@ -152,7 +152,7 @@ function offsetNoParagrafo(container: Node, node: Node, offset: number): number 
 
 type ToolbarState =
   | { tipo: "selecao"; x: number; y: number; paragrafo: number; inicio: number; fim: number; texto: string }
-  | { tipo: "grifo"; x: number; y: number; id: string; texto: string }
+  | { tipo: "grifo"; x: number; y: number; id: string; texto: string; comentario: string | null }
   | null;
 
 export function AulaConteudo({
@@ -178,6 +178,11 @@ export function AulaConteudo({
   // Quando != null, a barra flutuante vira um campo de comentário.
   const [comentEditor, setComentEditor] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Espelha o comentEditor pra usar dentro do listener de seleção (sem re-bind).
+  const comentEditorRef = useRef<string | null>(null);
+  useEffect(() => {
+    comentEditorRef.current = comentEditor;
+  }, [comentEditor]);
 
   const esconder = useCallback(() => {
     setToolbar(null);
@@ -190,19 +195,42 @@ export function AulaConteudo({
     return () => window.removeEventListener("scroll", onScroll, true);
   }, [esconder]);
 
+  // Detecta seleção via `selectionchange` (com debounce). Funciona no toque do
+  // celular e no duplo-clique do desktop — onde `mouseup`/`touchend` falhavam
+  // porque disparam antes de a seleção final existir.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const onSelChange = () => {
+      if (comentEditorRef.current !== null) return; // não atrapalha digitar a nota
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(detectarSelecao, 250);
+    };
+    document.addEventListener("selectionchange", onSelChange);
+    return () => {
+      document.removeEventListener("selectionchange", onSelChange);
+      if (timer) clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Esconde a barra se ela estava no modo seleção (mas mantém a de um grifo).
+  function esconderSeSelecao() {
+    setToolbar((prev) => (prev?.tipo === "selecao" ? null : prev));
+  }
+
   // Detecta seleção de texto dentro de um parágrafo do conteúdo.
-  function handleSelecao() {
+  function detectarSelecao() {
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return esconderSeSelecao();
     const range = sel.getRangeAt(0);
     const pEl = paragrafoEl(range.startContainer);
     const pElFim = paragrafoEl(range.endContainer);
-    if (!pEl || pEl !== pElFim) return; // só seleção dentro de um parágrafo
+    if (!pEl || pEl !== pElFim) return esconderSeSelecao(); // só seleção dentro de um parágrafo
     const paragrafo = Number(pEl.dataset.paragrafo);
     const inicio = offsetNoParagrafo(pEl, range.startContainer, range.startOffset);
     const fim = offsetNoParagrafo(pEl, range.endContainer, range.endOffset);
     const texto = sel.toString().trim();
-    if (!texto || fim <= inicio) return;
+    if (!texto || fim <= inicio) return esconderSeSelecao();
     const rect = range.getBoundingClientRect();
     setToolbar({
       tipo: "selecao",
@@ -293,14 +321,9 @@ export function AulaConteudo({
     <>
       <p className="mb-4 flex items-center gap-2 rounded-lg bg-mesa-50 px-3 py-2 text-xs text-mesa-500">
         <span>✨</span>
-        Selecione um trecho do texto para grifar com uma cor ou gerar uma imagem com a frase.
+        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem.
       </p>
-      <div
-        ref={containerRef}
-        className="prose-mesa"
-        onMouseUp={handleSelecao}
-        onTouchEnd={handleSelecao}
-      >
+      <div ref={containerRef} className="prose-mesa">
         {paragrafos.map((paragrafo, i) => {
           if (ehQuadro(paragrafo)) {
             return <Quadro key={i} bloco={paragrafo} />;
@@ -308,7 +331,7 @@ export function AulaConteudo({
           const titulos = faixasDeTitulo(paragrafo);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
-            .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id }));
+            .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
           const segs = montarSegmentos(paragrafo, titulos, grifos);
           return (
             <p key={i} data-paragrafo={i} className="whitespace-pre-wrap">
@@ -317,6 +340,7 @@ export function AulaConteudo({
                   return (
                     <mark
                       key={j}
+                      title={seg.comentario || undefined}
                       onClick={(e) => {
                         e.stopPropagation();
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -326,6 +350,7 @@ export function AulaConteudo({
                           y: rect.top,
                           id: seg.id!,
                           texto: seg.texto,
+                          comentario: seg.comentario ?? null,
                         });
                       }}
                       style={{
@@ -338,6 +363,9 @@ export function AulaConteudo({
                       }}
                     >
                       {seg.texto}
+                      {seg.comentario ? (
+                        <sup style={{ fontSize: "0.7em", marginLeft: 1, cursor: "pointer" }} aria-label="tem comentário">💬</sup>
+                      ) : null}
                     </mark>
                   );
                 }
@@ -435,6 +463,36 @@ export function AulaConteudo({
                   className="rounded-full bg-mesa-700 px-3 py-1 text-xs font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-50"
                 >
                   {salvando ? "Salvando…" : "Salvar"}
+                </button>
+              </div>
+            </div>
+          ) : toolbar.tipo === "grifo" && toolbar.comentario ? (
+            <div
+              className="w-64 rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <p className="mb-2 flex items-start gap-1 text-sm italic text-mesa-700">
+                <span aria-hidden>💬</span>
+                <span>{toolbar.comentario}</span>
+              </p>
+              <div className="flex items-center justify-end gap-1.5">
+                <button
+                  onClick={() => setComentEditor(toolbar.comentario ?? "")}
+                  className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                >
+                  ✏️ Editar
+                </button>
+                <button
+                  onClick={() => abrirImagem(toolbar.texto)}
+                  className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                >
+                  🖼 Imagem
+                </button>
+                <button
+                  onClick={() => removerGrifo(toolbar.id)}
+                  className="rounded-full px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                >
+                  Remover
                 </button>
               </div>
             </div>
