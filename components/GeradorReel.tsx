@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { TEMAS, TEMA_PADRAO, type TemaKey } from "@/lib/instagram-render";
@@ -32,6 +32,49 @@ export function GeradorReel() {
   const [cenaIA, setCenaIA] = useState("");
   const [temaIA, setTemaIA] = useState<TemaKey>(TEMA_PADRAO);
   const [gerando, setGerando] = useState(false);
+  // música
+  const [faixas, setFaixas] = useState<{ nome: string; url: string }[]>([]);
+  const [musicaUrl, setMusicaUrl] = useState("");
+  const [enviandoMusica, setEnviandoMusica] = useState(false);
+
+  async function carregarFaixas() {
+    try {
+      const r = await fetch("/api/admin/instagram/musicas");
+      const d = await r.json();
+      if (r.ok) setFaixas(d.faixas || []);
+    } catch { /* ignora */ }
+  }
+  useEffect(() => { if (modo === "ia") carregarFaixas(); }, [modo]);
+
+  async function enviarMusica(file: File) {
+    setErro(null);
+    if (!/\.(mp3|m4a|aac|wav|ogg)$/i.test(file.name) && !file.type.startsWith("audio/")) {
+      setErro("Envie um áudio (.mp3, .m4a, .wav).");
+      return;
+    }
+    setEnviandoMusica(true);
+    try {
+      const ext = (file.name.split(".").pop() || "mp3").toLowerCase();
+      const res = await fetch("/api/admin/instagram/musicas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ext, nome: file.name.replace(/\.[^.]+$/, "") }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Falha ao preparar upload.");
+      const supabase = createClient();
+      const { error } = await supabase.storage.from("instagram").uploadToSignedUrl(data.path, data.token, file, { contentType: file.type || "audio/mpeg" });
+      if (error) throw new Error(error.message);
+      await carregarFaixas();
+      // seleciona a recém-enviada
+      const pub = supabase.storage.from("instagram").getPublicUrl(data.path).data.publicUrl;
+      setMusicaUrl(pub);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Falha no upload da música.");
+    } finally {
+      setEnviandoMusica(false);
+    }
+  }
 
   async function gerarComIA() {
     if (textoIA.trim().length < 3) {
@@ -48,7 +91,7 @@ export function GeradorReel() {
       const res = await fetch("/api/admin/instagram/reel-gerar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texto: textoIA, tema: temaIA, cena: cenaIA || textoIA, seed: Math.floor(Math.random() * 100000), duracao: 9 }),
+        body: JSON.stringify({ texto: textoIA, tema: temaIA, cena: cenaIA || textoIA, musicaUrl, seed: Math.floor(Math.random() * 100000), duracao: 9 }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao gerar o Reel.");
@@ -213,6 +256,38 @@ export function GeradorReel() {
               </button>
             ))}
           </div>
+
+          {/* seletor de música */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-mesa-700">🎵 Música:</span>
+              <button
+                onClick={() => setMusicaUrl("")}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${musicaUrl === "" ? "border-mesa-700 bg-mesa-50 text-mesa-800" : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"}`}
+              >
+                Sem música
+              </button>
+              {faixas.map((f) => (
+                <button
+                  key={f.url}
+                  onClick={() => setMusicaUrl(f.url)}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${musicaUrl === f.url ? "border-laranja-600 bg-laranja-50 text-laranja-700" : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"}`}
+                >
+                  🎵 {f.nome}
+                </button>
+              ))}
+              <label className="cursor-pointer rounded-full border border-dashed border-mesa-300 px-3 py-1.5 text-xs font-medium text-mesa-600 transition hover:bg-mesa-100">
+                {enviandoMusica ? "enviando…" : "+ Subir faixa"}
+                <input type="file" accept="audio/*,.mp3,.m4a,.wav" className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) enviarMusica(f); e.target.value = ""; }} />
+              </label>
+            </div>
+            {musicaUrl && (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <audio src={musicaUrl} controls className="h-9 w-full max-w-sm" />
+            )}
+          </div>
+
           <button
             onClick={gerarComIA}
             disabled={gerando || textoIA.trim().length < 3}
