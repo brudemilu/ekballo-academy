@@ -74,10 +74,10 @@ export function MarcarConcluida({
       }`}
     >
       {concluida
-        ? "✓ Aula concluída"
+        ? "✓ Capítulo concluído"
         : proximaHref
           ? "Concluir e continuar →"
-          : "Marcar aula como concluída"}
+          : "Marcar capítulo como concluído"}
     </button>
   );
 }
