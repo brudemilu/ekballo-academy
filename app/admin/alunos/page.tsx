@@ -34,8 +34,68 @@ export default async function AlunosPage() {
           </p>
         </div>
       ) : (
-        <div className="mt-8 overflow-hidden rounded-2xl border border-mesa-200 bg-white">
-          <table className="w-full">
+        <>
+          {/* Celular: cards empilhados (um por pessoa, sem rolar pro lado) */}
+          <ul className="mt-8 space-y-3 md:hidden">
+            {alunos.map((a) => (
+              <li
+                key={a.id}
+                className="rounded-2xl border border-mesa-200 bg-white p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      href={`/admin/alunos/${a.id}`}
+                      className="font-medium text-mesa-800 hover:underline"
+                    >
+                      {a.nome || "(sem nome)"}
+                    </Link>
+                    {a.is_admin && (
+                      <span className="ml-2 inline-block rounded-full bg-oliveira-100 px-2 py-0.5 text-[11px] font-medium text-oliveira-700">
+                        Admin
+                      </span>
+                    )}
+                    <p className="truncate text-xs text-mesa-500">{a.email}</p>
+                    <p className="text-xs text-mesa-500">
+                      {a.telefone ? displayTelefone(a.telefone) : "Sem WhatsApp"}
+                    </p>
+                  </div>
+                  <span className="flex-none text-xs text-mesa-400">
+                    {a.respostasCount} resp.
+                  </span>
+                </div>
+
+                {a.tematicas.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {a.tematicas.map((t) => (
+                      <span
+                        key={t}
+                        className="rounded-full bg-laranja-100 px-2 py-0.5 text-xs font-medium text-laranja-700"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-xs text-mesa-400">
+                    Cadastro {new Date(a.created_at).toLocaleDateString("pt-BR")}
+                  </span>
+                  <Link
+                    href={`/admin/alunos/${a.id}`}
+                    className="flex-none rounded-full bg-mesa-700 px-4 py-2 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+                  >
+                    Gerenciar →
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: tabela */}
+          <div className="mt-8 hidden overflow-hidden rounded-2xl border border-mesa-200 bg-white md:block">
+            <table className="w-full">
             <thead className="border-b border-mesa-200 bg-mesa-50/50 text-left">
               <tr>
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
@@ -118,7 +178,8 @@ export default async function AlunosPage() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </AdminShell>
   );
