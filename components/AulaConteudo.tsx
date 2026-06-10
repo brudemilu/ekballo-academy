@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Destaque } from "@/lib/types";
 
@@ -113,12 +113,33 @@ function Quadro({ bloco }: { bloco: string }) {
   );
 }
 
-type Segmento = { texto: string; titulo: boolean; cor?: Cor; id?: string; comentario?: string | null };
+type Segmento = {
+  texto: string;
+  titulo: boolean;
+  cor?: Cor;
+  id?: string;
+  comentario?: string | null;
+  busca?: boolean;
+  buscaIdx?: number;
+};
+
+// Normaliza pra busca: sem acento e minúsculo, MANTENDO o tamanho (1 char →
+// 1 char) pra os offsets continuarem batendo com o texto original.
+function normalizarBusca(s: string): string {
+  let out = "";
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    const base = c.normalize("NFD")[0] ?? c;
+    out += base.toLowerCase();
+  }
+  return out;
+}
 
 function montarSegmentos(
   texto: string,
   titulos: Faixa[],
-  grifos: { start: number; end: number; cor: Cor; id: string; comentario: string | null }[]
+  grifos: { start: number; end: number; cor: Cor; id: string; comentario: string | null }[],
+  buscas: { start: number; end: number; idx: number }[] = []
 ): Segmento[] {
   const pontos = new Set<number>([0, texto.length]);
   for (const f of titulos) {
@@ -129,6 +150,10 @@ function montarSegmentos(
     pontos.add(g.start);
     pontos.add(g.end);
   }
+  for (const b of buscas) {
+    pontos.add(b.start);
+    pontos.add(b.end);
+  }
   const ord = [...pontos].filter((p) => p >= 0 && p <= texto.length).sort((a, b) => a - b);
   const segs: Segmento[] = [];
   for (let i = 0; i < ord.length - 1; i++) {
@@ -137,7 +162,16 @@ function montarSegmentos(
     if (e <= s) continue;
     const titulo = titulos.some((f) => f.start <= s && f.end >= e);
     const g = grifos.find((x) => x.start <= s && x.end >= e);
-    segs.push({ texto: texto.slice(s, e), titulo, cor: g?.cor, id: g?.id, comentario: g?.comentario });
+    const b = buscas.find((x) => x.start <= s && x.end >= e);
+    segs.push({
+      texto: texto.slice(s, e),
+      titulo,
+      cor: g?.cor,
+      id: g?.id,
+      comentario: g?.comentario,
+      busca: Boolean(b),
+      buscaIdx: b?.idx,
+    });
   }
   return segs;
 }
@@ -180,7 +214,54 @@ export function AulaConteudo({
   // Toque (celular/tablet): a barra fica ancorada embaixo da tela, longe do
   // menu nativo do iOS e com alvos maiores.
   const [toque, setToque] = useState(false);
+  // Busca de palavras/frases dentro do capítulo.
+  const [busca, setBusca] = useState("");
+  const [buscaAtual, setBuscaAtual] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const termo = busca.trim();
+  // Todas as ocorrências do termo, em ordem (parágrafo + offset), ignorando
+  // acento e maiúsc/minúsc. Quadros (tabelas) ficam de fora pra manter simples.
+  const matches = useMemo(() => {
+    const out: { paragrafo: number; start: number; end: number }[] = [];
+    if (termo.length < 2) return out;
+    const q = normalizarBusca(termo);
+    paragrafos.forEach((p, i) => {
+      if (ehQuadro(p)) return;
+      const np = normalizarBusca(p);
+      let from = 0;
+      for (;;) {
+        const idx = np.indexOf(q, from);
+        if (idx === -1) break;
+        out.push({ paragrafo: i, start: idx, end: idx + q.length });
+        from = idx + q.length;
+      }
+    });
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [termo, conteudo]);
+
+  // Mantém o índice atual dentro do intervalo quando a busca muda.
+  useEffect(() => {
+    setBuscaAtual(0);
+  }, [termo]);
+
+  // Rola até a ocorrência ativa.
+  useEffect(() => {
+    if (!matches.length) return;
+    const el = document.getElementById("busca-ativa");
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [buscaAtual, matches]);
+
+  const irMatch = useCallback(
+    (dir: 1 | -1) => {
+      setBuscaAtual((a) => {
+        if (!matches.length) return 0;
+        return (a + dir + matches.length) % matches.length;
+      });
+    },
+    [matches.length]
+  );
   // Espelha o comentEditor pra usar dentro do listener de seleção (sem re-bind).
   const comentEditorRef = useRef<string | null>(null);
   useEffect(() => {
@@ -331,8 +412,64 @@ export function AulaConteudo({
     <>
       <p className="mb-4 flex items-center gap-2 rounded-lg bg-mesa-50 px-3 py-2 text-xs text-mesa-500">
         <span>✨</span>
-        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem.
+        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem. Para desfazer, toque no grifo e escolha “Desmarcar”.
       </p>
+
+      {/* Campo de busca de palavras/frases no capítulo */}
+      <div className="sticky top-2 z-30 mb-5">
+        <div className="flex items-center gap-2 rounded-full border border-mesa-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
+          <span className="text-mesa-400" aria-hidden>🔍</span>
+          <input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                irMatch(e.shiftKey ? -1 : 1);
+              }
+              if (e.key === "Escape") setBusca("");
+            }}
+            placeholder="Buscar palavra ou frase no capítulo…"
+            className="min-w-0 flex-1 bg-transparent text-sm text-mesa-800 outline-none placeholder:text-mesa-400"
+          />
+          {termo.length >= 2 && (
+            <>
+              <span className="whitespace-nowrap text-xs font-medium text-mesa-500">
+                {matches.length ? `${buscaAtual + 1}/${matches.length}` : "0"}
+              </span>
+              <button
+                onClick={() => irMatch(-1)}
+                disabled={!matches.length}
+                title="Anterior"
+                className="rounded-full px-2 py-1 text-sm text-mesa-600 hover:bg-mesa-100 disabled:opacity-30"
+              >
+                ↑
+              </button>
+              <button
+                onClick={() => irMatch(1)}
+                disabled={!matches.length}
+                title="Próxima"
+                className="rounded-full px-2 py-1 text-sm text-mesa-600 hover:bg-mesa-100 disabled:opacity-30"
+              >
+                ↓
+              </button>
+            </>
+          )}
+          {busca && (
+            <button
+              onClick={() => setBusca("")}
+              title="Limpar busca"
+              className="rounded-full px-2 py-1 text-sm text-mesa-400 hover:bg-mesa-100"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {termo.length >= 2 && matches.length === 0 && (
+          <p className="mt-1 px-3 text-xs text-mesa-400">Nenhuma ocorrência de “{termo}”.</p>
+        )}
+      </div>
+
       <div ref={containerRef} className="prose-mesa">
         {paragrafos.map((paragrafo, i) => {
           if (ehQuadro(paragrafo)) {
@@ -342,10 +479,37 @@ export function AulaConteudo({
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
             .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
-          const segs = montarSegmentos(paragrafo, titulos, grifos);
+          const matchesP: { start: number; end: number; idx: number }[] = [];
+          matches.forEach((m, gi) => {
+            if (m.paragrafo === i) matchesP.push({ start: m.start, end: m.end, idx: gi });
+          });
+          const segs = montarSegmentos(paragrafo, titulos, grifos, matchesP);
           return (
             <p key={i} data-paragrafo={i} className="whitespace-pre-wrap">
               {segs.map((seg, j) => {
+                if (seg.busca) {
+                  const ativa = seg.buscaIdx === buscaAtual;
+                  return (
+                    <mark
+                      key={j}
+                      id={ativa ? "busca-ativa" : undefined}
+                      style={{
+                        backgroundColor: seg.cor
+                          ? CORES[seg.cor].bg
+                          : ativa
+                            ? "#FB923C"
+                            : "#FED7AA",
+                        boxShadow: ativa ? "0 0 0 2px #EA580C" : "0 0 0 1px #FB923C",
+                        borderRadius: 3,
+                        padding: "0 1px",
+                        fontWeight: seg.titulo ? 700 : undefined,
+                        color: seg.titulo ? "#2A2724" : undefined,
+                      }}
+                    >
+                      {seg.texto}
+                    </mark>
+                  );
+                }
                 if (seg.cor) {
                   return (
                     <mark
@@ -429,7 +593,7 @@ export function AulaConteudo({
                   <button
                     onClick={() => removerGrifo(d.id)}
                     className="rounded-full border border-mesa-200 bg-white px-2.5 py-1 text-xs font-medium text-mesa-400 hover:bg-red-50 hover:text-red-600"
-                    title="Remover grifo"
+                    title="Desmarcar"
                   >
                     ✕
                   </button>
@@ -506,7 +670,7 @@ export function AulaConteudo({
                   onClick={() => removerGrifo(toolbar.id)}
                   className={`rounded-full font-medium text-red-600 hover:bg-red-50 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                 >
-                  Remover
+                  Desmarcar
                 </button>
               </div>
             </div>
@@ -572,7 +736,7 @@ export function AulaConteudo({
                     onClick={() => removerGrifo(toolbar.id)}
                     className={`rounded-full font-medium text-red-600 hover:bg-red-50 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
-                    Remover
+                    Desmarcar
                   </button>
                 </>
               )}
