@@ -31,6 +31,7 @@ export function GeradorReel() {
   const [textoIA, setTextoIA] = useState("");
   const [cenaIA, setCenaIA] = useState("");
   const [temaIA, setTemaIA] = useState<TemaKey>(TEMA_PADRAO);
+  const [duracaoIA, setDuracaoIA] = useState(14);
   const [gerando, setGerando] = useState(false);
   // música
   const [faixas, setFaixas] = useState<{ nome: string; url: string }[]>([]);
@@ -91,7 +92,7 @@ export function GeradorReel() {
       const res = await fetch("/api/admin/instagram/reel-gerar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texto: textoIA, tema: temaIA, cena: cenaIA || textoIA, musicaUrl, seed: Math.floor(Math.random() * 100000), duracao: 9 }),
+        body: JSON.stringify({ texto: textoIA, tema: temaIA, cena: cenaIA || textoIA, musicaUrl, seed: Math.floor(Math.random() * 100000), duracao: duracaoIA }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao gerar o Reel.");
@@ -255,6 +256,21 @@ export function GeradorReel() {
                 {TEMAS[k].label}
               </button>
             ))}
+          </div>
+
+          {/* duração */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-mesa-700">⏱️ Duração:</span>
+            {[12, 14, 18, 22].map((d) => (
+              <button
+                key={d}
+                onClick={() => setDuracaoIA(d)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${duracaoIA === d ? "border-laranja-600 bg-laranja-50 text-laranja-700" : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"}`}
+              >
+                {d}s
+              </button>
+            ))}
+            <span className="text-xs text-mesa-400">(ajusta automático se tiver muitas partes)</span>
           </div>
 
           {/* seletor de música */}

@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   let cena = "";
   let musicaUrl = "";
   let seed = Math.floor(Math.random() * 1000);
-  let duracao = 9;
+  let duracao = 14;
   try {
     const b = await req.json();
     texto = typeof b.texto === "string" ? b.texto.trim() : "";
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     cena = typeof b.cena === "string" ? b.cena.trim() : "";
     if (typeof b.musicaUrl === "string") musicaUrl = b.musicaUrl;
     if (typeof b.seed === "number") seed = Math.trunc(b.seed);
-    if (typeof b.duracao === "number") duracao = Math.min(20, Math.max(6, Math.trunc(b.duracao)));
+    if (typeof b.duracao === "number") duracao = Math.min(25, Math.max(12, Math.trunc(b.duracao)));
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
@@ -84,8 +84,8 @@ export async function POST(req: NextRequest) {
 
   const id = crypto.randomUUID();
   const partes = dividirEmPartes(texto);
-  // garante ~3s por parte (mas no máx 20s no total)
-  duracao = Math.min(20, Math.max(duracao, partes.length * 3));
+  // mín 12s e ~4s por parte (teto 25s)
+  duracao = Math.min(25, Math.max(12, duracao, partes.length * 4));
   const videoIn = join(tmpdir(), `${id}-bg.mp4`);
   const textIns = partes.map((_, i) => join(tmpdir(), `${id}-txt${i}.png`));
   const musicIn = join(tmpdir(), `${id}-mus`);
