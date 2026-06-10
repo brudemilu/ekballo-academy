@@ -816,7 +816,33 @@ export async function salvarRespostaAlternativa(alunoId: string, atividadeId: st
   );
 }
 
-// Aula completa = todas as MCs corretas E todas as reflexões respondidas (texto não vazio)
+// Decide, em memória, se um conjunto de atividades de uma aula está completo
+// para o aluno, dado o mapa de respostas (chave atividade_id) e o mapa de
+// alternativa correta por atividade. Sem nenhuma ida ao banco.
+// Regra: toda MC com a alternativa correta selecionada E toda reflexão com
+// texto não vazio. Aula sem atividades é trivialmente completa.
+function aulaCompletaEmMemoria(
+  atividades: { id: string; tipo: string }[],
+  respostaPorAtividade: Map<string, { alternativa_id: string | null; texto: string | null }>,
+  corretaPorAtividade: Map<string, string>,
+): boolean {
+  if (atividades.length === 0) return true;
+  for (const atv of atividades) {
+    const r = respostaPorAtividade.get(atv.id);
+    if (atv.tipo === "multipla_escolha") {
+      if (!r?.alternativa_id) return false;
+      if (r.alternativa_id !== corretaPorAtividade.get(atv.id)) return false;
+    } else {
+      if (!r?.texto?.trim()) return false;
+    }
+  }
+  return true;
+}
+
+// Aula completa = todas as MCs corretas E todas as reflexões respondidas (texto não vazio).
+// Antes: 1 query de atividades + 1 query de resposta POR atividade + 1 query de
+// alternativa por MC (N+1 sequencial). Agora: 3 queries (atividades, respostas
+// do aluno e alternativas corretas), as duas últimas em paralelo, decisão em memória.
 export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boolean> {
   if (isMockMode()) return mockAulaCompleta(alunoId, aulaId);
   const supabase = await createClient();
@@ -826,26 +852,32 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
     .eq("aula_id", aulaId);
   const atividades = (ats || []) as { id: string; tipo: string }[];
   if (atividades.length === 0) return true;
-  for (const atv of atividades) {
-    const { data: r } = await supabase
+  const atvIds = atividades.map((a) => a.id);
+  const mcIds = atividades.filter((a) => a.tipo === "multipla_escolha").map((a) => a.id);
+
+  const [respResp, altsResp] = await Promise.all([
+    supabase
       .from("respostas")
-      .select("alternativa_id, texto")
+      .select("atividade_id, alternativa_id, texto")
       .eq("aluno_id", alunoId)
-      .eq("atividade_id", atv.id)
-      .maybeSingle();
-    if (atv.tipo === "multipla_escolha") {
-      if (!r?.alternativa_id) return false;
-      const { data: alt } = await supabase
-        .from("alternativas")
-        .select("correta")
-        .eq("id", r.alternativa_id)
-        .single();
-      if (!alt?.correta) return false;
-    } else {
-      if (!r?.texto?.trim()) return false;
-    }
-  }
-  return true;
+      .in("atividade_id", atvIds),
+    mcIds.length
+      ? supabase
+          .from("alternativas")
+          .select("atividade_id, id")
+          .in("atividade_id", mcIds)
+          .eq("correta", true)
+      : Promise.resolve({ data: [] as { atividade_id: string; id: string }[] }),
+  ]);
+
+  const respMap = new Map<string, { alternativa_id: string | null; texto: string | null }>();
+  ((respResp.data || []) as { atividade_id: string; alternativa_id: string | null; texto: string | null }[])
+    .forEach((r) => respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto }));
+  const corretaMap = new Map<string, string>();
+  ((altsResp.data || []) as { atividade_id: string; id: string }[])
+    .forEach((a) => corretaMap.set(a.atividade_id, a.id));
+
+  return aulaCompletaEmMemoria(atividades, respMap, corretaMap);
 }
 
 // Calcula status (desbloqueada / bloqueada) de cada aula do curso para o aluno
@@ -854,18 +886,78 @@ export type AulaComStatus = Aula & { desbloqueada: boolean; completa: boolean };
 // aulasLivres = curso liberado (todas as aulas desbloqueadas, sem trava
 // sequencial). `completa` continua refletindo se o aluno respondeu, só o
 // `desbloqueada` é liberado.
+//
+// Antes: 1 query de aulas + (para cada aula) o N+1 inteiro do aulaCompleta, em
+// fila. Um curso de 4 aulas/10 questões custava ~24 round-trips sequenciais —
+// a causa da lentidão pra "abrir o curso". Agora: 4 queries no total
+// (aulas → atividades/respostas/alternativas em batch) e decisão em memória.
 export async function listAulasComStatus(
   cursoId: string,
   alunoId: string,
   aulasLivres = false,
 ): Promise<AulaComStatus[]> {
   const aulas = await listAulasByCurso(cursoId);
+  if (aulas.length === 0) return [];
+  if (isMockMode()) {
+    // Mock: aulaCompleta já é in-memory e barato, mantém o caminho simples.
+    const result: AulaComStatus[] = [];
+    let previousCompleta = true;
+    for (const aula of aulas) {
+      const completa = await aulaCompleta(alunoId, aula.id);
+      result.push({ ...aula, desbloqueada: aulasLivres || previousCompleta, completa });
+      previousCompleta = completa;
+    }
+    return result;
+  }
+
+  const supabase = await createClient();
+  const aulaIds = aulas.map((a) => a.id);
+
+  // Todas as atividades das aulas do curso de uma vez.
+  const { data: atvData } = await supabase
+    .from("atividades")
+    .select("id, aula_id, tipo")
+    .in("aula_id", aulaIds);
+  const atividades = (atvData || []) as { id: string; aula_id: string; tipo: string }[];
+  const atvIds = atividades.map((a) => a.id);
+  const mcIds = atividades.filter((a) => a.tipo === "multipla_escolha").map((a) => a.id);
+
+  // Respostas do aluno + alternativas corretas, em paralelo.
+  const [respResp, altsResp] = await Promise.all([
+    atvIds.length
+      ? supabase
+          .from("respostas")
+          .select("atividade_id, alternativa_id, texto")
+          .eq("aluno_id", alunoId)
+          .in("atividade_id", atvIds)
+      : Promise.resolve({ data: [] as { atividade_id: string; alternativa_id: string | null; texto: string | null }[] }),
+    mcIds.length
+      ? supabase
+          .from("alternativas")
+          .select("atividade_id, id")
+          .in("atividade_id", mcIds)
+          .eq("correta", true)
+      : Promise.resolve({ data: [] as { atividade_id: string; id: string }[] }),
+  ]);
+
+  const atvPorAula = new Map<string, { id: string; tipo: string }[]>();
+  atividades.forEach((a) => {
+    const arr = atvPorAula.get(a.aula_id) || [];
+    arr.push({ id: a.id, tipo: a.tipo });
+    atvPorAula.set(a.aula_id, arr);
+  });
+  const respMap = new Map<string, { alternativa_id: string | null; texto: string | null }>();
+  ((respResp.data || []) as { atividade_id: string; alternativa_id: string | null; texto: string | null }[])
+    .forEach((r) => respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto }));
+  const corretaMap = new Map<string, string>();
+  ((altsResp.data || []) as { atividade_id: string; id: string }[])
+    .forEach((a) => corretaMap.set(a.atividade_id, a.id));
+
   const result: AulaComStatus[] = [];
   let previousCompleta = true;
   for (const aula of aulas) {
-    const completa = await aulaCompleta(alunoId, aula.id);
-    const desbloqueada = aulasLivres || previousCompleta;
-    result.push({ ...aula, desbloqueada, completa });
+    const completa = aulaCompletaEmMemoria(atvPorAula.get(aula.id) || [], respMap, corretaMap);
+    result.push({ ...aula, desbloqueada: aulasLivres || previousCompleta, completa });
     previousCompleta = completa;
   }
   return result;

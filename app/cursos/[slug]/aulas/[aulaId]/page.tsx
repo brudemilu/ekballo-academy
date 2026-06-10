@@ -20,7 +20,6 @@ import {
   jaConcluiu,
   listAlternativasByAtividade,
   getRespostaAlternativa,
-  aulaCompleta,
 } from "@/lib/db";
 
 export default async function AulaPage({
@@ -81,7 +80,9 @@ export default async function AulaPage({
     })
   );
 
-  const aulaConcluida = await aulaCompleta(session.userId, aula.id);
+  // `aulasStatus` já calculou a completude de cada aula em batch — reaproveita
+  // em vez de refazer o trabalho com outra rodada de queries.
+  const aulaConcluida = aulasStatus.find((a) => a.id === aula.id)?.completa ?? false;
   const temMCs = atividades.some((a) => a.tipo === "multipla_escolha");
   // "anotacao" é uma reflexão com razao='anotacao' — caderno do capítulo (não obrigatória).
   const temReflexoes = atividades.some((a) => a.tipo === "reflexao" && a.razao !== "anotacao");
