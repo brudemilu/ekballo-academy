@@ -115,7 +115,7 @@ export default async function CursoPage({
                           : "bg-mesa-100 text-mesa-700"
                     }`}
                   >
-                    {bloqueada ? "🔒" : concluida ? "✓" : String(idx + 1).padStart(2, "0")}
+                    {bloqueada ? "🔒" : concluida ? "✓" : String(curso.slug === "seja-um-lider-de-verdade" ? aula.ordem : idx + 1).padStart(2, "0")}
                   </div>
                   <div className="flex-1">
                     <h3 className={`font-medium ${bloqueada ? "text-mesa-500" : "text-mesa-800"}`}>

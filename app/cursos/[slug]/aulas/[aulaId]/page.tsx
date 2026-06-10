@@ -114,7 +114,7 @@ export default async function AulaPage({
 
         <article className="mb-12 rounded-2xl border border-mesa-200 bg-white p-8 shadow-sm sm:p-12">
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-            Aula {String(indiceAtual + 1).padStart(2, "0")}
+            Aula {String(curso.slug === "seja-um-lider-de-verdade" ? aula.ordem : indiceAtual + 1).padStart(2, "0")}
           </p>
           <h1 className="mb-8 font-serif text-4xl font-semibold leading-tight text-mesa-800">
             {aula.titulo}
