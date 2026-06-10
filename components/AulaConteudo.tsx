@@ -177,6 +177,9 @@ export function AulaConteudo({
   const [modalTexto, setModalTexto] = useState<string | null>(null);
   // Quando != null, a barra flutuante vira um campo de comentário.
   const [comentEditor, setComentEditor] = useState<string | null>(null);
+  // Toque (celular/tablet): a barra fica ancorada embaixo da tela, longe do
+  // menu nativo do iOS e com alvos maiores.
+  const [toque, setToque] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   // Espelha o comentEditor pra usar dentro do listener de seleção (sem re-bind).
   const comentEditorRef = useRef<string | null>(null);
@@ -184,13 +187,22 @@ export function AulaConteudo({
     comentEditorRef.current = comentEditor;
   }, [comentEditor]);
 
+  useEffect(() => {
+    setToque(window.matchMedia?.("(pointer: coarse)").matches ?? false);
+  }, []);
+
   const esconder = useCallback(() => {
     setToolbar(null);
     setComentEditor(null);
   }, []);
 
   useEffect(() => {
-    const onScroll = () => esconder();
+    // Não esconder enquanto o campo de nota está aberto: no celular, abrir o
+    // teclado dispara scroll/resize e fecharia o campo no exato momento.
+    const onScroll = () => {
+      if (comentEditorRef.current !== null) return;
+      esconder();
+    };
     window.addEventListener("scroll", onScroll, true);
     return () => window.removeEventListener("scroll", onScroll, true);
   }, [esconder]);
@@ -213,24 +225,22 @@ export function AulaConteudo({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Esconde a barra se ela estava no modo seleção (mas mantém a de um grifo).
-  function esconderSeSelecao() {
-    setToolbar((prev) => (prev?.tipo === "selecao" ? null : prev));
-  }
-
   // Detecta seleção de texto dentro de um parágrafo do conteúdo.
+  // NÃO esconde a barra quando a seleção some: no celular, tocar na própria
+  // barra desfaz a seleção (dispara selectionchange) e esconder aqui tiraria a
+  // barra ANTES do toque registrar. A barra some por ação, scroll ou nova seleção.
   function detectarSelecao() {
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return esconderSeSelecao();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
     const pEl = paragrafoEl(range.startContainer);
     const pElFim = paragrafoEl(range.endContainer);
-    if (!pEl || pEl !== pElFim) return esconderSeSelecao(); // só seleção dentro de um parágrafo
+    if (!pEl || pEl !== pElFim) return; // só seleção dentro de um parágrafo
     const paragrafo = Number(pEl.dataset.paragrafo);
     const inicio = offsetNoParagrafo(pEl, range.startContainer, range.startOffset);
     const fim = offsetNoParagrafo(pEl, range.endContainer, range.endOffset);
     const texto = sel.toString().trim();
-    if (!texto || fim <= inicio) return esconderSeSelecao();
+    if (!texto || fim <= inicio) return;
     const rect = range.getBoundingClientRect();
     setToolbar({
       tipo: "selecao",
@@ -430,14 +440,18 @@ export function AulaConteudo({
         </div>
       )}
 
-      {/* Barra flutuante */}
+      {/* Barra flutuante — no toque, ancorada embaixo (longe do menu do iOS) */}
       {toolbar && (
         <div
-          className="fixed z-50 -translate-x-1/2 -translate-y-full"
-          style={{ left: toolbar.x, top: toolbar.y - 8 }}
+          className={
+            toque
+              ? "fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[calc(env(safe-area-inset-bottom)+12px)]"
+              : "fixed z-50 -translate-x-1/2 -translate-y-full"
+          }
+          style={toque ? undefined : { left: toolbar.x, top: toolbar.y - 8 }}
         >
           {comentEditor !== null ? (
-            <div className="w-64 rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg">
+            <div className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}>
               <textarea
                 autoFocus
                 value={comentEditor}
@@ -468,7 +482,7 @@ export function AulaConteudo({
             </div>
           ) : toolbar.tipo === "grifo" && toolbar.comentario ? (
             <div
-              className="w-64 rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg"
+              className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}
               onMouseDown={(e) => e.preventDefault()}
             >
               <p className="mb-2 flex items-start gap-1 text-sm italic text-mesa-700">
@@ -478,19 +492,19 @@ export function AulaConteudo({
               <div className="flex items-center justify-end gap-1.5">
                 <button
                   onClick={() => setComentEditor(toolbar.comentario ?? "")}
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                  className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                 >
                   ✏️ Editar
                 </button>
                 <button
                   onClick={() => abrirImagem(toolbar.texto)}
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                  className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                 >
                   🖼 Imagem
                 </button>
                 <button
                   onClick={() => removerGrifo(toolbar.id)}
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                  className={`rounded-full font-medium text-red-600 hover:bg-red-50 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                 >
                   Remover
                 </button>
@@ -498,7 +512,7 @@ export function AulaConteudo({
             </div>
           ) : (
             <div
-              className="flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white px-2 py-1.5 shadow-lg"
+              className={`flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white shadow-lg ${toque ? "px-3 py-2" : "px-2 py-1.5"}`}
               onMouseDown={(e) => e.preventDefault()}
             >
               {toolbar.tipo === "selecao" ? (
@@ -509,23 +523,32 @@ export function AulaConteudo({
                       disabled={salvando}
                       onClick={() => salvarGrifo(cor)}
                       title={`Marcar (${CORES[cor].nome})`}
-                      className="h-6 w-6 rounded-full border border-black/10 transition hover:scale-110 disabled:opacity-50"
+                      className={`${toque ? "h-9 w-9" : "h-6 w-6"} rounded-full border border-black/10 transition hover:scale-110 disabled:opacity-50`}
                       style={{ backgroundColor: CORES[cor].swatch }}
                     />
                   ))}
                   <span className="mx-0.5 h-5 w-px bg-mesa-200" />
                   <button
                     onClick={() => setComentEditor("")}
-                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                    className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
                     💬 Comentar
                   </button>
                   <button
                     onClick={() => abrirImagem(toolbar.texto)}
-                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                    className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
                     🖼 Imagem
                   </button>
+                  {toque && (
+                    <button
+                      onClick={esconder}
+                      aria-label="Fechar"
+                      className="ml-0.5 rounded-full px-3 py-2 text-sm font-medium text-mesa-400 hover:bg-mesa-100"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </>
               ) : (
                 <>
@@ -534,20 +557,20 @@ export function AulaConteudo({
                       const d = destaques.find((x) => x.id === toolbar.id);
                       setComentEditor(d?.comentario ?? "");
                     }}
-                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                    className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
                     💬 Comentar
                   </button>
                   <button
                     onClick={() => abrirImagem(toolbar.texto)}
-                    className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
+                    className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
                     🖼 Imagem
                   </button>
                   <span className="mx-0.5 h-5 w-px bg-mesa-200" />
                   <button
                     onClick={() => removerGrifo(toolbar.id)}
-                    className="rounded-full px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                    className={`rounded-full font-medium text-red-600 hover:bg-red-50 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
                     Remover
                   </button>
