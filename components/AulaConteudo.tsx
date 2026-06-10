@@ -407,7 +407,6 @@ export function AulaConteudo({
         <div
           className="fixed z-50 -translate-x-1/2 -translate-y-full"
           style={{ left: toolbar.x, top: toolbar.y - 8 }}
-          onMouseDown={(e) => e.preventDefault()}
         >
           {comentEditor !== null ? (
             <div className="w-64 rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg">
@@ -440,7 +439,10 @@ export function AulaConteudo({
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white px-2 py-1.5 shadow-lg">
+            <div
+              className="flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white px-2 py-1.5 shadow-lg"
+              onMouseDown={(e) => e.preventDefault()}
+            >
               {toolbar.tipo === "selecao" ? (
                 <>
                   {CORES_ORDEM.map((cor) => (
