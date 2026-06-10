@@ -18,6 +18,7 @@ export type AdminTab =
   | "imagens"
   | "instagram"
   | "youtube"
+  | "marca"
   | "agenda"
   | "permissoes";
 
@@ -38,6 +39,7 @@ const ITEMS: Item[] = [
   { key: "imagens", label: "Imagens", href: "/admin/imagens", hint: "Gerador cinematográfico IA" },
   { key: "instagram", label: "Instagram", href: "/admin/instagram", hint: "Gerar carrossel e postar" },
   { key: "youtube", label: "YouTube", href: "/admin/youtube", hint: "Baixar áudio em MP3" },
+  { key: "marca", label: "Marca", href: "/admin/marca", hint: "Logo, cores e o nome Ekballo" },
 ];
 
 // Ícones só para a grade de cartões no celular (deixa mais visual/tocável).
@@ -51,6 +53,7 @@ const ICONE: Partial<Record<AdminTab, string>> = {
   imagens: "🖼️",
   instagram: "📸",
   youtube: "🎬",
+  marca: "🎨",
   agenda: "📅",
   permissoes: "🔑",
   biblia: "📖",
