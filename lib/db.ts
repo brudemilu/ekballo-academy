@@ -1836,3 +1836,38 @@ export async function reagendarCarrosselInstagram(id: string, agendadoPara: stri
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Edita o conteúdo de um post salvo (slides/legenda/conteúdo/vídeo) sem mexer
+ * no agendamento nem no status. Só os campos enviados são atualizados.
+ */
+export type AtualizarCarrosselInput = {
+  conteudo?: string;
+  slides?: CarrosselInstagramMock["slides"];
+  legenda?: string;
+  videoUrl?: string;
+};
+export async function atualizarConteudoCarrosselInstagram(
+  id: string,
+  patch: AtualizarCarrosselInput,
+): Promise<void> {
+  if (isMockMode()) {
+    const c = listMockCarrosseis().find((x) => x.id === id);
+    if (c) {
+      if (patch.conteudo !== undefined) c.conteudo = patch.conteudo;
+      if (patch.slides !== undefined) c.slides = patch.slides;
+      if (patch.legenda !== undefined) c.legenda = patch.legenda;
+      if (patch.videoUrl !== undefined) c.video_url = patch.videoUrl;
+    }
+    return;
+  }
+  const fields: Record<string, unknown> = {};
+  if (patch.conteudo !== undefined) fields.conteudo = patch.conteudo;
+  if (patch.slides !== undefined) fields.slides = patch.slides;
+  if (patch.legenda !== undefined) fields.legenda = patch.legenda;
+  if (patch.videoUrl !== undefined) fields.video_url = patch.videoUrl;
+  if (!Object.keys(fields).length) return;
+  const supabase = await createClient();
+  const { error } = await supabase.from("instagram_carrosseis").update(fields).eq("id", id);
+  if (error) throw new Error(error.message);
+}

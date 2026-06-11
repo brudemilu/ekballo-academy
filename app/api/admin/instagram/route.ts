@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram, reagendarCarrosselInstagram } from "@/lib/db";
+import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram, reagendarCarrosselInstagram, atualizarConteudoCarrosselInstagram } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -81,34 +81,73 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-/** PATCH /api/admin/instagram — reagenda um post: { id, agendadoPara } */
+/**
+ * PATCH /api/admin/instagram — duas operações sobre um post já salvo:
+ *  - reagendar:        { id, agendadoPara }
+ *  - editar conteúdo:  { id, slides?, legenda?, conteudo?, videoUrl? }
+ * Pode combinar (ex.: editar a legenda e reagendar de uma vez).
+ */
 export async function PATCH(req: NextRequest) {
   const session = await getCurrentSession();
   if (!session?.profile?.is_admin) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
-  let body: { id?: string; agendadoPara?: string };
+  let body: {
+    id?: string;
+    agendadoPara?: string;
+    slides?: unknown[];
+    legenda?: string;
+    conteudo?: string;
+    videoUrl?: string;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
-  if (!body.id || !body.agendadoPara) {
-    return NextResponse.json({ error: "id e agendadoPara são obrigatórios" }, { status: 400 });
+  if (!body.id) {
+    return NextResponse.json({ error: "id é obrigatório" }, { status: 400 });
   }
-  const t = new Date(body.agendadoPara).getTime();
-  if (Number.isNaN(t)) {
-    return NextResponse.json({ error: "Data inválida." }, { status: 400 });
+
+  const temConteudo =
+    body.slides !== undefined ||
+    body.legenda !== undefined ||
+    body.conteudo !== undefined ||
+    body.videoUrl !== undefined;
+  if (!body.agendadoPara && !temConteudo) {
+    return NextResponse.json({ error: "Nada para atualizar." }, { status: 400 });
   }
-  if (t < Date.now() - 60_000) {
-    return NextResponse.json({ error: "Escolha uma data/hora no futuro." }, { status: 400 });
-  }
+
   try {
-    await reagendarCarrosselInstagram(body.id, new Date(t).toISOString());
+    // 1) edição de conteúdo (slides/legenda/conteúdo/vídeo)
+    if (temConteudo) {
+      if (body.slides !== undefined && (!Array.isArray(body.slides) || !body.slides.length)) {
+        return NextResponse.json({ error: "Um post precisa de pelo menos uma imagem." }, { status: 400 });
+      }
+      await atualizarConteudoCarrosselInstagram(body.id, {
+        slides: body.slides as never,
+        legenda: typeof body.legenda === "string" ? body.legenda : undefined,
+        conteudo: typeof body.conteudo === "string" ? body.conteudo : undefined,
+        videoUrl: typeof body.videoUrl === "string" ? body.videoUrl : undefined,
+      });
+    }
+
+    // 2) reagendamento (opcional, pode vir junto)
+    if (body.agendadoPara) {
+      const t = new Date(body.agendadoPara).getTime();
+      if (Number.isNaN(t)) {
+        return NextResponse.json({ error: "Data inválida." }, { status: 400 });
+      }
+      if (t < Date.now() - 60_000) {
+        return NextResponse.json({ error: "Escolha uma data/hora no futuro." }, { status: 400 });
+      }
+      await reagendarCarrosselInstagram(body.id, new Date(t).toISOString());
+    }
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Falha ao reagendar." },
+      { error: e instanceof Error ? e.message : "Falha ao atualizar." },
       { status: 500 },
     );
   }

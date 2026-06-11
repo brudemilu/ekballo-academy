@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { EditorPostInstagram, type EdSlide } from "@/components/EditorPostInstagram";
 
 type Item = {
   id: string;
@@ -31,6 +32,7 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
   const [publicandoId, setPublicandoId] = useState<string | null>(null);
   const [quando, setQuando] = useState<Record<string, string>>({});
   const [reagendandoId, setReagendandoId] = useState<string | null>(null);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
 
   async function reagendar(it: Item) {
     const val = quando[it.id];
@@ -147,6 +149,12 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
                 </button>
               )}
               <button
+                onClick={() => setEditandoId((cur) => (cur === it.id ? null : it.id))}
+                className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
+              >
+                {editandoId === it.id ? "Fechar" : "👁️ Ver / Editar"}
+              </button>
+              <button
                 onClick={() => excluir(it)}
                 disabled={excluindo === it.id}
                 className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm text-red-500 transition hover:bg-red-50 disabled:opacity-40"
@@ -154,6 +162,23 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
                 {excluindo === it.id ? "…" : it.status === "agendado" ? "Cancelar" : "Excluir"}
               </button>
             </div>
+
+            {/* Ver / Editar conteúdo (imagens, vídeo, textos) */}
+            {editandoId === it.id && (
+              <EditorPostInstagram
+                item={it}
+                onSaved={(p) => {
+                  setLista((prev) =>
+                    prev.map((x) =>
+                      x.id === it.id
+                        ? { ...x, legenda: p.legenda, slides: p.slides as EdSlide[], video_url: p.video_url ?? x.video_url }
+                        : x,
+                    ),
+                  );
+                  router.refresh();
+                }}
+              />
+            )}
             {/* Reagendar */}
             <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-mesa-100 pt-3">
               <span className="text-xs font-medium text-mesa-500">🗓️ Reagendar:</span>
