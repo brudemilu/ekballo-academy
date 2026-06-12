@@ -11,9 +11,10 @@
 //   1) Quebra `conteudo` em pedaços (~1800 chars, em fronteira de parágrafo)
 //      — o TTS tem limite de duração por requisição.
 //   2) Gemini TTS (voz única, prebuilt) sintetiza cada pedaço em PCM 24kHz.
-//   3) Concatena o PCM de todos os pedaços e empacota num único WAV.
-//   4) Upload em materiais-cursos/audios-leitura/<aula_id>.wav.
-//   5) UPDATE aulas.audio_leitura_url = 'audios-leitura/<aula_id>.wav'.
+//   3) Concatena o PCM, empacota em WAV e converte para MP3 mono 64 kbps
+//      (ffmpeg) — ~10x menor, leve para ouvir no celular.
+//   4) Upload em materiais-cursos/audios-leitura/<aula_id>.mp3.
+//   5) UPDATE aulas.audio_leitura_url = 'audios-leitura/<aula_id>.mp3'.
 //
 // Roda LOCALMENTE (offline). Não usa a Vercel.
 //
@@ -33,6 +34,8 @@ import { createClient } from "@supabase/supabase-js";
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawn } from "node:child_process";
+import ffmpegStatic from "ffmpeg-static";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const OUT = join(here, "leituras-geradas");
@@ -206,6 +209,27 @@ function pcmParaWav(pcm, sampleRate = 24000, channels = 1, bits = 16) {
   return Buffer.concat([h, pcm]);
 }
 
+// WAV (Buffer) -> MP3 (Buffer) via ffmpeg-static. Mono 64 kbps é ótimo para
+// fala e ~10x menor que o WAV — leve para ouvir no celular (dados móveis).
+function wavParaMp3(wav) {
+  const bin = ffmpegStatic;
+  if (!bin) throw new Error("ffmpeg-static indisponível");
+  return new Promise((resolve, reject) => {
+    const args = ["-hide_banner", "-loglevel", "error", "-i", "pipe:0",
+      "-vn", "-ac", "1", "-c:a", "libmp3lame", "-b:a", "64k", "-f", "mp3", "pipe:1"];
+    const p = spawn(bin, args);
+    const out = [];
+    let err = "";
+    p.stdout.on("data", (d) => out.push(d));
+    p.stderr.on("data", (d) => (err += d));
+    p.on("error", reject);
+    p.on("close", (code) =>
+      code === 0 ? resolve(Buffer.concat(out)) : reject(new Error(`ffmpeg ${code}: ${err.slice(-300)}`)));
+    p.stdin.write(wav);
+    p.stdin.end();
+  });
+}
+
 async function processarAula(slug, aula) {
   const tag = `[${slug} #${aula.ordem}] ${aula.titulo}`;
   if (!aula.conteudo || aula.conteudo.trim().length < MIN_CONTEUDO) {
@@ -230,18 +254,19 @@ async function processarAula(slug, aula) {
     await sleep(1200); // respeita rate limit por minuto
   }
   const wav = pcmParaWav(Buffer.concat(partes), rate);
+  const mp3 = await wavParaMp3(wav);
 
   await mkdir(OUT, { recursive: true });
-  const local = join(OUT, `${slug}-${String(aula.ordem).padStart(2, "0")}.wav`);
-  await writeFile(local, wav);
-  console.log(`\n  wav: ${(wav.length / 1024 / 1024).toFixed(1)} MB → ${local}`);
+  const local = join(OUT, `${slug}-${String(aula.ordem).padStart(2, "0")}.mp3`);
+  await writeFile(local, mp3);
+  console.log(`\n  mp3: ${(mp3.length / 1024 / 1024).toFixed(1)} MB (de ${(wav.length / 1024 / 1024).toFixed(1)} MB wav) → ${local}`);
 
   if (DRY) return "ok";
 
-  const path = `audios-leitura/${aula.id}.wav`;
+  const path = `audios-leitura/${aula.id}.mp3`;
   const up = await supabase.storage
     .from("materiais-cursos")
-    .upload(path, wav, { contentType: "audio/wav", upsert: true });
+    .upload(path, mp3, { contentType: "audio/mpeg", upsert: true });
   if (up.error) throw new Error("upload: " + up.error.message);
 
   const upd = await supabase.from("aulas").update({ audio_leitura_url: path }).eq("id", aula.id);
