@@ -39,6 +39,9 @@ export type Aula = {
   video_url: string | null;
   material_url: string | null;
   audio_url?: string | null;
+  // Leitura literal (audiolivro, voz única) do conteudo — distinta do audio_url
+  // (overview em podcast). Gerada por scripts/gerar-leituras.mjs.
+  audio_leitura_url?: string | null;
   ordem: number;
   created_at: string;
 };

@@ -47,6 +47,8 @@ next-env.d.ts
 
 # Áudios gerados localmente pelo scripts/gerar-audios.mjs (ficam no Supabase Storage)
 scripts/audios-gerados/
+# Leituras (audiolivro) geradas por scripts/gerar-leituras.mjs (ficam no Supabase Storage)
+scripts/leituras-geradas/
 
 # Supabase CLI
 supabase/.temp

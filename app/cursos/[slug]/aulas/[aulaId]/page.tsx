@@ -52,12 +52,13 @@ export default async function AulaPage({
     }
   }
 
-  const [atividades, respostas, concluida, materialUrl, audioUrl, destaques] = await Promise.all([
+  const [atividades, respostas, concluida, materialUrl, audioUrl, leituraUrl, destaques] = await Promise.all([
     listAtividadesByAula(aulaId),
     listRespostasByAluno(session.userId),
     jaConcluiu(session.userId, aulaId),
     getMaterialUrl(aula.material_url),
     getAudioUrl(aula.audio_url),
+    getAudioUrl(aula.audio_leitura_url),
     listDestaquesByAula(session.userId, aulaId),
   ]);
 
@@ -154,6 +155,18 @@ export default async function AulaPage({
               </p>
               <audio controls preload="none" className="w-full">
                 <source src={audioUrl} />
+                Seu navegador não suporta áudio.
+              </audio>
+            </div>
+          )}
+
+          {leituraUrl && (
+            <div className="mb-8 rounded-xl border border-mesa-200 bg-mesa-50 p-4">
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-600">
+                🔊 Ouça a leitura desta aula — narração do texto
+              </p>
+              <audio controls preload="none" className="w-full">
+                <source src={leituraUrl} />
                 Seu navegador não suporta áudio.
               </audio>
             </div>
