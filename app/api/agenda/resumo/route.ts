@@ -19,10 +19,22 @@ const SECRET = process.env.AGENDA_SYNC_SECRET;
 const FUSO = "America/Sao_Paulo"; // offset fixo -03:00 (sem horário de verão desde 2019)
 
 function autorizado(req: NextRequest): boolean {
-  if (!SECRET) return false;
-  const q = req.nextUrl.searchParams.get("secret");
-  const h = req.headers.get("x-agenda-secret");
-  return q === SECRET || h === SECRET;
+  if (!SECRET) {
+    console.warn("[resumo] AGENDA_SYNC_SECRET não configurado no ambiente");
+    return false;
+  }
+  // Tolerante a espaços/quebras de linha de copy-paste no script.
+  const esperado = SECRET.trim();
+  const q = (req.nextUrl.searchParams.get("secret") || "").trim();
+  const h = (req.headers.get("x-agenda-secret") || "").trim();
+  const ok = (q && q === esperado) || (h && h === esperado);
+  if (!ok) {
+    // Diagnóstico SEM expor o segredo: só comprimentos e origem.
+    console.warn(
+      `[resumo] 401 — recebido(query)=${q.length} recebido(header)=${h.length} esperado=${esperado.length}`,
+    );
+  }
+  return ok;
 }
 
 // "YYYY-MM-DD" do dia em São Paulo, deslocado por `offsetDias`.
