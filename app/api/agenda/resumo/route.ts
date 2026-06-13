@@ -27,7 +27,7 @@ function autorizado(req: NextRequest): boolean {
   const esperado = SECRET.trim();
   const q = (req.nextUrl.searchParams.get("secret") || "").trim();
   const h = (req.headers.get("x-agenda-secret") || "").trim();
-  const ok = (q && q === esperado) || (h && h === esperado);
+  const ok = (q !== "" && q === esperado) || (h !== "" && h === esperado);
   if (!ok) {
     // Diagnóstico SEM expor o segredo: só comprimentos e origem.
     console.warn(
