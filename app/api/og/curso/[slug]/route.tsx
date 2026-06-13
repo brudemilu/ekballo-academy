@@ -92,6 +92,17 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#D4B985",
     livroUrl: "/capas/o-desafio-de-todo-lider.png",
   },
+  "autoridade-espiritual": {
+    preLabel: "ESTUDO · 20 CAPÍTULOS",
+    titulo: "Autoridade\nEspiritual",
+    subtitulo: "Autoridade e submissão",
+    rodape: "A partir do livro de Watchman Nee",
+    bg: "linear-gradient(135deg, #1C1630 0%, #3A2A50 52%, #6E4A86 100%)",
+    textoCor: "#F6F0FA",
+    acentoCor: "#E6C98A",
+    preLabelCor: "#C9A9D8",
+    rodapeCor: "#C9A9D8",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;
