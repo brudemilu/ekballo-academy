@@ -103,6 +103,17 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#C9A9D8",
     rodapeCor: "#C9A9D8",
   },
+  "blueprint-parach": {
+    preLabel: "ESTUDO · LIDERANÇA DO REINO",
+    titulo: "O Blueprint\nde Parach",
+    subtitulo: "Lidere do transbordar, não da exaustão",
+    rodape: "A partir do livro de Dr. Richard William",
+    bg: "linear-gradient(135deg, #131D10 0%, #2C3B22 50%, #7E7A34 100%)",
+    textoCor: "#F7F2E0",
+    acentoCor: "#E8C56A",
+    preLabelCor: "#CBC07E",
+    rodapeCor: "#CBC07E",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;
