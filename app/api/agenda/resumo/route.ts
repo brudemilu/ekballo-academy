@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listGoogleSincronizados, listCompromissosManuais } from "@/lib/db";
-import { lerAgendaGoogle, type AgendaEvento } from "@/lib/agenda";
+import { agendaUnificadaDoDia, diaSP, FUSO_AGENDA } from "@/lib/agenda-resumo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // Resumo da agenda UNIFICADA (Google sincronizado/iCal + compromissos do painel
-// e do WhatsApp) para uma janela de dias. É a MESMA composição da página
-// /admin/agenda — serve pro lembrete de WhatsApp (Apps Script) refletir
-// exatamente o que aparece no site, sem ler o Google por conta própria.
+// e do WhatsApp) para um dia. É a MESMA composição da página /admin/agenda.
 //
 //   GET /api/agenda/resumo?secret=...&dia=amanha|hoje
 //   GET /api/agenda/resumo?secret=...&data=2026-06-13
@@ -16,40 +13,23 @@ export const dynamic = "force-dynamic";
 // Auth: ?secret= OU header x-agenda-secret == AGENDA_SYNC_SECRET.
 
 const SECRET = process.env.AGENDA_SYNC_SECRET;
-const FUSO = "America/Sao_Paulo"; // offset fixo -03:00 (sem horário de verão desde 2019)
 
 function autorizado(req: NextRequest): boolean {
   if (!SECRET) {
     console.warn("[resumo] AGENDA_SYNC_SECRET não configurado no ambiente");
     return false;
   }
-  // Tolerante a espaços/quebras de linha de copy-paste no script.
+  // Tolerante a espaços/quebras de linha de copy-paste.
   const esperado = SECRET.trim();
   const q = (req.nextUrl.searchParams.get("secret") || "").trim();
   const h = (req.headers.get("x-agenda-secret") || "").trim();
   const ok = (q !== "" && q === esperado) || (h !== "" && h === esperado);
   if (!ok) {
-    // Diagnóstico SEM expor o segredo: só comprimentos e origem.
     console.warn(
       `[resumo] 401 — recebido(query)=${q.length} recebido(header)=${h.length} esperado=${esperado.length}`,
     );
   }
   return ok;
-}
-
-// "YYYY-MM-DD" do dia em São Paulo, deslocado por `offsetDias`.
-function diaSP(offsetDias: number): string {
-  const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: FUSO,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const hojeSP = fmt.format(new Date()); // ex.: "2026-06-13"
-  // Meio-dia em SP evita virar de dia ao somar o offset.
-  const base = new Date(`${hojeSP}T12:00:00-03:00`);
-  base.setUTCDate(base.getUTCDate() + offsetDias);
-  return fmt.format(base);
 }
 
 export async function GET(req: NextRequest) {
@@ -68,38 +48,13 @@ export async function GET(req: NextRequest) {
     dataAlvo = diaSP(dia === "hoje" ? 0 : 1);
   }
 
-  // Janela do dia inteiro em horário de São Paulo (-03:00) → ISO/UTC.
-  const deISO = new Date(`${dataAlvo}T00:00:00-03:00`).toISOString();
-  const ateISO = new Date(`${dataAlvo}T23:59:59-03:00`).toISOString();
-
-  // Mesma composição da página /admin/agenda:
-  // Google sincronizado (todas as agendas) com fallback no iCal + manuais/WhatsApp.
-  const [sincronizados, manuais] = await Promise.all([
-    listGoogleSincronizados(deISO, ateISO),
-    listCompromissosManuais(deISO, ateISO),
-  ]);
-  const google =
-    sincronizados.length > 0
-      ? sincronizados
-      : await lerAgendaGoogle(new Date(deISO), new Date(ateISO));
-
-  // Junta e deduplica (um compromisso pode ter sido espelhado no Google):
-  // mesma fonte de verdade que o site, sem repetir título no mesmo minuto.
-  const todos = [...google, ...manuais];
-  const vistos = new Set<string>();
-  const eventos: AgendaEvento[] = [];
-  for (const e of todos.sort((a, b) => a.inicio.localeCompare(b.inicio))) {
-    const chave = `${e.titulo.trim().toLowerCase()}|${e.inicio.slice(0, 16)}`;
-    if (vistos.has(chave)) continue;
-    vistos.add(chave);
-    eventos.push(e);
-  }
+  const { de, ate, eventos } = await agendaUnificadaDoDia(dataAlvo);
 
   return NextResponse.json({
-    de: deISO,
-    ate: ateISO,
+    de,
+    ate,
     data: dataAlvo,
-    fuso: FUSO,
+    fuso: FUSO_AGENDA,
     total: eventos.length,
     eventos: eventos.map((e) => ({
       titulo: e.titulo,
