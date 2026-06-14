@@ -102,6 +102,7 @@ const CAPAS: Record<string, CapaConfig> = {
     acentoCor: "#E6C98A",
     preLabelCor: "#C9A9D8",
     rodapeCor: "#C9A9D8",
+    livroUrl: "https://m.media-amazon.com/images/I/61AohjLEplL.jpg",
   },
   "blueprint-parach": {
     preLabel: "ESTUDO · LIDERANÇA DO REINO",
