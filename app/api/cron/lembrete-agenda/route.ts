@@ -35,27 +35,34 @@ function autorizado(req: NextRequest): boolean {
   return agenda !== "" && q === agenda;
 }
 
-async function enviarWhatsApp(destinatario: string, mensagem: string): Promise<boolean> {
-  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(".supabase.co", ".functions.supabase.co");
-  const secret = process.env.INTERNAL_SECRET;
-  if (!base || !secret) {
-    console.error("[lembrete] envio não configurado (falta SUPABASE_URL/INTERNAL_SECRET)");
+// Envia direto na Evolution GO (mesma instância do resto do site), sem hop por
+// edge function. Timeout próprio por envio pra nunca pendurar a função.
+async function enviarWhatsApp(numero: string, mensagem: string): Promise<boolean> {
+  const base = (process.env.EVOLUTION_BASE_URL || "").replace(/\/+$/, "");
+  const token = process.env.EVOLUTION_INSTANCE_TOKEN;
+  if (!base || !token) {
+    console.error("[lembrete] Evolution não configurada (falta EVOLUTION_BASE_URL/INSTANCE_TOKEN)");
     return false;
   }
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 20_000);
   try {
-    const res = await fetch(`${base}/enviar-whatsapp-evolution`, {
+    const res = await fetch(`${base}/send/text`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-internal-secret": secret },
-      body: JSON.stringify({ destinatario, mensagem }),
+      headers: { "Content-Type": "application/json", apikey: token },
+      body: JSON.stringify({ number: numero, text: mensagem, formatJid: true }),
+      signal: ctrl.signal,
     });
     if (!res.ok) {
-      console.error("[lembrete] envio falhou", destinatario, res.status, await res.text().catch(() => ""));
+      console.error("[lembrete] envio falhou", numero, res.status, await res.text().catch(() => ""));
       return false;
     }
     return true;
   } catch (e) {
-    console.error("[lembrete] erro no envio", destinatario, e instanceof Error ? e.message : e);
+    console.error("[lembrete] erro no envio", numero, e instanceof Error ? e.message : e);
     return false;
+  } finally {
+    clearTimeout(t);
   }
 }
 
