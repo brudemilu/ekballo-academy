@@ -6,6 +6,7 @@ import { AtividadeForm } from "@/components/AtividadeForm";
 import { MultiplaEscolhaForm } from "@/components/MultiplaEscolhaForm";
 import { MarcarConcluida } from "@/components/MarcarConcluida";
 import { AulaConteudo } from "@/components/AulaConteudo";
+import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
   getCurrentSession,
   getCursoBySlug,
@@ -112,7 +113,7 @@ export default async function AulaPage({
 
         <article className="mb-12 rounded-2xl border border-mesa-200 bg-white p-8 shadow-sm sm:p-12">
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-            Aula {String(aula.ordem).padStart(2, "0")}
+            Aula {rotuloNumeroAula(aula)}
           </p>
           <h1 className="mb-8 font-serif text-4xl font-semibold leading-tight text-mesa-800">
             {aula.titulo}

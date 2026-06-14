@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
   getCurrentSession,
   getCursoBySlug,
@@ -115,7 +116,7 @@ export default async function CursoPage({
                           : "bg-mesa-100 text-mesa-700"
                     }`}
                   >
-                    {concluida ? "✓" : String(aula.ordem).padStart(2, "0")}
+                    {concluida ? "✓" : rotuloNumeroAula(aula)}
                   </div>
                   <div className="flex-1">
                     <h3 className={`font-medium ${bloqueada ? "text-mesa-500" : "text-mesa-800"}`}>
