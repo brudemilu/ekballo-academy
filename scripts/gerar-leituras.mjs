@@ -291,7 +291,22 @@ async function listarCursos() {
     .select("id,slug,titulo,external_path")
     .eq("publicado", true)
     .order("ordem", { ascending: true });
-  return data || [];
+  const cursos = data || [];
+
+  // Prioridade: como a cota DIÁRIA do Gemini TTS (free tier) esgota depois de
+  // poucas aulas por rodada, os cursos listados em PRIORIDADE_LEITURA são
+  // processados PRIMEIRO (na ordem informada), garantindo que recebam o áudio
+  // antes da cota acabar. Default: blueprint-parach.
+  const prioridade = (process.env.PRIORIDADE_LEITURA || "blueprint-parach")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const rank = (slug) => {
+    const i = prioridade.indexOf(slug);
+    return i === -1 ? prioridade.length : i;
+  };
+  cursos.sort((a, b) => rank(a.slug) - rank(b.slug));
+  return cursos;
 }
 
 async function main() {
