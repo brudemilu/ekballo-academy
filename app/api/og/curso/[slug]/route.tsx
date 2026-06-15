@@ -114,6 +114,7 @@ const CAPAS: Record<string, CapaConfig> = {
     acentoCor: "#E8C56A",
     preLabelCor: "#CBC07E",
     rodapeCor: "#CBC07E",
+    livroUrl: "/capas/blueprint-parach.jpg",
   },
 };
 
