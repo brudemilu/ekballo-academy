@@ -140,6 +140,18 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#F0C9A0",
     livroUrl: "/capas/discipulado-contemplacao.jpg",
   },
+  "lideranca-com-propositos": {
+    preLabel: "ESTUDO · LIDERANÇA BÍBLICA",
+    titulo: "Liderança\ncom\nPropósitos",
+    subtitulo: "Princípios eficazes para o líder no século XXI",
+    rodape: "A partir do livro de Rick Warren",
+    bg: "linear-gradient(135deg, #2A1B0E 0%, #5A3E22 55%, #A07C46 100%)",
+    textoCor: "#FAF3E6",
+    acentoCor: "#E6C27A",
+    preLabelCor: "#D4B585",
+    rodapeCor: "#D4B585",
+    livroUrl: "/capas/lideranca-com-propositos.jpg",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;
