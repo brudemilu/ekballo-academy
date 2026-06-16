@@ -116,6 +116,30 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#CBC07E",
     livroUrl: "/capas/blueprint-parach.jpg",
   },
+  "igreja-simples": {
+    preLabel: "ESTUDO · 9 CAPÍTULOS",
+    titulo: "Igreja\nSimples",
+    subtitulo: "Retornando ao processo de Deus para fazer discípulos",
+    rodape: "A partir do livro de Thom S. Rainer & Eric Geiger",
+    bg: "linear-gradient(135deg, #3A2614 0%, #7A5326 48%, #C98F49 100%)",
+    textoCor: "#FBF2E0",
+    acentoCor: "#E8C079",
+    preLabelCor: "#D8B381",
+    rodapeCor: "#D8B381",
+    livroUrl: "/capas/igreja-simples.jpg",
+  },
+  "discipulado-contemplacao": {
+    preLabel: "ESTUDO · 26 CAPÍTULOS",
+    titulo: "Discipulado\ncomeça com\nContemplação",
+    subtitulo: "Tornar-se como Jesus ao contemplá-Lo",
+    rodape: "A partir do livro de Samuel Whitefield",
+    bg: "linear-gradient(135deg, #5A0E10 0%, #8E1B1C 52%, #C0392B 100%)",
+    textoCor: "#FCEFE6",
+    acentoCor: "#F2B24C",
+    preLabelCor: "#F0C9A0",
+    rodapeCor: "#F0C9A0",
+    livroUrl: "/capas/discipulado-contemplacao.jpg",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;
