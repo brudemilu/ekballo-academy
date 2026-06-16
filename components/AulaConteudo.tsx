@@ -204,7 +204,17 @@ export function AulaConteudo({
   autor: string | null;
   destaquesIniciais: Destaque[];
 }) {
-  const paragrafos = conteudo.split("\n\n");
+  // Parágrafos do conteúdo. Os que começam com "[cite] " são citações em
+  // bloco (textos bíblicos/citações que o livro destaca) — renderizam como
+  // blockquote. O marcador é removido aqui pra não bagunçar os offsets de
+  // grifo/busca.
+  const paragrafos = conteudo
+    .split("\n\n")
+    .map((p) =>
+      p.startsWith("[cite] ")
+        ? { texto: p.slice(7), cite: true }
+        : { texto: p, cite: false }
+    );
   const [destaques, setDestaques] = useState<Destaque[]>(destaquesIniciais);
   const [toolbar, setToolbar] = useState<ToolbarState>(null);
   const [salvando, setSalvando] = useState(false);
@@ -227,8 +237,8 @@ export function AulaConteudo({
     if (termo.length < 2) return out;
     const q = normalizarBusca(termo);
     paragrafos.forEach((p, i) => {
-      if (ehQuadro(p)) return;
-      const np = normalizarBusca(p);
+      if (ehQuadro(p.texto)) return;
+      const np = normalizarBusca(p.texto);
       let from = 0;
       for (;;) {
         const idx = np.indexOf(q, from);
@@ -472,10 +482,10 @@ export function AulaConteudo({
 
       <div ref={containerRef} className="prose-mesa">
         {paragrafos.map((paragrafo, i) => {
-          if (ehQuadro(paragrafo)) {
-            return <Quadro key={i} bloco={paragrafo} />;
+          if (ehQuadro(paragrafo.texto)) {
+            return <Quadro key={i} bloco={paragrafo.texto} />;
           }
-          const titulos = faixasDeTitulo(paragrafo);
+          const titulos = faixasDeTitulo(paragrafo.texto);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
             .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
@@ -483,8 +493,8 @@ export function AulaConteudo({
           matches.forEach((m, gi) => {
             if (m.paragrafo === i) matchesP.push({ start: m.start, end: m.end, idx: gi });
           });
-          const segs = montarSegmentos(paragrafo, titulos, grifos, matchesP);
-          return (
+          const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP);
+          const corpo = (
             <p key={i} data-paragrafo={i} className="whitespace-pre-wrap">
               {segs.map((seg, j) => {
                 if (seg.busca) {
@@ -554,6 +564,17 @@ export function AulaConteudo({
               })}
             </p>
           );
+          if (paragrafo.cite) {
+            return (
+              <blockquote
+                key={i}
+                className="my-5 rounded-r-lg border-l-4 border-laranja-400 bg-mesa-100/70 py-3 pl-5 pr-3 italic text-mesa-700 [&>p]:m-0"
+              >
+                {corpo}
+              </blockquote>
+            );
+          }
+          return corpo;
         })}
       </div>
 
