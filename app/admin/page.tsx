@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { Logo } from "@/components/Logo";
 import UltimasRespostasLista from "@/components/UltimasRespostasLista";
-import { CAPA_LIVRO } from "@/lib/capas";
 import {
   getCurrentSession,
   getAdminStats,
@@ -118,10 +117,9 @@ export default async function AdminPage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {cursos.map((curso) => {
               const ogUrl = imagemMap.get(curso.id);
-              const capa =
-                CAPA_LIVRO[curso.slug] ??
-                (ogUrl?.startsWith("/api/og/curso/") ? `${ogUrl}?formato=retrato` : ogUrl) ??
-                null;
+              const capa = ogUrl?.startsWith("/api/og/curso/")
+                ? `${ogUrl}?formato=retrato`
+                : ogUrl ?? null;
               return (
                 <Link
                   key={curso.id}

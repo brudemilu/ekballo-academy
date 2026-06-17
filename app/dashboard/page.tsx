@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { CompletarTelefoneBanner } from "@/components/CompletarTelefoneBanner";
-import { CAPA_LIVRO } from "@/lib/capas";
 import {
   getCurrentSession,
   listCursosPublicados,
@@ -148,10 +147,11 @@ export default async function DashboardPage() {
               const concluido = matricula?.concluido_em;
               const href = curso.external_path ?? `/cursos/${curso.slug}`;
               const ogUrl = imagemMap.get(curso.id);
-              const capa =
-                CAPA_LIVRO[curso.slug] ??
-                (ogUrl?.startsWith("/api/og/curso/") ? `${ogUrl}?formato=retrato` : ogUrl) ??
-                null;
+              // Card padronizado: todos usam a versão retrato gerada pela rota OG
+              // (capa do livro emoldurada de forma idêntica, ou tipografia).
+              const capa = ogUrl?.startsWith("/api/og/curso/")
+                ? `${ogUrl}?formato=retrato`
+                : ogUrl ?? null;
               return (
                 <Link
                   key={curso.id}

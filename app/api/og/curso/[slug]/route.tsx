@@ -310,11 +310,108 @@ export async function GET(
     { name: "Inter", data: fonts.interItalic, weight: 400 as const, style: "italic" as const },
   ];
 
-  // Formato retrato (3:4) — capa em pé pros cards de curso sem capa de livro
-  // (ex.: Bíblia, Devocional). Mesma identidade tipográfica, layout vertical.
+  const temLivro = !!config.livroUrl;
+  // Capas locais (em /public) começam com "/"; precisam do origin pro Satori buscar.
+  const capaSrc = config.livroUrl
+    ? config.livroUrl.startsWith("/")
+      ? `${origin}${config.livroUrl}`
+      : config.livroUrl
+    : undefined;
+
+  // Formato retrato (3:4) — card padronizado pros cursos. Layout vertical com a
+  // mesma moldura/identidade. Quando há capa de livro, ela aparece centralizada
+  // e do mesmo tamanho em todos (object-contain + sombra), sobre o gradiente da
+  // marca; quando não há (ex.: Bíblia, Devocional), usa a tipografia.
   if (new URL(req.url).searchParams.get("formato") === "retrato") {
     const pw = 900;
     const ph = 1200;
+    if (temLivro) {
+      return new ImageResponse(
+        (
+          <div
+            style={{
+              width: pw,
+              height: ph,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: config.bg,
+              fontFamily: "Cormorant",
+              position: "relative",
+              padding: "70px 60px",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 30,
+                left: 30,
+                right: 30,
+                bottom: 30,
+                border: `1px solid ${config.acentoCor}`,
+                opacity: 0.22,
+                display: "flex",
+              }}
+            />
+            <div
+              style={{
+                fontFamily: "Inter",
+                fontStyle: "italic",
+                fontSize: 23,
+                letterSpacing: "0.3em",
+                color: config.preLabelCor,
+                textTransform: "uppercase",
+                display: "flex",
+                textAlign: "center",
+              }}
+            >
+              {config.preLabel}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={capaSrc!}
+                alt=""
+                style={{
+                  maxWidth: 600,
+                  maxHeight: 760,
+                  objectFit: "contain",
+                  boxShadow: "0 30px 60px rgba(0,0,0,0.45)",
+                  borderRadius: 8,
+                }}
+              />
+            </div>
+            <div
+              style={{
+                fontFamily: "Inter",
+                fontStyle: "italic",
+                fontSize: 23,
+                letterSpacing: "0.06em",
+                color: config.rodapeCor,
+                display: "flex",
+                textAlign: "center",
+              }}
+            >
+              {config.rodape}
+            </div>
+          </div>
+        ),
+        {
+          width: pw,
+          height: ph,
+          fonts: fontList,
+          headers: { "Cache-Control": "public, max-age=31536000, immutable" },
+        },
+      );
+    }
     return new ImageResponse(
       (
         <div
