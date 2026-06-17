@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { CompletarTelefoneBanner } from "@/components/CompletarTelefoneBanner";
 import { CAPA_LIVRO } from "@/lib/capas";
 import {
   getCurrentSession,
@@ -36,6 +37,10 @@ export default async function DashboardPage() {
     session.profile?.email ?? session.email,
   );
 
+  // Pede o WhatsApp pra quem está sem telefone no cadastro (recuperação de senha).
+  const semTelefone =
+    (session.profile?.telefone || "").replace(/\D+/g, "").length < 10;
+
   const matriculasMap = new Map(matriculas.map((m) => [m.curso_id, m]));
   // Admin vê todos os cursos publicados; aluno comum só os que foi matriculado.
   const cursos = session.profile?.is_admin
@@ -66,6 +71,8 @@ export default async function DashboardPage() {
       </header>
 
       <div className="mx-auto max-w-6xl px-6 py-12">
+        {semTelefone && <CompletarTelefoneBanner userId={session.userId} />}
+
         <div className="mb-12">
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
             Bem-vindo de volta

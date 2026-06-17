@@ -62,13 +62,13 @@ export default async function PerfilPage() {
             Trocar senha
           </h2>
           <p className="mt-1 text-sm text-mesa-600">
-            Enviamos um link pro seu e-mail pra você definir uma nova senha.
+            Enviamos um código no seu WhatsApp pra você definir uma nova senha.
           </p>
           <Link
             href="/recuperar-senha"
             className="mt-3 inline-block rounded-full border border-mesa-300 bg-white px-4 py-2 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
           >
-            Receber link de troca
+            Trocar senha pelo WhatsApp
           </Link>
         </div>
       </div>
