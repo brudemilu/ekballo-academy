@@ -46,7 +46,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  // Matricular
+  // Matricular. Só notifica quando a matrícula é NOVA (evita avisar de novo
+  // se o admin reabrir/reenviar numa matrícula que já existia).
+  const { data: jaExistia } = await admin
+    .from("matriculas")
+    .select("aluno_id")
+    .eq("aluno_id", alunoId)
+    .eq("curso_id", cursoId)
+    .maybeSingle();
+
   const { error } = await admin
     .from("matriculas")
     .upsert({ aluno_id: alunoId, curso_id: cursoId }, { onConflict: "aluno_id,curso_id" });
@@ -61,6 +69,11 @@ export async function POST(req: NextRequest) {
   const tituloCurso = curso?.titulo || "Temática";
   const url = curso?.external_path || (curso?.slug ? `/cursos/${curso.slug}` : "/dashboard");
 
+  if (jaExistia) {
+    return NextResponse.json({ ok: true, jaMatriculado: true });
+  }
+
+  // 1) Push in-app
   const push = await enviarPush([alunoId], {
     title: "✨ Temática liberada",
     body: `Você foi matriculado em "${tituloCurso}". Toque pra começar.`,
@@ -68,5 +81,28 @@ export async function POST(req: NextRequest) {
     tag: `matricula-${cursoId}`,
   });
 
-  return NextResponse.json({ ok: true, push });
+  // 2) WhatsApp — entra na fila (sai ~1/min via pg_cron). Só se tiver telefone.
+  let whatsapp: "enfileirado" | "sem-telefone" | "erro" = "sem-telefone";
+  const { data: aluno } = await admin
+    .from("profiles")
+    .select("nome, telefone")
+    .eq("id", alunoId)
+    .single();
+  const digits = (aluno?.telefone || "").replace(/\D+/g, "");
+  if (digits.length >= 10) {
+    const primeiroNome = (aluno?.nome || "").trim().split(/\s+/)[0] || "";
+    const origin = new URL(req.url).origin;
+    const link = url.startsWith("http") ? url : `${origin}${url}`;
+    const saudacao = primeiroNome ? `Olá, ${primeiroNome}!` : "Olá!";
+    const corpo =
+      `${saudacao} 🌱 Você foi liberado(a) na temática *${tituloCurso}* na nossa ` +
+      `Mesa de Discipulado. É só entrar e começar no seu ritmo: ${link}. Bons estudos!`;
+    const { error: filaErr } = await admin
+      .from("whatsapp_fila")
+      .insert({ aluno_id: alunoId, telefone: digits, corpo });
+    whatsapp = filaErr ? "erro" : "enfileirado";
+    if (filaErr) console.error("falha ao enfileirar whatsapp da matrícula", filaErr);
+  }
+
+  return NextResponse.json({ ok: true, push, whatsapp });
 }
