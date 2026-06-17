@@ -159,20 +159,7 @@ export default async function AdminPage() {
         </section>
       )}
 
-      <div className="rounded-2xl border border-mesa-200 bg-white">
-        <div className="border-b border-mesa-100 px-6 py-4">
-          <h2 className="font-serif text-xl font-semibold text-mesa-800">
-            Últimas respostas
-          </h2>
-        </div>
-        {ultimas.length === 0 ? (
-          <p className="px-6 py-12 text-center text-mesa-500">
-            Nenhuma resposta ainda. Em breve a mesa estará posta.
-          </p>
-        ) : (
-          <UltimasRespostasLista respostas={ultimas} />
-        )}
-      </div>
+      <UltimasRespostasLista respostas={ultimas} />
     </AdminShell>
   );
 }
