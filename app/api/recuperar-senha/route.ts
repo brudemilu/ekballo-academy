@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createHmac, randomInt } from "crypto";
+import { randomInt } from "crypto";
+import {
+  acharPerfil,
+  hashCodigo,
+  soDigitos,
+  MSG_AMBIGUO,
+} from "@/lib/recuperacao-senha";
 
 // POST /api/recuperar-senha
 // Body: { identificador: string }  // e-mail OU telefone (WhatsApp) cadastrado
@@ -28,14 +34,6 @@ const RESPOSTA_GENERICA = {
     "Se houver uma conta com WhatsApp cadastrado, enviamos um código por lá.",
 };
 
-function hashCodigo(codigo: string) {
-  return createHmac("sha256", INTERNAL_SECRET).update(codigo).digest("hex");
-}
-
-function soDigitos(s: string) {
-  return (s || "").replace(/\D+/g, "");
-}
-
 export async function POST(req: NextRequest) {
   let body: { identificador?: string };
   try {
@@ -61,34 +59,17 @@ export async function POST(req: NextRequest) {
     auth: { persistSession: false },
   });
 
-  // 1) Acha o perfil por e-mail ou por telefone (dígitos).
-  let perfil: { id: string; nome: string | null; telefone: string | null } | null =
-    null;
-  if (identificador.includes("@")) {
-    const { data } = await admin
-      .from("profiles")
-      .select("id, nome, telefone")
-      .ilike("email", identificador)
-      .maybeSingle();
-    perfil = data;
-  } else {
-    const alvo = soDigitos(identificador);
-    if (alvo.length >= 10) {
-      // Compara só os últimos 10/11 dígitos pra tolerar DDI/variações de cadastro.
-      const sufixo = alvo.slice(-11);
-      const { data } = await admin
-        .from("profiles")
-        .select("id, nome, telefone")
-        .not("telefone", "is", null);
-      perfil =
-        (data || []).find((p) => {
-          const d = soDigitos(p.telefone || "");
-          return d.endsWith(sufixo.slice(-10)) && d.length >= 10;
-        }) || null;
-    }
+  // 1) Acha o perfil por e-mail ou por telefone.
+  const lookup = await acharPerfil(admin, identificador);
+
+  // Telefone compartilhado por mais de uma conta (ex.: família no mesmo
+  // WhatsApp): não dá pra saber qual conta resetar — pede o e-mail.
+  if (lookup.tipo === "ambiguo") {
+    return NextResponse.json({ erro: MSG_AMBIGUO }, { status: 409 });
   }
 
-  // 2) Sem perfil ou sem telefone => resposta genérica (sem vazar nada).
+  // Sem perfil ou sem telefone => resposta genérica (sem vazar nada).
+  const perfil = lookup.tipo === "achado" ? lookup.perfil : null;
   const telefone = soDigitos(perfil?.telefone || "");
   if (!perfil || telefone.length < 10) {
     return NextResponse.json(RESPOSTA_GENERICA);
@@ -124,7 +105,7 @@ export async function POST(req: NextRequest) {
 
   const { error: insErr } = await admin.from("recuperacao_senha").insert({
     profile_id: perfil.id,
-    codigo_hash: hashCodigo(codigo),
+    codigo_hash: hashCodigo(codigo, INTERNAL_SECRET),
     expira_em: expiraEm.toISOString(),
   });
   if (insErr) {

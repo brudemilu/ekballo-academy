@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createHmac } from "crypto";
+import {
+  acharPerfil,
+  hashCodigo,
+  soDigitos,
+  MSG_AMBIGUO,
+} from "@/lib/recuperacao-senha";
 
 // POST /api/recuperar-senha/confirmar
 // Body: { identificador: string, codigo: string, senha: string }
@@ -17,14 +22,6 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET!;
 
 const MAX_TENTATIVAS = 5;
-
-function hashCodigo(codigo: string) {
-  return createHmac("sha256", INTERNAL_SECRET).update(codigo).digest("hex");
-}
-
-function soDigitos(s: string) {
-  return (s || "").replace(/\D+/g, "");
-}
 
 export async function POST(req: NextRequest) {
   let body: { identificador?: string; codigo?: string; senha?: string };
@@ -60,30 +57,20 @@ export async function POST(req: NextRequest) {
   });
 
   // 1) Acha o perfil (mesmo critério da solicitação).
-  let perfil: { id: string; telefone: string | null } | null = null;
-  if (identificador.includes("@")) {
-    const { data } = await admin
-      .from("profiles")
-      .select("id, telefone")
-      .ilike("email", identificador)
-      .maybeSingle();
-    perfil = data;
-  } else {
-    const sufixo = soDigitos(identificador).slice(-10);
-    const { data } = await admin
-      .from("profiles")
-      .select("id, telefone")
-      .not("telefone", "is", null);
-    perfil =
-      (data || []).find((p) => soDigitos(p.telefone || "").endsWith(sufixo)) ||
-      null;
+  const lookup = await acharPerfil(admin, identificador);
+
+  // Telefone compartilhado por várias contas: precisa do e-mail pra saber qual
+  // conta resetar (senão resetaria a conta errada).
+  if (lookup.tipo === "ambiguo") {
+    return NextResponse.json({ erro: MSG_AMBIGUO }, { status: 409 });
   }
 
   const erroGenerico = NextResponse.json(
     { erro: "Código inválido ou expirado. Peça um novo." },
     { status: 400 }
   );
-  if (!perfil) return erroGenerico;
+  if (lookup.tipo !== "achado") return erroGenerico;
+  const perfil = lookup.perfil;
 
   // 2) Pega o código vigente (não usado, não expirado) mais recente.
   const agora = new Date();
@@ -112,7 +99,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 4) Confere o código.
-  if (registro.codigo_hash !== hashCodigo(codigo)) {
+  if (registro.codigo_hash !== hashCodigo(codigo, INTERNAL_SECRET)) {
     await admin
       .from("recuperacao_senha")
       .update({ tentativas: registro.tentativas + 1 })
