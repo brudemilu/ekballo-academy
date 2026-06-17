@@ -15,7 +15,7 @@ export function MarcarConcluida({
   alunoId: string;
   aulaId: string;
   jaConcluida: boolean;
-  // Quando passado, marcar a aula como concluída já navega pro próximo capítulo
+  // Quando passado, marcar a mesa como concluída já navega pra próxima mesa
   // (usado em cursos de leitura, sem atividades).
   proximaHref?: string | null;
 }) {
@@ -74,10 +74,10 @@ export function MarcarConcluida({
       }`}
     >
       {concluida
-        ? "✓ Capítulo concluído"
+        ? "✓ Mesa concluída"
         : proximaHref
           ? "Concluir e continuar →"
-          : "Marcar capítulo como concluído"}
+          : "Marcar mesa como concluída"}
     </button>
   );
 }

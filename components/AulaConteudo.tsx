@@ -578,11 +578,11 @@ export function AulaConteudo({
         })}
       </div>
 
-      {/* Lista "Meus grifos" desta aula */}
+      {/* Lista "Meus grifos" desta mesa */}
       {destaques.length > 0 && (
         <div className="mt-8 rounded-2xl border border-mesa-200 bg-mesa-50/60 p-5">
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-            Meus grifos nesta aula
+            Meus grifos nesta mesa
           </p>
           <ul className="space-y-2">
             {destaques.map((d) => (
@@ -974,7 +974,7 @@ function ImagemModal({
           onClick={onClose}
           className="mt-3 w-full py-1 text-center text-sm font-medium text-mesa-500 hover:text-mesa-700"
         >
-          ← Voltar para a aula
+          ← Voltar para a mesa
         </button>
       </div>
     </div>

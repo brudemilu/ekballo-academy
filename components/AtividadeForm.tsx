@@ -13,8 +13,8 @@ type Props = {
   pergunta: string;
   respostaInicial?: string;
   comentarioLider?: string | null;
-  // "anotacao" = caderno de anotações do capítulo (o líder lê, mas não é obrigatório
-  // nem bloqueia a próxima aula). "reflexao" = pergunta de reflexão padrão.
+  // "anotacao" = caderno de anotações da mesa (o líder lê, mas não é obrigatório).
+  // "reflexao" = pergunta de reflexão padrão da mesa de discipulado.
   variante?: "reflexao" | "anotacao";
 };
 
@@ -80,14 +80,9 @@ export function AtividadeForm({
       <div className="mb-2 flex items-center gap-2">
         <p className="text-xs font-medium uppercase tracking-wider text-mesa-500">
           {ehAnotacao
-            ? "✍️ Anotações do capítulo"
-            : `Reflexão ${String(perguntaIndex + 1).padStart(2, "0")}`}
+            ? "✍️ Anotações da mesa"
+            : `Pergunta ${String(perguntaIndex + 1).padStart(2, "0")}`}
         </p>
-        {!ehAnotacao && (
-          <span className="rounded-full bg-laranja-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-laranja-700">
-            Obrigatória
-          </span>
-        )}
       </div>
       <h3 className="mb-5 font-serif text-xl font-semibold leading-snug text-mesa-800">
         {pergunta}
@@ -102,7 +97,7 @@ export function AtividadeForm({
         rows={6}
         placeholder={
           ehAnotacao
-            ? "Escreva aqui suas anotações sobre o capítulo — o que te marcou, dúvidas, aplicações..."
+            ? "Escreva aqui suas anotações sobre a mesa — o que te marcou, dúvidas, aplicações..."
             : "Escreva aqui sua reflexão..."
         }
         className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/40 px-4 py-3 text-mesa-900 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
@@ -120,7 +115,7 @@ export function AtividadeForm({
                 ? "Erro ao salvar — tente novamente."
                 : ehAnotacao
                   ? "Suas anotações ficam salvas e seu líder pode ler."
-                  : "Resposta necessária para liberar a próxima aula."}
+                  : "Sua resposta fica salva e seu líder pode ler."}
         </p>
         <button
           onClick={handleSalvar}

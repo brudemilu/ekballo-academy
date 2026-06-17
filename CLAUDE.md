@@ -40,19 +40,19 @@ The mock dataset is server-side module state. The one piece of **mutable** mock 
 Entities and their relationships — names are Brazilian Portuguese and match both DB tables and TS types in [lib/types.ts](lib/types.ts):
 
 - `profiles` (aluno = student): created by a Supabase trigger on `auth.users` insert; `is_admin` boolean gates `/admin`; `turma` is the cohort name.
-- `cursos` (courses) → `aulas` (lessons) → `atividades` (activities) → `alternativas` (multiple-choice options).
-- `atividades.tipo` is either `"reflexao"` (free-text) or `"multipla_escolha"` (MC, has alternatives with one `correta`). `razao` is the post-answer explanation shown for MC.
-- `respostas` (answers): unique on `(atividade_id, aluno_id)` — single upsert per student per activity. For reflexao, `texto` is filled; for MC, `alternativa_id` is filled. `comentario_lider` / `comentario_lider_em` is the pastoral feedback (only admin can write).
-- `matriculas` (enrollments) and `progresso` (lessons-completed marker) track student state per course/lesson.
+- `cursos` (courses) → `aulas` (DB table) → `atividades` (activities) → `alternativas` (legacy MC options).
+- `atividades.tipo` is either `"reflexao"` (free-text) or `"multipla_escolha"` (legacy MC). `razao` is a stored explanation. **The student UI now renders ALL activities as open reflection** (`AtividadeForm`) — see "Vertente: mesa de discipulado" below. `alternativas` and the `correta` flag are kept in the schema but no longer drive the student experience.
+- `respostas` (answers): unique on `(atividade_id, aluno_id)` — single upsert per student per activity. New answers fill `texto`; old MC answers may still have `alternativa_id`. `comentario_lider` / `comentario_lider_em` is the pastoral feedback (only admin can write).
+- `matriculas` (enrollments) and `progresso` (completed marker) track student state per course/aula.
 
-### Lesson-unlock logic
+### Vertente: mesa de discipulado e leitura (NOT a school course)
 
-A course is a linear chain of aulas. Unlock rule lives in [lib/db.ts](lib/db.ts):
+The product is framed as **"mesa de discipulado e leitura"**, not a school course. Concretely:
 
-- `aulaCompleta(alunoId, aulaId)` — true if **every** MC activity on the aula has the correct alternative selected. Aulas without MCs are trivially complete.
-- `listAulasComStatus(cursoId, alunoId)` — walks the aulas in `ordem` and stamps each with `desbloqueada` (previous aula is complete) and `completa`. Page-level redirects ([app/cursos/[slug]/aulas/[aulaId]/page.tsx](app/cursos/[slug]/aulas/[aulaId]/page.tsx)) and the "next" button enforce this.
-
-Reflexao activities do **not** affect unlocking — they're optional and exist for pastoral devolutiva.
+- **User-facing term**: each `aulas` row is shown as a **"Mesa de discipulado" / "Mesa"** (e.g. "Mesa 01", "Mesas de discipulado", "Próxima mesa →"). The DB table, routes (`/cursos/[slug]/aulas/[aulaId]`), and TS types keep the `aula` name — only the copy changed.
+- **No linear unlock**: every mesa is always accessible. `listAulasComStatus` stamps `desbloqueada: true` for all (Bruno, jun/2026). `aulaCompleta`/`completa` still computes but only feeds the "✓ concluída" indicator alongside manual `progresso` (via `MarcarConcluida`); it does **not** gate anything. There is no redirect and no locked "next" button.
+- **No exam**: multiple-choice as a graded quiz was removed from the student flow. Questions render as open reflection (no right answer, no points — the project never had a boletim). `components/MultiplaEscolhaForm.tsx` is now **orphaned dead code** (no importers); safe to delete later.
+- Reflection answers exist for pastoral devolutiva (`comentario_lider`), not grading.
 
 ### Routes (Next 15 App Router)
 

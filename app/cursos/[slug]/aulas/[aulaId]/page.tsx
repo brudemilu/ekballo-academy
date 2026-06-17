@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { AtividadeForm } from "@/components/AtividadeForm";
-import { MultiplaEscolhaForm } from "@/components/MultiplaEscolhaForm";
 import { MarcarConcluida } from "@/components/MarcarConcluida";
 import { AulaConteudo } from "@/components/AulaConteudo";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
@@ -19,8 +18,6 @@ import {
   listAulasComStatus,
   listDestaquesByAula,
   jaConcluiu,
-  listAlternativasByAtividade,
-  getRespostaAlternativa,
 } from "@/lib/db";
 
 export default async function AulaPage({
@@ -44,14 +41,9 @@ export default async function AulaPage({
   const aula = await getAula(aulaId, curso.id);
   if (!aula) notFound();
 
-  const aulasStatus = await listAulasComStatus(curso.id, session.userId, curso.aulas_livres ?? false);
-  // Admin pode acessar qualquer aula pra revisar; aluno depende do desbloqueio.
-  if (!session.profile?.is_admin) {
-    const aulaStatus = aulasStatus.find((a) => a.id === aulaId);
-    if (!aulaStatus?.desbloqueada) {
-      redirect(`/cursos/${slug}`);
-    }
-  }
+  // Mesa de discipulado: toda mesa é acessível, sem desbloqueio linear.
+  // aulasStatus é usado só para navegação (anterior/próxima) e progresso.
+  const aulasStatus = await listAulasComStatus(curso.id, session.userId, true);
 
   const [atividades, respostas, concluida, materialUrl, audioUrl, leituraUrl, destaques] = await Promise.all([
     listAtividadesByAula(aulaId),
@@ -68,23 +60,10 @@ export default async function AulaPage({
   const proxima = aulasStatus[indiceAtual + 1];
   const anterior = aulasStatus[indiceAtual - 1];
 
-  // Buscar alternativas e respostas MC para atividades MC
-  const atividadesEnriquecidas = await Promise.all(
-    atividades.map(async (at) => {
-      if (at.tipo === "multipla_escolha") {
-        const [alts, altSel] = await Promise.all([
-          listAlternativasByAtividade(at.id),
-          getRespostaAlternativa(session.userId, at.id),
-        ]);
-        return { atividade: at, alternativas: alts, alternativaSalvaId: altSel };
-      }
-      return { atividade: at, alternativas: [], alternativaSalvaId: null };
-    })
-  );
-
-  const temMCs = atividades.some((a) => a.tipo === "multipla_escolha");
-  // "anotacao" é uma reflexão com razao='anotacao' — caderno do capítulo (não obrigatória).
-  const temReflexoes = atividades.some((a) => a.tipo === "reflexao" && a.razao !== "anotacao");
+  // Mesa de discipulado: toda pergunta (reflexão ou MC herdada do modelo antigo)
+  // é exibida como reflexão aberta — sem resposta certa nem pontos.
+  // "anotacao" é o caderno da mesa (reflexão com razao='anotacao', não obrigatória).
+  const temPerguntas = atividades.some((a) => !(a.tipo === "reflexao" && a.razao === "anotacao"));
   const temAnotacoes = atividades.some((a) => a.tipo === "reflexao" && a.razao === "anotacao");
   const temAtividades = atividades.length > 0;
 
@@ -113,7 +92,7 @@ export default async function AulaPage({
 
         <article className="mb-12 rounded-2xl border border-mesa-200 bg-white p-8 shadow-sm sm:p-12">
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-            Aula {rotuloNumeroAula(aula)}
+            Mesa {rotuloNumeroAula(aula)}
           </p>
           <h1 className="mb-8 font-serif text-4xl font-semibold leading-tight text-mesa-800">
             {aula.titulo}
@@ -152,7 +131,7 @@ export default async function AulaPage({
           {audioUrl && (
             <div className="mb-8 rounded-xl border border-oliveira-200 bg-oliveira-50 p-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-oliveira-700">
-                🎧 Ouça esta aula — conversa-resumo
+                🎧 Ouça esta mesa — conversa-resumo
               </p>
               <audio controls preload="none" className="w-full">
                 <source src={audioUrl} />
@@ -164,7 +143,7 @@ export default async function AulaPage({
           {leituraUrl && (
             <div className="mb-8 rounded-xl border border-mesa-200 bg-mesa-50 p-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-600">
-                🔊 Ouça a leitura desta aula — narração do texto
+                🔊 Ouça a leitura desta mesa — narração do texto
               </p>
               <audio controls preload="none" className="w-full">
                 <source src={leituraUrl} />
@@ -189,37 +168,19 @@ export default async function AulaPage({
           <div className="mb-12 space-y-5">
             <div className="mb-2">
               <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-                {temMCs && (temReflexoes || temAnotacoes)
-                  ? "Questões e anotações"
-                  : temMCs
-                    ? "Questões da aula"
-                    : temReflexoes
-                      ? "Reflexões da aula"
-                      : "Anotações do capítulo"}
+                {temPerguntas && temAnotacoes
+                  ? "Perguntas e anotações"
+                  : temPerguntas
+                    ? "Perguntas para refletir"
+                    : "Anotações da mesa"}
               </p>
               <h2 className="font-serif text-2xl font-semibold text-mesa-800">
-                {temMCs
-                  ? "Responda as questões deste capítulo."
-                  : temReflexoes
-                    ? "Responda as reflexões deste capítulo."
-                    : "Registre aqui o que este capítulo falou com você."}
+                {temPerguntas
+                  ? "Reserve um tempo para responder com calma e sinceridade."
+                  : "Registre aqui o que esta mesa falou com você."}
               </h2>
             </div>
-            {atividadesEnriquecidas.map(({ atividade, alternativas, alternativaSalvaId }, idx) => {
-              if (atividade.tipo === "multipla_escolha") {
-                return (
-                  <MultiplaEscolhaForm
-                    key={atividade.id}
-                    atividadeId={atividade.id}
-                    alunoId={session.userId}
-                    perguntaIndex={idx}
-                    pergunta={atividade.pergunta}
-                    razao={atividade.razao}
-                    alternativas={alternativas}
-                    alternativaSalvaId={alternativaSalvaId}
-                  />
-                );
-              }
+            {atividades.map((atividade, idx) => {
               const r = respostasMap.get(atividade.id);
               const ehAnotacao = atividade.tipo === "reflexao" && atividade.razao === "anotacao";
               return (
@@ -263,7 +224,7 @@ export default async function AulaPage({
                 href={`/cursos/${curso.slug}/aulas/${proxima.id}`}
                 className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
               >
-                Próximo capítulo →
+                Próxima mesa →
               </Link>
             )}
           </div>

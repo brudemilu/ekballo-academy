@@ -49,7 +49,7 @@ export default async function AdminCursoProgressaoPage({
 
       {/* Stats agregados */}
       <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Aulas" value={totalAulas} />
+        <StatCard label="Mesas" value={totalAulas} />
         <StatCard label="Matriculados" value={totalMatriculados} />
         <StatCard
           label="Concluíram"
@@ -71,10 +71,10 @@ export default async function AdminCursoProgressaoPage({
       {/* Progresso por aula */}
       <section className="mb-10">
         <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
-          Funil por aula
+          Funil por mesa
         </h2>
         {aulas.length === 0 ? (
-          <p className="text-sm text-mesa-500">Este curso ainda não tem aulas.</p>
+          <p className="text-sm text-mesa-500">Este curso ainda não tem mesas.</p>
         ) : (
           <div className="space-y-2 rounded-2xl border border-mesa-200 bg-white p-5">
             {aulas.map((a) => {
@@ -123,7 +123,7 @@ export default async function AdminCursoProgressaoPage({
         )}
         {gargalo && gargalo.taxaConclusao < 80 && totalMatriculados >= 2 && (
           <p className="mt-3 text-xs text-amber-700">
-            ⚠ Gargalo: a aula <strong>{gargalo.titulo}</strong> tem só{" "}
+            ⚠ Gargalo: a mesa <strong>{gargalo.titulo}</strong> tem só{" "}
             {gargalo.taxaConclusao}% de conclusão. Vale uma devolutiva por aí.
           </p>
         )}
@@ -150,7 +150,7 @@ export default async function AdminCursoProgressaoPage({
                     Progresso
                   </th>
                   <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
-                    Em qual aula está
+                    Em qual mesa está
                   </th>
                   <th className="px-6 py-3"></th>
                 </tr>

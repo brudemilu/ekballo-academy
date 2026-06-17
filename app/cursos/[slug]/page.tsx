@@ -87,63 +87,45 @@ export default async function CursoPage({
         </div>
 
         <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-800">
-          Aulas
+          Mesas de discipulado
         </h2>
 
         {aulas.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-16 text-center">
             <p className="font-serif text-lg text-mesa-500">
-              As aulas estão sendo preparadas.
+              As mesas estão sendo preparadas.
             </p>
           </div>
         ) : (
           <ol className="space-y-3">
-            {aulas.map((aula, idx) => {
+            {aulas.map((aula) => {
               const concluida = concluidas.has(aula.id) || aula.completa;
-              const bloqueada = !aula.desbloqueada;
-              const conteudo = (
-                <div className={`flex items-center gap-5 rounded-xl border p-5 transition ${
-                  bloqueada
-                    ? "border-mesa-200 bg-mesa-100/40 opacity-60"
-                    : "border-mesa-200 bg-white hover:border-mesa-300 hover:bg-mesa-50/50"
-                }`}>
-                  <div
-                    className={`flex h-12 w-12 flex-none items-center justify-center rounded-full font-serif text-lg font-semibold ${
-                      bloqueada
-                        ? "bg-mesa-200 text-mesa-400"
-                        : concluida
-                          ? "bg-oliveira-100 text-oliveira-700"
-                          : "bg-mesa-100 text-mesa-700"
-                    }`}
-                  >
-                    {concluida ? "✓" : rotuloNumeroAula(aula)}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className={`font-medium ${bloqueada ? "text-mesa-500" : "text-mesa-800"}`}>
-                      {aula.titulo}
-                    </h3>
-                    {bloqueada ? (
-                      <p className="text-xs text-mesa-500">
-                        Responda corretamente as questões da aula anterior para desbloquear
-                      </p>
-                    ) : concluida ? (
-                      <p className="text-xs text-oliveira-600">
-                        Concluído
-                      </p>
-                    ) : null}
-                  </div>
-                  <span className={bloqueada ? "text-mesa-300" : "text-mesa-400"}>→</span>
-                </div>
-              );
               return (
                 <li key={aula.id}>
-                  {bloqueada ? (
-                    <div>{conteudo}</div>
-                  ) : (
-                    <Link href={`/cursos/${curso.slug}/aulas/${aula.id}`}>
-                      {conteudo}
-                    </Link>
-                  )}
+                  <Link href={`/cursos/${curso.slug}/aulas/${aula.id}`}>
+                    <div className="flex items-center gap-5 rounded-xl border border-mesa-200 bg-white p-5 transition hover:border-mesa-300 hover:bg-mesa-50/50">
+                      <div
+                        className={`flex h-12 w-12 flex-none items-center justify-center rounded-full font-serif text-lg font-semibold ${
+                          concluida
+                            ? "bg-oliveira-100 text-oliveira-700"
+                            : "bg-mesa-100 text-mesa-700"
+                        }`}
+                      >
+                        {concluida ? "✓" : rotuloNumeroAula(aula)}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-mesa-800">
+                          {aula.titulo}
+                        </h3>
+                        {concluida ? (
+                          <p className="text-xs text-oliveira-600">
+                            Concluído
+                          </p>
+                        ) : null}
+                      </div>
+                      <span className="text-mesa-400">→</span>
+                    </div>
+                  </Link>
                 </li>
               );
             })}

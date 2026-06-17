@@ -229,7 +229,7 @@ export default function Home() {
                   </div>
                   <div className="space-y-5 p-7">
                     <div>
-                      <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-laranja-600">Aula 03 · Reflexão</p>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-laranja-600">Mesa 03 · Reflexão</p>
                       <h4 className="font-serif text-xl font-semibold text-bege-800">
                         O que significa para você &ldquo;ser enviado&rdquo;?
                       </h4>
@@ -244,7 +244,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="flex items-center justify-between text-xs text-bege-500">
-                      <span>✓ Aula concluída</span>
+                      <span>✓ Mesa concluída</span>
                       <span className="text-oliveira-600 font-medium">● Sua jornada continua</span>
                     </div>
                   </div>

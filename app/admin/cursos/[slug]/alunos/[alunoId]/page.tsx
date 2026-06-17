@@ -134,7 +134,7 @@ export default async function AdminAlunoNoCursoPage({
 
               {a.atividades.length === 0 ? (
                 <p className="border-t border-mesa-100 px-6 py-4 text-sm text-mesa-500">
-                  Esta aula não tem atividades.
+                  Esta mesa não tem atividades.
                 </p>
               ) : (
                 <ul className="divide-y divide-mesa-100 border-t border-mesa-100">
