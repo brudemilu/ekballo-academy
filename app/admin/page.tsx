@@ -118,7 +118,7 @@ export default async function AdminPage() {
             {cursos.map((curso) => {
               const ogUrl = imagemMap.get(curso.id);
               const capa = ogUrl?.startsWith("/api/og/curso/")
-                ? `${ogUrl}?formato=retrato`
+                ? `${ogUrl}?formato=retrato&v=2`
                 : ogUrl ?? null;
               return (
                 <Link
