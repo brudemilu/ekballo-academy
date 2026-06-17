@@ -188,6 +188,18 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#DCC79A",
     rodapeCor: "#DCC79A",
   },
+  "trelica-videira": {
+    preLabel: "ESTUDO · 12 CAPÍTULOS",
+    titulo: "A Treliça\ne a Videira",
+    subtitulo: "A mentalidade de discipulado que muda tudo",
+    rodape: "A partir do livro de Colin Marshall & Tony Payne",
+    bg: "linear-gradient(135deg, #1E2B16 0%, #3C5226 55%, #6E8B3D 100%)",
+    textoCor: "#F1F5E8",
+    acentoCor: "#D9B24A",
+    preLabelCor: "#C3D29E",
+    rodapeCor: "#C3D29E",
+    livroUrl: "/capas/trelica-videira.jpg",
+  },
   "discipulado-contemplacao": {
     preLabel: "ESTUDO · 26 CAPÍTULOS",
     titulo: "Discipulado\ncomeça com\nContemplação",
