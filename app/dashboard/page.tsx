@@ -11,6 +11,7 @@ import {
 } from "@/lib/db";
 import { getDevocionalDoDia } from "@/lib/devocionais";
 import { podeVerAgenda } from "@/lib/permissoes";
+import { agruparPorCategoria } from "@/lib/categorias";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
 function greetingName(nome?: string | null): string {
@@ -53,6 +54,59 @@ export default async function DashboardPage() {
   const imagemMap = new Map(
     cursos.map((c, i) => [c.id, imagensResolvidas[i]])
   );
+
+  // Vitrine agrupada por seção (Liderança, Discipulado, …). Se só existe
+  // uma seção, não vale mostrar título — cai no grid simples de antes.
+  const grupos = agruparPorCategoria(cursos);
+  const mostrarSecoes = grupos.length > 1;
+
+  const renderCard = (curso: (typeof cursos)[number]) => {
+    const matricula = matriculasMap.get(curso.id);
+    const concluido = matricula?.concluido_em;
+    const href = curso.external_path ?? `/cursos/${curso.slug}`;
+    const ogUrl = imagemMap.get(curso.id);
+    // Card padronizado: todos usam a versão retrato gerada pela rota OG
+    // (capa do livro emoldurada de forma idêntica, ou tipografia).
+    const capa = ogUrl?.startsWith("/api/og/curso/")
+      ? `${ogUrl}?formato=retrato&v=2`
+      : ogUrl ?? null;
+    return (
+      <Link
+        key={curso.id}
+        href={href}
+        className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
+      >
+        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
+          {capa ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={capa}
+              alt={curso.titulo}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <Logo />
+            </div>
+          )}
+          {concluido ? (
+            <span className="absolute left-2 top-2 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+              ✓ Concluído
+            </span>
+          ) : matricula ? (
+            <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-mesa-700 shadow-sm backdrop-blur">
+              Em andamento
+            </span>
+          ) : null}
+          {curso.is_pago && (
+            <span className="absolute right-2 top-2 rounded-full bg-mesa-800/85 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+              Pago
+            </span>
+          )}
+        </div>
+      </Link>
+    );
+  };
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -140,55 +194,22 @@ export default async function DashboardPage() {
               Seu líder pastoral vai te matricular nas temáticas da sua trilha. Quando isso acontecer, elas aparecem aqui.
             </p>
           </div>
+        ) : mostrarSecoes ? (
+          <div className="space-y-10">
+            {grupos.map((grupo) => (
+              <section key={grupo.label}>
+                <h2 className="mb-3 font-serif text-xl font-semibold text-mesa-800">
+                  {grupo.label}
+                </h2>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  {grupo.cursos.map((curso) => renderCard(curso))}
+                </div>
+              </section>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {cursos.map((curso) => {
-              const matricula = matriculasMap.get(curso.id);
-              const concluido = matricula?.concluido_em;
-              const href = curso.external_path ?? `/cursos/${curso.slug}`;
-              const ogUrl = imagemMap.get(curso.id);
-              // Card padronizado: todos usam a versão retrato gerada pela rota OG
-              // (capa do livro emoldurada de forma idêntica, ou tipografia).
-              const capa = ogUrl?.startsWith("/api/og/curso/")
-                ? `${ogUrl}?formato=retrato&v=2`
-                : ogUrl ?? null;
-              return (
-                <Link
-                  key={curso.id}
-                  href={href}
-                  className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
-                >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
-                    {capa ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={capa}
-                        alt={curso.titulo}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <Logo />
-                      </div>
-                    )}
-                    {concluido ? (
-                      <span className="absolute left-2 top-2 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
-                        ✓ Concluído
-                      </span>
-                    ) : matricula ? (
-                      <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-mesa-700 shadow-sm backdrop-blur">
-                        Em andamento
-                      </span>
-                    ) : null}
-                    {curso.is_pago && (
-                      <span className="absolute right-2 top-2 rounded-full bg-mesa-800/85 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
-                        Pago
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
+            {cursos.map((curso) => renderCard(curso))}
           </div>
         )}
       </div>

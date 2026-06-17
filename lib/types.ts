@@ -28,6 +28,8 @@ export type Curso = {
   autor?: string | null;
   // Quando true, todas as aulas ficam desbloqueadas (sem trava sequencial).
   aulas_livres?: boolean | null;
+  // Seção da vitrine (ver lib/categorias.ts). NULL = curso sem categoria → "Outros".
+  categoria?: string | null;
   created_at: string;
 };
 

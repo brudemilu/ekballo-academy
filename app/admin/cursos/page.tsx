@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { getCurrentSession, listCursosWithStats } from "@/lib/db";
+import { CategoriaSelect } from "@/components/CategoriaSelect";
 
 export default async function AdminCursosPage() {
   const session = await getCurrentSession();
@@ -38,17 +39,26 @@ export default async function AdminCursosPage() {
                 ? Math.round((concluidos / matriculados) * 100)
                 : 0;
             return (
-              <li key={c.id}>
+              <li
+                key={c.id}
+                className="relative rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-mesa-300 hover:shadow-md"
+              >
+                {/* Link em overlay: cobre o card por baixo. O conteúdo deixa o
+                    clique passar (pointer-events-none), menos o seletor de seção. */}
                 <Link
                   href={c.external_path ?? `/admin/cursos/${c.slug}`}
-                  className="block rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-mesa-300 hover:shadow-md"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-4">
+                  aria-label={`Abrir ${c.titulo}`}
+                  className="absolute inset-0 z-0 rounded-2xl"
+                />
+                <div className="pointer-events-none relative flex flex-wrap items-center justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
                         <h3 className="font-serif text-lg font-semibold text-mesa-800">
                           {c.titulo}
                         </h3>
+                        <span className="pointer-events-auto">
+                          <CategoriaSelect cursoId={c.id} categoriaAtual={c.categoria} />
+                        </span>
                         {!c.publicado && (
                           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
                             Rascunho
@@ -93,8 +103,7 @@ export default async function AdminCursosPage() {
                         Abrir →
                       </span>
                     </div>
-                  </div>
-                </Link>
+                </div>
               </li>
             );
           })}
