@@ -21,6 +21,39 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "pregacao-keller": {
+    preLabel: "ESTUDO · 10 AULAS",
+    titulo: "Pregação",
+    subtitulo: "Comunicando a fé na era do ceticismo",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #14233A 0%, #243E5C 52%, #4E7390 100%)",
+    textoCor: "#EDF3FA",
+    acentoCor: "#E2B86A",
+    preLabelCor: "#A9C3DB",
+    rodapeCor: "#A9C3DB",
+  },
+  "proverbios-para-criancas": {
+    preLabel: "LEITURA · 31 DIAS",
+    titulo: "Provérbios\npara Crianças",
+    subtitulo: "31 dias de ensinamentos",
+    rodape: "A partir do livro de Caiene Cassoli",
+    bg: "linear-gradient(135deg, #1F5A66 0%, #2E8C8A 50%, #6FC3A8 100%)",
+    textoCor: "#F2FBF8",
+    acentoCor: "#FBD86A",
+    preLabelCor: "#BFE6DC",
+    rodapeCor: "#BFE6DC",
+  },
+  "herois-da-fe": {
+    preLabel: "LEITURA · 20 BIOGRAFIAS",
+    titulo: "Heróis\nda Fé",
+    subtitulo: "Vinte homens que incendiaram o mundo",
+    rodape: "A partir do livro de Orlando Boyer",
+    bg: "linear-gradient(135deg, #2B1410 0%, #6E2A1C 52%, #B8842E 100%)",
+    textoCor: "#FBF0E6",
+    acentoCor: "#F0C66A",
+    preLabelCor: "#DBB592",
+    rodapeCor: "#DBB592",
+  },
   "adoracao-biblica": {
     preLabel: "ESTUDO · 11 MESAS",
     titulo: "Adoração\nBíblica",
