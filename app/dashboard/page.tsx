@@ -140,7 +140,11 @@ export default async function DashboardPage() {
               const matricula = matriculasMap.get(curso.id);
               const concluido = matricula?.concluido_em;
               const href = curso.external_path ?? `/cursos/${curso.slug}`;
-              const capa = CAPA_LIVRO[curso.slug] ?? imagemMap.get(curso.id) ?? null;
+              const ogUrl = imagemMap.get(curso.id);
+              const capa =
+                CAPA_LIVRO[curso.slug] ??
+                (ogUrl?.startsWith("/api/og/curso/") ? `${ogUrl}?formato=retrato` : ogUrl) ??
+                null;
               return (
                 <Link
                   key={curso.id}

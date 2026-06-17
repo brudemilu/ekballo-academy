@@ -117,7 +117,11 @@ export default async function AdminPage() {
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {cursos.map((curso) => {
-              const capa = CAPA_LIVRO[curso.slug] ?? imagemMap.get(curso.id) ?? null;
+              const ogUrl = imagemMap.get(curso.id);
+              const capa =
+                CAPA_LIVRO[curso.slug] ??
+                (ogUrl?.startsWith("/api/og/curso/") ? `${ogUrl}?formato=retrato` : ogUrl) ??
+                null;
               return (
                 <Link
                   key={curso.id}
