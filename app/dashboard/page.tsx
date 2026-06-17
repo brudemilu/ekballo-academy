@@ -135,7 +135,7 @@ export default async function DashboardPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {cursos.map((curso) => {
               const matricula = matriculasMap.get(curso.id);
               const concluido = matricula?.concluido_em;
@@ -175,8 +175,8 @@ export default async function DashboardPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-1 items-start p-3">
-                    <h3 className="font-serif text-sm font-semibold leading-snug text-mesa-800 group-hover:text-mesa-900">
+                  <div className="flex flex-1 items-start p-2.5">
+                    <h3 className="line-clamp-2 font-serif text-[13px] font-semibold leading-snug text-mesa-800 group-hover:text-mesa-900">
                       {curso.titulo}
                     </h3>
                   </div>
