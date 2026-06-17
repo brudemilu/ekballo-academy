@@ -21,6 +21,17 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "adoracao-biblica": {
+    preLabel: "ESTUDO · 11 MESAS",
+    titulo: "Adoração\nBíblica",
+    subtitulo: "Os fundamentos da verdadeira adoração",
+    rodape: "A partir do livro de Russell P. Shedd",
+    bg: "linear-gradient(135deg, #1A2238 0%, #2E3A5C 45%, #B8923E 100%)",
+    textoCor: "#FBF6EA",
+    acentoCor: "#EFE0BC",
+    preLabelCor: "#D9C088",
+    rodapeCor: "#D9C088",
+  },
   "ego-transformado-keller": {
     preLabel: "ESTUDO · 4 AULAS",
     titulo: "Ego\nTransformado",
