@@ -128,6 +128,17 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#D8B381",
     livroUrl: "/capas/igreja-simples.jpg",
   },
+  contentamento: {
+    preLabel: "ESTUDO · 11 CAPÍTULOS",
+    titulo: "Contentamento",
+    subtitulo: "Aprender a se contentar em toda e qualquer situação",
+    rodape: "A partir do livro de Nancy Wilson",
+    bg: "linear-gradient(135deg, #4A2433 0%, #7E3F54 52%, #C98AA0 100%)",
+    textoCor: "#FBEFF2",
+    acentoCor: "#E8B65C",
+    preLabelCor: "#E6C2CC",
+    rodapeCor: "#E6C2CC",
+  },
   "discipulado-contemplacao": {
     preLabel: "ESTUDO · 26 CAPÍTULOS",
     titulo: "Discipulado\ncomeça com\nContemplação",
@@ -151,6 +162,18 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#D4B585",
     rodapeCor: "#D4B585",
     livroUrl: "/capas/lideranca-com-propositos.jpg",
+  },
+  "campo-batalha-mente": {
+    preLabel: "ESTUDO · 25 CAPÍTULOS",
+    titulo: "Campo de\nBatalha\nda Mente",
+    subtitulo: "Vencendo a batalha em sua mente",
+    rodape: "A partir do livro de Joyce Meyer",
+    bg: "linear-gradient(135deg, #0B1A2E 0%, #14365C 55%, #2E6BA0 100%)",
+    textoCor: "#F0F5FB",
+    acentoCor: "#E6B450",
+    preLabelCor: "#AEC6E0",
+    rodapeCor: "#AEC6E0",
+    livroUrl: "/capas/campo-batalha-mente.jpg",
   },
 };
 
