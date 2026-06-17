@@ -10,6 +10,7 @@ import {
   listCursosPublicados,
   getMaterialUrl,
 } from "@/lib/db";
+import { agruparPorCategoria } from "@/lib/categorias";
 
 export default async function AdminPage() {
   const session = await getCurrentSession();
@@ -27,6 +28,44 @@ export default async function AdminPage() {
   const imagemMap = new Map(
     cursos.map((c, i) => [c.id, imagensResolvidas[i]])
   );
+
+  // Agrupa por seção igual à vitrine do dashboard. Só 1 seção → grid simples.
+  const gruposCursos = agruparPorCategoria(cursos);
+  const mostrarSecoes = gruposCursos.length > 1;
+
+  const renderCardCurso = (curso: (typeof cursos)[number]) => {
+    const ogUrl = imagemMap.get(curso.id);
+    const capa = ogUrl?.startsWith("/api/og/curso/")
+      ? `${ogUrl}?formato=retrato&v=2`
+      : ogUrl ?? null;
+    return (
+      <Link
+        key={curso.id}
+        href={curso.external_path ?? `/cursos/${curso.slug}`}
+        className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
+      >
+        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
+          {capa ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={capa}
+              alt={curso.titulo}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <Logo />
+            </div>
+          )}
+          {curso.is_pago && (
+            <span className="absolute right-2 top-2 rounded-full bg-mesa-800/85 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+              Pago
+            </span>
+          )}
+        </div>
+      </Link>
+    );
+  };
 
   const cards = [
     { label: "Discípulos", value: stats.totalAlunos, icon: "👥", href: "/admin/alunos", color: "text-mesa-800" },
@@ -114,41 +153,24 @@ export default async function AdminPage() {
             entre em <Link href="/admin/cursos" className="underline decoration-mesa-300 hover:text-mesa-800">Temáticas</Link> pra
             ver matrículas, progresso e gargalos.
           </p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {cursos.map((curso) => {
-              const ogUrl = imagemMap.get(curso.id);
-              const capa = ogUrl?.startsWith("/api/og/curso/")
-                ? `${ogUrl}?formato=retrato&v=2`
-                : ogUrl ?? null;
-              return (
-                <Link
-                  key={curso.id}
-                  href={curso.external_path ?? `/cursos/${curso.slug}`}
-                  className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
-                >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
-                    {capa ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={capa}
-                        alt={curso.titulo}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <Logo />
-                      </div>
-                    )}
-                    {curso.is_pago && (
-                      <span className="absolute right-2 top-2 rounded-full bg-mesa-800/85 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
-                        Pago
-                      </span>
-                    )}
+          {mostrarSecoes ? (
+            <div className="space-y-8">
+              {gruposCursos.map((grupo) => (
+                <div key={grupo.label}>
+                  <h3 className="mb-3 font-serif text-lg font-semibold text-mesa-700">
+                    {grupo.label}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {grupo.cursos.map((curso) => renderCardCurso(curso))}
                   </div>
-                </Link>
-              );
-            })}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {cursos.map((curso) => renderCardCurso(curso))}
+            </div>
+          )}
         </section>
       )}
 
