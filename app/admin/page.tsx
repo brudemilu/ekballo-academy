@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { Logo } from "@/components/Logo";
 import UltimasRespostasLista from "@/components/UltimasRespostasLista";
+import { CAPA_LIVRO } from "@/lib/capas";
 import {
   getCurrentSession,
   getAdminStats,
@@ -114,53 +115,42 @@ export default async function AdminPage() {
             entre em <Link href="/admin/cursos" className="underline decoration-mesa-300 hover:text-mesa-800">Temáticas</Link> pra
             ver matrículas, progresso e gargalos.
           </p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {cursos.map((curso) => (
-              <Link
-                key={curso.id}
-                href={curso.external_path ?? `/cursos/${curso.slug}`}
-                className="lift group block overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300"
-              >
-                <div className="aspect-[16/9] bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 transition duration-700 group-hover:from-laranja-200 group-hover:to-oliveira-200">
-                  {imagemMap.get(curso.id) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={imagemMap.get(curso.id) || undefined}
-                      alt={curso.titulo}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <Logo />
-                    </div>
-                  )}
-                </div>
-                <div className="p-6">
-                  <div className="mb-3 flex items-center gap-2">
-                    {curso.is_pago ? (
-                      <span className="rounded-full bg-mesa-100 px-2.5 py-0.5 text-xs font-medium text-mesa-700">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {cursos.map((curso) => {
+              const capa = CAPA_LIVRO[curso.slug] ?? imagemMap.get(curso.id) ?? null;
+              return (
+                <Link
+                  key={curso.id}
+                  href={curso.external_path ?? `/cursos/${curso.slug}`}
+                  className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
+                    {capa ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={capa}
+                        alt={curso.titulo}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <Logo />
+                      </div>
+                    )}
+                    {curso.is_pago && (
+                      <span className="absolute right-2 top-2 rounded-full bg-mesa-800/85 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
                         Pago
                       </span>
-                    ) : (
-                      <span className="rounded-full bg-oliveira-100 px-2.5 py-0.5 text-xs font-medium text-oliveira-700">
-                        Gratuito
-                      </span>
                     )}
-                    <span className="rounded-full bg-bege-100 px-2.5 py-0.5 text-xs font-medium text-bege-700">
-                      Vista de discípulo
-                    </span>
                   </div>
-                  <h3 className="mb-2 font-serif text-xl font-semibold text-mesa-800 group-hover:text-mesa-900">
-                    {curso.titulo}
-                  </h3>
-                  {curso.descricao && (
-                    <p className="line-clamp-3 text-sm text-mesa-600">
-                      {curso.descricao}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
+                  <div className="flex flex-1 items-start p-2.5">
+                    <h3 className="line-clamp-2 font-serif text-[13px] font-semibold leading-snug text-mesa-800 group-hover:text-mesa-900">
+                      {curso.titulo}
+                    </h3>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
