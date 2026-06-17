@@ -188,6 +188,18 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#DCC79A",
     rodapeCor: "#DCC79A",
   },
+  "igreja-com-propositos": {
+    preLabel: "ESTUDO · 20 CAPÍTULOS",
+    titulo: "Uma Igreja\ncom Propósitos",
+    subtitulo: "Edificando a igreja nos cinco propósitos de Deus",
+    rodape: "A partir do livro de Rick Warren",
+    bg: "linear-gradient(135deg, #14223A 0%, #21456E 55%, #3E80B0 100%)",
+    textoCor: "#ECF3FA",
+    acentoCor: "#E2B24A",
+    preLabelCor: "#AECBE4",
+    rodapeCor: "#AECBE4",
+    livroUrl: "/capas/igreja-com-propositos.jpg",
+  },
   "trelica-videira": {
     preLabel: "ESTUDO · 12 CAPÍTULOS",
     titulo: "A Treliça\ne a Videira",
