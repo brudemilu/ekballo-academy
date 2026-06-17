@@ -21,6 +21,39 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "os-outros-da-biblia": {
+    preLabel: "ESTUDO · 11 AULAS",
+    titulo: "Os Outros\nda Bíblia",
+    subtitulo: "História e cultura dos povos antigos",
+    rodape: "A partir do livro de André Daniel Reinke",
+    bg: "linear-gradient(135deg, #2E1A0E 0%, #6E3E1C 52%, #C2823A 100%)",
+    textoCor: "#FBF1E4",
+    acentoCor: "#EEC889",
+    preLabelCor: "#D9B086",
+    rodapeCor: "#D9B086",
+  },
+  "aqueles-da-biblia": {
+    preLabel: "ESTUDO · 12 AULAS",
+    titulo: "Aqueles\nda Bíblia",
+    subtitulo: "História, fé e cultura do povo de Israel",
+    rodape: "A partir do livro de André Daniel Reinke",
+    bg: "linear-gradient(135deg, #12203A 0%, #284A6E 52%, #5A86B0 100%)",
+    textoCor: "#ECF2FA",
+    acentoCor: "#E6C266",
+    preLabelCor: "#A8C2DE",
+    rodapeCor: "#A8C2DE",
+  },
+  "nos-e-a-biblia": {
+    preLabel: "ESTUDO · 16 AULAS",
+    titulo: "Nós e\na Bíblia",
+    subtitulo: "Bíblia, hermenêutica e identidade",
+    rodape: "A partir do livro de André Daniel Reinke",
+    bg: "linear-gradient(135deg, #122A24 0%, #21503F 52%, #4E8C6E 100%)",
+    textoCor: "#ECFAF3",
+    acentoCor: "#E6C266",
+    preLabelCor: "#A6CFBC",
+    rodapeCor: "#A6CFBC",
+  },
   "pregacao-keller": {
     preLabel: "ESTUDO · 10 AULAS",
     titulo: "Pregação",
