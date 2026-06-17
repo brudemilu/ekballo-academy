@@ -134,7 +134,7 @@ export default async function DashboardPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {cursos.map((curso) => {
               const matricula = matriculasMap.get(curso.id);
               const concluido = matricula?.concluido_em;
@@ -159,8 +159,8 @@ export default async function DashboardPage() {
                       </div>
                     )}
                   </div>
-                  <div className="p-6">
-                    <div className="mb-3 flex items-center gap-2">
+                  <div className="p-4">
+                    <div className="mb-2 flex items-center gap-2">
                       {curso.is_pago ? (
                         <span className="rounded-full bg-mesa-100 px-2.5 py-0.5 text-xs font-medium text-mesa-700">
                           Pago
@@ -181,11 +181,11 @@ export default async function DashboardPage() {
                         </span>
                       )}
                     </div>
-                    <h3 className="mb-2 font-serif text-xl font-semibold text-mesa-800 group-hover:text-mesa-900">
+                    <h3 className="mb-1.5 font-serif text-lg font-semibold leading-snug text-mesa-800 group-hover:text-mesa-900">
                       {curso.titulo}
                     </h3>
                     {curso.descricao && (
-                      <p className="line-clamp-3 text-sm text-mesa-600">
+                      <p className="line-clamp-2 text-[13px] text-mesa-600">
                         {curso.descricao}
                       </p>
                     )}

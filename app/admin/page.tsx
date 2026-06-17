@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { Logo } from "@/components/Logo";
+import UltimasRespostasLista from "@/components/UltimasRespostasLista";
 import {
   getCurrentSession,
   getAdminStats,
@@ -175,39 +176,7 @@ export default async function AdminPage() {
             Nenhuma resposta ainda. Em breve a mesa estará posta.
           </p>
         ) : (
-          <ul className="divide-y divide-mesa-100">
-            {ultimas.map((r) => (
-              <li key={r.id}>
-                <Link
-                  href={`/admin/respostas/${r.id}`}
-                  className="flex items-start gap-4 px-6 py-4 transition hover:bg-mesa-50/50"
-                >
-                  <div className="mt-1 h-2.5 w-2.5 flex-none rounded-full bg-mesa-400" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <p className="font-medium text-mesa-800">
-                        {r.alunoNome || r.alunoEmail}
-                      </p>
-                      <p className="flex-none text-xs text-mesa-500">
-                        {new Date(r.created_at).toLocaleDateString("pt-BR")}
-                      </p>
-                    </div>
-                    <p className="mt-0.5 text-xs text-mesa-500">
-                      {r.cursoTitulo} · {r.aulaTitulo}
-                    </p>
-                    <p className="mt-2 line-clamp-2 text-sm text-mesa-700">
-                      {r.texto}
-                    </p>
-                    {!r.comentario_lider && (
-                      <span className="mt-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                        Aguardando devolutiva
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <UltimasRespostasLista respostas={ultimas} />
         )}
       </div>
     </AdminShell>
