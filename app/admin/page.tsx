@@ -28,10 +28,10 @@ export default async function AdminPage() {
   );
 
   const cards = [
-    { label: "Discípulos cadastrados", value: stats.totalAlunos, color: "text-mesa-700" },
-    { label: "Temáticas publicadas", value: stats.totalCursos, color: "text-mesa-700" },
-    { label: "Respostas escritas", value: stats.totalRespostas, color: "text-oliveira-700" },
-    { label: "Aguardando devolutiva", value: stats.respostasSemComentario, color: "text-amber-700" },
+    { label: "Discípulos", value: stats.totalAlunos, icon: "👥", href: "/admin/alunos", color: "text-mesa-800" },
+    { label: "Temáticas", value: stats.totalCursos, icon: "📚", href: "/admin/cursos", color: "text-mesa-800" },
+    { label: "Respostas", value: stats.totalRespostas, icon: "✍️", href: "/admin/respostas", color: "text-oliveira-700" },
+    { label: "Aguardando devolutiva", value: stats.respostasSemComentario, icon: "⏳", href: "/admin/respostas?status=pendentes", color: "text-amber-700", alerta: true },
   ];
 
   return (
@@ -45,20 +45,37 @@ export default async function AdminPage() {
         </h1>
       </div>
 
-      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-2xl border border-mesa-200 bg-white p-6"
-          >
-            <p className="text-xs font-medium uppercase tracking-wider text-mesa-500">
-              {s.label}
-            </p>
-            <p className={`mt-2 font-serif text-4xl font-semibold ${s.color}`}>
-              {s.value}
-            </p>
-          </div>
-        ))}
+      <div className="mb-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {cards.map((s) => {
+          const destaque = s.alerta && s.value > 0;
+          return (
+            <Link
+              key={s.label}
+              href={s.href}
+              className={`lift group flex items-center gap-3 rounded-xl border p-4 transition ${
+                destaque
+                  ? "border-amber-300 bg-amber-50 hover:border-amber-400"
+                  : "border-mesa-200 bg-white hover:border-mesa-300 hover:bg-mesa-50/50"
+              }`}
+            >
+              <span
+                className={`flex h-9 w-9 flex-none items-center justify-center rounded-lg text-lg ${
+                  destaque ? "animate-pulse bg-amber-100" : "bg-mesa-100"
+                }`}
+              >
+                {s.icon}
+              </span>
+              <div className="min-w-0">
+                <p className={`font-serif text-2xl font-semibold leading-none ${s.color}`}>
+                  {s.value}
+                </p>
+                <p className="mt-1 truncate text-xs font-medium text-mesa-500">
+                  {s.label}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Atalhos rápidos */}
