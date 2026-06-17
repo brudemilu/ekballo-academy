@@ -186,11 +186,6 @@ export default async function DashboardPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-1 items-start p-2.5">
-                    <h3 className="line-clamp-2 font-serif text-[13px] font-semibold leading-snug text-mesa-800 group-hover:text-mesa-900">
-                      {curso.titulo}
-                    </h3>
-                  </div>
                 </Link>
               );
             })}

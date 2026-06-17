@@ -32,6 +32,39 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#D9C088",
     rodapeCor: "#D9C088",
   },
+  "carta-aos-pecadores": {
+    preLabel: "ESTUDO · 11 CARTAS",
+    titulo: "Carta aos\nPecadores",
+    subtitulo: "Graça e verdade para quem luta",
+    rodape: "A partir do livro de Douglas Gonçalves e Saulo Daniel",
+    bg: "linear-gradient(135deg, #2A1614 0%, #5E2A24 52%, #B05A42 100%)",
+    textoCor: "#FBEEE8",
+    acentoCor: "#EEC9A8",
+    preLabelCor: "#D9A98C",
+    rodapeCor: "#D9A98C",
+  },
+  "o-cuidado-do-corpo": {
+    preLabel: "ESTUDO · 14 MESAS",
+    titulo: "O Cuidado\ndo Corpo",
+    subtitulo: "Sabedoria bíblica para o bem-estar físico e espiritual",
+    rodape: "A partir do livro de Luciano Subirá",
+    bg: "linear-gradient(135deg, #15301F 0%, #2C5A3B 52%, #6FA85E 100%)",
+    textoCor: "#EEFBEF",
+    acentoCor: "#CCEABA",
+    preLabelCor: "#9FC891",
+    rodapeCor: "#9FC891",
+  },
+  corajosas: {
+    preLabel: "LEITURA · 4 HISTÓRIAS",
+    titulo: "Corajosas",
+    subtitulo: "Coragem, identidade e valor aos olhos de Deus",
+    rodape: "Ficção cristã — Arlene, Queren, Maria e Thaís",
+    bg: "linear-gradient(135deg, #3A1633 0%, #6E2A54 52%, #C97AA0 100%)",
+    textoCor: "#FBEEF5",
+    acentoCor: "#F0C7DC",
+    preLabelCor: "#DCA9C4",
+    rodapeCor: "#DCA9C4",
+  },
   "ego-transformado-keller": {
     preLabel: "ESTUDO · 4 AULAS",
     titulo: "Ego\nTransformado",
@@ -337,6 +370,9 @@ export async function GET(
     const pw = 900;
     const ph = 1200;
     if (temLivro) {
+      // Pôster: a capa preenche o card inteiro (object-cover) e o
+      // título/autor descansam sobre um degradê escuro embaixo — uniforme
+      // pra todas as capas, sem aquela imagem flutuando no vazio.
       return new ImageResponse(
         (
           <div
@@ -345,73 +381,98 @@ export async function GET(
               height: ph,
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
               background: config.bg,
               fontFamily: "Cormorant",
               position: "relative",
-              padding: "70px 60px",
             }}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={capaSrc!}
+              alt=""
+              width={pw}
+              height={ph}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: pw,
+                height: ph,
+                objectFit: "cover",
+              }}
+            />
+            {/* degradê inferior pro texto descansar */}
             <div
               style={{
                 position: "absolute",
-                top: 30,
-                left: 30,
-                right: 30,
-                bottom: 30,
-                border: `1px solid ${config.acentoCor}`,
-                opacity: 0.22,
+                top: 0,
+                left: 0,
+                width: pw,
+                height: ph,
                 display: "flex",
+                background:
+                  "linear-gradient(to top, rgba(10,9,12,0.94) 0%, rgba(10,9,12,0.78) 20%, rgba(10,9,12,0.30) 42%, rgba(10,9,12,0) 60%)",
               }}
             />
+            {/* plaquê de texto */}
             <div
               style={{
-                fontFamily: "Inter",
-                fontStyle: "italic",
-                fontSize: 23,
-                letterSpacing: "0.3em",
-                color: config.preLabelCor,
-                textTransform: "uppercase",
+                position: "relative",
                 display: "flex",
-                textAlign: "center",
+                flexDirection: "column",
+                padding: "0 58px 70px",
               }}
             >
-              {config.preLabel}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={capaSrc!}
-                alt=""
+              <div
                 style={{
-                  maxWidth: 600,
-                  maxHeight: 760,
-                  objectFit: "contain",
-                  boxShadow: "0 30px 60px rgba(0,0,0,0.45)",
-                  borderRadius: 8,
+                  display: "flex",
+                  fontFamily: "Inter",
+                  fontStyle: "italic",
+                  fontSize: 21,
+                  letterSpacing: "0.26em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.82)",
+                  marginBottom: 18,
+                }}
+              >
+                {config.preLabel}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  width: 60,
+                  height: 3,
+                  background: config.acentoCor,
+                  marginBottom: 22,
                 }}
               />
-            </div>
-            <div
-              style={{
-                fontFamily: "Inter",
-                fontStyle: "italic",
-                fontSize: 23,
-                letterSpacing: "0.06em",
-                color: config.rodapeCor,
-                display: "flex",
-                textAlign: "center",
-              }}
-            >
-              {config.rodape}
+              <div
+                style={{
+                  display: "flex",
+                  fontFamily: "Cormorant",
+                  fontWeight: 700,
+                  fontSize: 74,
+                  lineHeight: 1.02,
+                  color: "#ffffff",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {config.titulo}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontFamily: "Inter",
+                  fontStyle: "italic",
+                  fontSize: 23,
+                  letterSpacing: "0.02em",
+                  color: "rgba(255,255,255,0.78)",
+                  marginTop: 20,
+                }}
+              >
+                {config.rodape}
+              </div>
             </div>
           </div>
         ),
