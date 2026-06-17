@@ -181,7 +181,7 @@ export default function CadastroPage() {
 
             <div>
               <label htmlFor="telefone" className="mb-1.5 block text-sm font-medium text-mesa-700">
-                Celular (WhatsApp)
+                Celular (WhatsApp) <span className="text-laranja-600">*</span>
               </label>
               <input
                 id="telefone"
@@ -195,7 +195,8 @@ export default function CadastroPage() {
                 placeholder="(11) 99999-8888"
               />
               <p className="mt-1.5 text-xs text-mesa-500">
-                Usaremos para te avisar sobre novas temáticas e devolutivas pelo WhatsApp.
+                Obrigatório. Usamos pra te avisar sobre novas temáticas e devolutivas
+                e pra recuperar sua senha pelo WhatsApp.
               </p>
             </div>
 
