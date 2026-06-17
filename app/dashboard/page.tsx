@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { CAPA_LIVRO } from "@/lib/capas";
 import {
   getCurrentSession,
   listCursosPublicados,
@@ -139,56 +140,45 @@ export default async function DashboardPage() {
               const matricula = matriculasMap.get(curso.id);
               const concluido = matricula?.concluido_em;
               const href = curso.external_path ?? `/cursos/${curso.slug}`;
+              const capa = CAPA_LIVRO[curso.slug] ?? imagemMap.get(curso.id) ?? null;
               return (
                 <Link
                   key={curso.id}
                   href={href}
-                  className="lift group block overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300"
+                  className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
                 >
-                  <div className="aspect-[16/9] bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 transition duration-700 group-hover:from-laranja-200 group-hover:to-oliveira-200">
-                    {imagemMap.get(curso.id) ? (
+                  <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
+                    {capa ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={imagemMap.get(curso.id) || undefined}
+                        src={capa}
                         alt={curso.titulo}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <Logo />
                       </div>
                     )}
+                    {concluido ? (
+                      <span className="absolute left-2 top-2 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+                        ✓ Concluído
+                      </span>
+                    ) : matricula ? (
+                      <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-mesa-700 shadow-sm backdrop-blur">
+                        Em andamento
+                      </span>
+                    ) : null}
+                    {curso.is_pago && (
+                      <span className="absolute right-2 top-2 rounded-full bg-mesa-800/85 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+                        Pago
+                      </span>
+                    )}
                   </div>
-                  <div className="p-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      {curso.is_pago ? (
-                        <span className="rounded-full bg-mesa-100 px-2.5 py-0.5 text-xs font-medium text-mesa-700">
-                          Pago
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-oliveira-100 px-2.5 py-0.5 text-xs font-medium text-oliveira-700">
-                          Gratuito
-                        </span>
-                      )}
-                      {matricula && !concluido && (
-                        <span className="rounded-full bg-mesa-50 px-2.5 py-0.5 text-xs font-medium text-mesa-600">
-                          Em andamento
-                        </span>
-                      )}
-                      {concluido && (
-                        <span className="rounded-full bg-oliveira-100 px-2.5 py-0.5 text-xs font-medium text-oliveira-700">
-                          Concluído
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="mb-1.5 font-serif text-lg font-semibold leading-snug text-mesa-800 group-hover:text-mesa-900">
+                  <div className="flex flex-1 items-start p-3">
+                    <h3 className="font-serif text-sm font-semibold leading-snug text-mesa-800 group-hover:text-mesa-900">
                       {curso.titulo}
                     </h3>
-                    {curso.descricao && (
-                      <p className="line-clamp-2 text-[13px] text-mesa-600">
-                        {curso.descricao}
-                      </p>
-                    )}
                   </div>
                 </Link>
               );
