@@ -188,6 +188,18 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#DCC79A",
     rodapeCor: "#DCC79A",
   },
+  "jesuscopy": {
+    preLabel: "ESTUDO · 8 CAPÍTULOS",
+    titulo: "JesusCopy",
+    subtitulo: "Tornar-se uma cópia de Jesus",
+    rodape: "A partir do livro de Douglas Gonçalves",
+    bg: "linear-gradient(135deg, #161616 0%, #2C2C2C 55%, #555555 100%)",
+    textoCor: "#F4F4F2",
+    acentoCor: "#E0B24A",
+    preLabelCor: "#BDBDBD",
+    rodapeCor: "#BDBDBD",
+    livroUrl: "/capas/jesuscopy.jpg",
+  },
   "igreja-com-propositos": {
     preLabel: "ESTUDO · 20 CAPÍTULOS",
     titulo: "Uma Igreja\ncom Propósitos",
