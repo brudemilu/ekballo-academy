@@ -20,6 +20,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
+  const senhaAlterada = searchParams.get("senha") === "alterada";
 
   const [email, setEmail] = useState(MOCK ? "iabolsa@bmbr.com.br" : "");
   const [senha, setSenha] = useState(MOCK ? "qualquer-senha" : "");
@@ -87,6 +88,12 @@ function LoginForm() {
           <p className="mb-8 text-sm text-mesa-600">
             Entre para continuar sua caminhada.
           </p>
+
+          {senhaAlterada && (
+            <div className="mb-6 rounded-lg border border-oliveira-200 bg-oliveira-50 px-4 py-3 text-sm text-oliveira-800">
+              Senha alterada com sucesso! Entre com a nova senha.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>

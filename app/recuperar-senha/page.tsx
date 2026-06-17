@@ -2,44 +2,81 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
 export default function RecuperarSenhaPage() {
-  const [email, setEmail] = useState("");
+  const router = useRouter();
+  const [etapa, setEtapa] = useState<1 | 2>(1);
+  const [identificador, setIdentificador] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const [senha, setSenha] = useState("");
+  const [senha2, setSenha2] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [enviado, setEnviado] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function solicitarCodigo(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setErro(null);
 
-    if (MOCK) {
-      await new Promise((r) => setTimeout(r, 500));
-      setEnviado(true);
-      setLoading(false);
-      return;
+    try {
+      const resp = await fetch("/api/recuperar-senha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identificador }),
+      });
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setErro(json.erro || "Não foi possível enviar o código agora.");
+        setLoading(false);
+        return;
+      }
+      setAviso(
+        json.mensagem ||
+          "Se houver uma conta com WhatsApp cadastrado, enviamos um código por lá."
+      );
+      setEtapa(2);
+    } catch {
+      setErro("Falha de conexão. Tente novamente.");
     }
-
-    const supabase = createClient();
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/auth/callback?next=/redefinir-senha`,
-    });
-
-    if (error) {
-      setErro("Não foi possível enviar o e-mail agora. Tente novamente.");
-      setLoading(false);
-      return;
-    }
-
-    setEnviado(true);
     setLoading(false);
+  }
+
+  async function confirmarCodigo(e: React.FormEvent) {
+    e.preventDefault();
+    setErro(null);
+
+    if (senha.length < 6) {
+      setErro("A senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (senha !== senha2) {
+      setErro("As senhas não conferem.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const resp = await fetch("/api/recuperar-senha/confirmar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identificador, codigo, senha }),
+      });
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setErro(json.erro || "Não foi possível alterar a senha.");
+        setLoading(false);
+        return;
+      }
+      router.push("/login?senha=alterada");
+    } catch {
+      setErro("Falha de conexão. Tente novamente.");
+      setLoading(false);
+    }
   }
 
   return (
@@ -52,64 +89,41 @@ export default function RecuperarSenhaPage() {
         </div>
 
         <div className="rounded-2xl border border-mesa-200 bg-white p-8 shadow-xl shadow-mesa-700/5 sm:p-10">
-          {enviado ? (
-            <>
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-oliveira-100">
-                <svg
-                  className="h-8 w-8 text-oliveira-600"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M2.94 6.91A1 1 0 013.83 6h12.34a1 1 0 01.89.54L10 13 2.94 6.91z" />
-                  <path d="M18 8.12V14a2 2 0 01-2 2H4a2 2 0 01-2-2V8.12l8 6.88 8-6.88z" />
-                </svg>
-              </div>
-              <h1 className="mb-3 text-center font-serif text-2xl font-semibold text-mesa-800">
-                Verifique seu e-mail
-              </h1>
-              <p className="mb-6 text-center text-sm text-mesa-600">
-                Se houver uma conta para <strong>{email}</strong>, enviamos um
-                link para você criar uma nova senha. O link expira em 1 hora.
-              </p>
-              <Link
-                href="/login"
-                className="block w-full rounded-lg bg-mesa-700 py-3 text-center text-sm font-medium text-mesa-50 hover:bg-mesa-800"
-              >
-                Voltar para o login
-              </Link>
-            </>
-          ) : (
+          {MOCK && (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              Modo demo: nenhum WhatsApp é enviado de verdade. Qualquer código de
+              6 dígitos é aceito.
+            </div>
+          )}
+
+          {etapa === 1 ? (
             <>
               <h1 className="mb-2 font-serif text-3xl font-semibold text-mesa-800">
                 Recuperar senha
               </h1>
               <p className="mb-8 text-sm text-mesa-600">
-                Digite o e-mail da sua conta. Vamos enviar um link pra você
-                criar uma nova senha.
+                Digite o e-mail ou o WhatsApp da sua conta. Vamos enviar um
+                código pelo WhatsApp pra você criar uma nova senha.
               </p>
 
-              {MOCK && (
-                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
-                  Modo demo: nenhum e-mail é enviado de verdade.
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={solicitarCodigo} className="space-y-5">
                 <div>
                   <label
-                    htmlFor="email"
+                    htmlFor="identificador"
                     className="mb-1.5 block text-sm font-medium text-mesa-700"
                   >
-                    E-mail
+                    E-mail ou WhatsApp
                   </label>
                   <input
-                    id="email"
-                    type="email"
+                    id="identificador"
+                    type="text"
+                    inputMode="email"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="username"
+                    value={identificador}
+                    onChange={(e) => setIdentificador(e.target.value)}
                     className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 text-mesa-900 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
-                    placeholder="seu@email.com"
+                    placeholder="seu@email.com ou (31) 99999-9999"
                   />
                 </div>
 
@@ -124,7 +138,7 @@ export default function RecuperarSenhaPage() {
                   disabled={loading}
                   className="w-full rounded-lg bg-mesa-700 py-3 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-60"
                 >
-                  {loading ? "Enviando..." : "Enviar link de recuperação"}
+                  {loading ? "Enviando..." : "Enviar código no WhatsApp"}
                 </button>
               </form>
 
@@ -137,6 +151,108 @@ export default function RecuperarSenhaPage() {
                   Voltar para o login
                 </Link>
               </p>
+            </>
+          ) : (
+            <>
+              <h1 className="mb-2 font-serif text-3xl font-semibold text-mesa-800">
+                Criar nova senha
+              </h1>
+              {aviso && (
+                <div className="mb-6 rounded-lg border border-oliveira-200 bg-oliveira-50 px-4 py-3 text-sm text-oliveira-800">
+                  {aviso}
+                </div>
+              )}
+
+              <form onSubmit={confirmarCodigo} className="space-y-5">
+                <div>
+                  <label
+                    htmlFor="codigo"
+                    className="mb-1.5 block text-sm font-medium text-mesa-700"
+                  >
+                    Código de 6 dígitos
+                  </label>
+                  <input
+                    id="codigo"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    required
+                    maxLength={6}
+                    value={codigo}
+                    onChange={(e) =>
+                      setCodigo(e.target.value.replace(/\D+/g, "").slice(0, 6))
+                    }
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 text-center text-2xl font-semibold tracking-[0.4em] text-mesa-900 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    placeholder="000000"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="senha"
+                    className="mb-1.5 block text-sm font-medium text-mesa-700"
+                  >
+                    Nova senha
+                  </label>
+                  <input
+                    id="senha"
+                    type="password"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="senha2"
+                    className="mb-1.5 block text-sm font-medium text-mesa-700"
+                  >
+                    Confirme a nova senha
+                  </label>
+                  <input
+                    id="senha2"
+                    type="password"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    value={senha2}
+                    onChange={(e) => setSenha2(e.target.value)}
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                {erro && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {erro}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-lg bg-mesa-700 py-3 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-60"
+                >
+                  {loading ? "Salvando..." : "Salvar nova senha"}
+                </button>
+              </form>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEtapa(1);
+                  setCodigo("");
+                  setErro(null);
+                }}
+                className="mt-6 block w-full text-center text-sm text-mesa-600 underline decoration-mesa-300 hover:text-mesa-800"
+              >
+                Não recebi o código — voltar
+              </button>
             </>
           )}
         </div>
