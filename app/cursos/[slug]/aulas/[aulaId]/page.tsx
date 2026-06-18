@@ -5,6 +5,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { AtividadeForm } from "@/components/AtividadeForm";
 import { MarcarConcluida } from "@/components/MarcarConcluida";
 import { AulaConteudo } from "@/components/AulaConteudo";
+import { LeitorMesa } from "@/components/LeitorMesa";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
   getCurrentSession,
@@ -97,6 +98,16 @@ export default async function AulaPage({
           <h1 className="mb-8 font-serif text-4xl font-semibold leading-tight text-mesa-800">
             {aula.titulo}
           </h1>
+
+          {aula.conteudo && (
+            <LeitorMesa
+              conteudo={aula.conteudo as string}
+              titulo={aula.titulo}
+              mesaLabel={`Mesa ${rotuloNumeroAula(aula)}`}
+              autor={curso.autor ?? null}
+              aulaId={aula.id}
+            />
+          )}
 
           {materialUrl && (
             <a
