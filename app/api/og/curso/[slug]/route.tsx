@@ -21,6 +21,30 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "enigma-biblia-gutenberg": {
+    livroUrl: "/capas/enigma-biblia-gutenberg.jpg",
+    preLabel: "ROMANCE JUVENIL · 12 CAPÍTULOS",
+    titulo: "O Enigma da\nBíblia de Gutenberg",
+    subtitulo: "Uma semana de mistério, fé e verdade",
+    rodape: "A partir do livro de Maurício Zágari",
+    bg: "linear-gradient(135deg, #0C1424 0%, #1E2C4E 52%, #3E5488 100%)",
+    textoCor: "#EAF0FB",
+    acentoCor: "#E0A85A",
+    preLabelCor: "#A9B8D8",
+    rodapeCor: "#A9B8D8",
+  },
+  "garota-segundo-coracao-de-deus": {
+    livroUrl: "/capas/garota-segundo-coracao-de-deus.jpg",
+    preLabel: "DEVOCIONAL · 11 AULAS",
+    titulo: "Uma Garota Segundo\no Coração de Deus",
+    subtitulo: "Vivendo uma aventura com Jesus",
+    rodape: "A partir do livro de Elizabeth George",
+    bg: "linear-gradient(135deg, #0E3A3E 0%, #1E6E72 52%, #46AEA8 100%)",
+    textoCor: "#EAFBF8",
+    acentoCor: "#F2899A",
+    preLabelCor: "#A6D8D2",
+    rodapeCor: "#A6D8D2",
+  },
   "jornada-180": {
     preLabel: "PLANO · 6 MESES",
     titulo: "Jornada\n180º",
