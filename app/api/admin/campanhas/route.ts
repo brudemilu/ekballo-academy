@@ -115,9 +115,19 @@ export async function POST(req: NextRequest) {
   if (acao === "aprovar") {
     // Permite o admin remover algumas pessoas e trocar o template no ato.
     const excluir = new Set<string>((body.excluir_ids || []).map(String));
-    const finais = lista.filter((c) => !excluir.has(c.aluno_id));
+    const selecionados = lista.filter((c) => !excluir.has(c.aluno_id));
+    // Regra de broadcast: campanha não atinge quem está só nas temáticas
+    // abertas (Bíblia/Devocional/planos). Cobre o gatilho "sumida" (varre a
+    // base); nos gatilhos por curso é no-op (candidatos já são alunos reais).
+    const { idsAlunosReais } = await import("@/lib/destinatarios");
+    const reais = await idsAlunosReais(db);
+    const finais = selecionados.filter((c) => reais.has(c.aluno_id));
+    const excluidosRegra = selecionados.length - finais.length;
     if (!finais.length) {
-      return NextResponse.json({ erro: "nenhum destinatário para enviar" }, { status: 400 });
+      return NextResponse.json(
+        { erro: "nenhum aluno real para enviar (só há matriculados nas temáticas abertas)" },
+        { status: 400 }
+      );
     }
     const templateId = body.template_id || campanha.template_id;
     if (!templateId) {
@@ -175,7 +185,11 @@ export async function POST(req: NextRequest) {
       })
       .eq("id", campanhaId);
 
-    return NextResponse.json({ ok: true, enfileirados: finais.length });
+    return NextResponse.json({
+      ok: true,
+      enfileirados: finais.length,
+      excluidos_regra_abertos: excluidosRegra,
+    });
   }
 
   return NextResponse.json({ erro: "ação desconhecida" }, { status: 400 });

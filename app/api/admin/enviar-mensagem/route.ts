@@ -139,6 +139,25 @@ export async function POST(req: NextRequest) {
     if (data) destinatarios = [data as Destinatario];
   }
 
+  // Regra de broadcast: "todos" (e o alvo num curso aberto, que é a base
+  // inteira por auto-matrícula) só atinge ALUNOS REAIS — quem está numa
+  // temática real, não só em Bíblia/Devocional/planos. Envio pra "aluno"
+  // específico é explícito e não filtra. Ver lib/destinatarios.ts.
+  if (destino_tipo !== "aluno") {
+    const { idsAlunosReais } = await import("@/lib/destinatarios");
+    const reais = await idsAlunosReais(admin);
+    destinatarios = destinatarios.filter((d) => reais.has(d.id));
+    if (destinatarios.length === 0) {
+      return NextResponse.json(
+        {
+          erro:
+            "nenhum aluno real nesse destino (só há matriculados nas temáticas abertas Bíblia/Devocional)",
+        },
+        { status: 400 }
+      );
+    }
+  }
+
   const querEmail = canais.includes("email");
   const querWhatsapp = canais.includes("whatsapp");
   const querPush = canais.includes("push");
