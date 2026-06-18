@@ -187,12 +187,19 @@ function Overlay({
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(0);
 
-  // Mede o viewport (largura/altura úteis) — refaz no resize/rotação.
+  // Mede a folha útil — refaz no resize/rotação.
+  // IMPORTANTE: a largura vem da caixa de conteúdo do CONTAINER DE COLUNAS
+  // (colsRef.clientWidth), não do viewport. O viewport tem padding horizontal
+  // (px-6/sm:px-10), então seu clientWidth inclui o padding; usar esse valor em
+  // columnWidth deixava a coluna real mais estreita que o passo do translate,
+  // desalinhando as folhas e cortando o texto. Medindo a caixa de conteúdo,
+  // columnWidth e o passo (w + GAP) usam exatamente a mesma largura.
   useLayoutEffect(() => {
     if (modo !== "folhas") return;
     const vp = viewportRef.current;
-    if (!vp) return;
-    const medir = () => setDims({ w: vp.clientWidth, h: vp.clientHeight });
+    const cols = colsRef.current;
+    if (!vp || !cols) return;
+    const medir = () => setDims({ w: cols.clientWidth, h: vp.clientHeight });
     medir();
     const ro = new ResizeObserver(medir);
     ro.observe(vp);
