@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import { telefoneBloqueadoBroadcast } from "@/lib/destinatarios";
 
 // Painel WhatsApp (Evolution GO): proxy admin-gated pras edge functions.
 //   GET                      -> status da instância
@@ -14,6 +16,7 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 // repassamos com o INTERNAL_SECRET, no mesmo padrão de /api/admin/enviar-mensagem.
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET!;
 const FUNCTIONS_BASE = SUPABASE_URL.replace(".supabase.co", ".functions.supabase.co");
 const EDGE_INSTANCIA_URL = `${FUNCTIONS_BASE}/whatsapp-instancia`;
@@ -99,6 +102,23 @@ export async function POST(req: NextRequest) {
       if (!destinatario) {
         return NextResponse.json({ erro: "destinatário obrigatório" }, { status: 400 });
       }
+
+      // Regra de broadcast: não enviar pra cadastrado que está só nas temáticas
+      // abertas (Bíblia/Devocional). Grupos e números não cadastrados passam.
+      // Ver lib/destinatarios.ts.
+      const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+        auth: { persistSession: false },
+      });
+      if (await telefoneBloqueadoBroadcast(db, destinatario)) {
+        return NextResponse.json(
+          {
+            erro:
+              "destinatário está só nas temáticas abertas (Bíblia/Devocional) — envio bloqueado pela regra de broadcast",
+          },
+          { status: 422 }
+        );
+      }
+
       const tipo = body.tipo === "midia" ? "midia" : "texto";
 
       if (tipo === "texto") {

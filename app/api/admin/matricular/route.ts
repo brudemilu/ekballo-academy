@@ -73,6 +73,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, jaMatriculado: true });
   }
 
+  // Curso aberto (Bíblia/Devocional/planos, external_path): auto-matrícula pra
+  // todo cadastrado — não faz sentido avisar. Não dispara push nem WhatsApp.
+  // Ver regra em lib/destinatarios.ts.
+  if (curso?.external_path) {
+    return NextResponse.json({ ok: true, curso_aberto: true, notificado: false });
+  }
+
   // 1) Push in-app
   const push = await enviarPush([alunoId], {
     title: "✨ Temática liberada",
