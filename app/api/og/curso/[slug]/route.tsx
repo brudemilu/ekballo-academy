@@ -33,6 +33,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#A6D2CC",
   },
   "construindo-pontes": {
+    livroUrl: "/capas/construindo-pontes.jpg",
     preLabel: "ESTUDO · 10 AULAS",
     titulo: "Construindo\nPontes",
     subtitulo: "Aconselhamento bíblico de crianças e adolescentes",
@@ -44,6 +45,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#A8D6CB",
   },
   "o-discipulo-radical": {
+    livroUrl: "/capas/o-discipulo-radical.jpg",
     preLabel: "LEITURA · 8 MARCAS",
     titulo: "O Discípulo\nRadical",
     subtitulo: "Oito marcas do discipulado integral",
@@ -55,6 +57,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#DBA4AC",
   },
   "eu-meu-pavio-curto": {
+    livroUrl: "/capas/eu-meu-pavio-curto.jpg",
     preLabel: "LEITURA · 15 AULAS",
     titulo: "Eu, meu pavio\ncurto e Deus",
     subtitulo: "Vencendo a ira pela graça",
@@ -66,6 +69,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#E0AE84",
   },
   "cristianismo-puro-simples": {
+    livroUrl: "/capas/cristianismo-puro-simples.jpg",
     preLabel: "CLÁSSICO · 4 LIVROS",
     titulo: "Cristianismo\nPuro e Simples",
     subtitulo: "A defesa clássica da fé cristã",
@@ -88,6 +92,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#BCB6D8",
   },
   "os-outros-da-biblia": {
+    livroUrl: "/capas/os-outros-da-biblia.jpg",
     preLabel: "ESTUDO · 11 AULAS",
     titulo: "Os Outros\nda Bíblia",
     subtitulo: "História e cultura dos povos antigos",
@@ -99,6 +104,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#D9B086",
   },
   "aqueles-da-biblia": {
+    livroUrl: "/capas/aqueles-da-biblia.jpg",
     preLabel: "ESTUDO · 12 AULAS",
     titulo: "Aqueles\nda Bíblia",
     subtitulo: "História, fé e cultura do povo de Israel",
@@ -110,6 +116,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#A8C2DE",
   },
   "nos-e-a-biblia": {
+    livroUrl: "/capas/nos-e-a-biblia.jpg",
     preLabel: "ESTUDO · 16 AULAS",
     titulo: "Nós e\na Bíblia",
     subtitulo: "Bíblia, hermenêutica e identidade",
@@ -121,6 +128,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#A6CFBC",
   },
   "pregacao-keller": {
+    livroUrl: "/capas/pregacao-keller.jpg",
     preLabel: "ESTUDO · 10 AULAS",
     titulo: "Pregação",
     subtitulo: "Comunicando a fé na era do ceticismo",
@@ -132,6 +140,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#A9C3DB",
   },
   "proverbios-para-criancas": {
+    livroUrl: "/capas/proverbios-para-criancas.jpg",
     preLabel: "LEITURA · 31 DIAS",
     titulo: "Provérbios\npara Crianças",
     subtitulo: "31 dias de ensinamentos",
@@ -154,6 +163,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#DBB592",
   },
   "adoracao-biblica": {
+    livroUrl: "/capas/adoracao-biblica.jpg",
     preLabel: "ESTUDO · 11 MESAS",
     titulo: "Adoração\nBíblica",
     subtitulo: "Os fundamentos da verdadeira adoração",
@@ -165,6 +175,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#D9C088",
   },
   "carta-aos-pecadores": {
+    livroUrl: "/capas/carta-aos-pecadores.jpg",
     preLabel: "ESTUDO · 11 CARTAS",
     titulo: "Carta aos\nPecadores",
     subtitulo: "Graça e verdade para quem luta",
@@ -176,6 +187,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#D9A98C",
   },
   "o-cuidado-do-corpo": {
+    livroUrl: "/capas/o-cuidado-do-corpo.jpg",
     preLabel: "ESTUDO · 14 MESAS",
     titulo: "O Cuidado\ndo Corpo",
     subtitulo: "Sabedoria bíblica para o bem-estar físico e espiritual",
@@ -187,6 +199,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#9FC891",
   },
   corajosas: {
+    livroUrl: "/capas/corajosas.jpg",
     preLabel: "LEITURA · 4 HISTÓRIAS",
     titulo: "Corajosas",
     subtitulo: "Coragem, identidade e valor aos olhos de Deus",

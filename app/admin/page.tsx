@@ -36,7 +36,7 @@ export default async function AdminPage() {
   const renderCardCurso = (curso: (typeof cursos)[number]) => {
     const ogUrl = imagemMap.get(curso.id);
     const capa = ogUrl?.startsWith("/api/og/curso/")
-      ? `${ogUrl}?formato=retrato&v=3`
+      ? `${ogUrl}?formato=retrato&v=4`
       : ogUrl ?? null;
     return (
       <Link
