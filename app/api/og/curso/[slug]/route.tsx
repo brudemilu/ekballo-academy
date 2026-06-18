@@ -21,6 +21,17 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "jornada-180": {
+    preLabel: "PLANO · 6 MESES",
+    titulo: "Jornada\n180º",
+    subtitulo: "A Bíblia toda em seis meses de leitura",
+    rodape: "Plano de leitura bíblica",
+    bg: "linear-gradient(135deg, #0E2A2E 0%, #1C4E52 52%, #3E8C86 100%)",
+    textoCor: "#ECFAF7",
+    acentoCor: "#E6C266",
+    preLabelCor: "#A6D2CC",
+    rodapeCor: "#A6D2CC",
+  },
   "construindo-pontes": {
     preLabel: "ESTUDO · 10 AULAS",
     titulo: "Construindo\nPontes",
@@ -491,9 +502,9 @@ export async function GET(
     const pw = 900;
     const ph = 1200;
     if (temLivro) {
-      // Pôster: a capa preenche o card inteiro (object-cover) e o
-      // título/autor descansam sobre um degradê escuro embaixo — uniforme
-      // pra todas as capas, sem aquela imagem flutuando no vazio.
+      // Capa real do livro: preenche o card inteiro (object-cover), limpa,
+      // sem texto sobreposto — a própria arte já traz título e autor. Uma
+      // borda interna sutil e um leve escurecimento nas pontas dão acabamento.
       return new ImageResponse(
         (
           <div
@@ -501,10 +512,7 @@ export async function GET(
               width: pw,
               height: ph,
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-end",
               background: config.bg,
-              fontFamily: "Cormorant",
               position: "relative",
             }}
           >
@@ -523,7 +531,7 @@ export async function GET(
                 objectFit: "cover",
               }}
             />
-            {/* degradê inferior pro texto descansar */}
+            {/* vinheta sutil pra dar profundidade e fechar as bordas */}
             <div
               style={{
                 position: "absolute",
@@ -533,68 +541,21 @@ export async function GET(
                 height: ph,
                 display: "flex",
                 background:
-                  "linear-gradient(to top, rgba(10,9,12,0.94) 0%, rgba(10,9,12,0.78) 20%, rgba(10,9,12,0.30) 42%, rgba(10,9,12,0) 60%)",
+                  "radial-gradient(130% 100% at 50% 38%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.34) 100%)",
               }}
             />
-            {/* plaquê de texto */}
+            {/* moldura interna discreta */}
             <div
               style={{
-                position: "relative",
+                position: "absolute",
+                top: 26,
+                left: 26,
+                right: 26,
+                bottom: 26,
+                border: "1px solid rgba(255,255,255,0.16)",
                 display: "flex",
-                flexDirection: "column",
-                padding: "0 58px 70px",
               }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  fontFamily: "Inter",
-                  fontStyle: "italic",
-                  fontSize: 21,
-                  letterSpacing: "0.26em",
-                  textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.82)",
-                  marginBottom: 18,
-                }}
-              >
-                {config.preLabel}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  width: 60,
-                  height: 3,
-                  background: config.acentoCor,
-                  marginBottom: 22,
-                }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  fontFamily: "Cormorant",
-                  fontWeight: 700,
-                  fontSize: 74,
-                  lineHeight: 1.02,
-                  color: "#ffffff",
-                  whiteSpace: "pre-line",
-                }}
-              >
-                {config.titulo}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontFamily: "Inter",
-                  fontStyle: "italic",
-                  fontSize: 23,
-                  letterSpacing: "0.02em",
-                  color: "rgba(255,255,255,0.78)",
-                  marginTop: 20,
-                }}
-              >
-                {config.rodape}
-              </div>
-            </div>
+            />
           </div>
         ),
         {
@@ -605,6 +566,11 @@ export async function GET(
         },
       );
     }
+    // Capa tipográfica (sem foto): template editorial — moldura dupla, inicial
+    // gigante em marca-d'água, brilho suave e bloco de título centralizado.
+    const inicial = (config.titulo.replace(/\n/g, " ").match(/[A-Za-zÀ-ÿ]/) || [
+      "A",
+    ])[0].toUpperCase();
     return new ImageResponse(
       (
         <div
@@ -617,9 +583,53 @@ export async function GET(
             background: config.bg,
             fontFamily: "Cormorant",
             position: "relative",
-            padding: 80,
+            padding: "94px 78px",
           }}
         >
+          {/* brilho suave no topo (profundidade) */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: pw,
+              height: ph,
+              display: "flex",
+              background:
+                "radial-gradient(115% 80% at 22% 10%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 46%)",
+            }}
+          />
+          {/* escurecimento inferior */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: pw,
+              height: ph,
+              display: "flex",
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.34) 0%, rgba(0,0,0,0) 42%)",
+            }}
+          />
+          {/* inicial em marca-d'água */}
+          <div
+            style={{
+              position: "absolute",
+              right: -56,
+              bottom: -210,
+              fontFamily: "Cormorant",
+              fontStyle: "italic",
+              fontSize: 760,
+              lineHeight: 1,
+              color: config.acentoCor,
+              opacity: 0.09,
+              display: "flex",
+            }}
+          >
+            {inicial}
+          </div>
+          {/* moldura dupla */}
           <div
             style={{
               position: "absolute",
@@ -628,35 +638,31 @@ export async function GET(
               right: 30,
               bottom: 30,
               border: `1px solid ${config.acentoCor}`,
-              opacity: 0.25,
+              opacity: 0.3,
               display: "flex",
             }}
           />
-          {config.badge && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 24,
-                right: 60,
-                fontFamily: "Cormorant",
-                fontStyle: "italic",
-                fontSize: 360,
-                color: config.acentoCor,
-                opacity: 0.13,
-                lineHeight: 1,
-                display: "flex",
-              }}
-            >
-              {config.badge}
-            </div>
-          )}
-
           <div
             style={{
+              position: "absolute",
+              top: 38,
+              left: 38,
+              right: 38,
+              bottom: 38,
+              border: `1px solid ${config.acentoCor}`,
+              opacity: 0.14,
+              display: "flex",
+            }}
+          />
+
+          {/* topo: pré-label */}
+          <div
+            style={{
+              position: "relative",
               fontFamily: "Inter",
               fontStyle: "italic",
-              fontSize: 24,
-              letterSpacing: "0.3em",
+              fontSize: 22,
+              letterSpacing: "0.32em",
               color: config.preLabelCor,
               textTransform: "uppercase",
               display: "flex",
@@ -665,43 +671,56 @@ export async function GET(
             {config.preLabel}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          {/* meio: título + régua + subtítulo */}
+          <div
+            style={{ position: "relative", display: "flex", flexDirection: "column" }}
+          >
             <div
               style={{
                 fontFamily: "Cormorant",
                 fontWeight: 700,
-                fontSize: 150,
-                lineHeight: 0.94,
+                fontSize: 140,
+                lineHeight: 0.95,
                 color: config.textoCor,
                 letterSpacing: "-0.02em",
                 whiteSpace: "pre-wrap",
                 display: "flex",
-                marginBottom: 28,
               }}
             >
               {config.titulo}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-              <div style={{ width: 70, height: 3, background: config.acentoCor, display: "flex" }} />
-              <div
-                style={{
-                  fontFamily: "Cormorant",
-                  fontStyle: "italic",
-                  fontSize: 44,
-                  color: config.acentoCor,
-                  display: "flex",
-                }}
-              >
-                {config.subtitulo}
-              </div>
+            <div
+              style={{
+                display: "flex",
+                width: 88,
+                height: 4,
+                background: config.acentoCor,
+                marginTop: 32,
+                marginBottom: 26,
+              }}
+            />
+            <div
+              style={{
+                fontFamily: "Cormorant",
+                fontStyle: "italic",
+                fontSize: 42,
+                lineHeight: 1.15,
+                color: config.acentoCor,
+                maxWidth: 660,
+                display: "flex",
+              }}
+            >
+              {config.subtitulo}
             </div>
           </div>
 
+          {/* rodapé */}
           <div
             style={{
+              position: "relative",
               fontFamily: "Inter",
               fontStyle: "italic",
-              fontSize: 24,
+              fontSize: 23,
               letterSpacing: "0.06em",
               color: config.rodapeCor,
               display: "flex",

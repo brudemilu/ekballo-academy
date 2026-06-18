@@ -68,7 +68,7 @@ export default async function DashboardPage() {
     // Card padronizado: todos usam a versão retrato gerada pela rota OG
     // (capa do livro emoldurada de forma idêntica, ou tipografia).
     const capa = ogUrl?.startsWith("/api/og/curso/")
-      ? `${ogUrl}?formato=retrato&v=2`
+      ? `${ogUrl}?formato=retrato&v=3`
       : ogUrl ?? null;
     return (
       <Link
