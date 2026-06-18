@@ -31,8 +31,9 @@
 //   VOZ_LEITURA=Sulafat node scripts/gerar-leituras.mjs   # troca a voz
 
 import { createClient } from "@supabase/supabase-js";
-import { mkdir, writeFile, readFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import ffmpegStatic from "ffmpeg-static";
@@ -66,6 +67,17 @@ const TTS_MODEL = process.env.GEMINI_TTS_MODEL || "gemini-2.5-flash-preview-tts"
 // Voz prebuilt do Gemini. "Sulafat" = quente/acolhedora; troque por VOZ_LEITURA.
 const VOZ = process.env.VOZ_LEITURA || "Sulafat";
 
+// Backend de TTS. 'edge' (default) = Microsoft Edge TTS (edge-tts), GRÁTIS e
+// sem cota diária — vozes neurais pt-BR. 'gemini' = Google Gemini TTS (free
+// tier tem cota DIÁRIA baixa que não fecha aulas grandes; exige billing p/
+// volume). Trocado p/ edge em 18/06/2026 porque o Blueprint (aulas grandes)
+// nunca completava no free tier do Gemini.
+const TTS_BACKEND = (process.env.TTS_BACKEND || "edge").toLowerCase();
+const EDGE_BIN = process.env.EDGE_TTS_BIN || join(here, ".venv-tts", "bin", "edge-tts");
+const EDGE_VOICE = process.env.EDGE_VOICE || "pt-BR-AntonioNeural"; // masc. pastoral
+const EDGE_RATE = process.env.EDGE_RATE || "-6%"; // ritmo tranquilo de leitura
+const VOZ_DISPLAY = TTS_BACKEND === "edge" ? EDGE_VOICE : VOZ;
+
 // Tamanho-alvo de cada pedaço enviado ao TTS. O modelo tem limite de duração
 // de áudio por requisição; ~1800 chars de texto narrado cabem com folga.
 const MAX_CHARS = Number(process.env.LEITURA_MAX_CHARS || 1800);
@@ -76,7 +88,8 @@ const FORCE = args.includes("--force");
 const DRY = args.includes("--dry");
 const slugArg = args.find((a) => a.startsWith("--slug="))?.split("=")[1];
 
-if (!GEMINI_API_KEY) fail("Falta GEMINI_API_KEY no ambiente (ou no .env.local).");
+if (TTS_BACKEND === "gemini" && !GEMINI_API_KEY)
+  fail("Falta GEMINI_API_KEY no ambiente (ou no .env.local).");
 if (!DRY && (!SUPABASE_URL || !SERVICE_KEY))
   fail("Falta SUPABASE_URL e/ou SUPABASE_SERVICE_ROLE_KEY (use --dry para testar sem subir).");
 
@@ -93,11 +106,25 @@ class QuotaDiariaError extends Error {}
 async function geminiPost(url, body, { tentativas = 6 } = {}) {
   let ultimo = "";
   for (let i = 0; i < tentativas; i++) {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-      body: JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(120000),
+      });
+    } catch (e) {
+      // Erro de REDE (fetch failed / timeout / DNS) — não é HTTP. Acontece
+      // quando o cron roda sem conexão (máquina dormindo às 9h). Tenta de
+      // novo com backoff em vez de matar a aula inteira.
+      ultimo = `rede: ${e?.message || e}`;
+      if (i < tentativas - 1) {
+        await sleep(Math.min(5000 * (i + 1), 65000));
+        continue;
+      }
+      break;
+    }
     if (res.ok) return res.json();
     const txt = await res.text();
     if (res.status === 429 && /PerDay/i.test(txt)) {
@@ -230,6 +257,75 @@ function wavParaMp3(wav) {
   });
 }
 
+// ---------- Edge TTS (edge-tts): voz neural pt-BR, grátis, sem cota ----------
+function spawnP(bin, args, { input } = {}) {
+  return new Promise((resolve, reject) => {
+    const p = spawn(bin, args);
+    const out = [];
+    let err = "";
+    p.stdout.on("data", (d) => out.push(d));
+    p.stderr.on("data", (d) => (err += d));
+    p.on("error", reject);
+    p.on("close", (code) =>
+      code === 0 ? resolve(Buffer.concat(out)) : reject(new Error(`${bin} saiu ${code}: ${err.slice(-240)}`)));
+    if (input != null) { p.stdin.write(input); p.stdin.end(); }
+  });
+}
+
+// Sintetiza UM pedaço de texto em MP3 (arquivo) via edge-tts. Retry em erro
+// de rede (o endpoint da Microsoft às vezes derruba o stream).
+async function edgePedacoArquivo(texto, txtPath, mp3Path, { tentativas = 5 } = {}) {
+  await writeFile(txtPath, texto, "utf8");
+  let ultimo = "";
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      await spawnP(EDGE_BIN, [
+        "--voice", EDGE_VOICE, "--rate", EDGE_RATE,
+        "--file", txtPath, "--write-media", mp3Path,
+      ]);
+      const buf = await readFile(mp3Path);
+      if (buf.length > 0) return;
+      ultimo = "edge-tts gerou MP3 vazio";
+    } catch (e) {
+      ultimo = e?.message || String(e);
+    }
+    await sleep(Math.min(4000 * (i + 1), 30000));
+  }
+  throw new Error("edge-tts falhou: " + ultimo);
+}
+
+// Concatena os MP3 dos pedaços e re-encoda em MP3 mono 64 kbps (limpa headers
+// e uniformiza) via ffmpeg, usando o demuxer concat.
+async function concatMp3(arquivos, listPath, outPath) {
+  const lista = arquivos.map((f) => `file '${f.replace(/'/g, "'\\''")}'`).join("\n");
+  await writeFile(listPath, lista, "utf8");
+  await spawnP(ffmpegStatic, [
+    "-hide_banner", "-loglevel", "error", "-f", "concat", "-safe", "0",
+    "-i", listPath, "-vn", "-ac", "1", "-c:a", "libmp3lame", "-b:a", "64k",
+    "-f", "mp3", outPath,
+  ]);
+  return readFile(outPath);
+}
+
+// Gera o MP3 completo de uma aula com Edge TTS (pedaço a pedaço + concat).
+async function sintetizarAulaEdge(slug, aula, pedacos) {
+  const dir = join(tmpdir(), `leitura-${slug}-${aula.ordem}`);
+  await mkdir(dir, { recursive: true });
+  const mp3s = [];
+  try {
+    for (let i = 0; i < pedacos.length; i++) {
+      process.stdout.write(`   · sintetizando ${i + 1}/${pedacos.length}…\r`);
+      const txtPath = join(dir, `p${i}.txt`);
+      const mp3Path = join(dir, `p${i}.mp3`);
+      await edgePedacoArquivo(pedacos[i], txtPath, mp3Path);
+      mp3s.push(mp3Path);
+    }
+    return await concatMp3(mp3s, join(dir, "lista.txt"), join(dir, "final.mp3"));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
 async function processarAula(slug, aula) {
   const tag = `[${slug} #${aula.ordem}] ${aula.titulo}`;
   if (!aula.conteudo || aula.conteudo.trim().length < MIN_CONTEUDO) {
@@ -242,24 +338,28 @@ async function processarAula(slug, aula) {
   }
 
   const pedacos = quebrarEmPedacos(aula.conteudo);
-  console.log(`→ ${tag} — ${pedacos.length} pedaço(s), voz ${VOZ}`);
+  console.log(`→ ${tag} — ${pedacos.length} pedaço(s), voz ${VOZ_DISPLAY} (${TTS_BACKEND})`);
 
-  const partes = [];
-  let rate = 24000;
-  for (let i = 0; i < pedacos.length; i++) {
-    process.stdout.write(`   · sintetizando ${i + 1}/${pedacos.length}…\r`);
-    const r = await lerPedacoPCM(pedacos[i]);
-    partes.push(r.pcm);
-    rate = r.rate;
-    await sleep(1200); // respeita rate limit por minuto
+  let mp3;
+  if (TTS_BACKEND === "edge") {
+    mp3 = await sintetizarAulaEdge(slug, aula, pedacos);
+  } else {
+    const partes = [];
+    let rate = 24000;
+    for (let i = 0; i < pedacos.length; i++) {
+      process.stdout.write(`   · sintetizando ${i + 1}/${pedacos.length}…\r`);
+      const r = await lerPedacoPCM(pedacos[i]);
+      partes.push(r.pcm);
+      rate = r.rate;
+      await sleep(1200); // respeita rate limit por minuto
+    }
+    mp3 = await wavParaMp3(pcmParaWav(Buffer.concat(partes), rate));
   }
-  const wav = pcmParaWav(Buffer.concat(partes), rate);
-  const mp3 = await wavParaMp3(wav);
 
   await mkdir(OUT, { recursive: true });
   const local = join(OUT, `${slug}-${String(aula.ordem).padStart(2, "0")}.mp3`);
   await writeFile(local, mp3);
-  console.log(`\n  mp3: ${(mp3.length / 1024 / 1024).toFixed(1)} MB (de ${(wav.length / 1024 / 1024).toFixed(1)} MB wav) → ${local}`);
+  console.log(`\n  mp3: ${(mp3.length / 1024 / 1024).toFixed(1)} MB → ${local}`);
 
   if (DRY) return "ok";
 
@@ -316,7 +416,7 @@ async function main() {
   const cursos = await listarCursos();
   if (!cursos.length) return fail(slugArg ? `curso não encontrado: ${slugArg}` : "nenhum curso publicado encontrado");
 
-  console.log(`Temáticas: ${cursos.map((c) => c.slug).join(", ")}\nVoz: ${VOZ}  Modelo: ${TTS_MODEL}\n`);
+  console.log(`Temáticas: ${cursos.map((c) => c.slug).join(", ")}\nBackend: ${TTS_BACKEND}  Voz: ${VOZ_DISPLAY}${TTS_BACKEND === "gemini" ? "  Modelo: " + TTS_MODEL : ""}\n`);
   let ok = 0, err = 0, skip = 0;
 
   for (const curso of cursos) {

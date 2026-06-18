@@ -49,6 +49,8 @@ next-env.d.ts
 scripts/audios-gerados/
 # Leituras (audiolivro) geradas por scripts/gerar-leituras.mjs (ficam no Supabase Storage)
 scripts/leituras-geradas/
+# venv do edge-tts (motor de TTS de leitura, grátis); recriar com python3 -m venv
+scripts/.venv-tts/
 
 # Supabase CLI
 supabase/.temp
