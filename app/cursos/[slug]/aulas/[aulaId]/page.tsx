@@ -6,6 +6,7 @@ import { AtividadeForm } from "@/components/AtividadeForm";
 import { MarcarConcluida } from "@/components/MarcarConcluida";
 import { AulaConteudo } from "@/components/AulaConteudo";
 import { LeitorMesa } from "@/components/LeitorMesa";
+import { AvaliacaoParach } from "@/components/AvaliacaoParach";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
   getCurrentSession,
@@ -68,6 +69,14 @@ export default async function AulaPage({
   const temAnotacoes = atividades.some((a) => a.tipo === "reflexao" && a.razao === "anotacao");
   const temAtividades = atividades.length > 0;
 
+  // Aula especial "Avaliação de Liderança Parach": conteúdo é um sentinel e a
+  // página renderiza o componente interativo (não o texto). A 1ª atividade da
+  // aula guarda o resultado/plano do aluno (o líder lê pela devolutiva normal).
+  const ehAvaliacao =
+    typeof aula.conteudo === "string" && aula.conteudo.startsWith("[[AVALIACAO_PARACH]]");
+  const avaliacaoAtividadeId = ehAvaliacao ? atividades[0]?.id ?? null : null;
+  const avaliacaoResposta = avaliacaoAtividadeId ? respostasMap.get(avaliacaoAtividadeId) : undefined;
+
   return (
     <main className="min-h-screen bg-mesa-50">
       <header className="border-b border-mesa-200 bg-white/80 backdrop-blur">
@@ -99,7 +108,17 @@ export default async function AulaPage({
             {aula.titulo}
           </h1>
 
-          {aula.conteudo && (
+          {ehAvaliacao && (
+            <AvaliacaoParach
+              aulaId={aula.id}
+              alunoId={session.userId}
+              atividadeId={avaliacaoAtividadeId}
+              respostaInicial={avaliacaoResposta?.texto}
+              comentarioLider={avaliacaoResposta?.comentario_lider}
+            />
+          )}
+
+          {!ehAvaliacao && aula.conteudo && (
             <LeitorMesa
               conteudo={aula.conteudo as string}
               titulo={aula.titulo}
@@ -163,7 +182,7 @@ export default async function AulaPage({
             </div>
           )}
 
-          {aula.conteudo && (
+          {!ehAvaliacao && aula.conteudo && (
             <AulaConteudo
               conteudo={aula.conteudo as string}
               aulaId={aula.id}
@@ -175,7 +194,7 @@ export default async function AulaPage({
           )}
         </article>
 
-        {atividades.length > 0 && (
+        {!ehAvaliacao && atividades.length > 0 && (
           <div className="mb-12 space-y-5">
             <div className="mb-2">
               <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
