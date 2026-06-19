@@ -1,9 +1,7 @@
 -- =============================================================
 -- O Blueprint de Parach — Apêndices C, D e E (aulas 19, 20, 21).
--- C: Guias de Discussão para Equipes (5 sessões). D: Cartões de Referência
--- Rápida (4 cartões). E: Os Frameworks de Restauração (4 frameworks).
--- Transcrição na íntegra. Cabeçalhos em CAIXA ALTA viram título (ehTitulo()).
--- Atividades = reflexão. Idempotente por slug/ordem.
+-- D (Cartão 2) e E (4 frameworks) usam o componente de tabela [quadro].
+-- Idempotente por slug/ordem. (Conteúdo de 20/21 atualizado via UPDATE.)
 -- =============================================================
 
 do $migration$
@@ -121,9 +119,16 @@ CARTÃO 1 — VERIFICAÇÃO DIÁRIA PARACH
 
 Cinco perguntas para cada dia: 1. Eu permaneci antes de agir? 2. Estou trabalhando com a energia de Deus ou com a minha? 3. O que estou tentando controlar que pertence a Deus? 4. Meu ritmo é sustentável por trinta anos? 5. Pelo que sou grato?
 
-CARTÃO 2 — DIAGNÓSTICO RÁPIDO DOS CINCO DONS
+Cartão 2 — quando estiver lutando, pergunte:
 
-Quando estiver lutando, pergunte: Se você é um Apóstolo — Estou tentando construir tudo sozinho? Se você é um Profeta — Estou tentando mudar as pessoas, ou apenas entregar? Se você é um Evangelista — Meu valor está ligado aos números? Se você é um Pastor — Estou tentando ser o Salvador? Se você é um Mestre — Estou estudando para conhecer a Deus, ou apenas para saber sobre Deus?
+[quadro] Cartão 2 — Diagnóstico Rápido dos Cinco Dons
+Se você é um… | Pergunte-se…
+--- | ---
+Apóstolo | Estou tentando construir tudo sozinho?
+Profeta | Estou tentando mudar as pessoas, ou apenas entregar?
+Evangelista | Meu valor está ligado aos números?
+Pastor | Estou tentando ser o Salvador?
+Mestre | Estou estudando para conhecer a Deus, ou apenas para saber sobre Deus?
 
 CARTÃO 3 — PROTOCOLO DE EMERGÊNCIA
 
@@ -147,65 +152,87 @@ $conteudo$PARA ESTUDO PESSOAL E EXPLORAÇÃO MAIS PROFUNDA
 
 Estes quatro frameworks reúnem os padrões centrais da liderança Parach em forma de referência. Use-os junto aos capítulos para estudo pessoal, discussão em equipe ou reflexão diagnóstica.
 
-FRAMEWORK 1 — AS SETE FESTAS E A RESTAURAÇÃO DA LIDERANÇA
+[quadro] Framework 1 — As Sete Festas e a Restauração da Liderança
+Festa | Cumprimento em Cristo | Restauração da Liderança
+--- | --- | ---
+Páscoa | Jesus como o Cordeiro; Seu sangue cobre o pecado | Vida Restaurada — não mais trabalhando por vida, mas a partir da vida assegurada pelo Cordeiro
+Pães Asmos | Jesus como sacrifício sem pecado; remoção do pecado | Pureza Restaurada — o velho fermento da performance e amargura é removido
+Primícias | Ressurreição de Jesus; primícias dos que dormem | Identidade Restaurada — segura como filho ou filha, independentemente da colheita desta estação
+Pentecostes | Espírito Santo derramado | Poder Restaurado — o Espírito despedaça a ilusão do “Só eu restei”; o Consolador faz o trabalho pesado
+Trombetas | Anúncio do retorno do Rei | Autoridade Restaurada — chamado da autocomiseração para a identidade real
+Expiação | Jesus como Sumo Sacerdote; véu rasgado | Acesso Restaurado — acesso permanente à presença do Pai
+Tabernáculos | Deus habitando com o povo; colheita final | Perspectiva Restaurada — visão eterna; os problemas atuais são “leves e momentâneos”
 
-Páscoa — Jesus como o Cordeiro, Seu sangue cobre o pecado → Vida Restaurada: não mais trabalhando por vida, mas a partir da vida assegurada pelo Cordeiro.
-
-Pães Asmos — Jesus como sacrifício sem pecado, remoção do pecado → Pureza Restaurada: o velho fermento da performance e amargura é removido.
-
-Primícias — Ressurreição de Jesus, primícias dos que dormem → Identidade Restaurada: segura como filho ou filha, independentemente da colheita desta estação.
-
-Pentecostes — Espírito Santo derramado → Poder Restaurado: o Espírito despedaça a ilusão do “Só eu restei”; o Consolador faz o trabalho pesado.
-
-Trombetas — Anúncio do retorno do Rei → Autoridade Restaurada: chamado da autocomiseração para a identidade real.
-
-Expiação — Jesus como Sumo Sacerdote, véu rasgado → Acesso Restaurado: acesso permanente à presença do Pai.
-
-Tabernáculos — Deus habitando com o povo, colheita final → Perspectiva Restaurada: visão eterna; os problemas atuais são “leves e momentâneos”.
-
-FRAMEWORK 2 — AS SETE PARÁBOLAS E A LÓGICA DO REINO
-
-O Semeador — O sucesso depende do solo, não da força do semeador → De “Eu preciso fazê-lo crescer” para “Eu cuido do solo”.
-
-Trigo e Joio — O verdadeiro e o falso crescem juntos até a colheita → De “Eu preciso purificar tudo” para “Eu confio no tempo de Deus”.
-
-Grão de Mostarda — O Reino começa impossivelmente pequeno → De “desprezar os pequenos começos” para “confiar no DNA divino”.
-
-O Fermento — A expansão é silenciosa e interna → De “impacto externo barulhento” para “influência interna silenciosa”.
-
-Tesouro Escondido — O Reino é descoberta alegre → De “obrigação pesada” para “posse alegre”.
-
-Pérola de Grande Valor — Um único prêmio substitui todas as buscas → De “buscar validação” para “descansar no Prêmio”.
-
-A Rede — Deus é o classificador final → De “ansiedade sobre resultados” para “fidelidade em lançar a rede”.
+[quadro] Framework 2 — As Sete Parábolas e a Lógica do Reino
+Parábola | Lógica do Reino | Mudança na Liderança
+--- | --- | ---
+O Semeador | O sucesso depende do solo, não da força do semeador | De “Eu preciso fazê-lo crescer” para “Eu cuido do solo”
+Trigo e Joio | O verdadeiro e o falso crescem juntos até a colheita | De “Eu preciso purificar tudo” para “Eu confio no tempo de Deus”
+Grão de Mostarda | O Reino começa impossivelmente pequeno | De “desprezar os pequenos começos” para “confiar no DNA divino”
+O Fermento | A expansão é silenciosa e interna | De “impacto externo barulhento” para “influência interna silenciosa”
+Tesouro Escondido | O Reino é descoberta alegre | De “obrigação pesada” para “posse alegre”
+Pérola de Grande Valor | Um único prêmio substitui todas as buscas | De “buscar validação” para “descansar no Prêmio”
+A Rede | Deus é o classificador final | De “ansiedade sobre resultados” para “fidelidade em lançar a rede”
 
 FRAMEWORK 3 — CAMINHOS DE RESTAURAÇÃO ESPECÍFICOS POR DOM
 
-Cada dom do cinco-em-um tem um caminho particular de restauração quando tem operado a partir do esforço. As cinco tabelas abaixo traçam os cinco estágios de recuperação para cada um (estágio — experiência → cura chave).
+Cada dom do cinco-em-um tem um caminho particular de restauração quando tem operado a partir do esforço. As cinco tabelas abaixo traçam os cinco estágios de recuperação para cada um.
 
-O CAMINHO DO APÓSTOLO
+[quadro] O Caminho do Apóstolo
+Estágio | Experiência | Cura Chave
+--- | --- | ---
+Cuidado Físico | Precisa parar de construir | Permissão para pausar a visão
+Tempo e Espaço | Sente-se como abandonar a missão | A missão é de Deus, não deles
+Presença | Confrontar a mentira “Eu preciso construir” | “Eu estou construindo; você participa”
+Revelação Fresca | Nova visão incluindo descanso | Arquitetura sustentável
+Nova Comissão | Ênfase em delegação | De pioneiro solitário a pai de movimento
 
-Cuidado Físico — Precisa parar de construir → Permissão para pausar a visão. Tempo e Espaço — Sente-se como abandonar a missão → A missão é de Deus, não deles. Presença — Confrontar a mentira “Eu preciso construir” → “Eu estou construindo; você participa”. Revelação Fresca — Nova visão incluindo descanso → Arquitetura sustentável. Nova Comissão — Ênfase em delegação → De pioneiro solitário a pai de movimento.
+[quadro] O Caminho do Profeta
+Estágio | Experiência | Cura Chave
+--- | --- | ---
+Cuidado Físico | Admitir exaustão | Permissão para parar de arder
+Tempo e Espaço | O silêncio parece abandono | O silêncio não é rejeição
+Presença | Derramar o fardo | Ser ouvido, não apenas ouvir
+Revelação Fresca | Voz mansa e suave | Intimidade acima da intensidade
+Nova Comissão | “7.000 que não dobraram o joelho” | Do isolamento à comunidade
 
-O CAMINHO DO PROFETA
+[quadro] O Caminho do Evangelista
+Estágio | Experiência | Cura Chave
+--- | --- | ---
+Cuidado Físico | Parar o alcance frenético | Permissão para não salvar todos
+Tempo e Espaço | Culpa pelas “almas morrendo” | A conversão é obra de Deus
+Presença | Liberar os números | Identidade em Cristo, não na resposta
+Revelação Fresca | Celebrar sementes, não apenas colheita | Fidelidade acima de frutificação
+Nova Comissão | Ritmo sustentável | Da culpa para a alegria
 
-Cuidado Físico — Admitir exaustão → Permissão para parar de arder. Tempo e Espaço — O silêncio parece abandono → O silêncio não é rejeição. Presença — Derramar o fardo → Ser ouvido, não apenas ouvir. Revelação Fresca — Voz mansa e suave → Intimidade acima da intensidade. Nova Comissão — “7.000 que não dobraram o joelho” → Do isolamento à comunidade.
+[quadro] O Caminho do Pastor
+Estágio | Experiência | Cura Chave
+--- | --- | ---
+Cuidado Físico | O mais difícil é parar de cuidar dos outros | Permissão para receber cuidado
+Tempo e Espaço | Culpa por “abandonar” o rebanho | Jesus é o Pastor Principal
+Presença | Ser pastoreado | Receber antes de dar
+Revelação Fresca | “Você não é o Salvador” | Liberdade do Complexo de Messias
+Nova Comissão | Limites como mordomia | Do esgotamento ao transbordamento
 
-O CAMINHO DO EVANGELISTA
+[quadro] O Caminho do Mestre
+Estágio | Experiência | Cura Chave
+--- | --- | ---
+Cuidado Físico | Parar o estudo sem fim | Permissão para não saber tudo
+Tempo e Espaço | Estudar para si, não para produção | Ser alimentado antes de alimentar
+Presença | Vir como estudante | Humildade diante da Palavra
+Revelação Fresca | “Estude, pratique, depois ensine” | Aplicação antes da informação
+Nova Comissão | Ensinar a partir do transbordamento | Do seco ao dador de vida
 
-Cuidado Físico — Parar o alcance frenético → Permissão para não salvar todos. Tempo e Espaço — Culpa pelas “almas morrendo” → A conversão é obra de Deus. Presença — Liberar os números → Identidade em Cristo, não na resposta. Revelação Fresca — Celebrar sementes, não apenas colheita → Fidelidade acima de frutificação. Nova Comissão — Ritmo sustentável → Da culpa para a alegria.
-
-O CAMINHO DO PASTOR
-
-Cuidado Físico — O mais difícil é parar de cuidar dos outros → Permissão para receber cuidado. Tempo e Espaço — Culpa por “abandonar” o rebanho → Jesus é o Pastor Principal. Presença — Ser pastoreado → Receber antes de dar. Revelação Fresca — “Você não é o Salvador” → Liberdade do Complexo de Messias. Nova Comissão — Limites como mordomia → Do esgotamento ao transbordamento.
-
-O CAMINHO DO MESTRE
-
-Cuidado Físico — Parar o estudo sem fim → Permissão para não saber tudo. Tempo e Espaço — Estudar para si, não para produção → Ser alimentado antes de alimentar. Presença — Vir como estudante → Humildade diante da Palavra. Revelação Fresca — “Estude, pratique, depois ensine” → Aplicação antes da informação. Nova Comissão — Ensinar a partir do transbordamento → Do seco ao dador de vida.
-
-FRAMEWORK 4 — O DIAGNÓSTICO ESGOTAMENTO-PARA-FESTA
-
-Quando você reconhecer um sintoma à esquerda, o Remédio da Festa à direita é o caminho de restauração. Exaustão Física (corpo esgotado) → Páscoa: vida restaurada. Depleção Emocional (“contundido”, quebrantado) → Pães Asmos: pureza restaurada. Desânimo Espiritual (o trabalho parece morto) → Primícias: identidade restaurada. Pensamento Distorcido (“Só eu restei”) → Pentecostes: mente sã restaurada. Autocomiseração (mentalidade de vítima) → Trombetas: autoridade restaurada. Isolamento (cortado da Presença) → Expiação: acesso restaurado. Perspectiva Perdida (não consegue ver além da crise) → Tabernáculos: visão eterna restaurada.
+[quadro] Framework 4 — O Diagnóstico Esgotamento-para-Festa
+Sintoma | Descrição | Remédio da Festa
+--- | --- | ---
+Exaustão Física | Corpo esgotado | Páscoa — vida restaurada
+Depleção Emocional | “Contundido”, quebrantado | Pães Asmos — pureza restaurada
+Desânimo Espiritual | O trabalho parece morto | Primícias — identidade restaurada
+Pensamento Distorcido | “Só eu restei” | Pentecostes — mente sã restaurada
+Autocomiseração | Mentalidade de vítima | Trombetas — autoridade restaurada
+Isolamento | Cortado da Presença | Expiação — acesso restaurado
+Perspectiva Perdida | Não consegue ver além da crise | Tabernáculos — visão eterna restaurada
 
 “O Viticultor está restaurando o jardim inteiro — um líder, um dom, uma festa de cada vez.”$conteudo$)
     returning id into v_aula_id;
