@@ -7,6 +7,7 @@ import { TAB_PERMISSAO, podeVerAgenda } from "@/lib/permissoes";
 
 export type AdminTab =
   | "painel"
+  | "dashboard"
   | "cursos"
   | "biblia"
   | "devocionais"
@@ -31,6 +32,7 @@ type Item = {
 
 const ITEMS: Item[] = [
   { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral" },
+  { key: "dashboard", label: "Dashboard", href: "/admin/dashboard", hint: "Engajamento, filtros e gráficos" },
   { key: "cursos", label: "Temáticas", href: "/admin/cursos", hint: "Progresso por temática e discípulo" },
   { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas" },
   { key: "alunos", label: "Discípulos", href: "/admin/alunos", hint: "Matrículas e contatos" },
@@ -45,6 +47,7 @@ const ITEMS: Item[] = [
 // Ícones só para a grade de cartões no celular (deixa mais visual/tocável).
 const ICONE: Partial<Record<AdminTab, string>> = {
   painel: "📋",
+  dashboard: "📊",
   cursos: "📚",
   respostas: "💬",
   alunos: "👥",

@@ -390,6 +390,60 @@ export async function getAdminStats() {
   };
 }
 
+// -------- ADMIN: DASHBOARD DE ENGAJAMENTO --------
+
+export type DashboardData = {
+  cursos: { id: string; slug: string; titulo: string; categoria: string | null }[];
+  turmas: string[];
+  alunos: { id: string; turma: string | null; created_at: string }[];
+  matriculas: { aluno_id: string; curso_id: string; matriculado_em: string | null; concluido_em: string | null }[];
+  respostas: { aluno_id: string; curso_id: string | null; created_at: string; comentado: boolean }[];
+  mesas: { aluno_id: string; curso_id: string | null; concluido_em: string }[];
+};
+
+// Dados crus e leves pro dashboard interativo (o cliente filtra por curso/turma/
+// período e calcula os KPIs e gráficos). Exclui admins da contagem de discípulos.
+export async function getDashboardData(): Promise<DashboardData> {
+  if (isMockMode()) {
+    const aulaCurso = new Map(MOCK_AULAS.map((a) => [a.id, a.curso_id]));
+    const ativAula = new Map(MOCK_ATIVIDADES.map((a) => [a.id, a.aula_id]));
+    const cursoDaAtiv = (atividadeId: string) =>
+      aulaCurso.get(ativAula.get(atividadeId) ?? "") ?? null;
+    return {
+      cursos: MOCK_CURSOS.map((c) => ({ id: c.id, slug: c.slug, titulo: c.titulo, categoria: c.categoria ?? null })),
+      turmas: [...new Set(MOCK_ALUNOS.filter((a) => !a.is_admin && a.turma).map((a) => a.turma as string))].sort(),
+      alunos: MOCK_ALUNOS.filter((a) => !a.is_admin).map((a) => ({ id: a.id, turma: a.turma, created_at: a.created_at })),
+      matriculas: MOCK_MATRICULAS.map((m) => ({ aluno_id: m.aluno_id, curso_id: m.curso_id, matriculado_em: m.matriculado_em, concluido_em: m.concluido_em })),
+      respostas: MOCK_RESPOSTAS.map((r) => ({ aluno_id: r.aluno_id, curso_id: cursoDaAtiv(r.atividade_id), created_at: r.created_at, comentado: !!r.comentario_lider })),
+      mesas: MOCK_PROGRESSO.map((p) => ({ aluno_id: p.aluno_id, curso_id: aulaCurso.get(p.aula_id) ?? null, concluido_em: p.concluido_em })),
+    };
+  }
+  const supabase = await createClient();
+  const [cursosR, alunosR, matsR, respR, progR] = await Promise.all([
+    supabase.from("cursos").select("id, slug, titulo, categoria").order("ordem"),
+    supabase.from("profiles").select("id, turma, created_at, is_admin"),
+    supabase.from("matriculas").select("aluno_id, curso_id, matriculado_em, concluido_em"),
+    supabase.from("respostas").select("aluno_id, created_at, comentario_lider, atividade:atividades!inner(aula:aulas!inner(curso_id))"),
+    supabase.from("progresso").select("aluno_id, concluido_em, aula:aulas!inner(curso_id)"),
+  ]);
+  const alunos = ((alunosR.data || []) as { id: string; turma: string | null; created_at: string; is_admin: boolean }[])
+    .filter((a) => !a.is_admin);
+  type RespJoin = { aluno_id: string; created_at: string; comentario_lider: string | null; atividade: { aula: { curso_id: string } | null } | null };
+  type ProgJoin = { aluno_id: string; concluido_em: string; aula: { curso_id: string } | null };
+  return {
+    cursos: (cursosR.data || []) as DashboardData["cursos"],
+    turmas: [...new Set(alunos.filter((a) => a.turma).map((a) => a.turma as string))].sort(),
+    alunos: alunos.map((a) => ({ id: a.id, turma: a.turma, created_at: a.created_at })),
+    matriculas: (matsR.data || []) as DashboardData["matriculas"],
+    respostas: ((respR.data || []) as unknown as RespJoin[]).map((r) => ({
+      aluno_id: r.aluno_id, curso_id: r.atividade?.aula?.curso_id ?? null, created_at: r.created_at, comentado: !!r.comentario_lider,
+    })),
+    mesas: ((progR.data || []) as unknown as ProgJoin[]).map((p) => ({
+      aluno_id: p.aluno_id, curso_id: p.aula?.curso_id ?? null, concluido_em: p.concluido_em,
+    })),
+  };
+}
+
 // -------- ADMIN: RESPOSTAS (rich) --------
 
 export type RespostaRich = {

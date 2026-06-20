@@ -50,6 +50,7 @@ export function nomePapel(papel: string | null | undefined): string {
 // Aba do AdminShell → permissão exigida (null = livre p/ qualquer papel admin)
 export const TAB_PERMISSAO: Record<string, Permissao | null> = {
   painel: null,
+  dashboard: null,
   cursos: "conteudo",
   respostas: "acompanhamento",
   alunos: "discipulos",
