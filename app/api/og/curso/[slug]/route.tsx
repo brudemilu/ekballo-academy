@@ -21,6 +21,18 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "cartas-diabo-aprendiz": {
+    livroUrl: "/capas/cartas-diabo-aprendiz.jpg",
+    preLabel: "CLÁSSICO · 31 CARTAS",
+    titulo: "Cartas de um Diabo\na seu Aprendiz",
+    subtitulo: "A sátira espiritual de C. S. Lewis sobre a tentação",
+    rodape: "A partir do livro de C. S. Lewis",
+    bg: "linear-gradient(135deg, #1A1606 0%, #3E3410 52%, #B89A1E 100%)",
+    textoCor: "#FBF6E4",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#CBB873",
+    rodapeCor: "#CBB873",
+  },
   "enigma-biblia-gutenberg": {
     livroUrl: "/capas/enigma-biblia-gutenberg.jpg",
     preLabel: "ROMANCE JUVENIL · 12 CAPÍTULOS",
