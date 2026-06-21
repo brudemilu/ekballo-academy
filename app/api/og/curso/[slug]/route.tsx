@@ -21,6 +21,18 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "presenca-relacional-de-deus": {
+    livroUrl: "/capas/presenca-relacional-de-deus.jpg",
+    preLabel: "TEOLOGIA BÍBLICA · 3 CAPÍTULOS",
+    titulo: "A Presença\nRelacional de Deus",
+    subtitulo: "O centro coeso de toda a Escritura — do jardim ao jardim",
+    rodape: "A partir do livro de J. Scott Duvall e J. Daniel Hays",
+    bg: "linear-gradient(135deg, #2A1606 0%, #5E3A1A 52%, #C2862E 100%)",
+    textoCor: "#FBF2E4",
+    acentoCor: "#E0A23A",
+    preLabelCor: "#CBAE84",
+    rodapeCor: "#CBAE84",
+  },
   "o-monge-e-o-executivo": {
     livroUrl: "/capas/o-monge-e-o-executivo.jpg",
     preLabel: "LIDERANÇA SERVIDORA · 7 ENCONTROS",
