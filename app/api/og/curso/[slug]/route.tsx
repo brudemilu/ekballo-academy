@@ -21,6 +21,18 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "o-monge-e-o-executivo": {
+    livroUrl: "/capas/o-monge-e-o-executivo.jpg",
+    preLabel: "LIDERANÇA SERVIDORA · 7 ENCONTROS",
+    titulo: "O Monge e\no Executivo",
+    subtitulo: "Uma história sobre a essência da liderança",
+    rodape: "A partir do livro de James C. Hunter",
+    bg: "linear-gradient(135deg, #12262B 0%, #235058 52%, #4E9AA0 100%)",
+    textoCor: "#EAF6F7",
+    acentoCor: "#D9B26A",
+    preLabelCor: "#A6CFD3",
+    rodapeCor: "#A6CFD3",
+  },
   "pregos-bem-fixados": {
     livroUrl: "/capas/pregos-bem-fixados.jpg",
     preLabel: "PREGAÇÃO · 4 MARCAS",
