@@ -21,6 +21,17 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "homem-espiritual-vol-1": {
+    preLabel: "WATCHMAN NEE · VOLUME 1",
+    titulo: "O Homem\nEspiritual",
+    subtitulo: "Espírito, alma e corpo · a carne · a alma · o corpo",
+    rodape: "Volume 1 — A partir do livro de Watchman Nee",
+    bg: "linear-gradient(135deg, #10221E 0%, #1E423A 52%, #4E8C72 100%)",
+    textoCor: "#EAF6F1",
+    acentoCor: "#D9B26A",
+    preLabelCor: "#A6CDBD",
+    rodapeCor: "#A6CDBD",
+  },
   "graca-transformadora": {
     livroUrl: "/capas/graca-transformadora.jpg",
     preLabel: "ESTUDO · 20 CAPÍTULOS",
