@@ -21,6 +21,18 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "graca-transformadora": {
+    livroUrl: "/capas/graca-transformadora.jpg",
+    preLabel: "ESTUDO · 20 CAPÍTULOS",
+    titulo: "Graça\nTransformadora",
+    subtitulo: "A graça que tem margens e nos leva à santidade",
+    rodape: "A partir do livro de Luciano Subirá",
+    bg: "linear-gradient(135deg, #0C1430 0%, #1E2C5A 52%, #C2862F 100%)",
+    textoCor: "#EAF0FB",
+    acentoCor: "#E6A23A",
+    preLabelCor: "#A9B8D8",
+    rodapeCor: "#A9B8D8",
+  },
   "cartas-diabo-aprendiz": {
     livroUrl: "/capas/cartas-diabo-aprendiz.jpg",
     preLabel: "CLÁSSICO · 31 CARTAS",
