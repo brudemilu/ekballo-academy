@@ -104,6 +104,11 @@ export default async function DashboardPage() {
             </span>
           )}
         </div>
+        <div className="flex flex-1 items-center justify-center px-2.5 py-3">
+          <h3 className="line-clamp-2 text-center font-serif text-sm font-semibold leading-snug text-mesa-800">
+            {curso.titulo}
+          </h3>
+        </div>
       </Link>
     );
   };
