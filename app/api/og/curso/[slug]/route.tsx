@@ -21,6 +21,30 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "pregos-bem-fixados": {
+    livroUrl: "/capas/pregos-bem-fixados.jpg",
+    preLabel: "PREGAÇÃO · 4 MARCAS",
+    titulo: "Pregos Bem\nFixados",
+    subtitulo: "Descubra seu estilo de pregação",
+    rodape: "A partir do livro de Byron Forrest Yawn",
+    bg: "linear-gradient(135deg, #0A0A0A 0%, #2A2A2A 52%, #6B6B6B 100%)",
+    textoCor: "#F2F2F2",
+    acentoCor: "#D9B26A",
+    preLabelCor: "#B8B8B8",
+    rodapeCor: "#B8B8B8",
+  },
+  "descubra-seus-dons": {
+    livroUrl: "/capas/descubra-seus-dons.jpg",
+    preLabel: "DONS ESPIRITUAIS · 9 CAPÍTULOS",
+    titulo: "Descubra Seus\nDons Espirituais",
+    subtitulo: "O que são, como achar os seus e usá-los",
+    rodape: "A partir do livro de C. Peter Wagner",
+    bg: "linear-gradient(135deg, #1A1206 0%, #4A3416 52%, #B8862E 100%)",
+    textoCor: "#FBF4E6",
+    acentoCor: "#E6B84A",
+    preLabelCor: "#CBB07A",
+    rodapeCor: "#CBB07A",
+  },
   "homem-espiritual-vol-1": {
     preLabel: "WATCHMAN NEE · VOLUME 1",
     titulo: "O Homem\nEspiritual",
