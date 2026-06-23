@@ -258,16 +258,28 @@ function wavParaMp3(wav) {
 }
 
 // ---------- Edge TTS (edge-tts): voz neural pt-BR, grátis, sem cota ----------
-function spawnP(bin, args, { input } = {}) {
+function spawnP(bin, args, { input, timeoutMs = 0 } = {}) {
   return new Promise((resolve, reject) => {
     const p = spawn(bin, args);
     const out = [];
     let err = "";
+    let timer = null;
+    let morto = false;
+    if (timeoutMs > 0) {
+      timer = setTimeout(() => {
+        morto = true;
+        try { p.kill("SIGKILL"); } catch {}
+        reject(new Error(`${bin} timeout após ${Math.round(timeoutMs / 1000)}s (processo travado, morto)`));
+      }, timeoutMs);
+    }
     p.stdout.on("data", (d) => out.push(d));
     p.stderr.on("data", (d) => (err += d));
-    p.on("error", reject);
-    p.on("close", (code) =>
-      code === 0 ? resolve(Buffer.concat(out)) : reject(new Error(`${bin} saiu ${code}: ${err.slice(-240)}`)));
+    p.on("error", (e) => { if (timer) clearTimeout(timer); if (!morto) reject(e); });
+    p.on("close", (code) => {
+      if (timer) clearTimeout(timer);
+      if (morto) return;
+      code === 0 ? resolve(Buffer.concat(out)) : reject(new Error(`${bin} saiu ${code}: ${err.slice(-240)}`));
+    });
     if (input != null) { p.stdin.write(input); p.stdin.end(); }
   });
 }
@@ -282,7 +294,7 @@ async function edgePedacoArquivo(texto, txtPath, mp3Path, { tentativas = 5 } = {
       await spawnP(EDGE_BIN, [
         "--voice", EDGE_VOICE, "--rate", EDGE_RATE,
         "--file", txtPath, "--write-media", mp3Path,
-      ]);
+      ], { timeoutMs: 90000 });
       const buf = await readFile(mp3Path);
       if (buf.length > 0) return;
       ultimo = "edge-tts gerou MP3 vazio";
