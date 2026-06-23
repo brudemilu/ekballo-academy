@@ -296,12 +296,12 @@ async function edgePedacoArquivo(texto, txtPath, mp3Path, { tentativas = 5 } = {
 
 // Concatena os MP3 dos pedaços e re-encoda em MP3 mono 64 kbps (limpa headers
 // e uniformiza) via ffmpeg, usando o demuxer concat.
-async function concatMp3(arquivos, listPath, outPath) {
+async function concatMp3(arquivos, listPath, outPath, bitrate = "64k") {
   const lista = arquivos.map((f) => `file '${f.replace(/'/g, "'\\''")}'`).join("\n");
   await writeFile(listPath, lista, "utf8");
   await spawnP(ffmpegStatic, [
     "-hide_banner", "-loglevel", "error", "-f", "concat", "-safe", "0",
-    "-i", listPath, "-vn", "-ac", "1", "-c:a", "libmp3lame", "-b:a", "64k",
+    "-i", listPath, "-vn", "-ac", "1", "-c:a", "libmp3lame", "-b:a", bitrate,
     "-f", "mp3", outPath,
   ]);
   return readFile(outPath);
@@ -320,7 +320,17 @@ async function sintetizarAulaEdge(slug, aula, pedacos) {
       await edgePedacoArquivo(pedacos[i], txtPath, mp3Path);
       mp3s.push(mp3Path);
     }
-    return await concatMp3(mp3s, join(dir, "lista.txt"), join(dir, "final.mp3"));
+    const lista = join(dir, "lista.txt");
+    let buf = await concatMp3(mp3s, lista, join(dir, "final.mp3"), "64k");
+    // Supabase limita upload a ~50MB. Aulas enormes (caps acadêmicos longos)
+    // passam disso a 64k → re-encoda em bitrate menor até caber (voz aguenta).
+    const LIMITE = 47 * 1024 * 1024;
+    for (const br of ["32k", "24k"]) {
+      if (buf.length <= LIMITE) break;
+      console.log(`\n   · MP3 ${(buf.length / 1048576).toFixed(0)}MB > 47MB — re-encodando em ${br}`);
+      buf = await concatMp3(mp3s, lista, join(dir, `final-${br}.mp3`), br);
+    }
+    return buf;
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
