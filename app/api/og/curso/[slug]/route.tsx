@@ -21,6 +21,13 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "90-dias-galatas-juizes-efesios": {
+    livroUrl: "/capas/90-dias-galatas-juizes-efesios.jpg", preLabel: "DEVOCIONAL · 90 DIAS",
+    titulo: "90 Dias em\nGálatas, Juízes e Efésios", subtitulo: "Explore as Escrituras dia a dia",
+    rodape: "A partir do livro de Timothy Keller e Richard Coekin",
+    bg: "linear-gradient(135deg, #12303A 0%, #245A66 52%, #4E9AA6 100%)",
+    textoCor: "#EAF6F8", acentoCor: "#E6C84A", preLabelCor: "#A9CFD6", rodapeCor: "#A9CFD6",
+  },
   "mundo-plural": {
     livroUrl: "/capas/mundo-plural.jpg", preLabel: "VIDA CRISTÃ · MUNDO PLURAL",
     titulo: "Mundo\nPlural", subtitulo: "Como viver fielmente em um mundo plural",
