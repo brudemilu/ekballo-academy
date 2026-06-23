@@ -21,6 +21,41 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "o-deus-prodigo": {
+    livroUrl: "/capas/o-deus-prodigo.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "O Deus\nPródigo", subtitulo: "Recuperando a essência da fé cristã",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #0C2A3E 0%, #1C5470 52%, #3E96B8 100%)",
+    textoCor: "#EAF6FB", acentoCor: "#E6C84A", preLabelCor: "#A9CFE0", rodapeCor: "#A9CFE0",
+  },
+  "o-profeta-prodigo": {
+    livroUrl: "/capas/o-profeta-prodigo.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "O Profeta\nPródigo", subtitulo: "Jonas e o mistério da misericórdia de Deus",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #11283E 0%, #234E70 52%, #4A88B0 100%)",
+    textoCor: "#EAF3FB", acentoCor: "#E6B84A", preLabelCor: "#A9C6E0", rodapeCor: "#A9C6E0",
+  },
+  "encontros-com-jesus": {
+    livroUrl: "/capas/encontros-com-jesus.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "Encontros\ncom Jesus", subtitulo: "Respostas inesperadas às grandes perguntas da vida",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #2A1A0E 0%, #5E3A1C 52%, #B8823A 100%)",
+    textoCor: "#FBF2E6", acentoCor: "#E6C84A", preLabelCor: "#CDB088", rodapeCor: "#CDB088",
+  },
+  "o-natal-escondido": {
+    livroUrl: "/capas/o-natal-escondido.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "O Natal\nEscondido", subtitulo: "O surpreendente significado de Jesus",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #1A1024 0%, #3A2456 52%, #6E54A0 100%)",
+    textoCor: "#F1EAFB", acentoCor: "#E6C84A", preLabelCor: "#BCA9E0", rodapeCor: "#BCA9E0",
+  },
+  "a-cruz-do-rei": {
+    livroUrl: "/capas/a-cruz-do-rei.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "A Cruz\ndo Rei", subtitulo: "O Evangelho de Marcos — a vida de Jesus",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #2A0E10 0%, #5E1C22 52%, #B83A44 100%)",
+    textoCor: "#FBEAEC", acentoCor: "#E6C84A", preLabelCor: "#E0A9AE", rodapeCor: "#E0A9AE",
+  },
   "presenca-relacional-de-deus": {
     livroUrl: "/capas/presenca-relacional-de-deus.jpg",
     preLabel: "TEOLOGIA BÍBLICA · 3 CAPÍTULOS",
