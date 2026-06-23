@@ -21,6 +21,41 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "o-significado-do-casamento": {
+    livroUrl: "/capas/o-significado-do-casamento.jpg", preLabel: "TIMOTHY E KATHY KELLER",
+    titulo: "O Significado\ndo Casamento", subtitulo: "Enfrentando as complexidades do compromisso com a sabedoria de Deus",
+    rodape: "A partir do livro de Timothy e Kathy Keller",
+    bg: "linear-gradient(135deg, #2A1418 0%, #5E2C34 52%, #B85462 100%)",
+    textoCor: "#FBEAEE", acentoCor: "#E6C84A", preLabelCor: "#E0A9B2", rodapeCor: "#E0A9B2",
+  },
+  "galatas-para-voce": {
+    livroUrl: "/capas/galatas-para-voce.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "Gálatas\npara Você", subtitulo: "A liberdade do evangelho da graça",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #0E2A24 0%, #1C5446 52%, #3E967E 100%)",
+    textoCor: "#EAFBF4", acentoCor: "#E6C84A", preLabelCor: "#A9E0CE", rodapeCor: "#A9E0CE",
+  },
+  "o-evangelho-no-centro": {
+    livroUrl: "/capas/o-evangelho-no-centro.jpg", preLabel: "CARSON E KELLER",
+    titulo: "O Evangelho\nno Centro", subtitulo: "Renovando o coração, a igreja e o mundo",
+    rodape: "A partir do livro de D. A. Carson e Timothy Keller",
+    bg: "linear-gradient(135deg, #1A1A2E 0%, #34345A 52%, #6464A0 100%)",
+    textoCor: "#EAEAFB", acentoCor: "#E6C84A", preLabelCor: "#AEAEDC", rodapeCor: "#AEAEDC",
+  },
+  "fe-e-trabalho": {
+    livroUrl: "/capas/fe-e-trabalho.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "Como Integrar\nFé e Trabalho", subtitulo: "Conectando seu trabalho ao trabalho de Deus",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #2A2010 0%, #5E471C 52%, #B8903A 100%)",
+    textoCor: "#FBF5E6", acentoCor: "#E6C84A", preLabelCor: "#D8C088", rodapeCor: "#D8C088",
+  },
+  "peregrinos-da-eternidade": {
+    livroUrl: "/capas/peregrinos-da-eternidade.jpg", preLabel: "A. W. TOZER",
+    titulo: "Peregrinos\nda Eternidade", subtitulo: "A busca incansável de Deus pelo homem",
+    rodape: "A partir do livro de A. W. Tozer",
+    bg: "linear-gradient(135deg, #1A2230 0%, #34465E 52%, #6488A0 100%)",
+    textoCor: "#EAF2FB", acentoCor: "#E6C84A", preLabelCor: "#A9C2DC", rodapeCor: "#A9C2DC",
+  },
   "o-deus-prodigo": {
     livroUrl: "/capas/o-deus-prodigo.jpg", preLabel: "TIMOTHY KELLER",
     titulo: "O Deus\nPródigo", subtitulo: "Recuperando a essência da fé cristã",
