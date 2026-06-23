@@ -21,6 +21,34 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "mundo-plural": {
+    livroUrl: "/capas/mundo-plural.jpg", preLabel: "VIDA CRISTÃ · MUNDO PLURAL",
+    titulo: "Mundo\nPlural", subtitulo: "Como viver fielmente em um mundo plural",
+    rodape: "Estudo de fé e cultura",
+    bg: "linear-gradient(135deg, #14202E 0%, #28455E 52%, #4E88A8 100%)",
+    textoCor: "#EAF3FB", acentoCor: "#E6C84A", preLabelCor: "#A9C6DC", rodapeCor: "#A9C6DC",
+  },
+  "evangelho-segundo-os-apostolos": {
+    livroUrl: "/capas/evangelho-segundo-os-apostolos.jpg", preLabel: "JOHN MACARTHUR",
+    titulo: "O Evangelho\nSegundo os Apóstolos", subtitulo: "A fé que salva e o senhorio de Cristo",
+    rodape: "Estudo sobre a graça que transforma",
+    bg: "linear-gradient(135deg, #2A1E10 0%, #5E441C 52%, #B8903A 100%)",
+    textoCor: "#FBF4E6", acentoCor: "#E6C84A", preLabelCor: "#D8C088", rodapeCor: "#D8C088",
+  },
+  "depressao": {
+    livroUrl: "/capas/depressao.jpg", preLabel: "ISMAEL SOBRINHO",
+    titulo: "Depressão", subtitulo: "Cuidado, esperança e o evangelho na dor",
+    rodape: "A partir do livro de Ismael Sobrinho",
+    bg: "linear-gradient(135deg, #161B24 0%, #2E3A4E 52%, #5E7088 100%)",
+    textoCor: "#EAEEF4", acentoCor: "#E6C84A", preLabelCor: "#AEBACA", rodapeCor: "#AEBACA",
+  },
+  "igreja-centrada": {
+    livroUrl: "/capas/igreja-centrada.jpg", preLabel: "TIMOTHY KELLER",
+    titulo: "Igreja\nCentrada", subtitulo: "Ministério equilibrado e centrado no evangelho na cidade",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #0E2226 0%, #1C4A50 52%, #3E8C92 100%)",
+    textoCor: "#EAF6F7", acentoCor: "#E6C84A", preLabelCor: "#A9CFD2", rodapeCor: "#A9CFD2",
+  },
   "o-significado-do-casamento": {
     livroUrl: "/capas/o-significado-do-casamento.jpg", preLabel: "TIMOTHY E KATHY KELLER",
     titulo: "O Significado\ndo Casamento", subtitulo: "Enfrentando as complexidades do compromisso com a sabedoria de Deus",
