@@ -16,6 +16,15 @@ html, body {
   scroll-behavior: smooth;
 }
 
+/* Rede de segurança: nada vaza horizontalmente no mobile. Uso `clip` (não
+   `hidden`) de propósito — não cria container de scroll, então não quebra
+   `position: sticky` (ex.: a sidebar do AdminShell). Quem precisa de scroll
+   lateral (abas, tabelas largas) usa overflow-x-auto no próprio container. */
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;

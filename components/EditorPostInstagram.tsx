@@ -260,7 +260,7 @@ export function EditorPostInstagram({ item, onSaved }: { item: Item; onSaved?: (
                 {s.imageUrl ? (
                   <div className="shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.imageUrl} alt={`slide ${i + 1}`} className="h-[300px] w-[240px] rounded-xl object-cover shadow" />
+                    <img src={s.imageUrl} alt={`slide ${i + 1}`} className="aspect-[4/5] w-[200px] max-w-full rounded-xl object-cover shadow sm:w-[240px]" />
                   </div>
                 ) : (
                   <SlidePreview slide={s} tema={tema} />

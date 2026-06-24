@@ -79,7 +79,7 @@ export default function Home() {
             </div>
 
             {/* Mini-stats */}
-            <div className="mt-14 grid grid-cols-3 gap-6 border-t border-bege-200 pt-8 animate-fade-up [animation-delay:360ms]">
+            <div className="mt-14 grid grid-cols-3 gap-3 border-t border-bege-200 pt-8 animate-fade-up [animation-delay:360ms] sm:gap-6">
               <div>
                 <p className="font-serif text-3xl font-semibold text-laranja-600">+200</p>
                 <p className="mt-1 text-xs text-bege-600">discípulos na mesa</p>

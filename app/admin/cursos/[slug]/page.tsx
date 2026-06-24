@@ -139,7 +139,66 @@ export default async function AdminCursoProgressaoPage({
             <p className="text-mesa-500">Ninguém matriculado ainda.</p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-mesa-200 bg-white">
+          <>
+          {/* Mobile: cards (tabela larga não cabe em 360px) */}
+          <ul className="space-y-3 md:hidden">
+            {alunos.map((a) => (
+              <li key={a.id} className="rounded-2xl border border-mesa-200 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <Link
+                    href={`/admin/cursos/${slug}/alunos/${a.id}`}
+                    className="block min-w-0"
+                  >
+                    <p className="truncate font-medium text-mesa-800 hover:underline">
+                      {a.nome || a.email}
+                    </p>
+                    <p className="truncate text-xs text-mesa-500">{a.email}</p>
+                  </Link>
+                  {a.concluidoEm ? (
+                    <span className="flex-none rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
+                      Concluído
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-3 flex items-center gap-3">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-mesa-100">
+                    <div
+                      className={`h-full ${
+                        a.concluidoEm
+                          ? "bg-oliveira-500"
+                          : a.progresso >= 50
+                            ? "bg-mesa-500"
+                            : "bg-amber-500"
+                      }`}
+                      style={{ width: `${a.progresso}%` }}
+                    />
+                  </div>
+                  <span className="flex-none text-sm font-medium text-mesa-800">
+                    {a.progresso}%
+                  </span>
+                  <span className="flex-none text-xs text-mesa-500">
+                    ({a.aulasCompletas}/{totalAulas})
+                  </span>
+                </div>
+                {!a.concluidoEm && a.aulaAtualTitulo ? (
+                  <p className="mt-2 text-xs text-mesa-600">
+                    <span className="text-mesa-400">{a.aulaAtualOrdem}.</span>{" "}
+                    {a.aulaAtualTitulo}
+                  </p>
+                ) : null}
+                <div className="mt-3 text-right">
+                  <Link
+                    href={`/admin/cursos/${slug}/alunos/${a.id}`}
+                    className="inline-block rounded-full border border-mesa-200 bg-white px-4 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
+                  >
+                    Detalhes
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {/* Desktop: tabela */}
+          <div className="hidden overflow-hidden rounded-2xl border border-mesa-200 bg-white md:block">
             <table className="w-full">
               <thead className="border-b border-mesa-200 bg-mesa-50/50 text-left">
                 <tr>
@@ -220,6 +279,7 @@ export default async function AdminCursoProgressaoPage({
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
     </AdminShell>
