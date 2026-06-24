@@ -7,6 +7,9 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Exclui /api (cada rota faz a própria auth; as imagens OG de card não
+    // precisam de login) e estáticos. Antes, cada uma das ~64 imagens
+    // /api/og/curso/* disparava um auth.getUser() de rede no middleware.
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

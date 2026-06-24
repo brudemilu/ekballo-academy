@@ -4,6 +4,7 @@
 // Em modo produção, consulta o Supabase.
 // =============================================================
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 
@@ -66,11 +67,13 @@ import { PERMISSOES, type Permissao } from "@/lib/permissoes";
 
 // -------- AUTH / PROFILE --------
 
-export async function getCurrentSession(): Promise<{
+// Memoizada por request (React cache): se layout + página + componentes
+// chamarem na mesma renderização, só faz 1 getUser()+profile, não N.
+export const getCurrentSession = cache(async (): Promise<{
   userId: string;
   profile: Profile | null;
   email: string;
-} | null> {
+} | null> => {
   if (isMockMode()) {
     return {
       userId: MOCK_PROFILE.id,
@@ -91,7 +94,7 @@ export async function getCurrentSession(): Promise<{
     profile: profile as Profile | null,
     email: user.email || "",
   };
-}
+});
 
 // -------- PAPÉIS / PERMISSÕES --------
 
