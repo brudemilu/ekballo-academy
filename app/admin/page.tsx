@@ -50,6 +50,8 @@ export default async function AdminPage() {
             <img
               src={capa}
               alt={curso.titulo}
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
             />
           ) : (

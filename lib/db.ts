@@ -82,17 +82,23 @@ export const getCurrentSession = cache(async (): Promise<{
     };
   }
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  // getClaims verifica o JWT localmente via JWKS (chaves ES256 deste projeto),
+  // sem round-trip ao servidor de auth. O middleware já validou e atualizou o
+  // token nesta mesma navegação, então aqui só precisamos ler quem é o usuário.
+  // (Fallback automático pro getUser se faltar chave/WebCrypto — ver auth-js.)
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims?.sub) return null;
+  const userId = claims.sub as string;
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
   return {
-    userId: user.id,
+    userId,
     profile: profile as Profile | null,
-    email: user.email || "",
+    email: (claims.email as string) || "",
   };
 });
 
