@@ -150,6 +150,15 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#A6CFD3",
     rodapeCor: "#A6CFD3",
   },
+  "quatro-amores": {
+    livroUrl: "/capas/quatro-amores.jpg",
+    preLabel: "AMOR · 6 CAPÍTULOS",
+    titulo: "Os Quatro\nAmores",
+    subtitulo: "Afeição, amizade, eros e caridade",
+    rodape: "A partir do livro de C. S. Lewis",
+    bg: "linear-gradient(135deg, #6B2410 0%, #B0481F 52%, #E0814A 100%)",
+    textoCor: "#FBEEE2", acentoCor: "#F2D14A", preLabelCor: "#E6B08A", rodapeCor: "#E6B08A",
+  },
   "comentario-biblico-moody": {
     livroUrl: "/capas/comentario-biblico-moody.jpg",
     preLabel: "REFERÊNCIA · 66 LIVROS DA BÍBLIA",
