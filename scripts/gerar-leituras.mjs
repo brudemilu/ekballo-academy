@@ -413,7 +413,14 @@ async function listarCursos() {
     .select("id,slug,titulo,external_path")
     .eq("publicado", true)
     .order("ordem", { ascending: true });
-  const cursos = data || [];
+  // Cursos de REFERÊNCIA (ex.: Comentário Moody, 66 aulas de 100k+ chars cada)
+  // não recebem áudio — são consulta, não leitura devocional, e gerariam horas
+  // de TTS por aula. Configurável via EXCLUI_AUDIO (slugs separados por vírgula).
+  const exclui = new Set(
+    (process.env.EXCLUI_AUDIO || "comentario-biblico-moody")
+      .split(",").map((s) => s.trim()).filter(Boolean)
+  );
+  const cursos = (data || []).filter((c) => !exclui.has(c.slug));
 
   // Prioridade: como a cota DIÁRIA do Gemini TTS (free tier) esgota depois de
   // poucas aulas por rodada, os cursos listados em PRIORIDADE_LEITURA são
