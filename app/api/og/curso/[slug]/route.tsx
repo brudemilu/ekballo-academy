@@ -150,6 +150,15 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#A6CFD3",
     rodapeCor: "#A6CFD3",
   },
+  "comentario-biblico-moody": {
+    livroUrl: "/capas/comentario-biblico-moody.jpg",
+    preLabel: "REFERÊNCIA · 66 LIVROS DA BÍBLIA",
+    titulo: "Comentário\nBíblico Moody",
+    subtitulo: "Gênesis a Apocalipse, comentado verso a verso",
+    rodape: "Material de referência e consulta",
+    bg: "linear-gradient(135deg, #2A2410 0%, #5A4E20 52%, #9A8838 100%)",
+    textoCor: "#F6F0E0", acentoCor: "#E6C84A", preLabelCor: "#C8BC88", rodapeCor: "#C8BC88",
+  },
   "moises": {
     livroUrl: "/capas/moises.jpg",
     preLabel: "HERÓIS DA FÉ · 15 AULAS",
