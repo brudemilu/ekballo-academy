@@ -150,6 +150,15 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#A6CFD3",
     rodapeCor: "#A6CFD3",
   },
+  "redescobrindo-ministerio": {
+    livroUrl: "/capas/redescobrindo-ministerio.jpg",
+    preLabel: "FORMAÇÃO PASTORAL · 22 CAPÍTULOS",
+    titulo: "Redescobrindo o\nMinistério Pastoral",
+    subtitulo: "Moldando o ministério aos preceitos das Escrituras",
+    rodape: "Organizado por John MacArthur, Jr.",
+    bg: "linear-gradient(135deg, #2A140E 0%, #5A2A1A 52%, #9A5234 100%)",
+    textoCor: "#F6ECE2", acentoCor: "#E6C84A", preLabelCor: "#C8A088", rodapeCor: "#C8A088",
+  },
   "questao-de-honra": {
     livroUrl: "/capas/questao-de-honra.jpg",
     preLabel: "MORDOMIA · 14 CAPÍTULOS",
