@@ -326,12 +326,21 @@ async function sintetizarAulaEdge(slug, aula, pedacos) {
   const mp3s = [];
   try {
     for (let i = 0; i < pedacos.length; i++) {
+      // Pedaço sem fala (só pontuação/pontilhado de índice, números soltos) faz
+      // o edge-tts retornar "NoAudioReceived". Pula — não há o que narrar.
+      if (!/[a-zA-Zà-úÀ-Ú]/.test(pedacos[i])) continue;
       process.stdout.write(`   · sintetizando ${i + 1}/${pedacos.length}…\r`);
       const txtPath = join(dir, `p${i}.txt`);
       const mp3Path = join(dir, `p${i}.mp3`);
-      await edgePedacoArquivo(pedacos[i], txtPath, mp3Path);
-      mp3s.push(mp3Path);
+      try {
+        await edgePedacoArquivo(pedacos[i], txtPath, mp3Path);
+        mp3s.push(mp3Path);
+      } catch (e) {
+        // Um pedaço problemático não pode matar a aula inteira: pula e segue.
+        console.log(`\n   ⚠ pedaço ${i + 1}/${pedacos.length} pulado: ${(e?.message || e).slice(0, 70)}`);
+      }
     }
+    if (!mp3s.length) throw new Error("nenhum pedaço sintetizável na aula");
     const lista = join(dir, "lista.txt");
     let buf = await concatMp3(mp3s, lista, join(dir, "final.mp3"), "64k");
     // Supabase limita upload a ~50MB. Aulas enormes (caps acadêmicos longos)
