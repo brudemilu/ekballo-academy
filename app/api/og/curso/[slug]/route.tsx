@@ -150,6 +150,15 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#A6CFD3",
     rodapeCor: "#A6CFD3",
   },
+  "fe-ceticismo": {
+    livroUrl: "/capas/fe-ceticismo.jpg",
+    preLabel: "APOLOGÉTICA · 15 CAPÍTULOS",
+    titulo: "A Fé na Era\ndo Ceticismo",
+    subtitulo: "Como a razão explica Deus",
+    rodape: "A partir do livro de Timothy Keller",
+    bg: "linear-gradient(135deg, #0A1020 0%, #1A2A4A 52%, #3A5278 100%)",
+    textoCor: "#EAF0FA", acentoCor: "#E6C84A", preLabelCor: "#9FB4D6", rodapeCor: "#9FB4D6",
+  },
   "maturidade": {
     livroUrl: "/capas/maturidade.jpg",
     preLabel: "CRESCIMENTO · 11 CAPÍTULOS",
