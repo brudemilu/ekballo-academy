@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { MockBanner } from "@/components/MockBanner";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { RegisterSW } from "@/components/RegisterSW";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default function RootLayout({
         <MockBanner />
         {children}
         <WhatsAppFloat />
+        <UpdatePrompt />
       </body>
     </html>
   );
