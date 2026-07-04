@@ -122,11 +122,20 @@ export default async function DashboardPage() {
           <Link href="/dashboard">
             <Logo />
           </Link>
-          <UserMenu
+          <div className="flex items-center gap-2">
+            <Link
+              href="/biblioteca"
+              className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-sm font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50"
+              title="Livros baixados para ler e ouvir offline"
+            >
+              📚 <span className="hidden sm:inline">Biblioteca</span>
+            </Link>
+            <UserMenu
             nome={session.profile?.nome || null}
             email={session.profile?.email || session.email}
             isAdmin={!!session.profile?.is_admin}
           />
+          </div>
         </nav>
       </header>
 

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
+import { BaixarOffline } from "@/components/BaixarOffline";
 import {
   getCurrentSession,
   getCursoBySlug,
@@ -84,6 +85,10 @@ export default async function CursoPage({
               {curso.descricao}
             </p>
           )}
+        </div>
+
+        <div className="mb-12">
+          <BaixarOffline slug={curso.slug} />
         </div>
 
         <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-800">

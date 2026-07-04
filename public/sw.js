@@ -3,7 +3,7 @@
 //   1. App-shell: cacheia assets estáticos pra app instalado funcionar offline parcial.
 //   2. Web Push: recebe push do backend, exibe notificação, foca/abre URL ao clicar.
 
-const CACHE_VERSION = "ekballo-v2";
+const CACHE_VERSION = "ekballo-v3";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icon-192.png",
@@ -38,6 +38,28 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // Biblioteca offline: cacheia a navegação pra abrir sem internet. A página é
+  // client puro (lê o IndexedDB), então o documento cacheado + os chunks bastam.
+  if (request.mode === "navigate" && url.pathname.startsWith("/biblioteca")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(async () => {
+          const cache = await caches.open(CACHE_VERSION);
+          return (
+            (await cache.match(request)) ||
+            (await cache.match("/biblioteca")) ||
+            Response.error()
+          );
+        })
+    );
+    return;
+  }
 
   const isStatic =
     url.pathname.startsWith("/_next/static/") ||
