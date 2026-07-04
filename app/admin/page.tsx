@@ -11,6 +11,7 @@ import {
   getMaterialUrl,
 } from "@/lib/db";
 import { agruparPorCategoria } from "@/lib/categorias";
+import { SeloOffline } from "@/components/SeloOffline";
 
 export default async function AdminPage() {
   const session = await getCurrentSession();
@@ -64,6 +65,7 @@ export default async function AdminPage() {
               Pago
             </span>
           )}
+          <SeloOffline slug={curso.slug} />
         </div>
         <div className="flex flex-1 items-center justify-center px-2.5 py-3">
           <h3 className="line-clamp-2 text-center font-serif text-sm font-semibold leading-snug text-mesa-800">

@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { baixarCurso, getLivro, removerLivro } from "@/lib/offline-db";
+import { EVENTO_OFFLINE } from "@/components/SeloOffline";
+
+const avisarMudou = () => window.dispatchEvent(new Event(EVENTO_OFFLINE));
 
 type Estado = "verificando" | "disponivel" | "baixando" | "baixado";
 
@@ -32,6 +35,7 @@ export function BaixarOffline({ slug }: { slug: string }) {
         setPct(Math.round((feito / total) * 100))
       );
       setEstado("baixado");
+      avisarMudou();
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não deu pra baixar. Tente de novo.");
       setEstado("disponivel");
@@ -41,6 +45,7 @@ export function BaixarOffline({ slug }: { slug: string }) {
   const remover = useCallback(async () => {
     await removerLivro(slug).catch(() => {});
     setEstado("disponivel");
+    avisarMudou();
   }, [slug]);
 
   if (estado === "verificando") {

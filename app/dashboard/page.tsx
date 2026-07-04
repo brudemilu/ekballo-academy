@@ -12,6 +12,7 @@ import {
 import { getDevocionalDoDia } from "@/lib/devocionais";
 import { podeVerAgenda } from "@/lib/permissoes";
 import { agruparPorCategoria } from "@/lib/categorias";
+import { SeloOffline } from "@/components/SeloOffline";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
 function greetingName(nome?: string | null): string {
@@ -105,6 +106,7 @@ export default async function DashboardPage() {
               Pago
             </span>
           )}
+          <SeloOffline slug={curso.slug} />
         </div>
         <div className="flex flex-1 items-center justify-center px-2.5 py-3">
           <h3 className="line-clamp-2 text-center font-serif text-sm font-semibold leading-snug text-mesa-800">
