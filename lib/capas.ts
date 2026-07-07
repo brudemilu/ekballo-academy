@@ -37,4 +37,7 @@ export const CAPA_LIVRO: Record<string, string> = {
   "ate-que-nada-mais-importe": "/capas/ate-que-nada-mais-importe.jpg",
   "como-orar-lewis": "/capas/como-orar-lewis.jpg",
   "reflexoes-cristas-lewis": "/capas/reflexoes-cristas-lewis.jpg",
+  "paixao-pelas-almas": "/capas/paixao-pelas-almas.jpg",
+  "cristao-contagiante": "/capas/cristao-contagiante.jpg",
+  "as-cronicas-de-narnia": "/capas/as-cronicas-de-narnia.jpg",
 };
