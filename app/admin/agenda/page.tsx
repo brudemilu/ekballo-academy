@@ -7,6 +7,7 @@ import {
 } from "@/lib/db";
 import { lerAgendaGoogle } from "@/lib/agenda";
 import { AgendaPainel } from "@/components/AgendaPainel";
+import { AssinarGoogleAgenda } from "@/components/AssinarGoogleAgenda";
 import { podeVerAgenda } from "@/lib/permissoes";
 
 // Página sempre dinâmica: depende de login (cookies) e lê o Google Calendar ao vivo.
@@ -48,6 +49,14 @@ export default async function AgendaPage() {
   const eventos = [...google, ...manuais].sort((a, b) => a.inicio.localeCompare(b.inicio));
   const googleConectado = google.length > 0 || !!process.env.GOOGLE_AGENDA_ICAL_URL;
 
+  // Link iCal (com o segredo) pra assinar os compromissos no Google Agenda.
+  // Só pro admin/master (o link concede leitura dos compromissos).
+  const siteBase = process.env.NEXT_PUBLIC_SITE_URL || "https://ekballo-academy.vercel.app";
+  const icsUrl =
+    session.profile?.is_admin && process.env.AGENDA_SYNC_SECRET
+      ? `${siteBase.replace(/\/+$/, "")}/api/agenda/ics?key=${encodeURIComponent(process.env.AGENDA_SYNC_SECRET)}`
+      : null;
+
   return (
     <AdminShell current="agenda" session={session}>
       <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
@@ -68,6 +77,8 @@ export default async function AgendaPage() {
           secreto iCal.
         </div>
       )}
+
+      {icsUrl && <AssinarGoogleAgenda url={icsUrl} />}
 
       <AgendaPainel eventos={eventos} />
     </AdminShell>
