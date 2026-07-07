@@ -14,6 +14,14 @@ import { agruparPorCategoria } from "@/lib/categorias";
 import { SeloOffline } from "@/components/SeloOffline";
 import { CAPA_LIVRO } from "@/lib/capas";
 
+// "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena".
+function greetingName(nome?: string | null): string {
+  if (!nome) return "líder";
+  const parts = nome.trim().split(/\s+/);
+  if (parts[0]?.endsWith(".") && parts[1]) return `${parts[0]} ${parts[1]}`;
+  return parts[0];
+}
+
 export default async function AdminPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
@@ -88,14 +96,43 @@ export default async function AdminPage() {
 
   return (
     <AdminShell current="painel" session={session}>
-      <div className="mb-10">
+      <div className="mb-8">
         <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-          Visão geral
+          A mesa por dentro
         </p>
-        <h1 className="font-serif text-4xl font-semibold text-mesa-800">
-          A mesa por dentro.
+        <h1 className="font-serif text-3xl font-semibold text-mesa-800 sm:text-4xl">
+          Olá, {greetingName(session.profile?.nome)}.
         </h1>
+        <p className="mt-2 max-w-xl text-mesa-600">
+          Quem chegou, quem respondeu e o que espera por você — a vida da mesa num relance.
+        </p>
       </div>
+
+      {/* Foco do dia: devolutivas pendentes (o trabalho pastoral que só você faz) */}
+      {stats.respostasSemComentario > 0 && (
+        <Link
+          href="/admin/respostas?status=pendentes"
+          className="lift mb-8 flex items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 via-laranja-50 to-bege-100 p-6 transition hover:border-amber-400 hover:shadow-md"
+        >
+          <div className="min-w-0">
+            <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-amber-700">
+              Precisa de você hoje
+            </p>
+            <p className="font-serif text-2xl font-semibold leading-tight text-mesa-800">
+              {stats.respostasSemComentario}{" "}
+              {stats.respostasSemComentario === 1
+                ? "reflexão aguardando sua devolutiva"
+                : "reflexões aguardando sua devolutiva"}
+            </p>
+            <p className="mt-1 text-sm text-mesa-600">
+              Ler e responder — a palavra do líder é o que fecha a mesa.
+            </p>
+          </div>
+          <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-amber-500 text-xl text-white shadow-sm">
+            →
+          </span>
+        </Link>
+      )}
 
       <div className="mb-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {cards.map((s) => {
@@ -104,24 +141,24 @@ export default async function AdminPage() {
             <Link
               key={s.label}
               href={s.href}
-              className={`lift group flex items-center gap-3 rounded-xl border p-4 transition ${
+              className={`lift group flex flex-col justify-between gap-4 rounded-2xl border p-5 transition ${
                 destaque
                   ? "border-amber-300 bg-amber-50 hover:border-amber-400"
-                  : "border-mesa-200 bg-white hover:border-mesa-300 hover:bg-mesa-50/50"
+                  : "border-mesa-200 bg-white hover:border-laranja-300 hover:shadow-md"
               }`}
             >
               <span
-                className={`flex h-9 w-9 flex-none items-center justify-center rounded-lg text-lg ${
-                  destaque ? "animate-pulse bg-amber-100" : "bg-mesa-100"
+                className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg transition ${
+                  destaque ? "animate-pulse bg-amber-100" : "bg-mesa-100 group-hover:bg-laranja-100"
                 }`}
               >
                 {s.icon}
               </span>
               <div className="min-w-0">
-                <p className={`font-serif text-2xl font-semibold leading-none ${s.color}`}>
+                <p className={`font-serif text-3xl font-semibold leading-none ${s.color}`}>
                   {s.value}
                 </p>
-                <p className="mt-1 truncate text-xs font-medium text-mesa-500">
+                <p className="mt-1.5 truncate text-sm font-medium text-mesa-500">
                   {s.label}
                 </p>
               </div>

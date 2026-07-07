@@ -197,12 +197,18 @@ const CORES_KPI: Record<string, string> = {
   laranja: "border-laranja-200 hover:border-laranja-300",
   alerta: "border-red-300 bg-red-50 hover:border-red-400",
 };
+const CORES_KPI_VALOR: Record<string, string> = {
+  mesa: "text-mesa-800",
+  oliveira: "text-oliveira-700",
+  laranja: "text-laranja-600",
+  alerta: "text-red-600",
+};
 
 function Kpi({ label, valor, sub, href, cor }: { label: string; valor: number; sub: string; href: string; cor: string }) {
   return (
-    <Link href={href} className={`group rounded-2xl border bg-white p-4 transition ${CORES_KPI[cor] ?? CORES_KPI.mesa}`}>
+    <Link href={href} className={`lift group rounded-2xl border bg-white p-4 transition hover:shadow-md ${CORES_KPI[cor] ?? CORES_KPI.mesa}`}>
       <p className="text-[11px] font-medium uppercase tracking-wide text-mesa-500">{label}</p>
-      <p className="mt-1 font-serif text-3xl font-semibold text-mesa-800">{fmt(valor)}</p>
+      <p className={`mt-1 font-serif text-3xl font-semibold ${CORES_KPI_VALOR[cor] ?? CORES_KPI_VALOR.mesa}`}>{fmt(valor)}</p>
       <p className="text-xs text-mesa-500">{sub} <span className="opacity-0 transition group-hover:opacity-100">→</span></p>
     </Link>
   );
