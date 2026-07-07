@@ -23,25 +23,38 @@ export type AdminTab =
   | "agenda"
   | "permissoes";
 
+type GrupoKey = "visao" | "discipulado" | "comunicacao" | "criacao" | "config";
+
 type Item = {
   key: AdminTab;
   label: string;
   href: string;
   hint?: string;
+  grupo: GrupoKey;
 };
 
+// Seções do menu — agrupar as funções dá estrutura e deixa o painel escaneável
+// (em vez de uma lista plana). A ordem aqui é a ordem exibida.
+const GRUPOS: { key: GrupoKey; label: string }[] = [
+  { key: "visao", label: "Visão geral" },
+  { key: "discipulado", label: "Discipulado" },
+  { key: "comunicacao", label: "Comunicação" },
+  { key: "criacao", label: "Criação & mídia" },
+  { key: "config", label: "Configuração" },
+];
+
 const ITEMS: Item[] = [
-  { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral" },
-  { key: "dashboard", label: "Dashboard", href: "/admin/dashboard", hint: "Engajamento, filtros e gráficos" },
-  { key: "cursos", label: "Temáticas", href: "/admin/cursos", hint: "Progresso por temática e discípulo" },
-  { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas" },
-  { key: "alunos", label: "Discípulos", href: "/admin/alunos", hint: "Matrículas e contatos" },
-  { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email, WhatsApp e grupos" },
-  { key: "templates", label: "Templates", href: "/admin/templates", hint: "Emails automáticos" },
-  { key: "imagens", label: "Imagens", href: "/admin/imagens", hint: "Gerador cinematográfico IA" },
-  { key: "instagram", label: "Instagram", href: "/admin/instagram", hint: "Gerar carrossel e postar" },
-  { key: "youtube", label: "YouTube", href: "/admin/youtube", hint: "Baixar áudio em MP3" },
-  { key: "marca", label: "Marca", href: "/admin/marca", hint: "Logo, cores e o nome Ekballo" },
+  { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral", grupo: "visao" },
+  { key: "dashboard", label: "Dashboard", href: "/admin/dashboard", hint: "Engajamento, filtros e gráficos", grupo: "visao" },
+  { key: "cursos", label: "Temáticas", href: "/admin/cursos", hint: "Progresso por temática e discípulo", grupo: "discipulado" },
+  { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas", grupo: "discipulado" },
+  { key: "alunos", label: "Discípulos", href: "/admin/alunos", hint: "Matrículas e contatos", grupo: "discipulado" },
+  { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email, WhatsApp e grupos", grupo: "comunicacao" },
+  { key: "templates", label: "Templates", href: "/admin/templates", hint: "Emails automáticos", grupo: "comunicacao" },
+  { key: "imagens", label: "Imagens", href: "/admin/imagens", hint: "Gerador cinematográfico IA", grupo: "criacao" },
+  { key: "instagram", label: "Instagram", href: "/admin/instagram", hint: "Gerar carrossel e postar", grupo: "criacao" },
+  { key: "youtube", label: "YouTube", href: "/admin/youtube", hint: "Baixar áudio em MP3", grupo: "criacao" },
+  { key: "marca", label: "Marca", href: "/admin/marca", hint: "Logo, cores e o nome Ekballo", grupo: "config" },
 ];
 
 // Ícones só para a grade de cartões no celular (deixa mais visual/tocável).
@@ -88,6 +101,7 @@ export async function AdminShell({
     label: "Agenda",
     href: "/admin/agenda",
     hint: "Seus compromissos (Google + manuais)",
+    grupo: "comunicacao",
   };
 
   let itens = ITEMS.filter((it) => {
@@ -102,6 +116,7 @@ export async function AdminShell({
       label: "Permissões",
       href: "/admin/permissoes",
       hint: "Papéis e acessos",
+      grupo: "config",
     });
   } else if (!session.profile?.is_admin && podeAgenda) {
     // Acesso exclusivo à agenda (ex.: Débora): só vê a Agenda.
@@ -109,6 +124,12 @@ export async function AdminShell({
   } else if (podeAgenda) {
     itens.push(itemAgenda);
   }
+
+  // Agrupa os itens visíveis nas seções (na ordem de GRUPOS), omitindo vazias.
+  const porGrupo = GRUPOS.map((g) => ({
+    ...g,
+    itens: itens.filter((it) => it.grupo === g.key),
+  })).filter((g) => g.itens.length > 0);
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -127,75 +148,101 @@ export async function AdminShell({
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 md:grid md:grid-cols-[240px_1fr] md:gap-8">
         <aside className="md:sticky md:top-6 md:self-start">
-          {/* Desktop: lista vertical */}
-          <nav className="hidden md:block">
-            <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-              Painel pastoral
-            </p>
-            <ul className="space-y-1">
-              {itens.map((it) => {
-                const ativo = it.key === current;
-                return (
-                  <li key={it.key}>
-                    <Link
-                      href={it.href}
-                      className={`block rounded-lg px-3 py-2.5 text-sm transition ${
-                        ativo
-                          ? "bg-mesa-700 text-mesa-50"
-                          : "text-mesa-700 hover:bg-mesa-100"
-                      }`}
-                    >
-                      <p className="font-medium">{it.label}</p>
-                      {it.hint && (
-                        <p
-                          className={`mt-0.5 text-xs ${
-                            ativo ? "text-mesa-100/80" : "text-mesa-500"
+          <p className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
+            Painel pastoral
+          </p>
+
+          {/* Desktop: seções com ícone, hint e estado ativo destacado */}
+          <nav className="hidden space-y-5 md:block">
+            {porGrupo.map((g) => (
+              <div key={g.key}>
+                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-mesa-400">
+                  {g.label}
+                </p>
+                <ul className="space-y-0.5">
+                  {g.itens.map((it) => {
+                    const ativo = it.key === current;
+                    return (
+                      <li key={it.key}>
+                        <Link
+                          href={it.href}
+                          aria-current={ativo ? "page" : undefined}
+                          className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 transition ${
+                            ativo
+                              ? "bg-mesa-700 text-mesa-50 shadow-sm shadow-mesa-700/20"
+                              : "text-mesa-700 hover:bg-white hover:shadow-sm"
                           }`}
                         >
-                          {it.hint}
-                        </p>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                          <span
+                            className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg text-base transition ${
+                              ativo
+                                ? "bg-white/15"
+                                : "bg-mesa-100 text-mesa-700 group-hover:bg-laranja-100"
+                            }`}
+                          >
+                            {ICONE[it.key] ?? "•"}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-medium leading-tight">
+                              {it.label}
+                            </span>
+                            {it.hint && (
+                              <span
+                                className={`block truncate text-[11px] leading-tight ${
+                                  ativo ? "text-mesa-100/75" : "text-mesa-400"
+                                }`}
+                              >
+                                {it.hint}
+                              </span>
+                            )}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </nav>
 
-          {/* Mobile/tablet: grade de cartões — todas as seções visíveis */}
-          <nav className="md:hidden">
-            <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-              Painel pastoral
-            </p>
-            <ul className="grid grid-cols-2 gap-2">
-              {itens.map((it) => {
-                const ativo = it.key === current;
-                return (
-                  <li key={it.key}>
-                    <Link
-                      href={it.href}
-                      className={`flex h-full flex-col rounded-xl border p-3 transition ${
-                        ativo
-                          ? "border-mesa-700 bg-mesa-700 text-mesa-50"
-                          : "border-mesa-200 bg-white text-mesa-700 active:bg-mesa-100"
-                      }`}
-                    >
-                      <span className="text-xl leading-none">{ICONE[it.key] ?? "•"}</span>
-                      <span className="mt-2 text-sm font-semibold leading-tight">{it.label}</span>
-                      {it.hint && (
-                        <span
-                          className={`mt-0.5 text-[11px] leading-snug ${
-                            ativo ? "text-mesa-100/80" : "text-mesa-500"
+          {/* Mobile/tablet: mesmas seções em grade de cartões tocáveis */}
+          <nav className="space-y-4 md:hidden">
+            {porGrupo.map((g) => (
+              <div key={g.key}>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-mesa-400">
+                  {g.label}
+                </p>
+                <ul className="grid grid-cols-2 gap-2">
+                  {g.itens.map((it) => {
+                    const ativo = it.key === current;
+                    return (
+                      <li key={it.key}>
+                        <Link
+                          href={it.href}
+                          aria-current={ativo ? "page" : undefined}
+                          className={`flex h-full items-center gap-2.5 rounded-xl border p-3 transition ${
+                            ativo
+                              ? "border-mesa-700 bg-mesa-700 text-mesa-50"
+                              : "border-mesa-200 bg-white text-mesa-700 active:bg-mesa-100"
                           }`}
                         >
-                          {it.hint}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                          <span
+                            className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg text-base ${
+                              ativo ? "bg-white/15" : "bg-mesa-100"
+                            }`}
+                          >
+                            {ICONE[it.key] ?? "•"}
+                          </span>
+                          <span className="min-w-0 text-sm font-semibold leading-tight">
+                            {it.label}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </nav>
         </aside>
 
