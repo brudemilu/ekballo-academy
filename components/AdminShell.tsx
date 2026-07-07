@@ -146,67 +146,15 @@ export async function AdminShell({
         </nav>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 md:grid md:grid-cols-[240px_1fr] md:gap-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 md:grid md:grid-cols-[minmax(0,340px)_1fr] md:gap-8">
         <aside className="md:sticky md:top-6 md:self-start">
           <p className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
             Painel pastoral
           </p>
 
-          {/* Desktop: seções com ícone, hint e estado ativo destacado */}
-          <nav className="hidden space-y-5 md:block">
-            {porGrupo.map((g) => (
-              <div key={g.key}>
-                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-mesa-400">
-                  {g.label}
-                </p>
-                <ul className="space-y-0.5">
-                  {g.itens.map((it) => {
-                    const ativo = it.key === current;
-                    return (
-                      <li key={it.key}>
-                        <Link
-                          href={it.href}
-                          aria-current={ativo ? "page" : undefined}
-                          className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 transition ${
-                            ativo
-                              ? "bg-mesa-700 text-mesa-50 shadow-sm shadow-mesa-700/20"
-                              : "text-mesa-700 hover:bg-white hover:shadow-sm"
-                          }`}
-                        >
-                          <span
-                            className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg text-base transition ${
-                              ativo
-                                ? "bg-white/15"
-                                : "bg-mesa-100 text-mesa-700 group-hover:bg-laranja-100"
-                            }`}
-                          >
-                            {ICONE[it.key] ?? "•"}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium leading-tight">
-                              {it.label}
-                            </span>
-                            {it.hint && (
-                              <span
-                                className={`block truncate text-[11px] leading-tight ${
-                                  ativo ? "text-mesa-100/75" : "text-mesa-400"
-                                }`}
-                              >
-                                {it.hint}
-                              </span>
-                            )}
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-          </nav>
-
-          {/* Mobile/tablet: mesmas seções em grade de cartões tocáveis */}
-          <nav className="space-y-4 md:hidden">
+          {/* Seções em grade de 2 colunas (desktop e mobile) — dá pra ver tudo
+              de uma vez, cada função num cartão com ícone. */}
+          <nav className="space-y-4">
             {porGrupo.map((g) => (
               <div key={g.key}>
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-mesa-400">
@@ -220,15 +168,16 @@ export async function AdminShell({
                         <Link
                           href={it.href}
                           aria-current={ativo ? "page" : undefined}
-                          className={`flex h-full items-center gap-2.5 rounded-xl border p-3 transition ${
+                          title={it.hint}
+                          className={`group flex h-full items-center gap-2.5 rounded-xl border p-2.5 transition ${
                             ativo
-                              ? "border-mesa-700 bg-mesa-700 text-mesa-50"
-                              : "border-mesa-200 bg-white text-mesa-700 active:bg-mesa-100"
+                              ? "border-mesa-700 bg-mesa-700 text-mesa-50 shadow-sm shadow-mesa-700/20"
+                              : "border-mesa-200 bg-white text-mesa-700 hover:border-laranja-300 hover:shadow-sm active:bg-mesa-100"
                           }`}
                         >
                           <span
-                            className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg text-base ${
-                              ativo ? "bg-white/15" : "bg-mesa-100"
+                            className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg text-base transition ${
+                              ativo ? "bg-white/15" : "bg-mesa-100 group-hover:bg-laranja-100"
                             }`}
                           >
                             {ICONE[it.key] ?? "•"}
