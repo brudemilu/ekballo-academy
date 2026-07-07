@@ -9,6 +9,7 @@ import {
   listAtividadesByAula,
   isMatriculado,
   getAudioUrl,
+  getMaterialUrl,
 } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,10 @@ export async function GET(
     return NextResponse.json({ erro: "sem acesso" }, { status: 403 });
   }
 
-  const aulasRaw = await listAulasByCurso(curso.id);
+  const [aulasRaw, capaUrl] = await Promise.all([
+    listAulasByCurso(curso.id),
+    getMaterialUrl(curso.imagem_url),
+  ]);
   const aulas = await Promise.all(
     aulasRaw
       .filter((a) => (a.conteudo || "").trim().length > 0)
@@ -55,7 +59,7 @@ export async function GET(
     {
       slug: curso.slug,
       titulo: curso.titulo,
-      capaUrl: `/api/og/curso/${curso.slug}?formato=retrato&v=4`,
+      capaUrl: capaUrl ?? `/api/og/curso/${curso.slug}?formato=retrato&v=4`,
       aulas,
     },
     { headers: { "Cache-Control": "no-store" } }

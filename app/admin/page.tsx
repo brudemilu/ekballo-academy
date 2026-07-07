@@ -12,6 +12,7 @@ import {
 } from "@/lib/db";
 import { agruparPorCategoria } from "@/lib/categorias";
 import { SeloOffline } from "@/components/SeloOffline";
+import { CAPA_LIVRO } from "@/lib/capas";
 
 export default async function AdminPage() {
   const session = await getCurrentSession();
@@ -36,9 +37,11 @@ export default async function AdminPage() {
 
   const renderCardCurso = (curso: (typeof cursos)[number]) => {
     const ogUrl = imagemMap.get(curso.id);
-    const capa = ogUrl?.startsWith("/api/og/curso/")
-      ? `${ogUrl}?formato=retrato&v=4`
-      : ogUrl ?? null;
+    const capa = CAPA_LIVRO[curso.slug] ?? (
+      ogUrl?.startsWith("/api/og/curso/")
+        ? `${ogUrl}?formato=retrato&v=4`
+        : ogUrl ?? null
+    );
     return (
       <Link
         key={curso.id}

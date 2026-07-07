@@ -13,6 +13,7 @@ import { getDevocionalDoDia } from "@/lib/devocionais";
 import { podeVerAgenda } from "@/lib/permissoes";
 import { agruparPorCategoria } from "@/lib/categorias";
 import { SeloOffline } from "@/components/SeloOffline";
+import { CAPA_LIVRO } from "@/lib/capas";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
 function greetingName(nome?: string | null): string {
@@ -66,11 +67,11 @@ export default async function DashboardPage() {
     const concluido = matricula?.concluido_em;
     const href = curso.external_path ?? `/cursos/${curso.slug}`;
     const ogUrl = imagemMap.get(curso.id);
-    // Card padronizado: todos usam a versão retrato gerada pela rota OG
-    // (capa do livro emoldurada de forma idêntica, ou tipografia).
-    const capa = ogUrl?.startsWith("/api/og/curso/")
-      ? `${ogUrl}?formato=retrato&v=4`
-      : ogUrl ?? null;
+    const capa = CAPA_LIVRO[curso.slug] ?? (
+      ogUrl?.startsWith("/api/og/curso/")
+        ? `${ogUrl}?formato=retrato&v=4`
+        : ogUrl ?? null
+    );
     return (
       <Link
         key={curso.id}
