@@ -55,9 +55,20 @@ Deno.serve(async (req) => {
 
   if (acao === "conectar") {
     // Inicia (ou reinicia) a sessão e busca um QR fresco pra parear.
+    // Se vier `url`, já registra o webhook de recebimento no mesmo connect
+    // (no Evolution GO o webhook é setado aqui) — assim reconectar não zera.
+    const urlConn = typeof reqBody.url === "string" ? reqBody.url : "";
+    const connectBody: Record<string, unknown> = { immediate: true };
+    if (urlConn) {
+      connectBody.webhookUrl = urlConn;
+      connectBody.subscribe = ["MESSAGE"];
+      connectBody.rabbitmqEnabled = "disabled";
+      connectBody.websocketEnable = "disabled";
+      connectBody.natsEnabled = "disabled";
+    }
     await evolutionFetch("/instance/connect", {
       method: "POST",
-      body: JSON.stringify({ immediate: true }),
+      body: JSON.stringify(connectBody),
     });
     const st = await evolutionFetch("/instance/status", { method: "GET" });
     const status = lerStatus(st.body);
@@ -92,40 +103,24 @@ Deno.serve(async (req) => {
     const url = typeof reqBody.url === "string" ? reqBody.url : "";
     if (!url) return jsonResponse({ erro: "url do webhook obrigatória" }, 400);
 
-    // Eventos que cobrem "mensagem recebida" em diferentes builds.
-    const eventos = ["Message", "messages.upsert", "MESSAGES_UPSERT"];
-
-    // 1) lê a config atual (pra diagnóstico) — tenta os endpoints conhecidos.
-    const leitura: Record<string, unknown> = {};
-    for (const p of ["/webhook/find", "/webhook"]) {
-      try {
-        const r = await evolutionFetch(p, { method: "GET" });
-        leitura[p] = { status: r.status, body: r.body };
-      } catch (e) {
-        leitura[p] = { erro: e instanceof Error ? e.message : String(e) };
-      }
-    }
-
-    // 2) tenta registrar (variações de path/payload entre builds do Evolution GO).
-    const variantes: { path: string; body: unknown }[] = [
-      { path: "/webhook/set", body: { enabled: true, url, events: eventos, webhookBase64: true, base64: true } },
-      { path: "/webhook/set", body: { webhook: { enabled: true, url, events: eventos, base64: true } } },
-      { path: "/webhook", body: { enabled: true, url, events: eventos, base64: true } },
-      { path: "/instance/webhook", body: { enabled: true, url, events: eventos, base64: true } },
-    ];
-    const tentativas: Record<string, unknown>[] = [];
-    let ok = false;
-    for (const v of variantes) {
-      try {
-        const r = await evolutionFetch(v.path, { method: "POST", body: JSON.stringify(v.body) });
-        tentativas.push({ path: v.path, status: r.status, ok: r.ok, body: r.body });
-        if (r.ok) { ok = true; break; }
-      } catch (e) {
-        tentativas.push({ path: v.path, erro: e instanceof Error ? e.message : String(e) });
-      }
-    }
-
-    return jsonResponse({ ok, url, leitura, tentativas });
+    // No Evolution GO o webhook é configurado no POST /instance/connect
+    // (webhookUrl + subscribe). "MESSAGE" cobre as mensagens recebidas.
+    const r = await evolutionFetch("/instance/connect", {
+      method: "POST",
+      body: JSON.stringify({
+        webhookUrl: url,
+        subscribe: ["MESSAGE"],
+        rabbitmqEnabled: "disabled",
+        websocketEnable: "disabled",
+        natsEnabled: "disabled",
+      }),
+    });
+    const st = await evolutionFetch("/instance/status", { method: "GET" });
+    return jsonResponse({
+      ok: r.ok,
+      connect: { status: r.status, body: r.body },
+      status: lerStatus(st.body),
+    });
   }
 
   return jsonResponse({ erro: "ação desconhecida" }, 400);

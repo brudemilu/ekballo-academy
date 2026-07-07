@@ -51,6 +51,15 @@ function chamarEdge(url: string, body: unknown) {
   });
 }
 
+// URL do webhook de recebimento (com o secret), montada server-side. Usada tanto
+// pelo botão "webhook" quanto no "conectar" (pra reconexão já registrar o webhook).
+function montarWebhookUrl(): string | null {
+  const secret = process.env.AGENDA_WHATSAPP_SECRET || "";
+  if (!secret) return null;
+  const base = process.env.WEBHOOK_PUBLIC_BASE || "https://ekballo-academy.vercel.app";
+  return `${base}/api/webhook/whatsapp-agenda?secret=${encodeURIComponent(secret)}`;
+}
+
 export async function GET() {
   const negado = await exigirAdmin();
   if (negado) return negado;
@@ -90,21 +99,22 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Gerência da instância
+    // Gerência da instância. No "conectar", já passa a URL do webhook pra que
+    // o pareamento/reconexão registre o recebimento (Evolution GO seta o webhook
+    // no /instance/connect).
     if (acao === "conectar" || acao === "qr" || acao === "grupos") {
-      const resp = await chamarEdge(EDGE_INSTANCIA_URL, { acao });
+      const extra = acao === "conectar" ? { url: montarWebhookUrl() } : {};
+      const resp = await chamarEdge(EDGE_INSTANCIA_URL, { acao, ...extra });
       return NextResponse.json(await resp.json(), { status: resp.status });
     }
 
     // (Re)registra o webhook de RECEBIMENTO no Evolution (agendar pelo WhatsApp).
     // A URL do webhook (com o secret) é montada aqui, server-side.
     if (acao === "webhook") {
-      const secret = process.env.AGENDA_WHATSAPP_SECRET || "";
-      if (!secret) {
+      const url = montarWebhookUrl();
+      if (!url) {
         return NextResponse.json({ erro: "AGENDA_WHATSAPP_SECRET não configurado" }, { status: 500 });
       }
-      const base = process.env.WEBHOOK_PUBLIC_BASE || "https://ekballo-academy.vercel.app";
-      const url = `${base}/api/webhook/whatsapp-agenda?secret=${encodeURIComponent(secret)}`;
       const resp = await chamarEdge(EDGE_INSTANCIA_URL, { acao: "webhook", url });
       return NextResponse.json(await resp.json(), { status: resp.status });
     }
