@@ -231,6 +231,7 @@ export default async function AulaPage({
 
         <div className="flex flex-col gap-4 border-t border-mesa-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <MarcarConcluida
+            key={aula.id}
             alunoId={session.userId}
             aulaId={aula.id}
             jaConcluida={concluida}

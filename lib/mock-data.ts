@@ -258,7 +258,9 @@ export function setMockReflexao(alunoId: string, atividadeId: string, texto: str
 // Aula completa = todas as MCs corretas E todas as reflexões respondidas (texto não vazio)
 export function aulaCompleta(alunoId: string, aulaId: string): boolean {
   const atividades = MOCK_ATIVIDADES.filter((a) => a.aula_id === aulaId);
-  if (atividades.length === 0) return true;
+  if (atividades.length === 0) {
+    return MOCK_PROGRESSO.some((p) => p.aluno_id === alunoId && p.aula_id === aulaId);
+  }
   for (const atv of atividades) {
     if (atv.tipo === "multipla_escolha") {
       const altSelId = MOCK_MC_ANSWERS.get(`${alunoId}::${atv.id}`);

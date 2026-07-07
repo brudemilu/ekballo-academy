@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -22,6 +22,10 @@ export function MarcarConcluida({
   const router = useRouter();
   const [concluida, setConcluida] = useState(jaConcluida);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setConcluida(jaConcluida);
+  }, [aulaId, jaConcluida]);
 
   function handleClick() {
     startTransition(async () => {

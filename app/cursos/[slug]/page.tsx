@@ -104,7 +104,7 @@ export default async function CursoPage({
         ) : (
           <ol className="space-y-3">
             {aulas.map((aula) => {
-              const concluida = concluidas.has(aula.id) || aula.completa;
+              const concluida = concluidas.has(aula.id);
               return (
                 <li key={aula.id}>
                   <Link href={`/cursos/${curso.slug}/aulas/${aula.id}`}>

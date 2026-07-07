@@ -883,13 +883,14 @@ export async function salvarRespostaAlternativa(alunoId: string, atividadeId: st
 // para o aluno, dado o mapa de respostas (chave atividade_id) e o mapa de
 // alternativa correta por atividade. Sem nenhuma ida ao banco.
 // Regra: toda MC com a alternativa correta selecionada E toda reflexão com
-// texto não vazio. Aula sem atividades é trivialmente completa.
+// texto não vazio. Aula sem atividades não é completa automaticamente; nesses
+// cursos, a conclusão vem do botão manual que grava em `progresso`.
 function aulaCompletaEmMemoria(
   atividades: { id: string; tipo: string }[],
   respostaPorAtividade: Map<string, { alternativa_id: string | null; texto: string | null }>,
   corretaPorAtividade: Map<string, string>,
 ): boolean {
-  if (atividades.length === 0) return true;
+  if (atividades.length === 0) return false;
   for (const atv of atividades) {
     const r = respostaPorAtividade.get(atv.id);
     if (atv.tipo === "multipla_escolha") {
@@ -914,7 +915,7 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
     .select("id, tipo")
     .eq("aula_id", aulaId);
   const atividades = (ats || []) as { id: string; tipo: string }[];
-  if (atividades.length === 0) return true;
+  if (atividades.length === 0) return jaConcluiu(alunoId, aulaId);
   const atvIds = atividades.map((a) => a.id);
   const mcIds = atividades.filter((a) => a.tipo === "multipla_escolha").map((a) => a.id);
 
@@ -987,8 +988,8 @@ export async function listAulasComStatus(
   const atvIds = atividades.map((a) => a.id);
   const mcIds = atividades.filter((a) => a.tipo === "multipla_escolha").map((a) => a.id);
 
-  // Respostas do aluno + alternativas corretas, em paralelo.
-  const [respResp, altsResp] = await Promise.all([
+  // Respostas do aluno + alternativas corretas + conclusão manual, em paralelo.
+  const [respResp, altsResp, progressoResp] = await Promise.all([
     atvIds.length
       ? supabase
           .from("respostas")
@@ -1003,6 +1004,11 @@ export async function listAulasComStatus(
           .in("atividade_id", mcIds)
           .eq("correta", true)
       : Promise.resolve({ data: [] as { atividade_id: string; id: string }[] }),
+    supabase
+      .from("progresso")
+      .select("aula_id")
+      .eq("aluno_id", alunoId)
+      .in("aula_id", aulaIds),
   ]);
 
   const atvPorAula = new Map<string, { id: string; tipo: string }[]>();
@@ -1017,11 +1023,17 @@ export async function listAulasComStatus(
   const corretaMap = new Map<string, string>();
   ((altsResp.data || []) as { atividade_id: string; id: string }[])
     .forEach((a) => corretaMap.set(a.atividade_id, a.id));
+  const progressoSet = new Set(
+    ((progressoResp.data || []) as { aula_id: string }[]).map((p) => p.aula_id),
+  );
 
   const result: AulaComStatus[] = [];
   let previousCompleta = true;
   for (const aula of aulas) {
-    const completa = aulaCompletaEmMemoria(atvPorAula.get(aula.id) || [], respMap, corretaMap);
+    const atvs = atvPorAula.get(aula.id) || [];
+    const completa = atvs.length === 0
+      ? progressoSet.has(aula.id)
+      : aulaCompletaEmMemoria(atvs, respMap, corretaMap);
     result.push({ ...aula, desbloqueada: true, completa });
     previousCompleta = completa;
   }
@@ -1427,6 +1439,22 @@ export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgre
   }));
   const alunoIds = matriculas.map((m) => m.aluno_id);
 
+  const progressoRows =
+    alunoIds.length > 0
+      ? (
+          await supabase
+            .from("progresso")
+            .select("aluno_id, aula_id")
+            .in("aula_id", aulaIds)
+            .in("aluno_id", alunoIds)
+        ).data || []
+      : [];
+  const progressoSet = new Set(
+    (progressoRows as { aluno_id: string; aula_id: string }[]).map(
+      (p) => `${p.aluno_id}::${p.aula_id}`,
+    ),
+  );
+
   // Respostas dos alunos pras atividades do curso
   const respostas =
     atvIds.length > 0 && alunoIds.length > 0
@@ -1453,7 +1481,7 @@ export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgre
 
   function aulaCompletaPra(alunoId: string, aulaId: string): boolean {
     const atvs = atvByAula.get(aulaId) || [];
-    if (atvs.length === 0) return true;
+    if (atvs.length === 0) return progressoSet.has(`${alunoId}::${aulaId}`);
     for (const a of atvs) {
       const r = respByPair.get(`${alunoId}::${a.id}`);
       if (a.tipo === "multipla_escolha") {
@@ -1695,6 +1723,16 @@ export async function getAlunoProgressoNoCurso(
         comentario_lider: string | null;
         comentario_lider_em: string | null;
       }> };
+
+  const { data: progData } = aulaIds.length
+    ? await supabase
+        .from("progresso")
+        .select("aula_id")
+        .eq("aluno_id", alunoId)
+        .in("aula_id", aulaIds)
+    : { data: [] as { aula_id: string }[] };
+  const progressoSet = new Set(((progData || []) as { aula_id: string }[]).map((p) => p.aula_id));
+
   type RespInfo = {
     id: string;
     atividade_id: string;
@@ -1762,7 +1800,7 @@ export async function getAlunoProgressoNoCurso(
         }
       }
     }
-    if (atvs.length === 0) completa = true;
+    if (atvs.length === 0) completa = progressoSet.has(aula.id);
 
     const respondidas = detalheAtvs.filter(
       (a) =>
