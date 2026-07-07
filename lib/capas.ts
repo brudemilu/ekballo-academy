@@ -21,4 +21,5 @@ export const CAPA_LIVRO: Record<string, string> = {
   "trelica-videira": "/capas/trelica-videira.jpg",
   "igreja-com-propositos": "/capas/igreja-com-propositos.jpg",
   "jesuscopy": "/capas/jesuscopy.jpg",
+  "os-clas-da-lua": "/capas/os-clas-da-lua.jpg",
 };

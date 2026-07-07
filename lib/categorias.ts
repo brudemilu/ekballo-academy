@@ -9,6 +9,7 @@ export type CategoriaSlug =
   | "discipulado"
   | "ensino"
   | "espiritual"
+  | "leitura"
   | "infantil";
 
 export type Categoria = { slug: CategoriaSlug; label: string };
@@ -20,6 +21,7 @@ export const CATEGORIAS: Categoria[] = [
   { slug: "discipulado", label: "Discipulado" },
   { slug: "ensino", label: "Ensino & Doutrina" },
   { slug: "espiritual", label: "Espiritual" },
+  { slug: "leitura", label: "Leitura" },
   { slug: "infantil", label: "Infantil" },
 ];
 
