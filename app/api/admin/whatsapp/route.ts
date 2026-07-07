@@ -96,6 +96,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(await resp.json(), { status: resp.status });
     }
 
+    // (Re)registra o webhook de RECEBIMENTO no Evolution (agendar pelo WhatsApp).
+    // A URL do webhook (com o secret) é montada aqui, server-side.
+    if (acao === "webhook") {
+      const secret = process.env.AGENDA_WHATSAPP_SECRET || "";
+      if (!secret) {
+        return NextResponse.json({ erro: "AGENDA_WHATSAPP_SECRET não configurado" }, { status: 500 });
+      }
+      const base = process.env.WEBHOOK_PUBLIC_BASE || "https://ekballo-academy.vercel.app";
+      const url = `${base}/api/webhook/whatsapp-agenda?secret=${encodeURIComponent(secret)}`;
+      const resp = await chamarEdge(EDGE_INSTANCIA_URL, { acao: "webhook", url });
+      return NextResponse.json(await resp.json(), { status: resp.status });
+    }
+
     // Envio direto (texto ou mídia) pra número ou grupo
     if (acao === "enviar") {
       const destinatario = String(body.destinatario || "").trim();

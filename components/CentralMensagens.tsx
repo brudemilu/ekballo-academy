@@ -876,8 +876,38 @@ function Historico({ mensagens }: { mensagens: MensagemHist[] }) {
 function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => void }) {
   const [qr, setQr] = useState<string | null>(null);
   const [conectando, setConectando] = useState(false);
+  const [reativando, setReativando] = useState(false);
+  const [resultadoWebhook, setResultadoWebhook] = useState<{ ok: boolean; texto: string } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const conectado = !!status?.loggedIn;
+
+  async function reativarRecebimento() {
+    setReativando(true);
+    setResultadoWebhook(null);
+    try {
+      const r = await fetch("/api/admin/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ acao: "webhook" }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setResultadoWebhook({
+          ok: true,
+          texto: "✅ Recebimento reativado! Mande um áudio (ou 'agenda …') na conversa Você e veja se confirma.",
+        });
+      } else {
+        setResultadoWebhook({
+          ok: false,
+          texto: "Não deu pra confirmar o registro. Detalhe técnico: " + JSON.stringify(d).slice(0, 500),
+        });
+      }
+    } catch {
+      setResultadoWebhook({ ok: false, texto: "Erro de rede ao reativar. Tente de novo." });
+    } finally {
+      setReativando(false);
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -928,6 +958,17 @@ function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => vo
           >
             Atualizar
           </button>
+          {conectado && (
+            <button
+              type="button"
+              onClick={reativarRecebimento}
+              disabled={reativando}
+              title="Reativa o recebimento de mensagens (agendar por áudio/texto)"
+              className="rounded-full border border-oliveira-300 bg-oliveira-50 px-4 py-2 text-xs font-medium text-oliveira-800 hover:bg-oliveira-100 disabled:opacity-50"
+            >
+              {reativando ? "Reativando…" : "Reativar agendamento pelo WhatsApp"}
+            </button>
+          )}
           {!conectado && (
             <button
               type="button"
@@ -949,6 +990,17 @@ function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => vo
             código. Ele expira em ~30s — se sumir, clique em <em>Gerar novo QR</em>.
           </p>
         </div>
+      )}
+      {resultadoWebhook && (
+        <p
+          className={`mt-4 break-words rounded-xl border p-3 text-sm ${
+            resultadoWebhook.ok
+              ? "border-oliveira-200 bg-oliveira-50 text-oliveira-800"
+              : "border-amber-200 bg-amber-50 text-amber-800"
+          }`}
+        >
+          {resultadoWebhook.texto}
+        </p>
       )}
     </div>
   );
