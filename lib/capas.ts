@@ -47,4 +47,5 @@ export const CAPA_LIVRO: Record<string, string> = {
   "as-cronicas-de-narnia": "/capas/as-cronicas-de-narnia.jpg",
   "plantar-igrejas": "/capas/plantar-igrejas.jpg",
   "pastoreando-coracao-crianca": "/capas/pastoreando-coracao-crianca.jpg",
+  "o-ego-e-seu-inimigo": "/capas/o-ego-e-seu-inimigo.jpg",
 };
