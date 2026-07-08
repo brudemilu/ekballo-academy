@@ -83,4 +83,12 @@ export const CAPA_LIVRO: Record<string, string> = {
   "o-problema-da-dor": "/capas/o-problema-da-dor.jpg",
   "o-grande-abismo": "/capas/o-grande-abismo.jpg",
   "prefacio-ao-paraiso-perdido": "/capas/prefacio-ao-paraiso-perdido.jpg",
+  "perdoar": "/capas/perdoar.jpg",
+  "uma-vida-com-propositos": "/capas/uma-vida-com-propositos.jpg",
+  "a-divina-revelacao-do-ceu": "/capas/a-divina-revelacao-do-ceu.jpg",
+  "a-divina-revelacao-do-inferno": "/capas/a-divina-revelacao-do-inferno.jpg",
+  "a-anatomia-de-uma-dor": "/capas/a-anatomia-de-uma-dor.jpg",
+  "entendes-o-que-les": "/capas/entendes-o-que-les.jpg",
+  "cansei": "/capas/cansei.jpg",
+  "o-jonas-que-vive-em-mim": "/capas/o-jonas-que-vive-em-mim.jpg",
 };
