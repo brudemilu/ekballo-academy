@@ -23,6 +23,20 @@ function greetingName(nome?: string | null): string {
   return parts[0];
 }
 
+// "8 de julho de 2026" — data em que a leitura foi concluída.
+function dataConclusao(iso: string): string {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(iso));
+  } catch {
+    return "";
+  }
+}
+
 export default async function DashboardPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
@@ -61,6 +75,15 @@ export default async function DashboardPage() {
   // uma seção, não vale mostrar título — cai no grid simples de antes.
   const grupos = agruparPorCategoria(cursos);
   const mostrarSecoes = grupos.length > 1;
+
+  // Livros lidos = matrículas concluídas (o trigger marca `concluido_em` quando
+  // todas as mesas do livro terminam). Vão pra uma estante própria, mais recente
+  // primeiro, com a data em que a leitura foi fechada.
+  const cursoPorId = new Map(cursos.map((c) => [c.id, c]));
+  const livrosLidos = matriculas
+    .filter((m) => m.concluido_em && cursoPorId.has(m.curso_id))
+    .map((m) => ({ curso: cursoPorId.get(m.curso_id)!, em: m.concluido_em as string }))
+    .sort((a, b) => b.em.localeCompare(a.em));
 
   const renderCard = (curso: (typeof cursos)[number]) => {
     const matricula = matriculasMap.get(curso.id);
@@ -230,6 +253,68 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {cursos.map((curso) => renderCard(curso))}
           </div>
+        )}
+
+        {/* Estante de livros lidos — só aparece quando há leitura concluída */}
+        {livrosLidos.length > 0 && (
+          <section className="mt-14 border-t border-mesa-200 pt-10">
+            <div className="mb-1 flex items-baseline gap-3">
+              <h2 className="font-serif text-2xl font-semibold text-mesa-800">
+                Livros lidos
+              </h2>
+              <span className="rounded-full bg-oliveira-100 px-2.5 py-0.5 text-xs font-semibold text-oliveira-700">
+                {livrosLidos.length}
+              </span>
+            </div>
+            <p className="mb-5 text-sm text-mesa-600">
+              As leituras que você concluiu, com a data em que fechou cada livro.
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {livrosLidos.map(({ curso, em }) => {
+                const ogUrl = imagemMap.get(curso.id);
+                const capa =
+                  CAPA_LIVRO[curso.slug] ??
+                  (ogUrl?.startsWith("/api/og/curso/")
+                    ? `${ogUrl}?formato=retrato&v=4`
+                    : ogUrl ?? null);
+                return (
+                  <Link
+                    key={curso.id}
+                    href={curso.external_path ?? `/cursos/${curso.slug}`}
+                    className="lift group flex flex-col overflow-hidden rounded-2xl border border-oliveira-200 bg-white transition hover:border-oliveira-400 hover:shadow-md"
+                  >
+                    <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-oliveira-100 via-bege-100 to-laranja-100">
+                      {capa ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={capa}
+                          alt={curso.titulo}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <Logo />
+                        </div>
+                      )}
+                      <span className="absolute left-2 top-2 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+                        ✓ Lido
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col items-center justify-center gap-1 px-2.5 py-3 text-center">
+                      <h3 className="line-clamp-2 font-serif text-sm font-semibold leading-snug text-mesa-800">
+                        {curso.titulo}
+                      </h3>
+                      <p className="text-[11px] font-medium text-oliveira-700">
+                        Concluído em {dataConclusao(em)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
         )}
       </div>
     </main>
