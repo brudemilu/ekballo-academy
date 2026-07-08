@@ -49,4 +49,12 @@ export const CAPA_LIVRO: Record<string, string> = {
   "pastoreando-coracao-crianca": "/capas/pastoreando-coracao-crianca.jpg",
   "o-ego-e-seu-inimigo": "/capas/o-ego-e-seu-inimigo.jpg",
   "louco-amor": "/capas/louco-amor.jpg",
+  "ken-ham-origem": "/capas/ken-ham-origem.jpg",
+  "kriptonita": "/capas/kriptonita.jpg",
+  "o-pastor-descartavel": "/capas/o-pastor-descartavel.jpg",
+  "o-pastor-imperfeito": "/capas/o-pastor-imperfeito.jpg",
+  "o-pastor-e-o-aconselhamento": "/capas/o-pastor-e-o-aconselhamento.jpg",
+  "pregacao-cristocentrica": "/capas/pregacao-cristocentrica.jpg",
+  "psicologia-pastoral": "/capas/psicologia-pastoral.jpg",
+  "o-pastor-segundo-deus": "/capas/o-pastor-segundo-deus.jpg",
 };
