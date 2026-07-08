@@ -57,4 +57,8 @@ export const CAPA_LIVRO: Record<string, string> = {
   "pregacao-cristocentrica": "/capas/pregacao-cristocentrica.jpg",
   "psicologia-pastoral": "/capas/psicologia-pastoral.jpg",
   "o-pastor-segundo-deus": "/capas/o-pastor-segundo-deus.jpg",
+  "o-agir-invisivel-de-deus": "/capas/o-agir-invisivel-de-deus.jpg",
+  "idolos-do-coracao": "/capas/idolos-do-coracao.jpg",
+  "lideranca-corajosa": "/capas/lideranca-corajosa.jpg",
+  "o-fator-melquesedeque": "/capas/o-fator-melquesedeque.jpg",
 };
