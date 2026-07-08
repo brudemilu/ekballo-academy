@@ -61,4 +61,6 @@ export const CAPA_LIVRO: Record<string, string> = {
   "idolos-do-coracao": "/capas/idolos-do-coracao.jpg",
   "lideranca-corajosa": "/capas/lideranca-corajosa.jpg",
   "o-fator-melquesedeque": "/capas/o-fator-melquesedeque.jpg",
+  "o-lider-que-deus-usa": "/capas/o-lider-que-deus-usa.jpg",
+  "a-historia-do-avivamento-azusa": "/capas/a-historia-do-avivamento-azusa.jpg",
 };
