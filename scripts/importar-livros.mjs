@@ -61,9 +61,11 @@ for (const slug of slugs) {
   for (const a of d.aulas) {
     const { data: aula } = await db.from("aulas").select("id").eq("curso_id", curso.id).eq("ordem", a.ordem).maybeSingle();
     if (aula) continue;
+    // Postgres não aceita byte NULL nem caracteres de controle em text; limpa antes.
+    const conteudo = a.conteudo.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "");
     const { error } = await db
       .from("aulas")
-      .insert({ curso_id: curso.id, titulo: a.titulo, ordem: a.ordem, conteudo: a.conteudo });
+      .insert({ curso_id: curso.id, titulo: a.titulo, ordem: a.ordem, conteudo });
     if (error) throw error;
   }
 }
