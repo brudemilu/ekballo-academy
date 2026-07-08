@@ -8,6 +8,7 @@ import {
   getAdminStats,
   listRecentRespostas,
   listCursosPublicados,
+  listLeiturasConcluidas,
   getMaterialUrl,
 } from "@/lib/db";
 import { agruparPorCategoria } from "@/lib/categorias";
@@ -22,15 +23,41 @@ function greetingName(nome?: string | null): string {
   return parts[0];
 }
 
+// "8 de julho de 2026" — data em que a leitura foi concluída.
+function dataConclusao(iso: string): string {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(iso));
+  } catch {
+    return "";
+  }
+}
+
+// Primeiro nome (a estante fica mais leve do que o nome completo).
+function primeiroNome(nome?: string | null): string {
+  if (!nome) return "Discípulo";
+  return nome.trim().split(/\s+/)[0] || "Discípulo";
+}
+
 export default async function AdminPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const [stats, ultimas, cursos] = await Promise.all([
+  // Só o master vê o panorama de leituras de todos os discípulos.
+  const papel =
+    session.profile?.papel || (session.profile?.is_admin ? "master" : "discipulo");
+  const isMaster = papel === "master";
+
+  const [stats, ultimas, cursos, leituras] = await Promise.all([
     getAdminStats(),
     listRecentRespostas(8),
     listCursosPublicados(),
+    isMaster ? listLeiturasConcluidas() : Promise.resolve([]),
   ]);
   const imagensResolvidas = await Promise.all(
     cursos.map((c) => getMaterialUrl(c.imagem_url))
@@ -220,6 +247,63 @@ export default async function AdminPage() {
               {cursos.map((curso) => renderCardCurso(curso))}
             </div>
           )}
+        </section>
+      )}
+
+      {/* Livros lidos — panorama pastoral: quem terminou o quê e quando */}
+      {isMaster && leituras.length > 0 && (
+        <section className="mb-10">
+          <div className="mb-1 flex items-baseline gap-3">
+            <h2 className="font-serif text-2xl font-semibold text-mesa-800">
+              Livros lidos
+            </h2>
+            <span className="rounded-full bg-oliveira-100 px-2.5 py-0.5 text-xs font-semibold text-oliveira-700">
+              {leituras.length}
+            </span>
+          </div>
+          <p className="mb-5 text-sm text-mesa-600">
+            Quem fechou um livro inteiro e a data — a leitura da mesa acontecendo.
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {leituras.map((l) => {
+              const capa = CAPA_LIVRO[l.curso_slug] ?? null;
+              return (
+                <Link
+                  key={`${l.aluno_id}-${l.curso_id}`}
+                  href={l.external_path ?? `/admin/cursos`}
+                  className="lift group flex items-center gap-3 rounded-2xl border border-oliveira-200 bg-white p-3 transition hover:border-oliveira-400 hover:shadow-md"
+                >
+                  <div className="relative h-20 w-14 flex-none overflow-hidden rounded-lg bg-gradient-to-br from-oliveira-100 via-bege-100 to-laranja-100 shadow-sm">
+                    {capa ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={capa}
+                        alt={l.curso_titulo}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-full items-center justify-center text-xl">
+                        📖
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="line-clamp-2 font-serif text-sm font-semibold leading-snug text-mesa-800">
+                      {l.curso_titulo}
+                    </h3>
+                    <p className="mt-1 truncate text-xs font-medium text-oliveira-700">
+                      {primeiroNome(l.aluno_nome)}
+                    </p>
+                    <p className="text-[11px] text-mesa-500">
+                      Concluído em {dataConclusao(l.concluido_em)}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </section>
       )}
 

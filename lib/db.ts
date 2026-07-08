@@ -1047,6 +1047,56 @@ export async function listRecentRespostas(limit = 8): Promise<RespostaRich[]> {
   return all.slice(0, limit);
 }
 
+// -------- MASTER: LIVROS LIDOS (todas as conclusões) --------
+
+export type LeituraConcluida = {
+  aluno_id: string;
+  aluno_nome: string | null;
+  curso_id: string;
+  curso_titulo: string;
+  curso_slug: string;
+  external_path: string | null;
+  concluido_em: string;
+};
+
+// Panorama pastoral: quem terminou qual livro e quando, mais recente primeiro.
+export async function listLeiturasConcluidas(): Promise<LeituraConcluida[]> {
+  if (isMockMode()) return [];
+  const supabase = await createClient();
+  const { data: mats } = await supabase
+    .from("matriculas")
+    .select("aluno_id, curso_id, concluido_em")
+    .not("concluido_em", "is", null)
+    .order("concluido_em", { ascending: false });
+  const rows = mats || [];
+  if (rows.length === 0) return [];
+
+  const alunoIds = [...new Set(rows.map((m) => m.aluno_id))];
+  const cursoIds = [...new Set(rows.map((m) => m.curso_id))];
+  const [{ data: perfis }, { data: cursos }] = await Promise.all([
+    supabase.from("profiles").select("id, nome").in("id", alunoIds),
+    supabase.from("cursos").select("id, titulo, slug, external_path").in("id", cursoIds),
+  ]);
+  const nomeById = new Map((perfis || []).map((p) => [p.id, p.nome]));
+  const cursoById = new Map((cursos || []).map((c) => [c.id, c]));
+
+  return rows
+    .map((m) => {
+      const c = cursoById.get(m.curso_id);
+      if (!c) return null;
+      return {
+        aluno_id: m.aluno_id,
+        aluno_nome: nomeById.get(m.aluno_id) ?? null,
+        curso_id: m.curso_id,
+        curso_titulo: c.titulo as string,
+        curso_slug: c.slug as string,
+        external_path: (c.external_path as string | null) ?? null,
+        concluido_em: m.concluido_em as string,
+      };
+    })
+    .filter((x): x is LeituraConcluida => x !== null);
+}
+
 // -------- ADMIN: EMAIL TEMPLATES --------
 
 export async function listEmailTemplates(): Promise<EmailTemplate[]> {
