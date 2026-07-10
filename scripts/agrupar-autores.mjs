@@ -51,6 +51,12 @@ const OVERRIDE = {
   "o-proposito-da-familia": "Luciano Subirá", "o-caminho-para-a-presenca-de-deus": "John Bevere e Lisa Bevere",
   "acesso-negado": "John Bevere", "a-isca-de-satanas": "John Bevere",
   "aviva-a-tua-obra": "Charles H. Spurgeon", "arte-da-guerra": "Sun Tzu",
+  // Leva 4:
+  "pais-e-filhos": "John MacArthur", "metanoia": "JB Carvalho", "nefarious": "Steve Deace",
+  "corajosos": "Randy Alcorn", "a-abolicao-do-homem": "C. S. Lewis",
+  "a-revolucao-da-graca": "Joseph Prince", "favor-imerecido": "Joseph Prince",
+  "destinados-a-reinar": "Joseph Prince", "100-dias-de-favor": "Joseph Prince",
+  "perfil-de-tres-reis": "Gene Edwards", "a-verdade-do-evangelho": "John Stott",
 };
 
 // Extrai autor da descrição. Âncora no ÚLTIMO ", de " / "livro de " / "por ",
