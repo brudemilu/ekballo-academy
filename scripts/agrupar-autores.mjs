@@ -41,6 +41,16 @@ const OVERRIDE = {
   "campo-batalha-mente": "Joyce Meyer", "quatro-amores": "C. S. Lewis",
   "cartas-diabo-aprendiz": "C. S. Lewis", "cristianismo-puro-simples": "C. S. Lewis",
   "ken-ham-origem": "Ken Ham", "jesuscopy": "Douglas Gonçalves",
+  // Leva 3 (09-10/07/2026):
+  "no-vale-da-sombra-da-morte": "Rúbia de Souza", "quem-e-voce-quando-ninguem-esta-olhando": "Bill Hybels",
+  "lideranca-que-prevalece": "Carlito Paes", "lideranca-inteligencia-emocional": "Daniel Goleman",
+  "muitos-lideres-pouca-lideranca": "John W. Stanko", "a-vida-crucificada": "A. W. Tozer",
+  "quarto-de-guerra": "Chris Fabry", "50-dias-copiando-jesus": "Josué Gonçalves",
+  "desqualificado": "Steven Furtick", "doze-homens-comuns": "John MacArthur",
+  "a-oracao-de-jabez": "Bruce Wilkinson", "hackeado": "Luca Martini",
+  "o-proposito-da-familia": "Luciano Subirá", "o-caminho-para-a-presenca-de-deus": "John Bevere e Lisa Bevere",
+  "acesso-negado": "John Bevere", "a-isca-de-satanas": "John Bevere",
+  "aviva-a-tua-obra": "Charles H. Spurgeon", "arte-da-guerra": "Sun Tzu",
 };
 
 // Extrai autor da descrição. Âncora no ÚLTIMO ", de " / "livro de " / "por ",
