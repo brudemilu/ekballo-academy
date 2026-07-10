@@ -57,6 +57,8 @@ const OVERRIDE = {
   "a-revolucao-da-graca": "Joseph Prince", "favor-imerecido": "Joseph Prince",
   "destinados-a-reinar": "Joseph Prince", "100-dias-de-favor": "Joseph Prince",
   "perfil-de-tres-reis": "Gene Edwards", "a-verdade-do-evangelho": "John Stott",
+  "seitas-e-heresias": "Raimundo de Oliveira", "cinco-votos-poder-espiritual": "A. W. Tozer",
+  "pregacao-pura-e-simples": "Stuart Olyott", "palestras-vida-da-igreja": "Watchman Nee",
 };
 
 // Extrai autor da descrição. Âncora no ÚLTIMO ", de " / "livro de " / "por ",

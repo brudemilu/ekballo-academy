@@ -121,4 +121,8 @@ export const CAPA_LIVRO: Record<string, string> = {
   "perfil-de-tres-reis": "/capas/perfil-de-tres-reis.jpg",
   "100-dias-de-favor": "/capas/100-dias-de-favor.jpg",
   "a-verdade-do-evangelho": "/capas/a-verdade-do-evangelho.jpg",
+  "seitas-e-heresias": "/capas/seitas-e-heresias.jpg",
+  "cinco-votos-poder-espiritual": "/capas/cinco-votos-poder-espiritual.jpg",
+  "pregacao-pura-e-simples": "/capas/pregacao-pura-e-simples.jpg",
+  "palestras-vida-da-igreja": "/capas/palestras-vida-da-igreja.jpg",
 };
