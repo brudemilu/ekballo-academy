@@ -4,7 +4,12 @@
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const build = process.env.VERCEL_GIT_COMMIT_SHA ?? "dev";
+  // Mesmo id embutido no bundle (NEXT_PUBLIC_BUILD_ID, vindo de APP_BUILD_ID no
+  // build) — inlined pelo Next em build-time, reflete a versão desta imagem.
+  const build =
+    process.env.NEXT_PUBLIC_BUILD_ID ??
+    process.env.VERCEL_GIT_COMMIT_SHA ??
+    "dev";
   return Response.json(
     { build },
     { headers: { "Cache-Control": "no-store, max-age=0" } }

@@ -60,6 +60,8 @@ function sanitizeFilename(s: string) {
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
+  // origin interno estável p/ self-fetch de assets locais (ver curso/[slug])
+  const selfOrigin = `http://127.0.0.1:${process.env.PORT ?? 3000}`;
   const diaAno = Number(url.searchParams.get("dia") || "0");
   const formato = (url.searchParams.get("f") || "feed") as Formato;
   const template = (url.searchParams.get("tema") || "pergaminho") as Template;
@@ -71,7 +73,7 @@ export async function GET(req: NextRequest) {
 
   const [dev, fonts] = await Promise.all([
     getDevocionalAnualByDia(diaAno),
-    loadFonts(url.origin),
+    loadFonts(selfOrigin),
   ]);
   if (!dev) return new Response("devocional não encontrado", { status: 404 });
 
@@ -84,7 +86,7 @@ export async function GET(req: NextRequest) {
   const bgUrl =
     bgOverride && /^https?:\/\//.test(bgOverride)
       ? bgOverride
-      : fotoFundoDoDevocional(dev, url.origin);
+      : fotoFundoDoDevocional(dev, selfOrigin);
 
   let jsx;
   if (template === "bloco") {

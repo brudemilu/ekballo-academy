@@ -37,6 +37,7 @@ function sanitizeFilename(s: string): string {
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
+  const selfOrigin = `http://127.0.0.1:${process.env.PORT ?? 3000}`;
   const verso = (url.searchParams.get("verso") || "").trim();
   const ref = (url.searchParams.get("ref") || "").trim();
   const top = url.searchParams.get("top")?.trim();
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
   const w = 1080;
   const h = formato === "story" ? 1920 : 1080;
 
-  const fonts = await loadFonts(url.origin);
+  const fonts = await loadFonts(selfOrigin);
 
   const jsx = await renderCinematografico(
     {

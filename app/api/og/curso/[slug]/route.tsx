@@ -1018,7 +1018,11 @@ export async function GET(
     });
   }
 
-  const origin = new URL(req.url).origin;
+  // Self-fetch de fontes e capas locais (/public): usar o origin INTERNO do
+  // próprio server, não o da requisição. Atrás de proxy (Traefik) o
+  // `new URL(req.url).origin` vira https na porta interna (3000, que fala HTTP)
+  // e o fetch quebra com "TLS wrong version number". 127.0.0.1:PORT é estável.
+  const origin = `http://127.0.0.1:${process.env.PORT ?? 3000}`;
   const fonts = await loadFonts(origin);
 
   const fontList = [

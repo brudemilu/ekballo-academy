@@ -50,6 +50,7 @@ async function loadFonts(origin: string): Promise<{
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
+  const selfOrigin = `http://127.0.0.1:${process.env.PORT ?? 3000}`;
   const livroId = Number(url.searchParams.get("livro") || "0");
   const cap = Number(url.searchParams.get("cap") || "0");
   const versParam = url.searchParams.get("v") || "";
@@ -72,7 +73,7 @@ export async function GET(req: NextRequest) {
   const [livro, todosDoCap, fonts] = await Promise.all([
     getLivro(livroId),
     getCapitulo(livroId, cap, versao),
-    loadFonts(url.origin),
+    loadFonts(selfOrigin),
   ]);
   if (!livro) return new Response("livro não encontrado", { status: 404 });
 
@@ -105,7 +106,7 @@ export async function GET(req: NextRequest) {
     "proposito", "mordomia", "arrependimento", "igreja", "perseveranca", "emanuel",
   ];
   const bgSeed = livroId * 1000 + cap;
-  const bgUrl = `${url.origin}/fundos/${FUNDOS[bgSeed % FUNDOS.length]}.jpg`;
+  const bgUrl = `${selfOrigin}/fundos/${FUNDOS[bgSeed % FUNDOS.length]}.jpg`;
 
   const jsx =
     tema === "cinematografico"

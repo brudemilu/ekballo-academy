@@ -23,6 +23,7 @@ async function loadFont(origin: string, file: string) {
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
+  const selfOrigin = `http://127.0.0.1:${process.env.PORT ?? 3000}`;
   const texto = (url.searchParams.get("verso") || "").trim();
   if (!texto) return new Response("parâmetro 'verso' obrigatório", { status: 400 });
   const temaKey = (url.searchParams.get("tema") || TEMA_PADRAO) as TemaKey;
@@ -49,8 +50,8 @@ export async function GET(req: NextRequest) {
   const scriptSize = Math.round(size * 0.74);
 
   const [anton, kaushan] = await Promise.all([
-    loadFont(url.origin, "anton.ttf"),
-    loadFont(url.origin, "kaushan.ttf"),
+    loadFont(selfOrigin, "anton.ttf"),
+    loadFont(selfOrigin, "kaushan.ttf"),
   ]);
 
   const baseW = {

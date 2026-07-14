@@ -52,6 +52,7 @@ function sanitizeFilename(s: string): string {
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
+  const selfOrigin = `http://127.0.0.1:${process.env.PORT ?? 3000}`;
   const verso = (url.searchParams.get("verso") || "").trim();
   const fonteKey = (url.searchParams.get("fonte") || "anton") as FonteKey;
   const realce = (url.searchParams.get("realce") || "dourado") as RealceModo;
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
   // resolve a foto: 1) Pexels (foto real, grátis e ILIMITADO) →
   //                 2) Cloudflare Flux (IA, teto diário) como reserva →
   //                 3) fallback local.
-  let bgSrc = `${url.origin}/fundos/${foto}.jpg`;
+  let bgSrc = `${selfOrigin}/fundos/${foto}.jpg`;
   if (prompt) {
     const pex = await buscarFotoPexels(prompt, seed);
     if (pex) {
@@ -110,16 +111,16 @@ export async function GET(req: NextRequest) {
   }
 
   const [displayFont, scriptFont] = await Promise.all([
-    loadFont(url.origin, FONTES[fonteKey].file),
-    loadFont(url.origin, SCRIPT_FONT_FILE),
+    loadFont(selfOrigin, FONTES[fonteKey].file),
+    loadFont(selfOrigin, SCRIPT_FONT_FILE),
   ]);
 
-  const paperSrc = `${url.origin}/fundos/${PAPEL_FILE}`;
-  const grungeSrc = `${url.origin}/texturas/${GRUNGE_FILE}`;
-  const brushSrc = `${url.origin}/texturas/${tema.brush || BRUSH_FILE}`; // pincelada do tema
-  const splatterSrc = `${url.origin}/texturas/${SPLATTER_FILE}`;
-  const paperSpecksSrc = `${url.origin}/texturas/${PAPER_SPECKS_FILE}`;
-  const fogSrc = `${url.origin}/texturas/${FOG_FILE}`;
+  const paperSrc = `${selfOrigin}/fundos/${PAPEL_FILE}`;
+  const grungeSrc = `${selfOrigin}/texturas/${GRUNGE_FILE}`;
+  const brushSrc = `${selfOrigin}/texturas/${tema.brush || BRUSH_FILE}`; // pincelada do tema
+  const splatterSrc = `${selfOrigin}/texturas/${SPLATTER_FILE}`;
+  const paperSpecksSrc = `${selfOrigin}/texturas/${PAPER_SPECKS_FILE}`;
+  const fogSrc = `${selfOrigin}/texturas/${FOG_FILE}`;
 
   const jsx = renderSlideInstagram({ texto: verso, bgSrc, paperSrc, grungeSrc, brushSrc, splatterSrc, paperSpecksSrc, fogSrc, fonteKey, realce, cor, top, ref });
 
