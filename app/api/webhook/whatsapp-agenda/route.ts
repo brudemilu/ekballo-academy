@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { addCompromisso } from "@/lib/db";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
 import { transcreverAudio } from "@/lib/agenda-audio";
+import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -45,7 +46,7 @@ function extrair(body: Record<string, unknown>) {
 }
 
 async function responder(numero: string, mensagem: string) {
-  const base = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(".supabase.co", ".functions.supabase.co");
+  const base = supabaseFunctionsBase();
   const secret = process.env.INTERNAL_SECRET;
   if (!base || !secret) return;
   try {

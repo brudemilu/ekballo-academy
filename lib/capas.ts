@@ -3,6 +3,8 @@
 // imagem OG 16:9. Mantém em sincronia com os `livroUrl` de
 // app/api/og/curso/[slug]/route.tsx.
 export const CAPA_LIVRO: Record<string, string> = {
+  "a-igreja-gloriosa": "/capas/a-igreja-gloriosa.jpg",
+  "casamento-blindado": "/capas/casamento-blindado.jpg",
   "ego-transformado-keller": "https://m.media-amazon.com/images/I/71Vb4sTcewL.jpg",
   "olhe-para-jesus": "https://m.media-amazon.com/images/I/51Mqaoc5B8L.jpg",
   "seja-um-lider-de-verdade": "https://m.media-amazon.com/images/I/71hF00oPVYL.jpg",

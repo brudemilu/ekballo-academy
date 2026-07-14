@@ -1,0 +1,1067 @@
+# FAXINA APLICADA — 136 aulas atualizadas
+
+## Os Clãs da Lua (os-clas-da-lua)
+
+- [4] Os clãs da lua  (-1 chars, 0 parág.)
+    ANTES : "— E – o homem continuou, agora com um tom galanteador que a assustou. – , preciso admitir "
+    DEPOIS: "— E – o homem continuou, agora com um tom galanteador que a assustou. –, preciso admitir q"
+
+- [5] Os clãs da Terra  (-1 chars, 0 parág.)
+    ANTES : "O jovem humano parecia estar se divertindo com o terror que haviam causado. Ele desceu as "
+    DEPOIS: "O jovem humano parecia estar se divertindo com o terror que haviam causado. Ele desceu as "
+
+- [7] A canção adormecida  (-1 chars, 0 parág.)
+    ANTES : "— Bom – o robô falou, depois de alguns momentos – , Encontrei mais de trinta canções típic"
+    DEPOIS: "— Bom – o robô falou, depois de alguns momentos –, Encontrei mais de trinta canções típica"
+
+- [9] Nubium  (-1 chars, 0 parág.)
+    ANTES : "— Cla-claro! E-eu… – , tentou pensar na desculpa ideal. — Eu quero visitar minhas cabeleir"
+    DEPOIS: "— Cla-claro! E-eu… –, tentou pensar na desculpa ideal. — Eu quero visitar minhas cabeleire"
+
+- [17] Todas as Nossas Transgressões  (-2 chars, 0 parág.)
+    ANTES : "Passou as páginas mais rapidamente, sedenta por aquelas memórias, pelas lembranças que nun"
+    DEPOIS: "Passou as páginas mais rapidamente, sedenta por aquelas memórias, pelas lembranças que nun"
+    ANTES : "— Olha – Mirya a parou no caminho. – , a ideia foi de Elliot. — Mirya?! – Elliot pareceu o"
+    DEPOIS: "— Olha – Mirya a parou no caminho. –, a ideia foi de Elliot. — Mirya?! – Elliot pareceu of"
+
+- [21] O instinto humano de sobrevivência  (-1 chars, 0 parág.)
+    ANTES : "— Identificação. – uma voz mecânica ecoou da própria pedra. — Capitão Elliot Ramsdale, da "
+    DEPOIS: "— Identificação. – uma voz mecânica ecoou da própria pedra. — Capitão Elliot Ramsdale, da "
+
+- [24] Consolo virá das estrelas  (-1 chars, 0 parág.)
+    ANTES : "E pela primeira vez entendeu: o Império Lunar havia tirado isso dela. Foi criada pelos mes"
+    DEPOIS: "E pela primeira vez entendeu: o Império Lunar havia tirado isso dela. Foi criada pelos mes"
+
+- [25] A noite incomum  (-1 chars, 0 parág.)
+    ANTES : "Ambos os robôs estavam desativados, um ao lado do outro, no canto extremo da cozinha, onde"
+    DEPOIS: "Ambos os robôs estavam desativados, um ao lado do outro, no canto extremo da cozinha, onde"
+
+- [26] A última escolhida da Gravidade  (-1 chars, 0 parág.)
+    ANTES : "“Kayla” ,uma voz sussurrou por entre os galhos da árvore. Ela olhou assustada para cima e "
+    DEPOIS: "“Kayla”,uma voz sussurrou por entre os galhos da árvore. Ela olhou assustada para cima e n"
+
+- [75] Agradecimentos  (-1 chars, 0 parág.)
+    ANTES : "Essa história surgiu de forma despretensiosa, no momento mais inesperado, mas que, coincid"
+    DEPOIS: "Essa história surgiu de forma despretensiosa, no momento mais inesperado, mas que, coincid"
+
+## A Liderança Pastoral (a-lideranca-pastoral)
+
+- [3] Parte 1: Fundamentos bíblicos e históricos  (-5 chars, -4 parág.)
+    ANTES : "NÃO SE TRATA DE UMA IDEIA NOVA: TEMAS DO"
+    DEPOIS: "NÃO SE TRATA DE UMA IDEIA NOVA: TEMAS DO ANTIGO TESTAMENTO"
+    ANTES : "ANTIGO TESTAMENTO"
+    DEPOIS: "O Senhor como pastor do seu povo"
+    ANTES : "O Senhor como pastor do seu povo"
+    DEPOIS: "“O SR[U\\_ é meu pastor, nada me faltará” (Sl 23.1, KJV)."
+    ANTES : "“O SR[U\\_ é meu pastor, nada me faltará” (Sl 23.1, KJV)."
+    DEPOIS: "A imagem bíblica do Senhor como pastor de seu povo é farta e rica em"
+
+- [4] Parte 2: O que o pastor deve fazer? Uma base abrangente para o ministério  (-3 chars, -2 parág.)
+    ANTES : "PARTE 2"
+    DEPOIS: "PARTE 2 O QUE O PASTOR DEVE FAZER? UMA BASE ABRANGENTE PARA O MINISTÉRIO"
+    ANTES : "O QUE O PASTOR DEVE FAZER? UMA BASE"
+    DEPOIS: "“Ele também escolheu Davi, seu servo, e o tirou dos rebanhos de ovelhas. […] Assim, ele os"
+    ANTES : "ABRANGENTE PARA O MINISTÉRIO"
+    DEPOIS: "78.70,72)."
+    ANTES : "“Ele também escolheu Davi, seu servo, e o tirou dos rebanhos de ovelhas. […] Assim, ele os"
+    DEPOIS: "Se você foi convencido de que os líderes eclesiásticos devem ser pastores, o"
+
+- [5] Parte 3: Juntando tudo  (-3 chars, -3 parág.)
+    ANTES : "SETE ELEMENTOS ESSENCIAIS DO MINISTÉRIO"
+    DEPOIS: "SETE ELEMENTOS ESSENCIAIS DO MINISTÉRIO PASTORAL EFICIENTE"
+    ANTES : "PASTORAL EFICIENTE"
+    DEPOIS: "Após delinear a importância de pastorear o rebanho e identiAcar as"
+    ANTES : "Após delinear a importância de pastorear o rebanho e identiAcar as"
+    DEPOIS: "funções pastorais bíblicas, é crucial desenvolver um plano para realizar esse"
+    ANTES : "funções pastorais bíblicas, é crucial desenvolver um plano para realizar esse"
+    DEPOIS: "importante trabalho. Este capítulo se concentrará em sete elementos"
+
+- [6] Conclusão  (-1 chars, 0 parág.)
+    ANTES : "aprovado] ."
+    DEPOIS: "aprovado]."
+
+- [7] Apêndice A: Recursos adicionais  (-1 chars, -1 parág.)
+    ANTES : "APÊNDICE A"
+    DEPOIS: "APÊNDICE A RECURSOS ADICIONAIS"
+    ANTES : "RECURSOS ADICIONAIS"
+    DEPOIS: "Neste apêndice, você encontrará três exemplos de ferramentas para serem"
+    ANTES : "Neste apêndice, você encontrará três exemplos de ferramentas para serem"
+    DEPOIS: "consideradas ao implementar seu plano pastoral. Elas também podem ser"
+    ANTES : "consideradas ao implementar seu plano pastoral. Elas também podem ser"
+    DEPOIS: "encontradas no site www.theshepherdleader.com, baixadas de forma gratuita"
+
+- [8] Apêndice B: “Argumentos contra o mandato para os oficiais”  (-2 chars, -2 parág.)
+    ANTES : "APÊNDICE B"
+    DEPOIS: "APÊNDICE B “ARGUMENTOS CONTRA O MANDATO PARA OS OFICIAIS”"
+    ANTES : "“ARGUMENTOS CONTRA O MANDATO PARA OS"
+    DEPOIS: "Por John Murray1"
+    ANTES : "OFICIAIS”"
+    DEPOIS: "A questão debatida neste breve artigo é se os oAciais, ao serem eleitos e"
+    ANTES : "Por John Murray1"
+    DEPOIS: "ordenados, podem ser eleitos e ordenados para o cargo por um período"
+
+## Maturidade Espiritual do Líder (maturidade-espiritual-do-lider)
+
+- [1] Página de Créditos  (-1 chars, 0 parág.)
+    ANTES : "e-ISBN: 978-65-5968-171-6 ."
+    DEPOIS: "e-ISBN: 978-65-5968-171-6."
+
+- [14] Vencendo o Radicalismo  (-1 chars, 0 parág.)
+    ANTES : "Nem sempre o termo radical ou radicalismo tem um sentido negativo. John Stott escreveu o l"
+    DEPOIS: "Nem sempre o termo radical ou radicalismo tem um sentido negativo. John Stott escreveu o l"
+
+## Até Que Sejamos Um (ate-que-sejamos-um)
+
+- [1] Capa  (-2 chars, 0 parág.)
+    ANTES : "Até que sejamos um [recurso eletrônico] / Francis Chan ; tradução Claudia Santana Martins."
+    DEPOIS: "Até que sejamos um [recurso eletrônico] / Francis Chan; tradução Claudia Santana Martins. "
+
+- [11] 8. Precisa começar aos poucos  (-1 chars, 0 parág.)
+    ANTES : "Cerca de trezentos anos após a Reforma e cerca de 175 anos atrás, o historiador da igreja "
+    DEPOIS: "Cerca de trezentos anos após a Reforma e cerca de 175 anos atrás, o historiador da igreja "
+
+## Qual a Missão da Igreja (qual-a-missao-da-igreja)
+
+- [2] Parte 1: Entendendo Nossa Missão  (-2 chars, -2 parág.)
+    ANTES : "S"
+    DEPOIS: "S CAPÍTULO 1"
+    ANTES : "CAPÍTULO 1"
+    DEPOIS: "Uma Palavra Comum que"
+    ANTES : "Uma Palavra Comum que"
+    DEPOIS: "Necessita de Uma Definição Cuidadosa"
+    ANTES : "Necessita de Uma Definição Cuidadosa"
+    DEPOIS: "“Se tudo é missão, nada é missão.”"
+
+- [3] Parte 2: Entendendo Nossas Categorias  (-5 chars, -5 parág.)
+    ANTES : "N"
+    DEPOIS: "N CAPÍTULO 3"
+    ANTES : "CAPÍTULO 3"
+    DEPOIS: "Toda a História Vendo a Narrativa Bíblica do"
+    ANTES : "Toda a História Vendo a Narrativa Bíblica do"
+    DEPOIS: "Topo do Gólgota"
+    ANTES : "Topo do Gólgota"
+    DEPOIS: "UNCA É UMA BOA IDEIA argumentar sobre um assunto bíblico – em especial, um assunto tão imp"
+
+- [4] Parte 3: Entendendo o que fazemos e por que o fazemos  (-2 chars, -2 parág.)
+    ANTES : "Q"
+    DEPOIS: "Q CAPÍTULO 9"
+    ANTES : "CAPÍTULO 9"
+    DEPOIS: "Zelosos de Boas Obras Por que e Como Fazemos o Bem, Como Pessoas e Como"
+    ANTES : "Zelosos de Boas Obras Por que e Como Fazemos o Bem, Como Pessoas e Como"
+    DEPOIS: "Igrejas"
+    ANTES : "Igrejas"
+    DEPOIS: "UANDO PESSOAS OUVEM ou leem argumentos como os que apresentamos aqui, elas respondem, freq"
+
+- [5] Epílogo  (-1 chars, -1 parág.)
+    ANTES : "C"
+    DEPOIS: "C EPÍLOGO"
+    ANTES : "EPÍLOGO"
+    DEPOIS: "Você Está Pensando em Começar um Novo Tipo de"
+    ANTES : "Você Está Pensando em Começar um Novo Tipo de"
+    DEPOIS: "Igreja? Conselho para o Jovem,"
+    ANTES : "Igreja? Conselho para o Jovem,"
+    DEPOIS: "Motivado e Missional"
+
+## Esperança em Tempos de Medo (esperanca-em-tempos-de-medo)
+
+- [4] 1. Uma certa esperança  (-10 chars, -1 parág.)
+    ANTES : "CAPÍTULO 1"
+    DEPOIS: "CAPÍTULO 1 UMA CERTA ESPERANÇA"
+    ANTES : "UMA CERTA ESPERANÇA"
+    DEPOIS: "Irmãos, lembro-vos do evangelho que vos anunciei […] Porque"
+    ANTES : "Irmãos, lembro-vos do evangelho que vos anunciei […] Porque"
+    DEPOIS: "primeiro vos entreguei o que também recebi: Cristo morreu pelos"
+    ANTES : "primeiro vos entreguei o que também recebi: Cristo morreu pelos"
+    DEPOIS: "nossos pecados, segundo as Escrituras; “e foi sepultado; e ressuscitou"
+
+- [5] 2. Uma esperança futura  (-7 chars, -1 parág.)
+    ANTES : "CAPÍTULO 2"
+    DEPOIS: "CAPÍTULO 2 UMA ESPERANÇA FUTURA"
+    ANTES : "UMA ESPERANÇA FUTURA"
+    DEPOIS: "“O tempo é chegado”, dizia ele. “O Reino de Deus está próximo."
+    ANTES : "“O tempo é chegado”, dizia ele. “O Reino de Deus está próximo."
+    DEPOIS: "Arrependam-se e creiam nas boas novas!” (Mc 1.15)"
+    ANTES : "Arrependam-se e creiam nas boas novas!” (Mc 1.15)"
+    DEPOIS: "A ressurreição de Jesus Cristo aconteceu de fato. Isso, porém, nos coloca"
+
+- [6] 3. Uma esperança gloriosa  (-8 chars, -1 parág.)
+    ANTES : "CAPÍTULO 3"
+    DEPOIS: "CAPÍTULO 3 UMA ESPERANÇA GLORIOSA"
+    ANTES : "UMA ESPERANÇA GLORIOSA"
+    DEPOIS: "Jesus lhe respondeu: “Não te disse que, se creres, verás a glória de"
+    ANTES : "Jesus lhe respondeu: “Não te disse que, se creres, verás a glória de"
+    DEPOIS: "Deus?” (Jo 11.40)."
+    ANTES : "Deus?” ( Jo 11.40)."
+    DEPOIS: "A história da glória de Deus A ressurreição não só traz o futuro para o presente como traz"
+
+- [7] 4. Uma esperança subversiva  (-5 chars, -1 parág.)
+    ANTES : "CAPÍTULO 4"
+    DEPOIS: "CAPÍTULO 4 UMA ESPERANÇA SUBVERSIVA"
+    ANTES : "UMA ESPERANÇA SUBVERSIVA"
+    DEPOIS: "Pelo contrário, Deus escolheu as coisas absurdas do mundo para"
+    ANTES : "Pelo contrário, Deus escolheu as coisas absurdas do mundo para"
+    DEPOIS: "envergonhar os sábios; e escolheu as coisas fracas do mundo para"
+    ANTES : "envergonhar os sábios; e escolheu as coisas fracas do mundo para"
+    DEPOIS: "envergonhar as fortes. Ele escolheu as coisas insigniAcantes do"
+
+- [8] 5. A Grande inversão  (-3 chars, -1 parág.)
+    ANTES : "CAPÍTULO 5"
+    DEPOIS: "CAPÍTULO 5 A GRANDE INVERSÃO"
+    ANTES : "A GRANDE INVERSÃO"
+    DEPOIS: "Cristo Jesus, que, existindo em forma de Deus, não considerou o fato"
+    ANTES : "Cristo Jesus, que, existindo em forma de Deus, não considerou o fato"
+    DEPOIS: "de ser igual a Deus algo a que devesse se apegar, mas, pelo contrário,"
+    ANTES : "de ser igual a Deus algo a que devesse se apegar, mas, pelo contrário,"
+    DEPOIS: "esvaziou a si mesmo, assumindo a forma de servo e fazendo-se"
+
+- [9] 6. Esperança pessoal: 1  (-13 chars, -1 parág.)
+    ANTES : "CAPÍTULO 6"
+    DEPOIS: "CAPÍTULO 6 ESPERANÇA PESSOAL: 1"
+    ANTES : "ESPERANÇA PESSOAL: 1"
+    DEPOIS: "A ressurreição de Jesus Cristo aconteceu de fato, mas este não é um fato"
+    ANTES : "A ressurreição de Jesus Cristo aconteceu de fato, mas este não é um fato"
+    DEPOIS: "histórico como os demais. Se eu acreditar, ou não, que Júlio César cruzou o"
+    ANTES : "histórico como os demais. Se eu acreditar, ou não, que Júlio César cruzou o"
+    DEPOIS: "Rubicão em 49 a.C., isso não muda minha vida. Crer na realidade da"
+
+- [10] 7. Esperança pessoal: 2  (-9 chars, -1 parág.)
+    ANTES : "CAPÍTULO 7"
+    DEPOIS: "CAPÍTULO 7 ESPERANÇA PESSOAL: 2"
+    ANTES : "ESPERANÇA PESSOAL: 2"
+    DEPOIS: "O encontro de Pedro com Jesus Pedro se encontrou com o Cristo ressurreto diversas vezes. E"
+    ANTES : "O encontro de Pedro com Jesus Pedro se encontrou com o Cristo ressurreto diversas vezes. E"
+    DEPOIS: "os demais discípulos — uma vez sem Tomé e outra vez com ele — quando"
+    ANTES : "os demais discípulos — uma vez sem Tomé e outra vez com ele — quando"
+    DEPOIS: "Jesus apareceu a eles (Jo 20.19-29). Jesus também apareceu a Pedro quando"
+
+- [11] 8. Esperança para você  (-3 chars, -1 parág.)
+    ANTES : "CAPÍTULO 8"
+    DEPOIS: "CAPÍTULO 8 ESPERANÇA PARA VOCÊ"
+    ANTES : "ESPERANÇA PARA VOCÊ"
+    DEPOIS: "Ele vos deu vida, estando vós mortos nas vossas transgressões e"
+    ANTES : "Ele vos deu vida, estando vós mortos nas vossas transgressões e"
+    DEPOIS: "pecados […] Mas Deus, que é rico em misericórdia, pelo imenso"
+    ANTES : "pecados […] Mas Deus, que é rico em misericórdia, pelo imenso"
+    DEPOIS: "amor com que nos amou, estando nós ainda mortos em nossos"
+
+- [12] 9. Esperança para os relacionamentos  (-1 chars, -1 parág.)
+    ANTES : "CAPÍTULO 9"
+    DEPOIS: "CAPÍTULO 9 ESPERANÇA PARA OS RELACIONAMENTOS"
+    ANTES : "ESPERANÇA PARA OS RELACIONAMENTOS"
+    DEPOIS: "Mas quando deres um banquete convida os pobres, os aleijados, os"
+    ANTES : "Mas quando deres um banquete convida os pobres, os aleijados, os"
+    DEPOIS: "mancos e os cegos; e serás bem-aventurado, pois eles não têm com"
+    ANTES : "mancos e os cegos; e serás bem-aventurado, pois eles não têm com"
+    DEPOIS: "que te retribuir. A tua retribuição será na ressurreição dos justos (Lc"
+
+- [13] 10. Esperança de justiça  (-3 chars, -1 parág.)
+    ANTES : "CAPÍTULO 10"
+    DEPOIS: "CAPÍTULO 10 ESPERANÇA DE JUSTIÇA"
+    ANTES : "ESPERANÇA DE JUSTIÇA"
+    DEPOIS: "Deus, porém, nos prometeu um novo céu e uma nova terra, onde a"
+    ANTES : "Deus, porém, nos prometeu um novo céu e uma nova terra, onde a"
+    DEPOIS: "justiça reinará (2Pe 3.13, CEV)"
+    ANTES : "justiça reinará (2Pe 3.13, CEV)"
+    DEPOIS: "No capítulo anterior, analisamos de que modo a Bíblia faz a ligação entre"
+
+- [14] 11. Esperança diante do sofrimento  (-3 chars, -1 parág.)
+    ANTES : "CAPÍTULO 11"
+    DEPOIS: "CAPÍTULO 11 ESPERANÇA DIANTE DO SOFRIMENTO"
+    ANTES : "ESPERANÇA DIANTE DO SOFRIMENTO"
+    DEPOIS: "De muito boa vontade me gloriarei nas minhas fraquezas, a Am de"
+    ANTES : "De muito boa vontade me gloriarei nas minhas fraquezas, a Am de"
+    DEPOIS: "que o poder de Cristo repouse sobre mim […] Pois, quando sou fraco,"
+    ANTES : "que o poder de Cristo repouse sobre mim […] Pois, quando sou fraco,"
+    DEPOIS: "então é que sou forte (2Co 12.9,10)"
+
+- [15] 12. Esperança para o futuro  (-1 chars, -1 parág.)
+    ANTES : "CAPÍTULO 12"
+    DEPOIS: "CAPÍTULO 12 ESPERANÇA PARA O FUTURO"
+    ANTES : "ESPERANÇA PARA O FUTURO"
+    DEPOIS: "A pedra que os construtores rejeitaram, essa se tornou a pedra"
+    ANTES : "A pedra que os construtores rejeitaram, essa se tornou a pedra"
+    DEPOIS: "angular. Foi o SR[U\\_ quem fez isso, e é maravilhoso aos nossos"
+    ANTES : "angular. Foi o SR[U\\_ quem fez isso, e é maravilhoso aos nossos"
+    DEPOIS: "olhos (Sl 118.22,23)"
+
+- [16] Epílogo: A pedra angular e as trevas  (-2 chars, -2 parág.)
+    ANTES : "EPÍLOGO"
+    DEPOIS: "EPÍLOGO A PEDRA ANGULAR E AS TREVAS"
+    ANTES : "A PEDRA ANGULAR E AS TREVAS"
+    DEPOIS: "“A pedra que foi rejeitada tornou-se a pedra angular de todo um novo"
+    ANTES : "“A pedra que foi rejeitada tornou-se a pedra angular de todo um novo"
+    DEPOIS: "mundo”, Noel Paul Stookey (1977)."
+    ANTES : "mundo”, Noel Paul Stookey (1977)."
+    DEPOIS: "O texto de Salmos 118.21-23 usa uma metáfora notável que tem"
+
+## Cosmovisões em Conflito (cosmovisoes-em-conflito)
+
+- [6] Capítulo 4. UM OLHAR ADICIONAL NO TESTE DA RAZÃO  (-1 chars, -1 parág.)
+    ANTES : "B"
+    DEPOIS: "B NÃO B"
+    ANTES : "NÃO B"
+    DEPOIS: "Não B é o que chamamos de classe complementar de B. Simplesmente significa que se, por exe"
+    ANTES : "Não B é o que chamamos de classe complementar de B. Simplesmente significa que se, por exe"
+    DEPOIS: "Ora, tudo o que a lei da não contradição diz é o seguinte: se algo, alguma coisa (chame-a "
+    ANTES : "Ora, tudo o que a lei da não contradição diz é o seguinte: se algo, alguma coisa (chame-a "
+    DEPOIS: "Considere um exemplo que torna o significado disso tudo óbvio: é impossível Sócrates ser t"
+
+## Chega de Regras (chega-de-regras)
+
+- [3] Primeira parte:
+Um novo estilo de vida  (-1 chars, 0 parág.)
+    ANTES : "Decidi tornar-me seguidor de Jesus aos oito anos, quando um monitor do acampamento deu ins"
+    DEPOIS: "Decidi tornar-me seguidor de Jesus aos oito anos, quando um monitor do acampamento deu ins"
+
+- [6] Quarta parte:
+Deixe a revolução começar  (-1 chars, 0 parág.)
+    ANTES : "Se vivermos no novo caminho, passaremos tempo lendo a Escritura, não para dominar seu cont"
+    DEPOIS: "Se vivermos no novo caminho, passaremos tempo lendo a Escritura, não para dominar seu cont"
+
+## Não Apagueis o Espírito (nao-apagueis-o-espirito)
+
+- [4] CAPÍTULO 1 DEFININDO PROFECIA  (-1 chars, -1 parág.)
+    ANTES : "ANTES DE TUDO, ORE!"
+    DEPOIS: "ANTES DE TUDO, ORE! EDIFICAR, EXORTAR E CONSOLAR!"
+    ANTES : "EDIFICAR, EXORTAR E CONSOLAR!"
+    DEPOIS: "Sabemos pela instrução apostólica que a principal função do dom de profecia é edificar, ex"
+    ANTES : "Sabemos pela instrução apostólica que a principal função do dom de profecia é edificar, ex"
+    DEPOIS: "“Mas o que profetiza fala aos homens, edificando, exortando e consolando.” 1 Coríntios 14."
+    ANTES : "“Mas o que profetiza fala aos homens, edificando, exortando e consolando.” 1 Coríntios 14."
+    DEPOIS: "Edificar – Construir, estruturar, confirmar, fortalecer e tornar mais eficaz. Exortar – Es"
+
+## Para que Todos Sejam Um (para-que-todos-sejam-um)
+
+- [1] PREFÁCIO  (-1 chars, -1 parág.)
+    ANTES : "PREFÁCIO"
+    DEPOIS: "PREFÁCIO O"
+    ANTES : "O"
+    DEPOIS: "s propósitos do autor, enunciados com clareza no índice, são plenamente al­ cançados: Para"
+    ANTES : "s propósitos do autor, enunciados com clareza no índice, são plenamente al­ cançados: Para"
+    DEPOIS: "de comunicação sobre uma faixa enorme es­ tendida quase sem interrupção da Ásia Cen­ tral "
+    ANTES : "de comunicação sobre uma faixa enorme es­ tendida quase sem interrupção da Ásia Cen­ tral "
+    DEPOIS: "8 Para que todos sejam um"
+
+- [2] INTRODUÇÃO  (-2 chars, -1 parág.)
+    ANTES : "INTRODUÇÃO"
+    DEPOIS: "INTRODUÇÃO O"
+    ANTES : "O"
+    DEPOIS: "fecundo labor, a condução, a escola, os afazeres, enfim, a luta pela sobrevivên­ cia, faze"
+    ANTES : "fecundo labor, a condução, a escola, os afazeres, enfim, a luta pela sobrevivên­ cia, faze"
+    DEPOIS: "dos com os nossos ideais, ou mesmo com as atividades seculares da igreja, que acabamos esq"
+    ANTES : "dos com os nossos ideais, ou mesmo com as atividades seculares da igreja, que acabamos esq"
+    DEPOIS: "12 Para que todos sejam um"
+
+- [4] VOCÊ SABE O QUE É COMUNHÃO?  (-2 chars, -1 parág.)
+    ANTES : "VOCÊ SABE O QUE É COMUNHÃO?"
+    DEPOIS: "VOCÊ SABE O QUE É COMUNHÃO? O"
+    ANTES : "O"
+    DEPOIS: "conceito de unidade cristã, tal como a Bíblia o apresenta, assume definições várias. Desta"
+    ANTES : "conceito de unidade cristã, tal como a Bíblia o apresenta, assume definições várias. Desta"
+    DEPOIS: "Comunhão é participação"
+    ANTES : "Comunhão é participação"
+    DEPOIS: "Um relacionamento capaz de permitir uma participação de vida em comum, isto é co­ munhão! "
+
+- [5] FUNDAMENTOS DA UNIDADE CRISTÃ  (-2 chars, 0 parág.)
+    ANTES : "m es estabelecidos pelo hom em . Indis­ cutivelmente, existem igrejas locais que es­ tão, "
+    DEPOIS: "m es estabelecidos pelo hom em. Indis­ cutivelmente, existem igrejas locais que es­ tão, d"
+    ANTES : "teve uma boa resposta ao seu apelo feito nesta primeira carta aos tessalonicenses, pois ma"
+    DEPOIS: "teve uma boa resposta ao seu apelo feito nesta primeira carta aos tessalonicenses, pois ma"
+
+- [6] UNIDOS PELA CRUZ  (-1 chars, -1 parág.)
+    ANTES : "UNIDOS PELA CRUZ"
+    DEPOIS: "UNIDOS PELA CRUZ A"
+    ANTES : "A"
+    DEPOIS: "comunhão dos salvos é, positivamente, um resultado da cruz. Na cruz reside o acesso exclus"
+    ANTES : "comunhão dos salvos é, positivamente, um resultado da cruz. Na cruz reside o acesso exclus"
+    DEPOIS: "tado de crucificados para a vida centrada no eu, que serve apenas para insuflar divisões. "
+    ANTES : "tado de crucificados para a vida centrada no eu, que serve apenas para insuflar divisões. "
+    DEPOIS: "48 Para que todos sejam um"
+
+- [7] É FÁCIL DIVIDIR!  (-1 chars, -1 parág.)
+    ANTES : "É FÁCIL DIVIDIR!"
+    DEPOIS: "É FÁCIL DIVIDIR! S"
+    ANTES : "S"
+    DEPOIS: "e o plano de Deus sempre foi o de unifi­ car o seu povo, por que existem tantas divisões? "
+    ANTES : "e o plano de Deus sempre foi o de unifi­ car o seu povo, por que existem tantas divisões? "
+    DEPOIS: "Individualismo acentuado"
+    ANTES : "Individualismo acentuado"
+    DEPOIS: "Diótrefes foi, com toda certeza, um dos principais inimigos da comunhão vivenciada pela ig"
+
+- [8] OS SETE LAÇOS DA UNIDADE  (-1 chars, -1 parág.)
+    ANTES : "OS SETE LAÇOS DA UNIDADE"
+    DEPOIS: "OS SETE LAÇOS DA UNIDADE * E"
+    ANTES : "* E"
+    DEPOIS: "confortador saber que a despeito da confusão eclesiástica que se faz sentir em nossos dias"
+    ANTES : "confortador saber que a despeito da confusão eclesiástica que se faz sentir em nossos dias"
+    DEPOIS: "é sobre todos, e por todos e em todos” (Efésios 4:4-6). Analisemos, separadamente, estes v"
+    ANTES : "é sobre todos, e por todos e em todos” (Efésios 4:4-6). Analisemos, separadamente, estes v"
+    DEPOIS: "Primeiro laço: um só corpo"
+
+- [9] PRÁTICAS  (-1 chars, -1 parág.)
+    ANTES : "PRÁTICAS REVOLUCIONÁRIAS"
+    DEPOIS: "PRÁTICAS REVOLUCIONÁRIAS U"
+    ANTES : "U"
+    DEPOIS: "m erro comum da igreja evangélica do Século XX tem sido o esquecimento acentuado de atitud"
+    ANTES : "m erro comum da igreja evangélica do Século XX tem sido o esquecimento acentuado de atitud"
+    DEPOIS: "A prática da consolação"
+    ANTES : "A prática da consolação"
+    DEPOIS: "O consolador é alguém que se aproxima de outrem com um coração cheio de estímulo."
+
+- [10] REVOLUCIONÁRIAS  (-1 chars, -1 parág.)
+    ANTES : "PRÁTICAS REVOLUCIONÁRIAS"
+    DEPOIS: "PRÁTICAS REVOLUCIONÁRIAS U"
+    ANTES : "U"
+    DEPOIS: "m erro comum da igreja evangélica do Século XX tem sido o esquecimento acentuado de atitud"
+    ANTES : "m erro comum da igreja evangélica do Século XX tem sido o esquecimento acentuado de atitud"
+    DEPOIS: "A prática da consolação"
+    ANTES : "A prática da consolação"
+    DEPOIS: "O consolador é alguém que se aproxima de outrem com um coração cheio de estímulo."
+
+- [11] O QUE TEMOS EM COMUM  (-1 chars, -1 parág.)
+    ANTES : "O QUE TEMOS EM COMUM"
+    DEPOIS: "O QUE TEMOS EM COMUM C"
+    ANTES : "C"
+    DEPOIS: "erca de duas dezenas de vezes surge nas páginas do Novo Testamento o vocábu­ lo KOINONIA; "
+    ANTES : "erca de duas dezenas de vezes surge nas páginas do Novo Testamento o vocábu­ lo KOINONIA; "
+    DEPOIS: "A mesma cidadania"
+    ANTES : "A mesma cidadania"
+    DEPOIS: "Somos um povo vinculado aos céus e, por fazer parte das fileiras dos cidadãos celestiais, "
+
+- [12] COMUNHÃO SEM MÁSCARAS  (-1 chars, -1 parág.)
+    ANTES : "COMUNHÃO SEM MÁSCARAS"
+    DEPOIS: "COMUNHÃO SEM MÁSCARAS C"
+    ANTES : "C"
+    DEPOIS: "omo haverá luz numa comunidade, por tênue que seja, se sombras de hipocrisia pairam sobre "
+    ANTES : "omo haverá luz numa comunidade, por tênue que seja, se sombras de hipocrisia pairam sobre "
+    DEPOIS: "dos e completamente banidos da espontanei­ dade de espírito, tão salutar à comunhão. Consu"
+    ANTES : "dos e completamente banidos da espontanei­ dade de espírito, tão salutar à comunhão. Consu"
+    DEPOIS: "92 Para que todos sejam um"
+
+- [13] COMUNHÃO E PARTILHA  (-1 chars, -1 parág.)
+    ANTES : "COMUNHÃO E PARTILHA"
+    DEPOIS: "COMUNHÃO E PARTILHA R"
+    ANTES : "R"
+    DEPOIS: "eduzir a unidade cristã à uma concep­ ção puramente abstrata é, convenha­ mos, distanciar-"
+    ANTES : "eduzir a unidade cristã à uma concep­ ção puramente abstrata é, convenha­ mos, distanciar-"
+    DEPOIS: "Senhor empresta o que se compadece do po­ bre, e ele lhe pagará o seu beneficio” (Provér­ "
+    ANTES : "Senhor empresta o que se compadece do po­ bre, e ele lhe pagará o seu beneficio” (Provér­ "
+    DEPOIS: "98 Para que todos sejam um"
+
+- [15] IGREJA, UMA FAMÍLIA QUE AMA  (-1 chars, -1 parág.)
+    ANTES : "IGREJA, UMA FAMÍLIA QUE AMA"
+    DEPOIS: "IGREJA, UMA FAMÍLIA QUE AMA A"
+    ANTES : "A"
+    DEPOIS: "igreja é a expressão literal do Corpo de Cristo! O Credo Apostólico define-a como “a comu­"
+    ANTES : "igreja é a expressão literal do Corpo de Cristo! O Credo Apostólico define-a como “a comu­"
+    DEPOIS: "seja conhecida dos principados e potestades nos céus, segundo o eterno propósito que fez e"
+    ANTES : "seja conhecida dos principados e potestades nos céus, segundo o eterno propósito que fez e"
+    DEPOIS: "110 Para que todos sejam um"
+
+- [16] A QUESTÃO ECUMÊNICA  (-1 chars, -1 parág.)
+    ANTES : "A QUESTÃO ECUMÊNICA"
+    DEPOIS: "A QUESTÃO ECUMÊNICA D"
+    ANTES : "D"
+    DEPOIS: "e todos os problemas relativos à unida­ de cristã, talvez o mais espinhoso e controverso s"
+    ANTES : "e todos os problemas relativos à unida­ de cristã, talvez o mais espinhoso e controverso s"
+    DEPOIS: "posta a ceder, diante do retorno à pregação e prática do evangelho genuíno, uma vez que is"
+    ANTES : "posta a ceder, diante do retorno à pregação e prática do evangelho genuíno, uma vez que is"
+    DEPOIS: "116 Para que todos sejam um"
+
+## O Espírito Santo — 10 Sermões sobre o Consolador (o-espirito-santo-consolador)
+
+- [11] 10. A pomba de Gênesis retrata o Espírito Santo: rejeitada pela corrupção  (-1 chars, 0 parág.)
+    ANTES : "Deixe-me compartilhar uma história verdadeira com você. Certa vez, viajava de trem , e ent"
+    DEPOIS: "Deixe-me compartilhar uma história verdadeira com você. Certa vez, viajava de trem, e entã"
+
+## Surpreendido por Deus (surpreendido-por-deus)
+
+- [1] Prefácio  (-1 chars, -1 parág.)
+    ANTES : "E"
+    DEPOIS: "E PREFÁCIO"
+    ANTES : "PREFÁCIO"
+    DEPOIS: "u me pergunto se você associa as palavras “maravilha” e “compaixão” com a palavra “doutrin"
+    ANTES : "u me pergunto se você associa as palavras “maravilha” e “compaixão” com a palavra “doutrin"
+    DEPOIS: "Assim, quando Jesus viu as multidões que eram “como ovelhas sem pastor”, Marcos nos diz qu"
+    ANTES : "Assim, quando Jesus viu as multidões que eram “como ovelhas sem pastor”, Marcos nos diz qu"
+    DEPOIS: "Isso é o que Jesus fez mais do que qualquer outra coisa, ele ensinou. “E percorria Jesus t"
+
+- [2] Deus é  (-2 chars, -2 parág.)
+    ANTES : "M"
+    DEPOIS: "M CAPÍTULO 1 DEUS É"
+    ANTES : "CAPÍTULO 1 DEUS É"
+    DEPOIS: "eu objetivo final nos dez capítulos deste livro é espalhar uma paixão pela supremacia de D"
+    ANTES : "eu objetivo final nos dez capítulos deste livro é espalhar uma paixão pela supremacia de D"
+    DEPOIS: "Sob esse objetivo geral, minha intenção é despertar e fortalecer em você uma poderosa conv"
+    ANTES : "Sob esse objetivo geral, minha intenção é despertar e fortalecer em você uma poderosa conv"
+    DEPOIS: "Portanto, pareceu-me bem, com o encorajamento da equipe pastoral de Bethlehem, voltar a no"
+
+- [3] A Glória de Deus  (-1 chars, -1 parág.)
+    ANTES : "A"
+    DEPOIS: "A CAPÍTULO 2 A GLÓRIA DE DEUS"
+    ANTES : "CAPÍTULO 2 A GLÓRIA DE DEUS"
+    DEPOIS: "pós a pergunta do capítulo 1: “Deus existe?” — a qual que Deus responde: “Eu sou” (Ex 3.14"
+    ANTES : "pós a pergunta do capítulo 1: “Deus existe?” — a qual que Deus responde: “Eu sou” (Ex 3.14"
+    DEPOIS: "A resposta breve que ressoa por toda a Bíblia como um trovão é: Deus criou o mundo para a "
+    ANTES : "A resposta breve que ressoa por toda a Bíblia como um trovão é: Deus criou o mundo para a "
+    DEPOIS: "Observe os versículos-chave em Isaías 43.6b-7: “Trazei meus filhos de longe e minhas filha"
+
+- [4] Hedonismo Cristão  (-1 chars, -1 parág.)
+    ANTES : "P"
+    DEPOIS: "P CAPÍTULO 3 HEDONISMO CRISTÃO"
+    ANTES : "CAPÍTULO 3 HEDONISMO CRISTÃO"
+    DEPOIS: "ermita-me ser claro desde o início: a Igreja Batista Bethlehem não foi edificada em torno "
+    ANTES : "ermita-me ser claro desde o início: a Igreja Batista Bethlehem não foi edificada em torno "
+    DEPOIS: "Então, o ponto central desse capítulo não é de forma alguma defender um rótulo ou um sloga"
+    ANTES : "Então, o ponto central desse capítulo não é de forma alguma defender um rótulo ou um sloga"
+    DEPOIS: "Logo, esse capítulo está repleto de algumas das coisas mais interessantes e maravilhosas q"
+
+- [5] A soberania de Deus  (-1 chars, -1 parág.)
+    ANTES : "U"
+    DEPOIS: "U CAPÍTULO 4 A SOBERANIA DE DEUS"
+    ANTES : "CAPÍTULO 4 A SOBERANIA DE DEUS"
+    DEPOIS: "ma das ênfases teológicas mais fundamentais de todos esses trinta anos é a inestimável ver"
+    ANTES : "ma das ênfases teológicas mais fundamentais de todos esses trinta anos é a inestimável ver"
+    DEPOIS: "Em Isaías 46.9, Deus diz: “Eu sou Deus, e não há outro, eu sou Deus, e não há outro semelh"
+    ANTES : "Em Isaías 46.9, Deus diz: “Eu sou Deus, e não há outro, eu sou Deus, e não há outro semelh"
+    DEPOIS: "O QUE SIGNIFICA SER DEUS Deus nos diz o que significa ser o único Deus. Ele nos diz o que "
+
+- [7] O Chamado Às Missões Globais  (-2 chars, -2 parág.)
+    ANTES : "E"
+    DEPOIS: "E CAPÍTULO 6 O CHAMADO ÀS MISSÕES GLOBAIS"
+    ANTES : "CAPÍTULO 6 O CHAMADO ÀS MISSÕES GLOBAIS"
+    DEPOIS: "m 1890, a Igreja Batista Bethlehem (uma Igreja Batista sueca de 29 anos na época) enviou o"
+    ANTES : "m 1890, a Igreja Batista Bethlehem (uma Igreja Batista sueca de 29 anos na época) enviou o"
+    DEPOIS: "Os Kachin eram completamente analfabetos, e não tinham língua escrita. Pelos 30 anos segui"
+    ANTES : "Os Kachin eram completamente analfabetos, e não tinham língua escrita. Pelos 30 anos segui"
+    DEPOIS: "Em uma carta de 14 de agosto daquele ano, Hanson escreveu: “É com sincera gratidão que dep"
+
+- [8] Vivendo a vida cristã  (-1 chars, -1 parág.)
+    ANTES : "MAIS SOBRE A VIDA CRISTÃ"
+    DEPOIS: "MAIS SOBRE A VIDA CRISTÃ CONSTRUA SUA VIDA SOBRE AS MISERICÓRDIAS DE DEUS"
+    ANTES : "CONSTRUA SUA VIDA SOBRE AS MISERICÓRDIAS DE DEUS"
+    DEPOIS: "“Rogo-vos, pois, irmãos, pelas misericórdias de Deus, que apresenteis o vosso"
+    ANTES : "“Rogo-vos, pois, irmãos, pelas misericórdias de Deus, que apresenteis o vosso"
+    DEPOIS: "corpo por sacrifício vivo, santo e agradável a Deus, que é o vosso culto racional”"
+    ANTES : "corpo por sacrifício vivo, santo e agradável a Deus, que é o vosso culto racional”"
+    DEPOIS: "(Rm 12.1). Pense nisto: de todas as coisas que Paulo poderia ter escolhido de Romanos 1-11"
+
+- [9] A perseverança dos santos  (-1 chars, -1 parág.)
+    ANTES : "E"
+    DEPOIS: "E CAPÍTULO 8 A PERSEVERANÇA DOS SANTOS"
+    ANTES : "CAPÍTULO 8 A PERSEVERANÇA DOS SANTOS"
+    DEPOIS: "ventos de revolta e tumulto em todo o mundo devem servir como um aviso para nós de que che"
+    ANTES : "ventos de revolta e tumulto em todo o mundo devem servir como um aviso para nós de que che"
+    DEPOIS: "O profeta Daniel descreve uma época em que um dos governantes dos últimos dias “proferirá "
+    ANTES : "O profeta Daniel descreve uma época em que um dos governantes dos últimos dias “proferirá "
+    DEPOIS: "A questão crucial para você nestes dias — e naqueles dias — é: “você perseverará?”. Sua fé"
+
+- [10] Masculinidade e feminilidade bíblicas  (-2 chars, -2 parág.)
+    ANTES : "U"
+    DEPOIS: "U CAPÍTULO 9 MASCULINIDADE E FEMINILIDADE BÍBLICAS"
+    ANTES : "CAPÍTULO 9 MASCULINIDADE E FEMINILIDADE BÍBLICAS"
+    DEPOIS: "ma das ênfases teológicas de trinta anos de ministério da Igreja Batista Bethlehem é a man"
+    ANTES : "ma das ênfases teológicas de trinta anos de ministério da Igreja Batista Bethlehem é a man"
+    DEPOIS: "A intenção com a palavra “complementarista” é localizar o nosso modo de vida entre dois ti"
+    ANTES : "A intenção com a palavra “complementarista” é localizar o nosso modo de vida entre dois ti"
+    DEPOIS: "Assim, os complementaristas resistem aos impulsos de uma cultura chauvinista, dominadora e"
+
+- [11] Entristecidos, mas sempre alegres  (-2 chars, -2 parág.)
+    ANTES : "D"
+    DEPOIS: "D CAPÍTULO 10 ENTRISTECIDOS, MAS SEMPRE ALEGRES"
+    ANTES : "CAPÍTULO 10 ENTRISTECIDOS, MAS SEMPRE ALEGRES"
+    DEPOIS: "eixe-me dizer aqui, logo no início, o ponto principal deste capítulo. É este: O que o mund"
+    ANTES : "eixe-me dizer aqui, logo no início, o ponto principal deste capítulo. É este: O que o mund"
+    DEPOIS: "O QUE O MUNDO PRECISA VER EM NÓS Em meu tempo na Igreja Batista Bethlehem, eu busquei dura"
+    ANTES : "O QUE O MUNDO PRECISA VER EM NÓS Em meu tempo na Igreja Batista Bethlehem, eu busquei dura"
+    DEPOIS: "Diante dessa realidade bíblica de estarmos “entristecidos, mas sempre alegres” que eu fico"
+
+## A Obra Consumada de Cristo (a-obra-consumada-de-cristo)
+
+- [3] 2. A pessoa sem a Bíblia: culpada (1.18—2.16)  (-1 chars, 0 parág.)
+    ANTES : "Embora esta passagem inclua uma mudança de capítulo, ela realmente inicia uma nova parte. "
+    DEPOIS: "Embora esta passagem inclua uma mudança de capítulo, ela realmente inicia uma nova parte. "
+
+- [5] 4. O mundo todo: culpado (3.9-20)  (-1 chars, 0 parág.)
+    ANTES : "Essas palavras de Paulo são bastante concretas, e também são bem pessoais. Nós já vimos es"
+    DEPOIS: "Essas palavras de Paulo são bastante concretas, e também são bem pessoais. Nós já vimos es"
+
+- [7] 6. Justificação antes da cruz (3.31—4.25)  (-1 chars, 0 parág.)
+    ANTES : "Mesmo nos tempos do Antigo Testamento Deus mostrava ao seu povo, de diversas maneiras, que"
+    DEPOIS: "Mesmo nos tempos do Antigo Testamento Deus mostrava ao seu povo, de diversas maneiras, que"
+
+- [8] 7. O resultado da justificação: paz com Deus (5.1-11)  (-2 chars, 0 parág.)
+    ANTES : "Precisamos ler novamente o nosso trecho-chave, em toda a sua extensão: “Pois não me enverg"
+    DEPOIS: "Precisamos ler novamente o nosso trecho-chave, em toda a sua extensão: “Pois não me enverg"
+    ANTES : "Outro pensamento que nos ajuda a entender este assunto encontra-se na carta de Paulo aos E"
+    DEPOIS: "Outro pensamento que nos ajuda a entender este assunto encontra-se na carta de Paulo aos E"
+
+- [10] 9. A luta do cristão contra o pecado: I (6.1-23)  (-2 chars, 0 parág.)
+    ANTES : "Então, como eu posso me apropriar de tudo isso? A resposta está no versículo 11: ”Assim ta"
+    DEPOIS: "Então, como eu posso me apropriar de tudo isso? A resposta está no versículo 11:”Assim tam"
+    ANTES : "Uma melhor tradução do grego seria ”Pois, enquanto vocês ainda eram servos do pecado, eram"
+    DEPOIS: "Uma melhor tradução do grego seria”Pois, enquanto vocês ainda eram servos do pecado, eram "
+
+- [12] 11. Vida no Espírito (8.1-17)  (-3 chars, 0 parág.)
+    ANTES : "Deus nos salvou para que um dia pudéssemos estar com ele para sempre no céu. Mas ele també"
+    DEPOIS: "Deus nos salvou para que um dia pudéssemos estar com ele para sempre no céu. Mas ele també"
+    ANTES : "“Se alguém não tem o Espírito de Cristo, esse tal não é dele.” Uma vez que você aceitou Cr"
+    DEPOIS: "“Se alguém não tem o Espírito de Cristo, esse tal não é dele.” Uma vez que você aceitou Cr"
+    ANTES : "Nos versículos 5-11, Paulo nos lembrava do fato de que a salvação é algo absoluto. Quando "
+    DEPOIS: "Nos versículos 5-11, Paulo nos lembrava do fato de que a salvação é algo absoluto. Quando "
+
+- [13] 12. Crentes ressurretos, criação restaurada (8.18-25)  (-1 chars, 0 parág.)
+    ANTES : "Concluindo, voltamos ao nosso versículo-chave: “Pois não me envergonho do evangelho, porqu"
+    DEPOIS: "Concluindo, voltamos ao nosso versículo-chave: “Pois não me envergonho do evangelho, porqu"
+
+## Até que Nada Mais Importe (ate-que-nada-mais-importe)
+
+- [6] A reciprocidade de Deus  (-1 chars, 0 parág.)
+    ANTES : "Veio o Espírito de Deus sobre Azarias, filho de Odede. Este saiu ao encontro de Asa e lhe "
+    DEPOIS: "Veio o Espírito de Deus sobre Azarias, filho de Odede. Este saiu ao encontro de Asa e lhe "
+
+- [8] Fascinados por Deus  (-1 chars, 0 parág.)
+    ANTES : "Penso que isso se deva a um fato, claramente revelado nas Escrituras, embora nem sempre pe"
+    DEPOIS: "Penso que isso se deva a um fato, claramente revelado nas Escrituras, embora nem sempre pe"
+
+- [10] Manancial ou cisterna?  (-1 chars, 0 parág.)
+    ANTES : "Há uma renovação diária não só das misericórdias divinas, mas do nosso ser interior. Paulo"
+    DEPOIS: "Há uma renovação diária não só das misericórdias divinas, mas do nosso ser interior. Paulo"
+
+- [12] Vivendo de aparência  (-1 chars, 0 parág.)
+    ANTES : "Não quer dizer que todo pecador que não seja religioso vai se arrepender. Mas ele está men"
+    DEPOIS: "Não quer dizer que todo pecador que não seja religioso vai se arrepender. Mas ele está men"
+
+- [13] Vidas preciosas demais  (-1 chars, 0 parág.)
+    ANTES : "Desde o início da história humana, o grande conflito que nós, humanos, temos com Deus é um"
+    DEPOIS: "Desde o início da história humana, o grande conflito que nós, humanos, temos com Deus é um"
+
+## Como Orar (como-orar-lewis)
+
+- [2] Podemos provar que a oração funciona?  (-1 chars, -1 parág.)
+    ANTES : "PODEMOS PROVAR QUE"
+    DEPOIS: "PODEMOS PROVAR QUE A ORAÇÃO FUNCIONA?"
+    ANTES : "A ORAÇÃO FUNCIONA?"
+    DEPOIS: "A última noite do mundo"
+    ANTES : "A última noite do mundo"
+    DEPOIS: "(do capítulo intitulado “A eficácia da oração”)"
+    ANTES : "(do capítulo intitulado “A eficácia da oração”)"
+    DEPOIS: "H"
+
+- [4] Nossa oração depende de quão sincera e profundamente oramos?  (-3 chars, -3 parág.)
+    ANTES : "NOSSA ORAÇÃO DEPENDE"
+    DEPOIS: "NOSSA ORAÇÃO DEPENDE DE QUÃO SINCERA E PROFUNDAMENTE ORAMOS?"
+    ANTES : "DE QUÃO SINCERA E"
+    DEPOIS: "Surprised by Joy [Surpreendido pela alegria]"
+    ANTES : "PROFUNDAMENTE"
+    DEPOIS: "(do capítulo 4, “I broaden my mind” [Horizontes"
+    ANTES : "ORAMOS?"
+    DEPOIS: "ampliados])"
+
+- [5] Não agimos com presunção ao levar preocupações a Deus em oração?  (-1 chars, -1 parág.)
+    ANTES : "NÃO AGIMOS COM PRESUNÇÃO AO LEVAR PREOCUPAÇÕES A DEUS EM"
+    DEPOIS: "NÃO AGIMOS COM PRESUNÇÃO AO LEVAR PREOCUPAÇÕES A DEUS EM ORAÇÃO?"
+    ANTES : "ORAÇÃO?"
+    DEPOIS: "Cartas a Malcolm"
+    ANTES : "Cartas a Malcolm"
+    DEPOIS: "(Carta IV)"
+    ANTES : "(Carta IV)"
+    DEPOIS: "P"
+
+- [6] Como a oração corrobora com a ideia da providência divina? Pedimos por milagres ao orar?  (-1 chars, -1 parág.)
+    ANTES : "COMO A ORAÇÃO CORROBORA COM A IDEIA DA PROVIDÊNCIA DIVINA? PEDIMOS POR MILAGRES AO"
+    DEPOIS: "COMO A ORAÇÃO CORROBORA COM A IDEIA DA PROVIDÊNCIA DIVINA? PEDIMOS POR MILAGRES AO ORAR?"
+    ANTES : "ORAR?"
+    DEPOIS: "Miracles"
+    ANTES : "Miracles"
+    DEPOIS: "[Milagres]"
+    ANTES : "[Milagres]"
+    DEPOIS: "(do Epílogo B: “On ‘Special Providences’”"
+
+- [8] Quais são as dicas para que eu evite Deus e a oração?  (-6 chars, -6 parág.)
+    ANTES : "QUAIS SÃO AS DICAS PARA"
+    DEPOIS: "QUAIS SÃO AS DICAS PARA QUE EU EVITE DEUS E A ORAÇÃO?"
+    ANTES : "QUE EU EVITE DEUS E A"
+    DEPOIS: "(Uma perspectiva diabólica)"
+    ANTES : "ORAÇÃO?"
+    DEPOIS: "Nota do editor: Em Cartas de um diabo a seu aprendiz, Lewis escreve pelo personagem de um "
+    ANTES : "(Uma perspectiva diabólica)"
+    DEPOIS: "aconselhando seu aprendiz mais jovem, Vermelindo, responsável por tentar determinado ser h"
+
+- [9] Como fazemos da oração uma pratica regular?  (-2 chars, -1 parág.)
+    ANTES : "COMO FAZEMOS DA ORAÇÃO UMA PRÁTICA"
+    DEPOIS: "COMO FAZEMOS DA ORAÇÃO UMA PRÁTICA REGULAR?"
+    ANTES : "REGULAR?"
+    DEPOIS: "“Letters to an American Lady”"
+    ANTES : "“Letters to an American Lady”"
+    DEPOIS: "[Cartas a uma senhora americana]"
+    ANTES : "[Cartas a uma senhora americana]"
+    DEPOIS: "C"
+
+- [10] Como podemos deixar de ser um obstáculo para si mesmo e orar?  (-2 chars, -2 parág.)
+    ANTES : "COMO PODEMOS DEIXAR DE"
+    DEPOIS: "COMO PODEMOS DEIXAR DE SER UM OBSTÁCULO PARA SI MESMO E ORAR?"
+    ANTES : "SER UM OBSTÁCULO PARA"
+    DEPOIS: "O peso da glória"
+    ANTES : "SI MESMO E ORAR?"
+    DEPOIS: "(do capítulo “Ato falho”)"
+    ANTES : "O peso da glória"
+    DEPOIS: "H"
+
+- [11] Como saber se o meu "eu" autêntico se dirige ao verdadeiro "Tu" em oração?  (-3 chars, -2 parág.)
+    ANTES : "COMO SABER SE O MEU “EU” AUTÊNTICO SE DIRIGE"
+    DEPOIS: "COMO SABER SE O MEU “EU” AUTÊNTICO SE DIRIGE AO VERDADEIRO “TU” EM ORAÇÃO?"
+    ANTES : "AO VERDADEIRO “TU” EM"
+    DEPOIS: "Cartas a Malcom"
+    ANTES : "ORAÇÃO?"
+    DEPOIS: "(Carta XV)"
+    ANTES : "Cartas a Malcom"
+    DEPOIS: "O"
+
+- [12] Como podemos ser como Davi e orar com prazer?  (-1 chars, 0 parág.)
+    ANTES : "Semelhantemente, se um homem moderno desejasse “viver na casa do Senhor todos os dias […] "
+    DEPOIS: "Semelhantemente, se um homem moderno desejasse “viver na casa do Senhor todos os dias […] "
+
+- [13] Como podemos entender o ensino do novo testamento sobre oração?  (-2 chars, -2 parág.)
+    ANTES : "COMO PODEMOS ENTENDER"
+    DEPOIS: "COMO PODEMOS ENTENDER O ENSINO DO NOVO TESTAMENTO SOBRE ORAÇÃO?"
+    ANTES : "O ENSINO DO NOVO TESTAMENTO SOBRE"
+    DEPOIS: "Cartas a Malcom"
+    ANTES : "ORAÇÃO?"
+    DEPOIS: "(Carta XI)"
+    ANTES : "Cartas a Malcom"
+    DEPOIS: "O"
+
+- [14] Como orar enquanto estamos de luto?  (-1 chars, -1 parág.)
+    ANTES : "COMO ORAR ENQUANTO"
+    DEPOIS: "COMO ORAR ENQUANTO ESTAMOS DE LUTO?"
+    ANTES : "ESTAMOS DE LUTO?"
+    DEPOIS: "A Grief Observed"
+    ANTES : "A Grief Observed"
+    DEPOIS: "[A anatomia de uma dor]"
+    ANTES : "[A anatomia de uma dor]"
+    DEPOIS: "(do capítulo 4)"
+
+- [15] Podemos orar para evitar o sofrimento, mesmo quando ele é bom para a nossa alma?  (-1 chars, -1 parág.)
+    ANTES : "PODEMOS ORAR PARA EVITAR O SOFRIMENTO, MESMO QUANDO ELE É BOM"
+    DEPOIS: "PODEMOS ORAR PARA EVITAR O SOFRIMENTO, MESMO QUANDO ELE É BOM PARA A NOSSA ALMA?"
+    ANTES : "PARA A NOSSA ALMA?"
+    DEPOIS: "The Problem of Pain"
+    ANTES : "The Problem of Pain"
+    DEPOIS: "[O problema do sofrimento]"
+    ANTES : "[O problema do sofrimento]"
+    DEPOIS: "(do capítulo 7, “Human Pain, Continued”"
+
+- [16] Como permanecemos confiantes quando Deus repetidamente diz "não" ao nosso pedido por auxílio?  (-3 chars, -3 parág.)
+    ANTES : "COMO PERMANECEMOS CONFIANTES QUANDO DEUS"
+    DEPOIS: "COMO PERMANECEMOS CONFIANTES QUANDO DEUS REPETIDAMENTE DIZ “NÃO” AO NOSSO PEDIDO POR AUXÍL"
+    ANTES : "REPETIDAMENTE DIZ “NÃO”"
+    DEPOIS: "Cartas a Malcom"
+    ANTES : "AO NOSSO PEDIDO POR"
+    DEPOIS: "(Carta VIII)"
+    ANTES : "AUXÍLIO?"
+    DEPOIS: "A"
+
+## Reflexões Cristãs (reflexoes-cristas-lewis)
+
+- [2] Capítulo 1 | Cristianismo e literatura  (-1 chars, 0 parág.)
+    ANTES : "relação entre Cristo e Deus, ou, na linguagem trinitária, com a relação entre a Primeira e"
+    DEPOIS: "relação entre Cristo e Deus, ou, na linguagem trinitária, com a relação entre a Primeira e"
+
+- [3] Capítulo 2 | Cristianismo e cultura  (-1 chars, -1 parág.)
+    ANTES : "C. S. LEWIS"
+    DEPOIS: "C. S. LEWIS III PROPOSTAS DE PAZ PARA O IRMÃO EVERY E O SR. BETHELL"
+    ANTES : "III PROPOSTAS DE PAZ PARA O IRMÃO EVERY E O SR. BETHELL"
+    DEPOIS: "EU ACREDITO que há pouca discordância real entre mim e meus críticos (Irmão Every e o Sr. "
+    ANTES : "EU ACREDITO que há pouca discordância real entre mim e meus críticos (Irmão Every e o Sr. "
+    DEPOIS: "A conclusão a que cheguei, em Theology de março de 1940, foi que a cultura, embora não mer"
+    ANTES : "A conclusão a que cheguei, em Theology de março de 1940, foi que a cultura, embora não mer"
+    DEPOIS: "O argumento do artigo do Sr. Bethell, em Theology de julho de 1939 (excluindo sua seção hi"
+
+## Paixão pelas Almas (paixao-pelas-almas)
+
+- [3] Capítulo 3 PARTO DE ALMA  (-6 chars, 0 parág.)
+    ANTES : "Podemos ler, na passagem de Isaías 66:8, que: ...Sião mal sentiu as dores de parto, e já d"
+    DEPOIS: "Podemos ler, na passagem de Isaías 66:8, que:...Sião mal sentiu as dores de parto, e já de"
+    ANTES : "Jacó, como você deve estar lembrado, passou pelo parto de alma até vencer. Mas, quem está "
+    DEPOIS: "Jacó, como você deve estar lembrado, passou pelo parto de alma até vencer. Mas, quem está "
+    ANTES : "“Passei a sexta-feira em jejum secreto, em meditação e em oração, rogando ajuda para o dia"
+    DEPOIS: "“Passei a sexta-feira em jejum secreto, em meditação e em oração, rogando ajuda para o dia"
+    ANTES : "“Propus que celebrássemos um pacto de orar em nossos aposentos, pedindo o avivamento sobre"
+    DEPOIS: "“Propus que celebrássemos um pacto de orar em nossos aposentos, pedindo o avivamento sobre"
+
+- [4] Capítulo 4 PODER DO ALTO  (-3 chars, 0 parág.)
+    ANTES : "as cercanias do trono de Deus e do Cordeiro, isolando-se inteiramente do mundo, que num se"
+    DEPOIS: "as cercanias do trono de Deus e do Cordeiro, isolando-se inteiramente do mundo, que num se"
+    ANTES : "“Disse eu então para mim mesmo: „Receberei o Espírito‟. E ao longo de toda sorte de circun"
+    DEPOIS: "“Disse eu então para mim mesmo: „Receberei o Espírito‟. E ao longo de toda sorte de circun"
+    ANTES : "“Eram cerca das três horas da madrugada, e continuávamos em intensa oração , quando o pode"
+    DEPOIS: "“Eram cerca das três horas da madrugada, e continuávamos em intensa oração, quando o poder"
+
+- [5] Capítulo 5 CONVICÇÃO DE PECADO  (-7 chars, 0 parág.)
+    ANTES : "apresentasse todos os sintomas de autêntica agonia e aflição. Quando Belsazar, o orgulhoso"
+    DEPOIS: "apresentasse todos os sintomas de autêntica agonia e aflição. Quando Belsazar, o orgulhoso"
+    ANTES : "se zeloso pela igreja e declarava-se contrário aos que se afastavam dos trabalhos devocion"
+    DEPOIS: "se zeloso pela igreja e declarava-se contrário aos que se afastavam dos trabalhos devocion"
+    ANTES : "“Os vizinhos se alarmaram e se reuniram em sua casa. Entre uma e duas horas cheguei e enco"
+    DEPOIS: "“Os vizinhos se alarmaram e se reuniram em sua casa. Entre uma e duas horas cheguei e enco"
+    ANTES : "“Dois ou três homens tentavam em vão segura-lo com delicadeza. Logo ele fixou os olhos em "
+    DEPOIS: "“Dois ou três homens tentavam em vão segura-lo com delicadeza. Logo ele fixou os olhos em "
+
+- [6] Capítulo 6 OBSTÁCULOS AO  (-2 chars, 0 parág.)
+    ANTES : "Ora, só Deus é poderoso para nos proporcionar um coração contrito e quebrantado, bem como "
+    DEPOIS: "Ora, só Deus é poderoso para nos proporcionar um coração contrito e quebrantado, bem como "
+
+- [12] Capítulo 12 DEUS MANIFESTA SEU PODER  (-7 chars, 0 parág.)
+    ANTES : "Durante todos os dias de meu ministério tenho feito apelos para que as almas sejam salvas."
+    DEPOIS: "Durante todos os dias de meu ministério tenho feito apelos para que as almas sejam salvas."
+    ANTES : "ti? ” (Salmo 85:6). Fê-lo enfatizando o pronome “nos”, que se refere ao povo de Deus."
+    DEPOIS: "ti?” (Salmo 85:6). Fê-lo enfatizando o pronome “nos”, que se refere ao povo de Deus."
+    ANTES : "Reavivamento espiritual é a manifestação do poder de Deus. “Errais, não conhecendo as Escr"
+    DEPOIS: "Reavivamento espiritual é a manifestação do poder de Deus. “Errais, não conhecendo as Escr"
+    ANTES : "Lembro-me da história contada pelo Rev. Fred Clark. O dono de um bar na Grã-Bretanha se op"
+    DEPOIS: "Lembro-me da história contada pelo Rev. Fred Clark. O dono de um bar na Grã-Bretanha se op"
+
+## Cristão Contagiante (cristao-contagiante)
+
+- [1] Capítulo 9 • Descubra a abordagem que combina com você ... 149  (-114 chars, -52 parág.)
+    ANTES : "CRISTÃO CONTAGIANTE"
+    DEPOIS: "CRISTÃO CONTAGIANTE PARTE4 O PODER DA COMUNICAÇÃO CLARA"
+    ANTES : "PARTE4"
+    DEPOIS: "Capítulo 1 O • Como iniciar conversas espirituais......................... 169"
+    ANTES : "O PODER DA COMUNICAÇÃO CLARA"
+    DEPOIS: "Capítulo 11 111 Transmita a mensagem com clareza....................... 187"
+    ANTES : "Capítulo 1 O • Como iniciar conversas espirituais ......................... 169"
+    DEPOIS: "Capítulo 12 • Como quebrar as barreiras à fé................................ 207"
+
+- [2] Capítulo 10 COMO INICIAR CONVERSAS ESPIRITUAIS  (-10 chars, -4 parág.)
+    ANTES : "COMO INICIAR CONVERSAS ESPIRITUAIS"
+    DEPOIS: "COMO INICIAR CONVERSAS ESPIRITUAIS CRISTÃO CONTAGIANTE"
+    ANTES : "CRISTÃO CONTAGIANTE"
+    DEPOIS: "j em alguém que busca a verdade seriamente e que um dia se tornará"
+    ANTES : "j em alguém que busca a verdade seriamente e que um dia se tornará"
+    DEPOIS: "172 seguidor de Cristo? Essa não seria uma excelente notícia?"
+    ANTES : "172 seguidor de Cristo? Essa não seria uma excelente notícia?"
+    DEPOIS: "COMO EXPRESSAR SUA FÉ EM PAL AVRAS"
+
+- [3] Capítulo 11 TRANSMITA A MENSAGEM COM CLAREZA  (-10 chars, -5 parág.)
+    ANTES : "CRISTÃO CONTAGIANTE"
+    DEPOIS: "CRISTÃO CONTAGIANTE 1 PONHA-SE EM MEU LUGAR"
+    ANTES : "1 PONHA-SE EM MEU LUGAR"
+    DEPOIS: "188 Vamos congelar a imagem para que eu faça a você uma pergunta:"
+    ANTES : "188 Vamos congelar a imagem para que eu faça a você uma pergunta:"
+    DEPOIS: "Se estivesse em meu lugar, como você reagiria? Estaria pronto para dar"
+    ANTES : "Se estivesse em meu lugar, como você reagiria? Estaria pronto para dar"
+    DEPOIS: "uma resposta clara e sucinta a uma pergunta tão importante?"
+
+- [4] Capítulo 12  (-12 chars, -5 parág.)
+    ANTES : "Ele não disse \"Você vai levar um surra\", ou \"Caia morto'« ou \"Você está perdido': Nem mesm"
+    DEPOIS: "Ele não disse \"Você vai levar um surra\", ou \"Caia morto'«ou \"Você está perdido': Nem mesmo"
+    ANTES : "COMO OOSaaAS AS SASS\"SAS À ,, __J"
+    DEPOIS: "COMO OOSaaAS AS SASS\"SAS À,, __J"
+    ANTES : "ordem de Deus em !Pedro 3.15, que diz: \"Estejan1 sempre preparados"
+    DEPOIS: "ordem de Deus em!Pedro 3.15, que diz: \"Estejan1 sempre preparados"
+    ANTES : "COMO QUEBRAR AS BARREIRAS À FÉ"
+    DEPOIS: "COMO QUEBRAR AS BARREIRAS À FÉ CRISTÃO CONTAGIANTE"
+
+- [5] Capítulo 13  (-13 chars, -3 parág.)
+    ANTES : "trabalhador e até conseguia fazer uma boa apresentação de vendas ..."
+    DEPOIS: "trabalhador e até conseguia fazer uma boa apresentação de vendas..."
+    ANTES : "O objetivo, porém, não é apenas falar às pessoas sobre Cristo. Esse é apenas o processo qu"
+    DEPOIS: "O objetivo, porém, não é apenas falar às pessoas sobre Cristo. Esse é apenas o processo qu"
+    ANTES : "?\" ronave .."
+    DEPOIS: "?\" ronave.."
+    ANTES : "CRUZANDO A LINHA DA FE"
+    DEPOIS: "CRUZANDO A LINHA DA FE 1 CRISTÃO CONTAGIANTE"
+
+- [6] Capítulo 14  (-15 chars, -6 parág.)
+    ANTES : "É parecido com aprender qualquer hobby, esporte ou habilid., de. Sempre há certo grau de d"
+    DEPOIS: "É parecido com aprender qualquer hobby, esporte ou habilid., de. Sempre há certo grau de d"
+    ANTES : "J"
+    DEPOIS: "J CRISTÃO CONTAGIANTE"
+    ANTES : "CRISTÃO CONTAGIANTE"
+    DEPOIS: "j Lembra-se que suas pernas o queriam levar para duas direções ao"
+    ANTES : "j Lembra-se que suas pernas o queriam levar para duas direções ao"
+    DEPOIS: "248 mesmo tempo?"
+
+- [7] Capítulo 15 INVISTA SUA VIDA EM PESSOAS  (-20 chars, -3 parág.)
+    ANTES : "Foi uma época de grande aprendizado em minha vida. Eu tinh,1 19 anos de idade. Havia pouco"
+    DEPOIS: "Foi uma época de grande aprendizado em minha vida. Eu tinh,1 19 anos de idade. Havia pouco"
+    ANTES : "De lá, passei por várias outras cidades1 até hcgJr ,w Rio d1· J.1 neiro, Brasil, que, na é"
+    DEPOIS: "De lá, passei por várias outras cidades1 até hcgJr,w Rio d1· J.1 neiro, Brasil, que, na ép"
+    ANTES : "pessoas,fique de olho! Eles terão uma vida dijerente,farão orações diferentes, sentinio um"
+    DEPOIS: "pessoas,fique de olho! Eles terão uma vida dijerente,farão orações diferentes, sentinio um"
+    ANTES : "preocupados rn111 ,H /'''\"'\"' r"
+    DEPOIS: "preocupados rn111,H /'''\"'\"' r"
+
+## As Crônicas de Nárnia (as-cronicas-de-narnia)
+
+- [1] O SOBRINHO DO MAGO  (-5 chars, -5 parág.)
+    ANTES : "O SOBRINHO"
+    DEPOIS: "O SOBRINHO DO MAGO O SOBRINHO DO MAGO ÍNDICE"
+    ANTES : "DO MAGO"
+    DEPOIS: "1. A porta errada"
+    ANTES : "O SOBRINHO DO MAGO"
+    DEPOIS: "2. Um diálogo estranho"
+    ANTES : "ÍNDICE"
+    DEPOIS: "3. Um Bosque entre Dois Mundos"
+
+- [2] O LEÃO, A FEITICEIRA E O GUARDA-ROUPA  (-7 chars, -7 parág.)
+    ANTES : "O LEÃO, A FEITICEIRA E O GUARDA-"
+    DEPOIS: "O LEÃO, A FEITICEIRA E O GUARDA- ROUPA O LEÃO, A FEITICEIRA E O GUARDA-ROUPA ÍNDICE"
+    ANTES : "ROUPA"
+    DEPOIS: "1. Uma estranha descoberta"
+    ANTES : "O LEÃO, A FEITICEIRA E O GUARDA-ROUPA"
+    DEPOIS: "2. O que Lúcia encontrou"
+    ANTES : "ÍNDICE"
+    DEPOIS: "3. Edmundo e o guarda-roupa"
+
+- [3] O CAVALO E SEU MENINO  (-3 chars, -3 parág.)
+    ANTES : "O CAVALO E SEU MENINO"
+    DEPOIS: "O CAVALO E SEU MENINO O CAVALO E SEU MENINO ÍNDICE"
+    ANTES : "O CAVALO E SEU MENINO"
+    DEPOIS: "1. Shasta começa a viagem"
+    ANTES : "ÍNDICE"
+    DEPOIS: "2. Uma aventura na noite"
+    ANTES : "1. Shasta começa a viagem"
+    DEPOIS: "3. Às portas de Tashbaan"
+
+- [4] PRÍNCIPE CASPIAN  (-5 chars, -5 parág.)
+    ANTES : "PRÍNCIPE CASPIAN"
+    DEPOIS: "PRÍNCIPE CASPIAN PRÍNCIPE CASPIAN ÍNDICE"
+    ANTES : "PRÍNCIPE CASPIAN"
+    DEPOIS: "1. A ilha"
+    ANTES : "ÍNDICE"
+    DEPOIS: "2. A casa do tesouro"
+    ANTES : "1. A ilha"
+    DEPOIS: "3. O anão"
+
+- [5] A VIAGEM DO PEREGRINO DA ALVORADA  (-9 chars, -9 parág.)
+    ANTES : "A VIAGEM DO PEREGRINO DA"
+    DEPOIS: "A VIAGEM DO PEREGRINO DA ALVORADA A VIAGEM DO PEREGRINO DA ALVORADA ÍNDICE"
+    ANTES : "ALVORADA"
+    DEPOIS: "1. O quadro"
+    ANTES : "A VIAGEM DO PEREGRINO DA ALVORADA"
+    DEPOIS: "2. A bordo do Peregrino da Alvorada"
+    ANTES : "ÍNDICE"
+    DEPOIS: "3. As Ilhas Solitárias"
+
+- [6] A CADEIRA DE PRATA  (-4 chars, -4 parág.)
+    ANTES : "A CADEIRA DE PRATA"
+    DEPOIS: "A CADEIRA DE PRATA A CADEIRA DE PRATA ÍNDICE"
+    ANTES : "A CADEIRA DE PRATA"
+    DEPOIS: "1. Atrás do ginásio"
+    ANTES : "ÍNDICE"
+    DEPOIS: "2. A missão de Jill"
+    ANTES : "1. Atrás do ginásio"
+    DEPOIS: "3. A viagem do rei"
+
+- [7] A ÚLTIMA BATALHA  (-2 chars, -2 parág.)
+    ANTES : "A ÚLTIMA BATALHA"
+    DEPOIS: "A ÚLTIMA BATALHA A ÚLTIMA BATALHA ÍNDICE"
+    ANTES : "A ÚLTIMA BATALHA"
+    DEPOIS: "1. No Lago do Caldeirão"
+    ANTES : "ÍNDICE"
+    DEPOIS: "2. A precipitação do rei"
+    ANTES : "1. No Lago do Caldeirão"
+    DEPOIS: "3. Sua Majestade, o macaco"
+
+- [8] Três maneiras de escrever para crianças  (-4 chars, 0 parág.)
+    ANTES : "As crônicas de Nárnia [livro eletrônico] / C.S. Lewis ; com ilustrações de Pauline Baynes "
+    DEPOIS: "As crônicas de Nárnia [livro eletrônico] / C.S. Lewis; com ilustrações de Pauline Baynes; "
+
+## Plantar Igrejas (plantar-igrejas)
+
+- [1] O Coração da Missão Cristã  (-56 chars, 0 parág.)
+    ANTES : "um O Coração da Missão Cristã A Igreja é um centro de tempestades na sociedade contemporân"
+    DEPOIS: "um O Coração da Missão Cristã A Igreja é um centro de tempestades na sociedade contemporân"
+
+- [2] Método e Missão  (-10 chars, 0 parág.)
+    ANTES : "MÉTODO E MISSÃO 31 a vocação da Igreja de Cristo seria negligível ou não-existente. Se é q"
+    DEPOIS: "MÉTODO E MISSÃO 31 a vocação da Igreja de Cristo seria negligível ou não-existente. Se é q"
+
+- [3] Educando para Missões  (-8 chars, 0 parág.)
+    ANTES : "EDUCANDO PARA MISSÕES 47 Entrementes, o budismo Soka Gakkai, com sua sede no Japão tem pro"
+    DEPOIS: "EDUCANDO PARA MISSÕES 47 Entrementes, o budismo Soka Gakkai, com sua sede no Japão tem pro"
+
+- [4] Liderando a Missão  (-25 chars, 0 parág.)
+    ANTES : "quatro Liderando a Missão O Exército Sem Líder Imagine um exército sem generais e sem um c"
+    DEPOIS: "quatro Liderando a Missão O Exército Sem Líder Imagine um exército sem generais e sem um c"
+
+- [5] Distribuindo os Recursos  (-25 chars, 0 parág.)
+    ANTES : "DISTRIBUINDO OS RECURSOS 79 plo, seja obscura, parece provável que foi fundada por judeus "
+    DEPOIS: "DISTRIBUINDO OS RECURSOS 79 plo, seja obscura, parece provável que foi fundada por judeus "
+
+- [6] Medindo o Crescimento  (-2 chars, 0 parág.)
+    ANTES : "MEDINDO O CRESCIMENTO 87 Como as Igrejas Crescem Numericamente? Os especialistas no Cresci"
+    DEPOIS: "MEDINDO O CRESCIMENTO 87 Como as Igrejas Crescem Numericamente? Os especialistas no Cresci"
+
+- [7] Os Missionários Comissionados  (-21 chars, 0 parág.)
+    ANTES : "90 O LÍDER CRISTÃO E A MISSÃO CRISTÃ as 7 O CICLO PAULINO TRÊS MESES Planejamento e anális"
+    DEPOIS: "90 O LÍDER CRISTÃO E A MISSÃO CRISTÃ as 7 O CICLO PAULINO TRÊS MESES Planejamento e anális"
+
+- [8] O Auditório Contatado  (-21 chars, 0 parág.)
+    ANTES : "O AUDITÓRIO CONTATADO 117 é que a maneira de alcançar as pessoas não é esperar que elas ve"
+    DEPOIS: "O AUDITÓRIO CONTATADO 117 é que a maneira de alcançar as pessoas não é esperar que elas ve"
+
+- [9] O Evangelho Comunicado  (-28 chars, 0 parág.)
+    ANTES : "O EVANGELHO COMUNICADO 147 (2) Relacionar as Boas Novas de Cristo com o(s) auditórios(s) d"
+    DEPOIS: "O EVANGELHO COMUNICADO 147 (2) Relacionar as Boas Novas de Cristo com o(s) auditórios(s) d"
+
+- [10] Os Ouvintes Convertidos  (-39 chars, 0 parág.)
+    ANTES : "OS OUVINTES CONVERTIDOS 169 Instrução quanto ao Significado e à Importância da Conversão P"
+    DEPOIS: "OS OUVINTES CONVERTIDOS 169 Instrução quanto ao Significado e à Importância da Conversão P"
+
+- [11] Os Crentes Congregados  (-9 chars, 0 parág.)
+    ANTES : "OS CRENTES CONGREGADOS 197 um quadro da Igreja do Novo Testamento quando, no Antigo Testam"
+    DEPOIS: "OS CRENTES CONGREGADOS 197 um quadro da Igreja do Novo Testamento quando, no Antigo Testam"
+
+- [12] A Fé Confirmada  (-34 chars, 0 parág.)
+    ANTES : "A FÉ CONFIRMADA 221 A Fé e a Instrução Princípios e Precedentes Bíblicos O Antigo Testamen"
+    DEPOIS: "A FÉ CONFIRMADA 221 A Fé e a Instrução Princípios e Precedentes Bíblicos O Antigo Testamen"
+
+- [13] Os Líderes Consagrados  (-23 chars, 0 parág.)
+    ANTES : "OS LÍDERES CONSAGRADOS 257 (p) Não devem ser arrogantes (Tt 1.7). (q) Nem irascíveis (Tt 1"
+    DEPOIS: "OS LÍDERES CONSAGRADOS 257 (p) Não devem ser arrogantes (Tt 1.7). (q) Nem irascíveis (Tt 1"
+
+- [14] Os Crentes Recomendados  (-43 chars, 0 parág.)
+    ANTES : "OS CRENTES RECOMENDADOS 279 dos problemas sejam semelhantes nos dois casos, alguns são exc"
+    DEPOIS: "OS CRENTES RECOMENDADOS 279 dos problemas sejam semelhantes nos dois casos, alguns são exc"
+
+## Pastoreando o Coração da Criança (pastoreando-coracao-crianca)
+
+- [1] Chegando ao Âmago do Comportamento  (-2 chars, 0 parág.)
+    ANTES : "CHEGANDO AO ÂMAGO DO COMPORTAMENTO 17 censurou como pessoas que limpavam o exterior do cop"
+    DEPOIS: "CHEGANDO AO ÂMAGO DO COMPORTAMENTO 17 censurou como pessoas que limpavam o exterior do cop"
+
+- [2] Influências que Moldam  (-4 chars, 0 parág.)
+    ANTES : "22 Pastareando o Coração da Criança Os garotos não estavam preparados para pensar tão raci"
+    DEPOIS: "22 Pastareando o Coração da Criança Os garotos não estavam preparados para pensar tão raci"
+
+- [3] Orientação em Direção a Deus  (-4 chars, 0 parág.)
+    ANTES : "32 Pastoreando o Coração da Criança responde como um homem zombador ou como um sábio. É o "
+    DEPOIS: "32 Pastoreando o Coração da Criança responde como um homem zombador ou como um sábio. É o "
+
+- [4] Você Está no Comando  (-6 chars, 0 parág.)
+    ANTES : "Você Está No COMANDO 43 mãe, você não exerce comando sob a sua jurisdição, mas sob a de De"
+    DEPOIS: "Você Está No COMANDO 43 mãe, você não exerce comando sob a sua jurisdição, mas sob a de De"
+
+- [5] Examinando seus Propósitos  (-14 chars, 0 parág.)
+    ANTES : "EXAMINANDO SEUS PROPÓSITOS 57 de atividades. Eles os empurram para o judô, futebol, pólo- "
+    DEPOIS: "EXAMINANDO SEUS PROPÓSITOS 57 de atividades. Eles os empurram para o judô, futebol, pólo- "
+
+- [6] Descartando Métodos Não-bíblicos  (-1 chars, 0 parág.)
+    ANTES : "DESCARTANDO MÉTODOS NÃO-BÍBLICOS 83 importar com isso, não é tão mau assim”. Ele aprendeu "
+    DEPOIS: "DESCARTANDO MÉTODOS NÃO-BÍBLICOS 83 importar com isso, não é tão mau assim”. Ele aprendeu "
+
+- [7] Comunicação  (-58 chars, 0 parág.)
+    ANTES : "86 Pastoreando o Coração da Criança A questão é esta: como partir de qualquer uma destas a"
+    DEPOIS: "86 Pastoreando o Coração da Criança A questão é esta: como partir de qualquer uma destas a"
+
+- [8] Objetivos de Treinamento  (-14 chars, 0 parág.)
+    ANTES : "178 Pastoreando o Coração da Encança Começamos a ver que precisávamos ter objetivos de tre"
+    DEPOIS: "178 Pastoreando o Coração da Encança Começamos a ver que precisávamos ter objetivos de tre"
+
+- [9] Objetivos de Treinamento  (-14 chars, 0 parág.)
+    ANTES : "DA EscoLa À PRÉ-ADOLESCÊNCIA: PROCEDIMENTOS 199 Você não quer que seu filho seja melhor qu"
+    DEPOIS: "DA EscoLa À PRÉ-ADOLESCÊNCIA: PROCEDIMENTOS 199 Você não quer que seu filho seja melhor qu"

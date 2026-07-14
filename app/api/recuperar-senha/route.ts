@@ -7,6 +7,7 @@ import {
   soDigitos,
   MSG_AMBIGUO,
 } from "@/lib/recuperacao-senha";
+import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 
 // POST /api/recuperar-senha
 // Body: { identificador: string }  // e-mail OU telefone (WhatsApp) cadastrado
@@ -22,10 +23,7 @@ const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET!;
-const FUNCTIONS_BASE = SUPABASE_URL?.replace(
-  ".supabase.co",
-  ".functions.supabase.co"
-);
+const FUNCTIONS_BASE = supabaseFunctionsBase();
 const EDGE_WHATSAPP_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-evolution`;
 
 const RESPOSTA_GENERICA = {

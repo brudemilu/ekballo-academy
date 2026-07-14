@@ -21,6 +21,27 @@ type CapaConfig = {
 };
 
 const CAPAS: Record<string, CapaConfig> = {
+  "a-igreja-gloriosa": {
+    livroUrl: "/capas/a-igreja-gloriosa.jpg", preLabel: "WATCHMAN NEE",
+    titulo: "A Igreja\nGloriosa", subtitulo: "O propósito eterno de Deus com a igreja",
+    rodape: "Leitura guiada — Watchman Nee",
+    bg: "linear-gradient(135deg, #10193A 0%, #26356E 52%, #4257B0 100%)",
+    textoCor: "#EAEDFB", acentoCor: "#E6C84A", preLabelCor: "#AAB4E0", rodapeCor: "#AAB4E0",
+  },
+  "a-quem-enviarei": {
+    preLabel: "WATCHMAN NEE",
+    titulo: "A Quem\nEnviarei?", subtitulo: "Mensagens sobre servir a Deus em espírito",
+    rodape: "Leitura guiada — Watchman Nee",
+    bg: "linear-gradient(135deg, #1A2A22 0%, #2E4A38 52%, #4E7A56 100%)",
+    textoCor: "#EAF4EE", acentoCor: "#E6C84A", preLabelCor: "#A9D0B8", rodapeCor: "#A9D0B8",
+  },
+  "casamento-blindado": {
+    livroUrl: "/capas/casamento-blindado.jpg", preLabel: "RENATO E CRISTIANE CARDOSO",
+    titulo: "Casamento\nBlindado 2.0", subtitulo: "O seu casamento à prova de divórcio",
+    rodape: "Leitura guiada — Renato e Cristiane Cardoso",
+    bg: "linear-gradient(135deg, #14261F 0%, #285040 52%, #3E8A66 100%)",
+    textoCor: "#EAF7EF", acentoCor: "#E6C84A", preLabelCor: "#A9D8BE", rodapeCor: "#A9D8BE",
+  },
   "90-dias-galatas-juizes-efesios": {
     livroUrl: "/capas/90-dias-galatas-juizes-efesios.jpg", preLabel: "DEVOCIONAL · 90 DIAS",
     titulo: "90 Dias em\nGálatas, Juízes e Efésios", subtitulo: "Explore as Escrituras dia a dia",

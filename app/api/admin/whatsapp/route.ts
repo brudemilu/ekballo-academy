@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { telefoneBloqueadoBroadcast } from "@/lib/destinatarios";
+import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 
 // Painel WhatsApp (Evolution GO): proxy admin-gated pras edge functions.
 //   GET                      -> status da instância
@@ -18,7 +19,7 @@ import { telefoneBloqueadoBroadcast } from "@/lib/destinatarios";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET!;
-const FUNCTIONS_BASE = SUPABASE_URL.replace(".supabase.co", ".functions.supabase.co");
+const FUNCTIONS_BASE = supabaseFunctionsBase();
 const EDGE_INSTANCIA_URL = `${FUNCTIONS_BASE}/whatsapp-instancia`;
 const EDGE_TEXTO_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-evolution`;
 const EDGE_MIDIA_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-midia`;

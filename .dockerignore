@@ -1,0 +1,17 @@
+.git
+.next
+.vercel
+node_modules
+tmp
+supabase
+scripts
+scripts/audios-gerados
+scripts/leituras-geradas
+scripts/.venv-tts
+*.log
+.env*
+!.env.example
+Dockerfile*
+README.md
+COMO-RODAR.md
+CLAUDE.md
