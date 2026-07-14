@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: 246 245 243;  /* greige-50 (cinza quente claro) */
-  --foreground: 26 24 21;     /* greige-900 (quase preto quente) */
-  --laranja: 213 84 22;       /* laranja-500 (terracota) */
-  --oliveira: 107 102 96;     /* greige-600 (era oliva; agora cinza) */
-  --bege-700: 78 74 69;       /* greige-700 */
+  --background: 251 250 248;  /* bege-50 (greige claro/limpo) */
+  --foreground: 22 19 15;     /* bege-900 (quase preto quente) */
+  --laranja: 255 90 44;       /* laranja-500 (coral vibrante) */
+  --oliveira: 99 94 86;       /* bege-600 */
+  --bege-700: 72 67 62;       /* bege-700 */
 }
 
 html, body {
@@ -64,7 +64,7 @@ body {
   z-index: -1;
   background: radial-gradient(
     600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(213, 84, 22, 0.22),
+    rgba(255, 90, 44, 0.24),
     transparent 60%
   );
   transition: background 0.2s ease-out;
@@ -77,18 +77,18 @@ body {
 }
 .lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px -12px rgba(42, 39, 36, 0.22);
+  box-shadow: 0 20px 40px -12px rgba(38, 35, 32, 0.20);
 }
 
 /* Shimmering text — terracota deslizando sobre cinza quente */
 .shimmer-text {
   background: linear-gradient(
     90deg,
-    rgb(78, 74, 69) 0%,    /* greige-700 */
-    rgb(213, 84, 22) 25%,  /* terracota */
-    rgb(180, 62, 14) 50%,  /* terracota profunda */
-    rgb(213, 84, 22) 75%,  /* terracota */
-    rgb(78, 74, 69) 100%   /* greige-700 */
+    rgb(72, 67, 62) 0%,    /* greige-700 */
+    rgb(255, 90, 44) 25%,  /* terracota */
+    rgb(232, 67, 16) 50%,  /* terracota profunda */
+    rgb(255, 90, 44) 75%,  /* terracota */
+    rgb(72, 67, 62) 100%   /* greige-700 */
   );
   background-size: 200% auto;
   background-clip: text;
@@ -130,7 +130,7 @@ body {
 .prose-mesa h2 {
   font-family: Georgia, serif;
   font-size: 1.6rem;
-  color: #2A2724;  /* greige-800 (título forte) */
+  color: #262320;  /* greige-800 (título forte) */
   margin-top: 2em;
   margin-bottom: 0.6em;
   font-weight: 600;
@@ -138,22 +138,22 @@ body {
 .prose-mesa h3 {
   font-family: Georgia, serif;
   font-size: 1.25rem;
-  color: #88300B;  /* laranja-700 (subtítulo com acento terracota) */
+  color: #B4320C;  /* laranja-700 (subtítulo com acento terracota) */
   margin-top: 1.6em;
   margin-bottom: 0.5em;
   font-weight: 600;
 }
 .prose-mesa blockquote {
-  border-left: 3px solid #D55416;  /* terracota */
+  border-left: 3px solid #FF5A2C;  /* terracota */
   padding-left: 1.25rem;
   font-style: italic;
-  color: #4E4A45;  /* greige-700 */
+  color: #48433E;  /* greige-700 */
   margin: 1.5em 0;
 }
 .prose-mesa ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.1em; }
 .prose-mesa ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1.1em; }
 .prose-mesa li { margin-bottom: 0.4em; }
-.prose-mesa a { color: #D55416; text-decoration: underline; text-decoration-color: rgba(213, 84, 22, 0.45); }
+.prose-mesa a { color: #B4320C; text-decoration: underline; text-decoration-color: rgba(180, 50, 12, 0.45); }
 
 /* Image with subtle vignette — agora vinheta levemente mais quente */
 .img-vignette {
@@ -164,7 +164,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 60%, rgba(26, 24, 21, 0.55) 100%);
+  background: linear-gradient(180deg, transparent 60%, rgba(22, 19, 15, 0.55) 100%);
   pointer-events: none;
 }
 

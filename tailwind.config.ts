@@ -12,59 +12,61 @@ export default {
         // Neutro = CINZA QUENTE (greige): fundos, textos, bordas, superfícies.
         // Mantém o nome "bege" por compatibilidade (era creme-mel; agora greige).
         // Sub-tom levemente quente (R>G>B) pra casar com o terracota, sem frieza.
+        // Neutro = greige quente, agora MAIS CLARO e limpo (fundos luminosos,
+        // menos "abafado"). Sub-tom quente pra casar com o coral.
         bege: {
-          50: "#F6F5F3",   // fundo de página (greige clarinho)
-          100: "#ECEAE7",  // superfície / banda
-          200: "#DAD6D0",  // borda suave
-          300: "#C6C1B9",  // borda forte / divisor
-          400: "#A8A29A",  // ícones / muted
-          500: "#837E75",  // texto secundário
-          600: "#6B6660",  // texto suave
-          700: "#4E4A45",  // texto secundário forte
-          800: "#2A2724",  // títulos / texto forte
-          900: "#1A1815",  // quase-preto quente
+          50: "#FBFAF8",   // fundo de página (greige bem claro/limpo)
+          100: "#F3F0EB",  // superfície / banda
+          200: "#E6E1D9",  // borda suave
+          300: "#D2CCC2",  // borda forte / divisor
+          400: "#A9A299",  // ícones / muted
+          500: "#7E786F",  // texto secundário
+          600: "#635E56",  // texto suave
+          700: "#48433E",  // texto secundário forte
+          800: "#262320",  // títulos / texto forte
+          900: "#16130F",  // quase-preto quente
         },
-        // Laranja terracota / pôr-do-sol — primary, CTA, energia
-        // Mais profundo, mais saturado, sensação de barro queimado
+        // Coral / terracota VIBRANTE — primary, CTA, energia.
+        // Saturado e luminoso ("mais vivo"), sem virar neon.
         laranja: {
-          50: "#FDF1E6",
-          100: "#FBDDC0",
-          200: "#F7BC91",
-          300: "#F0935D",
-          400: "#E76E2E",
-          500: "#D55416",  // terracota signature
-          600: "#B43E0E",
-          700: "#88300B",
-          800: "#5C2008",
-          900: "#341204",
+          50: "#FFF2EC",
+          100: "#FFDECF",
+          200: "#FFBB9C",
+          300: "#FF9165",
+          400: "#FF6E3A",
+          500: "#FF5A2C",  // coral signature (CTA)
+          600: "#E84310",
+          700: "#B4320C",
+          800: "#7C2208",
+          900: "#3F1103",
         },
         // Oliveira — antes verde-oliva (secundário). Na paleta laranja+cinza o
         // verde sai de cena: colapsado no MESMO cinza quente do "bege". Mantido
         // como alias só por compatibilidade com classes oliveira-* existentes.
         oliveira: {
-          50: "#F6F5F3",
-          100: "#ECEAE7",
-          200: "#DAD6D0",
-          300: "#C6C1B9",
-          400: "#A8A29A",
-          500: "#837E75",
-          600: "#6B6660",
-          700: "#4E4A45",
-          800: "#2A2724",
-          900: "#1A1815",
+          50: "#FBFAF8",
+          100: "#F3F0EB",
+          200: "#E6E1D9",
+          300: "#D2CCC2",
+          400: "#A9A299",
+          500: "#7E786F",
+          600: "#635E56",
+          700: "#48433E",
+          800: "#262320",
+          900: "#16130F",
         },
-        // Alias mesa → bege (compatibilidade) — mesmo cinza quente
+        // Alias mesa → bege (compatibilidade) — mesmo greige quente claro
         mesa: {
-          50: "#F6F5F3",
-          100: "#ECEAE7",
-          200: "#DAD6D0",
-          300: "#C6C1B9",
-          400: "#A8A29A",
-          500: "#837E75",
-          600: "#6B6660",
-          700: "#4E4A45",
-          800: "#2A2724",
-          900: "#1A1815",
+          50: "#FBFAF8",
+          100: "#F3F0EB",
+          200: "#E6E1D9",
+          300: "#D2CCC2",
+          400: "#A9A299",
+          500: "#7E786F",
+          600: "#635E56",
+          700: "#48433E",
+          800: "#262320",
+          900: "#16130F",
         },
       },
       fontFamily: {
