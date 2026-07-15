@@ -58,7 +58,7 @@ export function ReflexaoDevocionalForm({
         rows={5}
         lang="pt-BR"
         placeholder="Descreva aqui o que mais falou contigo, porém não é obrigatório o preenchimento."
-        className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50/40 px-4 py-3 text-sm leading-relaxed text-mesa-800 placeholder:text-mesa-400 focus:border-oliveira-400 focus:outline-none focus:ring-2 focus:ring-oliveira-200"
+        className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50/40 px-4 py-3 text-sm leading-relaxed text-mesa-800 placeholder:text-mesa-400 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
       />
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -71,7 +71,7 @@ export function ReflexaoDevocionalForm({
         <button
           onClick={handleSalvar}
           disabled={pending || !dirty}
-          className="rounded-full bg-oliveira-600 px-5 py-2 text-sm font-medium text-white hover:bg-oliveira-700 disabled:opacity-50"
+          className="rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
         >
           {pending ? "Salvando..." : "Salvar reflexão"}
         </button>

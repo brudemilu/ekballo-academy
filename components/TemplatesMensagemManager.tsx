@@ -84,7 +84,7 @@ export function TemplatesMensagemManager({ inicial }: { inicial: Template[] }) {
   }
 
   const inputCls =
-    "w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200";
+    "w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100";
 
   return (
     <div className="space-y-5">
@@ -118,7 +118,7 @@ export function TemplatesMensagemManager({ inicial }: { inicial: Template[] }) {
               type="button"
               onClick={salvar}
               disabled={salvando}
-              className="rounded-full bg-mesa-700 px-5 py-2 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-50"
+              className="rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 hover:bg-laranja-600 disabled:opacity-50"
             >
               {salvando ? "Salvando…" : editId ? "Salvar alterações" : "Criar template"}
             </button>

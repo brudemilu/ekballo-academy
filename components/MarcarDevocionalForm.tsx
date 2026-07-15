@@ -90,7 +90,7 @@ export function MarcarDevocionalForm({
       <button
         onClick={handleToggle}
         disabled={pending}
-        className="rounded-full bg-oliveira-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-oliveira-700 disabled:opacity-50"
+        className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
       >
         {pending ? "Salvando..." : "✓ Marcar como concluído"}
       </button>

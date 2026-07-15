@@ -93,7 +93,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
               type="date"
               value={form.data}
               onChange={(e) => setForm({ ...form, data: e.target.value })}
-              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-mesa-200"
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-laranja-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-laranja-100"
             />
           </div>
           <div>
@@ -105,7 +105,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
               value={form.autor}
               onChange={(e) => setForm({ ...form, autor: e.target.value })}
               placeholder="Pr. Bruno"
-              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-mesa-200"
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-laranja-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-laranja-100"
             />
           </div>
         </div>
@@ -119,7 +119,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
             value={form.titulo}
             onChange={(e) => setForm({ ...form, titulo: e.target.value })}
             placeholder='Ex.: "Pra começar o dia"'
-            className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-mesa-200"
+            className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-laranja-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-laranja-100"
           />
         </div>
 
@@ -133,7 +133,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
               value={form.versiculo_ref}
               onChange={(e) => setForm({ ...form, versiculo_ref: e.target.value })}
               placeholder="Ex.: Romanos 8:28"
-              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-mesa-200"
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-laranja-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-laranja-100"
             />
           </div>
           <div>
@@ -145,7 +145,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
               onChange={(e) =>
                 setForm({ ...form, versiculo_versao: e.target.value })
               }
-              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-mesa-200"
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-laranja-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-laranja-100"
             >
               {["ACF", "NAA", "NVT", "NVI", "ARA", "ARC"].map((v) => (
                 <option key={v} value={v}>
@@ -165,7 +165,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
             onChange={(e) => setForm({ ...form, versiculo_texto: e.target.value })}
             rows={3}
             placeholder="Cole o texto do versículo aqui."
-            className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-3 italic text-mesa-800 focus:border-mesa-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-mesa-200"
+            className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-3 italic text-mesa-800 focus:border-laranja-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-laranja-100"
           />
         </div>
 
@@ -178,7 +178,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
             onChange={(e) => setForm({ ...form, reflexao: e.target.value })}
             rows={8}
             placeholder="Escreva uma reflexão curta. Separe parágrafos com linha em branco."
-            className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-3 text-mesa-800 focus:border-mesa-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-mesa-200"
+            className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-3 text-mesa-800 focus:border-laranja-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-laranja-100"
           />
           <p className="mt-1 text-xs text-mesa-500">
             Dois enters seguidos viram novo parágrafo. Sem formatação especial.
@@ -222,7 +222,7 @@ export function DevocionalForm({ inicial }: { inicial: Inicial }) {
         <button
           onClick={salvar}
           disabled={pending}
-          className="rounded-full bg-mesa-700 px-6 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-50"
+          className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
         >
           {pending
             ? "Salvando…"

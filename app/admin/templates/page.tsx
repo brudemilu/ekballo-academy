@@ -58,7 +58,7 @@ export default async function AdminTemplatesPage() {
               </div>
               <Link
                 href={`/admin/templates/${t.chave}`}
-                className="rounded-full bg-mesa-700 px-5 py-2 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+                className="rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 hover:bg-laranja-600"
               >
                 Editar
               </Link>

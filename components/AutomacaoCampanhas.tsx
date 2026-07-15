@@ -163,7 +163,7 @@ function CampanhaCard({
         <select
           value={templateId}
           onChange={(e) => setTemplateId(e.target.value)}
-          className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
+          className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
         >
           <option value="">Selecione um template…</option>
           {templates.map((t) => (

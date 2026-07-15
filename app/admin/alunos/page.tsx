@@ -96,7 +96,7 @@ export default async function AlunosPage() {
           {/* Desktop: tabela */}
           <div className="mt-8 hidden overflow-hidden rounded-2xl border border-mesa-200 bg-white md:block">
             <table className="w-full">
-            <thead className="border-b border-mesa-200 bg-mesa-50/50 text-left">
+            <thead className="border-b border-mesa-200 bg-mesa-100 text-left">
               <tr>
                 <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
                   Nome
@@ -121,7 +121,7 @@ export default async function AlunosPage() {
             </thead>
             <tbody className="divide-y divide-mesa-100">
               {alunos.map((a) => (
-                <tr key={a.id} className="hover:bg-mesa-50/40">
+                <tr key={a.id} className="odd:bg-white even:bg-mesa-50/40 transition hover:bg-laranja-50/50">
                   <td className="px-6 py-4">
                     <Link href={`/admin/alunos/${a.id}`} className="block">
                       <p className="font-medium text-mesa-800 hover:underline">

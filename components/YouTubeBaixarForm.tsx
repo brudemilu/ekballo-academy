@@ -64,13 +64,13 @@ export function YouTubeBaixarForm() {
             }
           }}
           placeholder="Cole o link do YouTube aqui…"
-          className="flex-1 rounded-xl border border-mesa-200 bg-white px-4 py-3 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
+          className="flex-1 rounded-xl border border-mesa-200 bg-white px-4 py-3 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
         />
         <button
           type="button"
           onClick={buscar}
           disabled={!url.trim() || carregando}
-          className="rounded-xl bg-laranja-600 px-6 py-3 text-sm font-medium text-white hover:bg-laranja-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl bg-laranja-500 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 hover:bg-laranja-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {carregando ? "Convertendo…" : "Converter em MP3"}
         </button>

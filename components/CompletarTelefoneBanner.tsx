@@ -85,14 +85,14 @@ export function CompletarTelefoneBanner({ userId }: { userId: string }) {
             value={telefone}
             onChange={(e) => setTelefone(formatTelefoneBR(e.target.value))}
             placeholder="(11) 99999-8888"
-            className="w-full rounded-lg border border-mesa-200 bg-white px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:ring-2 focus:ring-laranja-200"
+            className="w-full rounded-lg border border-mesa-200 bg-white px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:ring-2 focus:ring-laranja-100"
           />
           {erro && <p className="mt-1.5 text-sm text-red-700">{erro}</p>}
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="flex-none rounded-lg bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-60"
+          className="flex-none rounded-lg bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-60"
         >
           {loading ? "Salvando..." : "Salvar WhatsApp"}
         </button>

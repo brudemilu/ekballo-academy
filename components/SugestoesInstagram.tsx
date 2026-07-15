@@ -93,7 +93,7 @@ export function SugestoesInstagram({ onUsarIdeia }: { onUsarIdeia: (ideia: Ideia
         <button
           onClick={analisar}
           disabled={carregando}
-          className="rounded-full bg-laranja-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-laranja-700 disabled:opacity-40"
+          className="rounded-full bg-laranja-500 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
         >
           {carregando ? "Analisando perfil…" : resumo ? "🔄 Sugerir de novo" : "✨ Analisar e sugerir"}
         </button>

@@ -110,7 +110,7 @@ export default async function RespostasPage({
             <li key={r.id}>
               <Link
                 href={`/admin/respostas/${r.id}`}
-                className="block rounded-xl border border-mesa-200 bg-white p-5 transition hover:border-mesa-300 hover:shadow-md"
+                className="block rounded-xl border border-mesa-200 bg-white p-5 transition hover:border-laranja-300 hover:shadow-md"
               >
                 <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-medium text-mesa-800">

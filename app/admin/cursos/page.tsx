@@ -41,7 +41,7 @@ export default async function AdminCursosPage() {
             return (
               <li
                 key={c.id}
-                className="relative rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-mesa-300 hover:shadow-md"
+                className="relative rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-laranja-300 hover:shadow-md"
               >
                 {/* Link em overlay: cobre o card por baixo. O conteúdo deixa o
                     clique passar (pointer-events-none), menos o seletor de seção. */}

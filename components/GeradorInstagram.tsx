@@ -429,13 +429,13 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
               onChange={(e) => setConteudo(e.target.value)}
               rows={5}
               placeholder="Ex.: Essa nova estação não será construída apenas por estratégias humanas. Ela será sustentada pela glória de Deus…"
-              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-mesa-800 outline-none focus:border-mesa-400"
+              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-mesa-800 outline-none focus:border-laranja-400"
             />
             <div className="mt-4 flex items-center gap-3">
               <button
                 onClick={montar}
                 disabled={montando || conteudo.trim().length < 8}
-                className="rounded-full bg-laranja-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-laranja-700 disabled:opacity-40"
+                className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
               >
                 {montando ? "Montando com IA…" : tipo === "unico" ? "✨ Gerar imagem com IA" : "✨ Montar carrossel com IA"}
               </button>
@@ -506,7 +506,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
                   <input
                     value={s.texto}
                     onChange={(e) => patch(i, { texto: e.target.value })}
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400"
                   />
                 </div>
                 <div>
@@ -517,7 +517,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
                     <input
                       value={s.prompt}
                       onChange={(e) => patch(i, { prompt: e.target.value })}
-                      className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+                      className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400"
                     />
                     <button
                       onClick={() => regerar(i)}
@@ -584,13 +584,13 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
                     value={s.top}
                     onChange={(e) => patch(i, { top: e.target.value })}
                     placeholder="Rótulo do topo (opcional)"
-                    className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-mesa-400"
+                    className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400"
                   />
                   <input
                     value={s.ref}
                     onChange={(e) => patch(i, { ref: e.target.value })}
                     placeholder="Rodapé / referência (opcional)"
-                    className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-mesa-400"
+                    className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400"
                   />
                 </div>
               </div>
@@ -616,7 +616,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
                 setSalvo(false);
               }}
               rows={5}
-              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-sm text-mesa-800 outline-none focus:border-laranja-400"
             />
           </div>
 
@@ -644,7 +644,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
             <button
               onClick={salvar}
               disabled={salvando}
-              className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-mesa-800 disabled:opacity-40"
+              className="rounded-full bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
             >
               {salvando ? "Salvando…" : "💾 Salvar rascunho"}
             </button>

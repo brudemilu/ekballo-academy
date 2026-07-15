@@ -122,7 +122,7 @@ export default function RecuperarSenhaPage() {
                     autoComplete="username"
                     value={identificador}
                     onChange={(e) => setIdentificador(e.target.value)}
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 text-mesa-900 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 text-mesa-900 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                     placeholder="seu@email.com ou (31) 99999-9999"
                   />
                 </div>
@@ -136,7 +136,7 @@ export default function RecuperarSenhaPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-lg bg-mesa-700 py-3 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-60"
+                  className="w-full rounded-lg bg-laranja-500 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-60"
                 >
                   {loading ? "Enviando..." : "Enviar código no WhatsApp"}
                 </button>
@@ -182,7 +182,7 @@ export default function RecuperarSenhaPage() {
                     onChange={(e) =>
                       setCodigo(e.target.value.replace(/\D+/g, "").slice(0, 6))
                     }
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 text-center text-2xl font-semibold tracking-[0.4em] text-mesa-900 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 text-center text-2xl font-semibold tracking-[0.4em] text-mesa-900 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                     placeholder="000000"
                   />
                 </div>
@@ -202,7 +202,7 @@ export default function RecuperarSenhaPage() {
                     autoComplete="new-password"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                     placeholder="••••••••"
                   />
                 </div>
@@ -222,7 +222,7 @@ export default function RecuperarSenhaPage() {
                     autoComplete="new-password"
                     value={senha2}
                     onChange={(e) => setSenha2(e.target.value)}
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                     placeholder="••••••••"
                   />
                 </div>
@@ -236,7 +236,7 @@ export default function RecuperarSenhaPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-lg bg-mesa-700 py-3 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-60"
+                  className="w-full rounded-lg bg-laranja-500 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-60"
                 >
                   {loading ? "Salvando..." : "Salvar nova senha"}
                 </button>

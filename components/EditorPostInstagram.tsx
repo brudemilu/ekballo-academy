@@ -284,13 +284,13 @@ export function EditorPostInstagram({ item, onSaved }: { item: Item; onSaved?: (
                           Texto <span className="text-mesa-400">— a palavra entre {"{ }"} vira o destaque</span>
                         </label>
                         <input value={s.texto || ""} onChange={(e) => patch(i, { texto: e.target.value })}
-                          className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400" />
+                          className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400" />
                       </div>
                       <div>
                         <label className="mb-1 block text-xs font-medium text-mesa-600">Imagem (descrição em inglês) — o fundo</label>
                         <div className="flex gap-2">
                           <input value={s.prompt || ""} onChange={(e) => patch(i, { prompt: e.target.value })}
-                            className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400" />
+                            className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400" />
                           <button onClick={() => regerar(i)} title="Gerar outra imagem"
                             className="shrink-0 rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-700 transition hover:bg-mesa-100">
                             🔄 Regerar
@@ -315,9 +315,9 @@ export function EditorPostInstagram({ item, onSaved }: { item: Item; onSaved?: (
                       </div>
                       <div className="flex flex-wrap gap-3">
                         <input value={s.top || ""} onChange={(e) => patch(i, { top: e.target.value })} placeholder="Rótulo do topo (opcional)"
-                          className="w-44 rounded-lg border border-mesa-200 bg-white px-3 py-2 text-xs text-mesa-800 outline-none focus:border-mesa-400" />
+                          className="w-44 rounded-lg border border-mesa-200 bg-white px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400" />
                         <input value={s.ref || ""} onChange={(e) => patch(i, { ref: e.target.value })} placeholder="Rodapé / referência (opcional)"
-                          className="w-44 rounded-lg border border-mesa-200 bg-white px-3 py-2 text-xs text-mesa-800 outline-none focus:border-mesa-400" />
+                          className="w-44 rounded-lg border border-mesa-200 bg-white px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400" />
                       </div>
                     </>
                   )}
@@ -347,13 +347,13 @@ export function EditorPostInstagram({ item, onSaved }: { item: Item; onSaved?: (
       <div>
         <label className="mb-1 block text-sm font-medium text-mesa-700">Legenda</label>
         <textarea value={legenda} onChange={(e) => { setLegenda(e.target.value); dirty(); }} rows={4}
-          className="w-full resize-y rounded-xl border border-mesa-200 bg-white p-3 text-sm text-mesa-800 outline-none focus:border-mesa-400" />
+          className="w-full resize-y rounded-xl border border-mesa-200 bg-white p-3 text-sm text-mesa-800 outline-none focus:border-laranja-400" />
       </div>
 
       {/* Ações */}
       <div className="flex flex-wrap items-center gap-3">
         <button onClick={salvar} disabled={salvando || enviando}
-          className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-mesa-800 disabled:opacity-40">
+          className="rounded-full bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40">
           {salvando ? "Salvando…" : "💾 Salvar alterações"}
         </button>
         {salvo && <span className="text-sm font-medium text-oliveira-700">Alterações salvas ✓</span>}

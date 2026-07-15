@@ -659,7 +659,7 @@ export function AulaConteudo({
                 <button
                   disabled={salvando}
                   onClick={salvarComentario}
-                  className="rounded-full bg-mesa-700 px-3 py-1 text-xs font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-50"
+                  className="rounded-full bg-laranja-500 px-3 py-1 text-xs font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
                 >
                   {salvando ? "Salvando…" : "Salvar"}
                 </button>
@@ -957,7 +957,7 @@ function ImagemModal({
           <button
             onClick={baixar}
             disabled={estado !== "ok"}
-            className="flex-1 rounded-full bg-mesa-700 py-2.5 text-center text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-50"
+            className="flex-1 rounded-full bg-laranja-500 py-2.5 text-center text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
           >
             Baixar
           </button>

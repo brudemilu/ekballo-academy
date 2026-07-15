@@ -133,7 +133,7 @@ export async function AdminShell({
 
   return (
     <main className="min-h-screen bg-mesa-50">
-      <header className="border-b border-mesa-200 bg-white/80 backdrop-blur">
+      <header className="border-b border-mesa-200 bg-white/80 shadow-sm shadow-mesa-700/5 backdrop-blur">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/admin">
             <Logo />
@@ -171,7 +171,7 @@ export async function AdminShell({
                           title={it.hint}
                           className={`group flex h-full items-center gap-2.5 rounded-xl border p-2.5 transition ${
                             ativo
-                              ? "border-mesa-700 bg-mesa-700 text-mesa-50 shadow-sm shadow-mesa-700/20"
+                              ? "border-mesa-700 bg-mesa-700 text-mesa-50 shadow-md shadow-mesa-800/25"
                               : "border-mesa-200 bg-white text-mesa-700 hover:border-laranja-300 hover:shadow-sm active:bg-mesa-100"
                           }`}
                         >

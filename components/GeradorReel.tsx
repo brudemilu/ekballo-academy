@@ -233,7 +233,7 @@ export function GeradorReel() {
               onChange={(e) => setTextoIA(e.target.value)}
               rows={4}
               placeholder={"Descanse no {Senhor}\nEle cuida de você\nEntregue o seu {fardo}"}
-              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-3 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-3 text-sm text-mesa-800 outline-none focus:border-laranja-400"
             />
           </div>
           <div className="flex flex-wrap items-end gap-4">
@@ -243,7 +243,7 @@ export function GeradorReel() {
                 value={cenaIA}
                 onChange={(e) => setCenaIA(e.target.value)}
                 placeholder="golden mountains clouds"
-                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400"
               />
             </div>
           </div>
@@ -307,7 +307,7 @@ export function GeradorReel() {
           <button
             onClick={gerarComIA}
             disabled={gerando || textoIA.trim().length < 3}
-            className="rounded-full bg-laranja-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-laranja-700 disabled:opacity-40"
+            className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
           >
             {gerando ? "Gerando o Reel… (pode levar ~20s)" : "✨ Gerar Reel"}
           </button>
@@ -355,7 +355,7 @@ export function GeradorReel() {
               onChange={(e) => setLegenda(e.target.value)}
               rows={5}
               placeholder="Escreva a legenda… (pode usar hashtags no fim)"
-              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-sm text-mesa-800 outline-none focus:border-mesa-400"
+              className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-sm text-mesa-800 outline-none focus:border-laranja-400"
             />
           </div>
 

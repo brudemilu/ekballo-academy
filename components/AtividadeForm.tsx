@@ -100,7 +100,7 @@ export function AtividadeForm({
             ? "Escreva aqui suas anotações sobre a mesa — o que te marcou, dúvidas, aplicações..."
             : "Escreva aqui sua reflexão..."
         }
-        className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/40 px-4 py-3 text-mesa-900 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+        className="w-full resize-y rounded-lg border border-mesa-200 bg-mesa-50/40 px-4 py-3 text-mesa-900 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
       />
 
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -120,7 +120,7 @@ export function AtividadeForm({
         <button
           onClick={handleSalvar}
           disabled={salvando || !texto.trim()}
-          className="rounded-full bg-mesa-700 px-5 py-2 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-50"
+          className="rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
         >
           {salvando
             ? "Salvando..."

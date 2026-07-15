@@ -43,7 +43,7 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             value={verso}
             onChange={(e) => setVerso(e.target.value)}
             rows={4}
-            className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
+            className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
             placeholder='Ex: "O Senhor é o meu pastor..."'
           />
         </Field>
@@ -53,7 +53,7 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             <input
               value={ref}
               onChange={(e) => setRef(e.target.value)}
-              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
+              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
               placeholder="Salmos 23:1"
             />
           </Field>
@@ -61,7 +61,7 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             <input
               value={sub}
               onChange={(e) => setSub(e.target.value)}
-              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
+              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
               placeholder="ACF · ou · — Pr. Bruno Fernandes"
             />
           </Field>
@@ -72,7 +72,7 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             <input
               value={top}
               onChange={(e) => setTop(e.target.value)}
-              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
+              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
               placeholder="Ex: Esperança"
             />
             <p className="mt-1 text-xs text-mesa-500">
@@ -83,7 +83,7 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             <input
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
-              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200"
+              className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
               placeholder="Ekballo Academy"
             />
           </Field>
@@ -95,7 +95,7 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             onChange={(e) => setBg(e.target.value)}
             rows={3}
             disabled={!iaAtiva}
-            className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-200 disabled:bg-mesa-50 disabled:text-mesa-400"
+            className="w-full rounded-xl border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100 disabled:bg-mesa-50 disabled:text-mesa-400"
             placeholder="Ex: floresta de pinheiros ao amanhecer, neblina baixa"
           />
           <p className="mt-1 text-xs text-mesa-500">

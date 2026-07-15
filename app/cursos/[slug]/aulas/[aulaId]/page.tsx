@@ -253,7 +253,7 @@ export default async function AulaPage({
             {proxima && (
               <Link
                 href={`/cursos/${curso.slug}/aulas/${proxima.id}`}
-                className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+                className="rounded-full bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
               >
                 Próxima mesa →
               </Link>

@@ -101,14 +101,14 @@ export default async function DevocionalPage() {
           </div>
           <div className="mb-4 h-2 overflow-hidden rounded-full bg-mesa-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-laranja-500 to-oliveira-500 transition-all"
+              className="h-full rounded-full bg-laranja-500 transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
           {proximo ? (
             <Link
               href={`/devocional/dia/${proximo.dia_ano}`}
-              className="inline-block rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+              className="inline-block rounded-full bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
             >
               {totalMarcado === 0
                 ? "Começar pelo dia 1 →"
@@ -180,7 +180,7 @@ export default async function DevocionalPage() {
                       <div className="mt-2 flex items-center gap-3">
                         <div className="h-1.5 w-32 overflow-hidden rounded-full bg-mesa-100">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-laranja-500 to-oliveira-500 transition-all"
+                            className="h-full rounded-full bg-laranja-500 transition-all"
                             style={{ width: `${pctMes}%` }}
                           />
                         </div>
@@ -204,7 +204,7 @@ export default async function DevocionalPage() {
                         <li key={d.dia_ano}>
                           <Link
                             href={`/devocional/dia/${d.dia_ano}`}
-                            className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${
+                            className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
                               ok
                                 ? "border-oliveira-200 bg-oliveira-50 text-oliveira-800 hover:bg-oliveira-100"
                                 : isHoje

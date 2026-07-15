@@ -50,7 +50,7 @@ export function BibliaJumper({
         <select
           value={livroId}
           onChange={(e) => onLivroChange(Number(e.target.value))}
-          className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
+          className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
         >
           <optgroup label="Antigo Testamento">
             {livros
@@ -80,7 +80,7 @@ export function BibliaJumper({
         <select
           value={capitulo}
           onChange={(e) => setCapitulo(Number(e.target.value))}
-          className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
+          className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
         >
           {caps.map((c) => (
             <option key={c} value={c}>
@@ -94,7 +94,7 @@ export function BibliaJumper({
         type="button"
         onClick={ir}
         disabled={livroId === livroAtualId && capitulo === capituloAtual}
-        className="rounded-lg bg-mesa-700 px-4 py-2 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-40"
+        className="rounded-lg bg-laranja-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
       >
         Ir
       </button>

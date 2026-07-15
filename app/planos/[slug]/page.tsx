@@ -107,14 +107,14 @@ export default async function PlanoPage({
           </div>
           <div className="mb-4 h-2 overflow-hidden rounded-full bg-mesa-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-laranja-500 to-oliveira-500 transition-all"
+              className="h-full rounded-full bg-laranja-500 transition-all"
               style={{ width: `${progressoPct}%` }}
             />
           </div>
           {!tudoConcluido ? (
             <Link
               href={`/planos/${slug}/dia/${proximo}`}
-              className="inline-block rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+              className="inline-block rounded-full bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
             >
               {totalConcluidos === 0
                 ? "Começar hoje (dia 1) →"
@@ -139,11 +139,11 @@ export default async function PlanoPage({
               <Link
                 key={d.dia}
                 href={`/planos/${slug}/dia/${d.dia}`}
-                className={`block rounded-lg border px-3 py-2.5 text-sm transition ${
+                className={`block rounded-xl border px-3 py-2.5 text-sm transition ${
                   ok
                     ? "border-oliveira-200 bg-oliveira-50 text-oliveira-800 hover:bg-oliveira-100"
                     : isProximo
-                      ? "border-mesa-400 bg-mesa-50 text-mesa-800 hover:bg-mesa-100"
+                      ? "border-laranja-300 bg-laranja-50 text-mesa-800 hover:bg-laranja-100"
                       : "border-mesa-200 bg-white text-mesa-700 hover:bg-mesa-50"
                 }`}
               >

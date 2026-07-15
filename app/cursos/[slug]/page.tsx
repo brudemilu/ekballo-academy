@@ -122,7 +122,7 @@ export default async function CursoPage({
               return (
                 <li key={aula.id}>
                   <Link href={`/cursos/${curso.slug}/aulas/${aula.id}`}>
-                    <div className="flex items-center gap-5 rounded-xl border border-mesa-200 bg-white p-5 transition hover:border-mesa-300 hover:bg-mesa-50/50">
+                    <div className="lift flex items-center gap-5 rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-laranja-300 hover:shadow-md">
                       <div
                         className={`flex h-12 w-12 flex-none items-center justify-center rounded-full font-serif text-lg font-semibold ${
                           concluida

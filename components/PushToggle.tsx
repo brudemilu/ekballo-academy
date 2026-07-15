@@ -159,7 +159,7 @@ export function PushToggle() {
             <button
               onClick={ativar}
               disabled={acao !== "idle"}
-              className="rounded-full bg-mesa-700 px-4 py-2 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:opacity-60"
+              className="rounded-full bg-laranja-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-60"
             >
               {acao === "ativando" ? "Ativando…" : "Ativar notificações"}
             </button>

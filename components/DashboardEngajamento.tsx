@@ -180,7 +180,7 @@ export function DashboardEngajamento({ data }: { data: DashboardData }) {
 }
 
 // ---------- subcomponentes ----------
-const selectCls = "rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 outline-none focus:border-mesa-400";
+const selectCls = "rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800 outline-none transition focus:border-laranja-400 focus:ring-2 focus:ring-laranja-100";
 
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (

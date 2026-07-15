@@ -146,7 +146,7 @@ export default async function DiaPlanoPage({
           {dia < plano.dias_total ? (
             <Link
               href={`/planos/${slug}/dia/${dia + 1}`}
-              className="rounded-full bg-mesa-700 px-4 py-2 text-sm text-mesa-50 hover:bg-mesa-800"
+              className="rounded-full bg-laranja-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
             >
               Dia {dia + 1} →
             </Link>

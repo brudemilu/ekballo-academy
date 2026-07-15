@@ -200,7 +200,7 @@ export default async function AdminCursoProgressaoPage({
           {/* Desktop: tabela */}
           <div className="hidden overflow-hidden rounded-2xl border border-mesa-200 bg-white md:block">
             <table className="w-full">
-              <thead className="border-b border-mesa-200 bg-mesa-50/50 text-left">
+              <thead className="border-b border-mesa-200 bg-mesa-100 text-left">
                 <tr>
                   <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
                     Discípulo
@@ -216,7 +216,7 @@ export default async function AdminCursoProgressaoPage({
               </thead>
               <tbody className="divide-y divide-mesa-100">
                 {alunos.map((a) => (
-                  <tr key={a.id} className="hover:bg-mesa-50/40">
+                  <tr key={a.id} className="odd:bg-white even:bg-mesa-50/40 transition hover:bg-laranja-50/50">
                     <td className="px-6 py-4">
                       <Link
                         href={`/admin/cursos/${slug}/alunos/${a.id}`}

@@ -58,7 +58,7 @@ export function ComentarioForm({
         }}
         rows={5}
         placeholder="Escreva uma palavra de cuidado, encorajamento ou direcionamento. O discípulo verá esta devolutiva ao voltar à atividade."
-        className="w-full resize-y rounded-lg border border-oliveira-200 bg-white px-4 py-3 outline-none focus:border-oliveira-400 focus:ring-2 focus:ring-oliveira-200"
+        className="w-full resize-y rounded-lg border border-oliveira-200 bg-white px-4 py-3 outline-none transition focus:border-laranja-400 focus:ring-2 focus:ring-laranja-100"
       />
       <div className="mt-3 flex items-center justify-between">
         <p className="text-xs text-mesa-500">
@@ -71,7 +71,7 @@ export function ComentarioForm({
         <button
           onClick={handleSalvar}
           disabled={pending}
-          className="rounded-full bg-oliveira-600 px-5 py-2 text-sm font-medium text-white hover:bg-oliveira-700 disabled:opacity-50"
+          className="rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
         >
           {pending ? "Salvando..." : comentarioInicial ? "Atualizar" : "Enviar devolutiva"}
         </button>

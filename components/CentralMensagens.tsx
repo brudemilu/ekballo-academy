@@ -36,7 +36,7 @@ type Escopo = "todos" | "curso" | "aluno";
 const jidG = (g: Grupo) => g.JID || g.Jid || g.jid || "";
 const nomeG = (g: Grupo) => g.Name || g.name || jidG(g) || "(sem nome)";
 const inputCls =
-  "w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200";
+  "w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100";
 
 export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props) {
   const [aba, setAba] = useState<Aba>("enviar");
@@ -723,7 +723,7 @@ function Compositor({
             type="button"
             onClick={enviar}
             disabled={enviando || (ehDireto && !conectado)}
-            className="rounded-full bg-mesa-700 px-6 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:cursor-not-allowed disabled:bg-mesa-300"
+            className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 hover:bg-laranja-600 disabled:cursor-not-allowed disabled:bg-mesa-300"
           >
             {enviando ? "Salvando…" : agendarPara ? "📅 Agendar" : "Enviar"}
           </button>

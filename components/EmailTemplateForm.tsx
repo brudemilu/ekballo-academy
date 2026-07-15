@@ -90,7 +90,7 @@ export function EmailTemplateForm({ template }: Props) {
               type="text"
               value={assunto}
               onChange={(e) => setAssunto(e.target.value)}
-              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
               placeholder="Ex.: Bem-vindo(a) ao curso {{nome_curso}}"
             />
           </div>
@@ -103,7 +103,7 @@ export function EmailTemplateForm({ template }: Props) {
               value={corpoHtml}
               onChange={(e) => setCorpoHtml(e.target.value)}
               rows={16}
-              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 font-mono text-xs text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 font-mono text-xs text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
               spellCheck={false}
             />
             <p className="mt-1 text-xs text-mesa-500">
@@ -119,7 +119,7 @@ export function EmailTemplateForm({ template }: Props) {
               value={corpoTexto}
               onChange={(e) => setCorpoTexto(e.target.value)}
               rows={6}
-              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-mesa-400 focus:outline-none focus:ring-2 focus:ring-mesa-200"
+              className="w-full rounded-lg border border-mesa-200 bg-mesa-50/50 px-4 py-2.5 text-sm text-mesa-800 focus:border-laranja-400 focus:outline-none focus:ring-2 focus:ring-laranja-100"
               placeholder="Versão em texto puro para clientes que não renderizam HTML (opcional)."
             />
           </div>
@@ -155,7 +155,7 @@ export function EmailTemplateForm({ template }: Props) {
             type="button"
             onClick={handleSalvar}
             disabled={salvando}
-            className="rounded-full bg-mesa-700 px-6 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800 disabled:bg-mesa-300"
+            className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 hover:bg-laranja-600 disabled:bg-mesa-300"
           >
             {salvando ? "Salvando..." : "Salvar alterações"}
           </button>

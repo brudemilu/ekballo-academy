@@ -115,7 +115,7 @@ export default function CadastroPage() {
             </p>
             <Link
               href="/login"
-              className="inline-block rounded-full bg-mesa-700 px-6 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+              className="inline-block rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
             >
               Ir para o login
             </Link>
@@ -159,7 +159,7 @@ export default function CadastroPage() {
                 required
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                 placeholder="Seu nome"
               />
             </div>
@@ -174,7 +174,7 @@ export default function CadastroPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                 placeholder="seu@email.com"
               />
             </div>
@@ -191,7 +191,7 @@ export default function CadastroPage() {
                 required
                 value={telefone}
                 onChange={(e) => setTelefone(formatTelefoneBR(e.target.value))}
-                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                 placeholder="(11) 99999-8888"
               />
               <p className="mt-1.5 text-xs text-mesa-500">
@@ -211,7 +211,7 @@ export default function CadastroPage() {
                 minLength={6}
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                 placeholder="••••••••"
               />
             </div>
@@ -225,7 +225,7 @@ export default function CadastroPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-mesa-700 py-3 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-60"
+              className="w-full rounded-lg bg-laranja-500 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-60"
             >
               {loading ? "Criando conta..." : "Criar minha conta gratuita"}
             </button>

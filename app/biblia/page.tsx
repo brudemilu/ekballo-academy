@@ -117,7 +117,7 @@ function GrupoBlock({
           <li key={l.id}>
             <Link
               href={`/biblia/${l.id}/1`}
-              className="flex h-full items-center justify-between rounded-lg border border-mesa-200 bg-white px-3 py-2.5 text-sm text-mesa-700 transition hover:border-mesa-400 hover:bg-mesa-50"
+              className="flex h-full items-center justify-between rounded-xl border border-mesa-200 bg-white px-3 py-2.5 text-sm text-mesa-700 transition hover:-translate-y-0.5 hover:border-laranja-300 hover:bg-laranja-50/40 hover:shadow-sm"
             >
               <span className="truncate">{l.nome}</span>
               <span className="ml-2 flex-none text-xs text-mesa-400">

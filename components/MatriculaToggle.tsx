@@ -62,7 +62,7 @@ export function MatriculaToggle({
         className={
           matriculado
             ? "rounded-full border border-oliveira-300 bg-oliveira-50 px-5 py-2 text-sm font-medium text-oliveira-800 hover:bg-oliveira-100 disabled:opacity-50"
-            : "rounded-full bg-laranja-600 px-5 py-2 text-sm font-medium text-white hover:bg-laranja-700 disabled:opacity-50"
+            : "rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
         }
       >
         {pending

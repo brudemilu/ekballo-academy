@@ -95,7 +95,7 @@ export default function RedefinirSenhaPage() {
               </p>
               <Link
                 href="/recuperar-senha"
-                className="block w-full rounded-lg bg-mesa-700 py-3 text-center text-sm font-medium text-mesa-50 hover:bg-mesa-800"
+                className="block w-full rounded-lg bg-laranja-500 py-3 text-center text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
               >
                 Pedir novo link
               </Link>
@@ -146,7 +146,7 @@ export default function RedefinirSenhaPage() {
                     minLength={6}
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                     placeholder="••••••••"
                   />
                 </div>
@@ -165,7 +165,7 @@ export default function RedefinirSenhaPage() {
                     minLength={6}
                     value={senha2}
                     onChange={(e) => setSenha2(e.target.value)}
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-mesa-400 focus:bg-white focus:ring-2 focus:ring-mesa-200"
+                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
                     placeholder="••••••••"
                   />
                 </div>
@@ -179,7 +179,7 @@ export default function RedefinirSenhaPage() {
                 <button
                   type="submit"
                   disabled={loading || autorizado === null}
-                  className="w-full rounded-lg bg-mesa-700 py-3 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800 disabled:opacity-60"
+                  className="w-full rounded-lg bg-laranja-500 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-60"
                 >
                   {loading ? "Salvando..." : "Salvar nova senha"}
                 </button>

@@ -71,10 +71,10 @@ export function MarcarConcluida({
     <button
       onClick={handleClick}
       disabled={pending}
-      className={`rounded-full px-6 py-2.5 text-sm font-medium transition disabled:opacity-50 ${
+      className={`rounded-full px-6 py-2.5 text-sm transition disabled:opacity-50 ${
         concluida
-          ? "border border-oliveira-300 bg-oliveira-100 text-oliveira-800 hover:bg-oliveira-200"
-          : "bg-oliveira-600 text-white hover:bg-oliveira-700"
+          ? "border border-oliveira-300 bg-oliveira-100 font-medium text-oliveira-800 hover:bg-oliveira-200"
+          : "bg-laranja-500 font-semibold text-white shadow-sm shadow-laranja-500/20 hover:bg-laranja-600"
       }`}
     >
       {concluida

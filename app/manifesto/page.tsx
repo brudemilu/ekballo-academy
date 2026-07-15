@@ -11,7 +11,7 @@ export default function Manifesto() {
           </Link>
           <Link
             href="/cadastro"
-            className="rounded-full bg-mesa-700 px-5 py-2 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800"
+            className="rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
           >
             Comece agora
           </Link>
@@ -87,7 +87,7 @@ export default function Manifesto() {
           </p>
           <Link
             href="/cadastro"
-            className="rounded-full bg-mesa-700 px-7 py-3 text-sm font-medium text-mesa-50 transition hover:bg-mesa-800"
+            className="rounded-full bg-laranja-500 px-7 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
           >
             Criar minha conta
           </Link>
