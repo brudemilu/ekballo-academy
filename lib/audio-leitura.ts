@@ -8,7 +8,9 @@ import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 
 const VOZ = process.env.AUDIO_VOZ || "pt-BR-AntonioNeural"; // masc. pastoral
 const RATE = process.env.AUDIO_RATE || "-6%"; // ritmo tranquilo de leitura
-const MAX_CHARS = 1800; // limite por requisição do TTS
+// Pedaços menores = síntese mais curta e confiável (o Edge fecha o stream em
+// pedaços longos/sob carga com "Stream closed before the synthesis completed").
+const MAX_CHARS = 1200;
 
 // Quebra o conteúdo em pedaços (~MAX_CHARS) em fronteira de parágrafo/frase.
 export function quebrarEmPedacos(conteudo: string): string[] {
@@ -50,47 +52,62 @@ export function quebrarEmPedacos(conteudo: string): string[] {
   return pedacos;
 }
 
-// Sintetiza UM pedaço em MP3 (Buffer). Retry em falha (o Edge às vezes fecha
-// sem áudio).
-async function ttsPedaco(texto: string, tentativas = 3): Promise<Buffer> {
+// Sintetiza UM pedaço em MP3 (Buffer). O Edge fecha o stream no meio às vezes
+// (rede/rate-limit) — retry com espera exponencial e SÓ aceita síntese completa
+// (resolve no 'end'; 'close' antes do 'end' = falha → retenta).
+async function ttsPedaco(texto: string, tentativas = 8): Promise<Buffer> {
   let ultimoErro: unknown;
   for (let t = 0; t < tentativas; t += 1) {
     try {
       const tts = new MsEdgeTTS();
       await tts.setMetadata(VOZ, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
       const { audioStream } = tts.toStream(texto, { rate: RATE });
-      const chunks: Buffer[] = [];
-      await new Promise<void>((resolve, reject) => {
-        let feito = false;
-        const fim = () => {
-          if (!feito) {
-            feito = true;
-            resolve();
-          }
-        };
+      const buf = await new Promise<Buffer>((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        let terminou = false;
         audioStream.on("data", (d: Buffer) => chunks.push(Buffer.from(d)));
-        audioStream.on("end", fim);
-        audioStream.on("close", fim);
+        audioStream.on("end", () => {
+          terminou = true;
+          resolve(Buffer.concat(chunks));
+        });
         audioStream.on("error", reject);
+        audioStream.on("close", () => {
+          if (!terminou) reject(new Error("stream fechou antes de terminar a síntese"));
+        });
       });
-      const buf = Buffer.concat(chunks);
       if (buf.length > 0) return buf;
       throw new Error("TTS retornou vazio");
     } catch (e) {
       ultimoErro = e;
-      await new Promise((r) => setTimeout(r, 700 * (t + 1)));
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`[audio] pedaço falhou (tentativa ${t + 1}/${tentativas}): ${msg}`);
+      if (t < tentativas - 1) {
+        // espera longa e paciente (o "stream closed" é rate-limit do Edge):
+        await new Promise((r) => setTimeout(r, Math.min(2000 * 2 ** t, 20000))); // 2,4,8,16,20,20,20s
+      }
     }
   }
   throw ultimoErro instanceof Error ? ultimoErro : new Error("falha no TTS");
 }
 
 // Gera o MP3 completo da leitura de uma aula (todos os pedaços concatenados).
+// Concorrência de pedaços. Modo GENTIL (default 1 = um por vez) pra não
+// provocar o rate-limit do Edge (que fecha os streams e bloqueia o IP). Dá pra
+// subir via env AUDIO_CONCORRENCIA se um dia trocar de motor.
+const CONCORRENCIA = Number(process.env.AUDIO_CONCORRENCIA || 1);
+const PAUSA_MS = Number(process.env.AUDIO_PAUSA_MS || 400); // respiro entre pedaços
+
 export async function gerarMp3Leitura(conteudo: string): Promise<Buffer> {
   const pedacos = quebrarEmPedacos(conteudo);
   if (!pedacos.length) throw new Error("aula sem conteúdo para narrar");
-  const partes: Buffer[] = [];
-  for (const p of pedacos) {
-    partes.push(await ttsPedaco(p)); // sequencial: não martela o serviço
+  const partes: Buffer[] = new Array(pedacos.length);
+  for (let inicio = 0; inicio < pedacos.length; inicio += CONCORRENCIA) {
+    const lote = pedacos.slice(inicio, inicio + CONCORRENCIA);
+    const bufs = await Promise.all(lote.map((p) => ttsPedaco(p)));
+    bufs.forEach((b, k) => {
+      partes[inicio + k] = b;
+    });
+    if (inicio + CONCORRENCIA < pedacos.length) await new Promise((r) => setTimeout(r, PAUSA_MS));
   }
   return Buffer.concat(partes);
 }

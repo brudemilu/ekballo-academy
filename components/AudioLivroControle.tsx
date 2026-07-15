@@ -100,11 +100,12 @@ export default function AudioLivroControle({
 
   if (status === "pendente" || status === "gerando") {
     const pct = total > 0 ? Math.round((progresso / total) * 100) : 0;
+    const naFila = status === "pendente" && progresso === 0;
     return (
       <div className="w-full max-w-md">
         <div className="mb-1.5 flex items-center gap-2 text-sm font-medium text-laranja-700">
           <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-laranja-500" />
-          Gerando áudio… {progresso}/{total} capítulos
+          {naFila ? "🎧 Na fila para gerar áudio…" : `🎧 Gerando áudio… ${progresso}/${total} capítulos`}
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-bege-200">
           <div className="h-full rounded-full bg-laranja-500 transition-all" style={{ width: `${pct}%` }} />

@@ -94,9 +94,11 @@ export async function GET(req: NextRequest) {
 
       await admin.from("aulas").update({ audio_leitura_url: path }).eq("id", aula.id);
       geradas += 1;
+      console.log(`[audio] ${candidato.slug}: capítulo gerado (${Math.round(mp3.length / 1024)} KB)`);
 
       const feitas = await contarComAudio(admin, candidato.id);
-      await admin.from("cursos").update({ audio_progresso: feitas }).eq("id", candidato.id);
+      // progrediu → zera o contador de falhas
+      await admin.from("cursos").update({ audio_progresso: feitas, audio_falhas: 0 }).eq("id", candidato.id);
     }
 
     // janela esgotou mas ainda há capítulos: libera o lock pro próximo tick
@@ -111,13 +113,30 @@ export async function GET(req: NextRequest) {
       geradas_neste_tick: geradas,
     });
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "erro na geração";
+    // Não erra o livro na 1ª falha (costuma ser rate-limit transitório do Edge).
+    // Conta a falha, solta o lock e deixa 'gerando' pra retentar no próximo tick.
+    // Só marca 'erro' após MAX_FALHAS consecutivas (o contador zera a cada avanço).
+    const MAX_FALHAS = 20;
+    const { data: cur } = await admin
+      .from("cursos")
+      .select("audio_falhas")
+      .eq("id", candidato.id)
+      .maybeSingle();
+    const falhas = (cur?.audio_falhas ?? 0) + 1;
+    if (falhas >= MAX_FALHAS) {
+      console.error(`[audio] ${candidato.slug}: DESISTIU após ${falhas} falhas — ${msg}`);
+      await admin
+        .from("cursos")
+        .update({ audio_status: "erro", audio_falhas: falhas, audio_lock_ate: null })
+        .eq("id", candidato.id);
+      return NextResponse.json({ ok: false, curso: candidato.slug, erro: msg, falhas }, { status: 500 });
+    }
+    console.warn(`[audio] ${candidato.slug}: capítulo falhou (${falhas}/${MAX_FALHAS}) — retentará: ${msg}`);
     await admin
       .from("cursos")
-      .update({ audio_status: "erro", audio_lock_ate: null })
+      .update({ audio_falhas: falhas, audio_lock_ate: null })
       .eq("id", candidato.id);
-    return NextResponse.json(
-      { ok: false, curso: candidato.slug, erro: e instanceof Error ? e.message : "erro na geração" },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, curso: candidato.slug, retry: true, falhas }, { status: 200 });
   }
 }
