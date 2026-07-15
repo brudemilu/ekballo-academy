@@ -16,10 +16,15 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BUILD_ID: buildId,
   },
   // ffmpeg-static: não bundlar (mantém o caminho real do binário em node_modules)
-  serverExternalPackages: ["ffmpeg-static"],
-  // e garante que o binário entre no deploy da função de render (Vercel).
+  // msedge-tts: TTS do áudio de leitura — externo p/ o tracing incluir no standalone.
+  serverExternalPackages: ["ffmpeg-static", "msedge-tts"],
+  // e garante que o binário/lib entre no deploy da função de render.
   outputFileTracingIncludes: {
     "/api/admin/instagram/reel-gerar": ["./node_modules/ffmpeg-static/**"],
+    "/api/cron/gerar-audio-tick": [
+      "./node_modules/msedge-tts/**",
+      "./node_modules/ws/**",
+    ],
   },
 };
 

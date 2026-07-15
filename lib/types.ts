@@ -30,6 +30,11 @@ export type Curso = {
   aulas_livres?: boolean | null;
   // Seção da vitrine (ver lib/categorias.ts). NULL = curso sem categoria → "Outros".
   categoria?: string | null;
+  // Áudio de leitura sob demanda (solicitado pelo master).
+  // 'nenhum' | 'pendente' | 'gerando' | 'pronto' | 'erro'
+  audio_status?: string | null;
+  audio_progresso?: number | null;
+  audio_total?: number | null;
   created_at: string;
 };
 

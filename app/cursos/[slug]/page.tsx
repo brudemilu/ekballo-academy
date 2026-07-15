@@ -4,6 +4,7 @@ import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import { BaixarOffline } from "@/components/BaixarOffline";
+import AudioLivroControle from "@/components/AudioLivroControle";
 import {
   getCurrentSession,
   getCursoBySlug,
@@ -84,6 +85,19 @@ export default async function CursoPage({
             <p className="text-lg leading-relaxed text-mesa-700 text-justify hyphens-auto">
               {curso.descricao}
             </p>
+          )}
+          {(session.profile?.is_admin ||
+            (curso.audio_status && curso.audio_status !== "nenhum")) && (
+            <div className="mt-6 border-t border-mesa-100 pt-5">
+              <AudioLivroControle
+                cursoId={curso.id}
+                slug={curso.slug}
+                isMaster={!!session.profile?.is_admin}
+                statusInicial={(curso.audio_status as "nenhum") ?? "nenhum"}
+                progressoInicial={curso.audio_progresso ?? 0}
+                totalInicial={curso.audio_total ?? 0}
+              />
+            </div>
           )}
         </div>
 
