@@ -63,9 +63,11 @@ export default async function DashboardPage() {
     ? todosCursos
     : todosCursos.filter((c) => matriculasMap.has(c.id));
 
-  // Resolve imagens (path do bucket privado vira signed URL)
+  // Resolve imagens (path do bucket privado vira signed URL). Pula os livros
+  // que já têm capa estática em CAPA_LIVRO — pra esses o card não usa o signed
+  // URL, então assinar seria uma chamada de rede à toa (era o maior gargalo).
   const imagensResolvidas = await Promise.all(
-    cursos.map((c) => getMaterialUrl(c.imagem_url))
+    cursos.map((c) => (CAPA_LIVRO[c.slug] ? Promise.resolve(null) : getMaterialUrl(c.imagem_url)))
   );
   const imagemMap = new Map(
     cursos.map((c, i) => [c.id, imagensResolvidas[i]])

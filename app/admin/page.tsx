@@ -59,8 +59,10 @@ export default async function AdminPage() {
     listCursosPublicados(),
     isMaster ? listLeiturasConcluidas() : Promise.resolve([]),
   ]);
+  // Pula o signed URL dos livros com capa estática (CAPA_LIVRO) — não é usado
+  // no card e era o maior gargalo (uma chamada de rede por curso, ~193).
   const imagensResolvidas = await Promise.all(
-    cursos.map((c) => getMaterialUrl(c.imagem_url))
+    cursos.map((c) => (CAPA_LIVRO[c.slug] ? Promise.resolve(null) : getMaterialUrl(c.imagem_url)))
   );
   const imagemMap = new Map(
     cursos.map((c, i) => [c.id, imagensResolvidas[i]])
