@@ -132,12 +132,12 @@ export default async function DashboardPage() {
           )}
           <SeloOffline slug={curso.slug} />
           {curso.audio_status === "pronto" ? (
-            <span className="absolute bottom-2 left-2 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
-              🎧 Áudio
+            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-oliveira-600/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+              🎧 Com áudio
             </span>
           ) : curso.audio_status === "gerando" || curso.audio_status === "pendente" ? (
-            <span className="absolute bottom-2 left-2 rounded-full bg-laranja-500/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
-              🎧 Gerando…
+            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-laranja-500/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+              🎧 Gerando áudio…
             </span>
           ) : null}
         </div>

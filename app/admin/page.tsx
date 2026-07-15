@@ -104,6 +104,15 @@ export default async function AdminPage() {
             </span>
           )}
           <SeloOffline slug={curso.slug} />
+          {curso.audio_status === "pronto" ? (
+            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-oliveira-600/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+              🎧 Com áudio
+            </span>
+          ) : curso.audio_status === "gerando" || curso.audio_status === "pendente" ? (
+            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-laranja-500/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+              🎧 Gerando áudio…
+            </span>
+          ) : null}
         </div>
         <div className="flex flex-1 items-center justify-center px-2.5 py-3">
           <h3 className="line-clamp-2 text-center font-serif text-sm font-semibold leading-snug text-mesa-800">
