@@ -169,7 +169,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
         alt=""
         width={W}
         height={H}
-        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.16 }}
+        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.1 }}
       />
       {/* véu de papel BEM leve (mantém a foto vibrante, só amarra o tom) */}
       <div
@@ -210,6 +210,16 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
             "radial-gradient(82% 70% at 50% 46%, rgba(80,55,15,0) 64%, rgba(70,48,12,0.1) 100%)",
         }}
       />
+      {/* scrim inferior — legibilidade do rodapé, mantém a foto vibrante em cima */}
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(0deg, rgba(22,26,40,0.52) 0%, rgba(22,26,40,0.18) 15%, rgba(22,26,40,0) 34%)",
+        }}
+      />
       {/* respingos na zona de mescla (cor do tema) */}
       {p.splatterSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -218,7 +228,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           alt=""
           width={W}
           height={Math.round(H * 0.42)}
-          style={{ position: "absolute", left: 0, top: Math.round(H * 0.4), width: W, height: Math.round(H * 0.42), objectFit: "cover", opacity: 0.4 }}
+          style={{ position: "absolute", left: 0, top: Math.round(H * 0.4), width: W, height: Math.round(H * 0.42), objectFit: "cover", opacity: 0.1 }}
         />
       ) : null}
 
@@ -230,14 +240,24 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           position: "relative",
           width: "100%",
           height: "100%",
-          padding: "70px 52px",
-          justifyContent: "center",
+          padding: "86px 66px",
+          justifyContent: "space-between",
           alignItems: "center",
           textAlign: "center",
         }}
       >
-        {/* bloco de texto (sem assinatura) */}
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        {/* KICKER / eyebrow no topo — dá estrutura editorial */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {p.top ? (
+            <div style={{ display: "flex", fontFamily: "Display", fontStyle: f.style, fontSize: 30, letterSpacing: 7, color: gold }}>
+              {p.top.toUpperCase()}
+            </div>
+          ) : null}
+          <div style={{ display: "flex", width: p.top ? 76 : 52, height: 5, marginTop: p.top ? 18 : 0, borderRadius: 3, backgroundColor: gold }} />
+        </div>
+
+        {/* bloco de texto */}
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "26px 0" }}>
           <div
             style={{
               display: "flex",
@@ -305,6 +325,19 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
             </div>
           ) : null}
         </div>
+
+        {/* RODAPÉ: wordmark da marca + referência opcional */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {p.ref ? (
+            <div style={{ display: "flex", fontFamily: "Display", fontStyle: f.style, fontSize: 30, letterSpacing: 2, color: "#F6ECCB", marginBottom: 14 }}>
+              {p.ref}
+            </div>
+          ) : null}
+          <div style={{ display: "flex", width: 44, height: 4, marginBottom: 16, borderRadius: 2, backgroundColor: gold, opacity: 0.95 }} />
+          <div style={{ display: "flex", fontFamily: "Display", fontStyle: f.style, fontSize: 25, letterSpacing: 8, color: "#F6ECCB" }}>
+            EKBALLO ACADEMY
+          </div>
+        </div>
       </div>
 
       {/* grão de grunge por cima de tudo (textura sutil em papel e letras) */}
@@ -318,6 +351,20 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.1 }}
         />
       ) : null}
+
+      {/* moldura fina — acabamento "designed", por cima de tudo */}
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          top: 40,
+          left: 40,
+          right: 40,
+          bottom: 40,
+          border: "2px solid rgba(27,42,74,0.22)",
+          borderRadius: 8,
+        }}
+      />
     </div>
   );
 }
