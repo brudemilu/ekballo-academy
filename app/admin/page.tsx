@@ -134,14 +134,15 @@ export default async function AdminPage() {
 
   return (
     <AdminShell current="painel" session={session}>
-      <div className="mb-8">
-        <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
+      <div className="mb-10">
+        <span className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-600">
+          <span className="h-px w-8 bg-laranja-400" aria-hidden />
           A mesa por dentro
-        </p>
-        <h1 className="font-serif text-3xl font-semibold text-mesa-800 sm:text-4xl">
+        </span>
+        <h1 className="mt-3 font-serif text-4xl font-semibold text-mesa-900 sm:text-5xl">
           Olá, {greetingName(session.profile?.nome)}.
         </h1>
-        <p className="mt-2 max-w-xl text-mesa-600">
+        <p className="mt-3 max-w-xl text-lg leading-relaxed text-mesa-600">
           Quem chegou, quem respondeu e o que espera por você — a vida da mesa num relance.
         </p>
       </div>
@@ -150,7 +151,7 @@ export default async function AdminPage() {
       {stats.respostasSemComentario > 0 && (
         <Link
           href="/admin/respostas?status=pendentes"
-          className="lift mb-8 flex items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 via-laranja-50 to-bege-100 p-6 transition hover:border-amber-400 hover:shadow-md"
+          className="lift mb-10 flex items-center justify-between gap-4 rounded-2xl border border-amber-300 border-l-[6px] border-l-amber-500 bg-gradient-to-r from-amber-50 via-laranja-50 to-bege-50 p-6 shadow-sm transition hover:border-amber-400 hover:shadow-md"
         >
           <div className="min-w-0">
             <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-amber-700">
@@ -179,24 +180,24 @@ export default async function AdminPage() {
             <Link
               key={s.label}
               href={s.href}
-              className={`lift group flex flex-col justify-between gap-4 rounded-2xl border p-5 transition ${
+              className={`lift group flex flex-col justify-between gap-5 rounded-2xl border p-6 transition ${
                 destaque
-                  ? "border-amber-300 bg-amber-50 hover:border-amber-400"
+                  ? "border-amber-300 bg-amber-50 hover:border-amber-400 hover:shadow-md"
                   : "border-mesa-200 bg-white hover:border-laranja-300 hover:shadow-md"
               }`}
             >
               <span
-                className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg transition ${
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl shadow-sm transition ${
                   destaque ? "animate-pulse bg-amber-100" : "bg-mesa-100 group-hover:bg-laranja-100"
                 }`}
               >
                 {s.icon}
               </span>
               <div className="min-w-0">
-                <p className={`font-serif text-3xl font-semibold leading-none ${s.color}`}>
+                <p className={`font-serif text-4xl font-semibold leading-none ${s.color}`}>
                   {s.value}
                 </p>
-                <p className="mt-1.5 truncate text-sm font-medium text-mesa-500">
+                <p className="mt-2 truncate text-sm font-medium text-mesa-500">
                   {s.label}
                 </p>
               </div>

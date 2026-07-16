@@ -98,12 +98,8 @@ export default async function DashboardPage() {
         : ogUrl ?? null
     );
     return (
-      <Link
-        key={curso.id}
-        href={href}
-        className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
-      >
-        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
+      <Link key={curso.id} href={href} className="group flex flex-col gap-3">
+        <div className="lift relative aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.10)] ring-1 ring-mesa-200/70">
           {capa ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -111,7 +107,7 @@ export default async function DashboardPage() {
               alt={curso.titulo}
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
             />
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -119,168 +115,184 @@ export default async function DashboardPage() {
             </div>
           )}
           {concluido ? (
-            <span className="absolute left-2 top-2 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-oliveira-700/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur">
               ✓ Concluído
             </span>
           ) : matricula ? (
-            <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-mesa-700 shadow-sm backdrop-blur">
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-laranja-200 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-laranja-600 shadow-sm backdrop-blur">
               Em andamento
             </span>
           ) : null}
           {curso.is_pago && (
-            <span className="absolute right-2 top-2 rounded-full bg-mesa-800/85 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+            <span className="absolute right-3 top-3 inline-flex items-center rounded-full bg-mesa-900/85 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur">
               Pago
             </span>
           )}
           <SeloOffline slug={curso.slug} />
           {curso.audio_status === "pronto" ? (
-            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-oliveira-600/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+            <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-oliveira-700/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md backdrop-blur">
               🎧 Com áudio
             </span>
           ) : curso.audio_status === "gerando" || curso.audio_status === "pendente" ? (
-            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-laranja-500/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md">
+            <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-laranja-500/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md backdrop-blur">
               🎧 Gerando áudio…
             </span>
           ) : null}
         </div>
-        <div className="flex flex-1 items-center justify-center px-2.5 py-3">
-          <h3 className="line-clamp-2 text-center font-serif text-sm font-semibold leading-snug text-mesa-800">
-            {curso.titulo}
-          </h3>
-        </div>
+        <h3 className="line-clamp-2 font-serif text-[15px] font-semibold leading-snug text-mesa-800 transition-colors group-hover:text-laranja-600">
+          {curso.titulo}
+        </h3>
       </Link>
     );
   };
 
   return (
     <main className="min-h-screen bg-mesa-50">
-      <header className="border-b border-mesa-200 bg-white/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-mesa-200 bg-white/85 backdrop-blur-md">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard">
+          <Link href="/dashboard" className="transition-opacity hover:opacity-80">
             <Logo />
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Link
               href="/biblioteca"
-              className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-sm font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white px-4 py-2 text-sm font-medium text-mesa-700 shadow-sm transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700"
               title="Livros baixados para ler e ouvir offline"
             >
               📚 <span className="hidden sm:inline">Biblioteca</span>
             </Link>
-            <UserMenu
-            nome={session.profile?.nome || null}
-            email={session.profile?.email || session.email}
-            isAdmin={!!session.profile?.is_admin}
-          />
+            <div className="border-l border-mesa-200 pl-3">
+              <UserMenu
+                nome={session.profile?.nome || null}
+                email={session.profile?.email || session.email}
+                isAdmin={!!session.profile?.is_admin}
+              />
+            </div>
           </div>
         </nav>
       </header>
 
-      <div className="mx-auto max-w-6xl px-6 py-12">
+      <div className="mx-auto max-w-6xl px-6 py-14">
         {semTelefone && <CompletarTelefoneBanner userId={session.userId} />}
 
-        <div className="mb-12">
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
+        <div className="mb-14 max-w-2xl">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">
             Bem-vindo de volta
           </p>
-          <h1 className="font-serif text-4xl font-semibold text-mesa-800">
+          <h1 className="font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-mesa-900 sm:text-5xl">
             Olá, {greetingName(session.profile?.nome)}.
           </h1>
-          <p className="mt-3 max-w-2xl text-mesa-700">
+          <p className="mt-5 text-lg leading-relaxed text-mesa-600">
             Aqui está sua trilha. Escolha uma temática, faça no seu ritmo, deixe
             sua reflexão. O líder vai ler e te responder.
           </p>
         </div>
 
-        {/* Minha agenda (só pra quem tem acesso, ex.: Débora) */}
-        {mostrarAgenda && (
-          <Link
-            href="/admin/agenda"
-            className="mb-10 flex items-center justify-between gap-3 rounded-2xl border border-mesa-300 bg-white px-6 py-5 transition hover:border-laranja-300 hover:shadow-md"
-          >
-            <div className="min-w-0">
-              <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-                Pessoal
-              </p>
-              <h2 className="font-serif text-xl font-semibold text-mesa-800">
-                📅 Minha agenda
-              </h2>
-              <p className="mt-1 text-sm text-mesa-600">
-                Seus compromissos e os do Google Calendar, num lugar só.
-              </p>
-            </div>
-            <span className="flex-none text-2xl text-laranja-600">→</span>
-          </Link>
-        )}
-
-        {/* Devocional de hoje (destaque no topo) */}
-        {devocional && (
-          <Link
-            href="/devocional"
-            className="mb-10 flex flex-col gap-3 rounded-2xl border border-laranja-200 bg-gradient-to-br from-laranja-50 to-bege-100 px-6 py-5 transition hover:border-laranja-300 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div className="min-w-0">
-              <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-laranja-700">
-                Devocional de hoje
-              </p>
-              <h2 className="font-serif text-xl font-semibold text-mesa-800">
-                {devocional.titulo || devocional.versiculo_ref}
-              </h2>
-              <p className="mt-1 line-clamp-2 text-sm italic text-mesa-600">
-                &ldquo;{devocional.versiculo_texto}&rdquo;{" "}
-                <span className="not-italic text-mesa-500">
-                  — {devocional.versiculo_ref}
+        {/* Atalhos: agenda + devocional (accent bar + botão circular) */}
+        {(mostrarAgenda || devocional) && (
+          <div className="mb-14 grid gap-5 lg:grid-cols-2">
+            {/* Minha agenda (só pra quem tem acesso, ex.: Débora) */}
+            {mostrarAgenda && (
+              <Link
+                href="/admin/agenda"
+                className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
+              >
+                <span className="absolute inset-y-0 left-0 w-1 bg-mesa-400" aria-hidden />
+                <div className="min-w-0 pl-2">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">
+                    Pessoal
+                  </p>
+                  <h2 className="font-serif text-xl font-semibold text-mesa-900">
+                    📅 Minha agenda
+                  </h2>
+                  <p className="mt-1.5 text-sm leading-relaxed text-mesa-600">
+                    Seus compromissos e os do Google Calendar, num lugar só.
+                  </p>
+                </div>
+                <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-mesa-100 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
+                  →
                 </span>
-              </p>
-            </div>
-            <span className="flex-none text-2xl text-laranja-600">→</span>
-          </Link>
+              </Link>
+            )}
+
+            {/* Devocional de hoje (destaque no topo) */}
+            {devocional && (
+              <Link
+                href="/devocional"
+                className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-laranja-200 bg-gradient-to-br from-laranja-50 to-bege-100 p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
+              >
+                <span className="absolute inset-y-0 left-0 w-1 bg-laranja-500" aria-hidden />
+                <div className="min-w-0 pl-2">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-700">
+                    Devocional de hoje
+                  </p>
+                  <h2 className="font-serif text-xl font-semibold text-mesa-900">
+                    {devocional.titulo || devocional.versiculo_ref}
+                  </h2>
+                  <p className="mt-1.5 line-clamp-2 border-l-2 border-laranja-200 pl-3 text-sm italic leading-relaxed text-mesa-600">
+                    &ldquo;{devocional.versiculo_texto}&rdquo;{" "}
+                    <span className="not-italic text-mesa-500">
+                      — {devocional.versiculo_ref}
+                    </span>
+                  </p>
+                </div>
+                <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white/70 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
+                  →
+                </span>
+              </Link>
+            )}
+          </div>
         )}
 
 
         {cursos.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-20 text-center">
-            <p className="font-serif text-xl text-mesa-500">
+          <div className="rounded-2xl border-2 border-dashed border-mesa-300 bg-white/60 px-6 py-20 text-center">
+            <p className="font-serif text-2xl text-mesa-700">
               Sua matrícula ainda não foi liberada.
             </p>
-            <p className="mt-2 mx-auto max-w-md text-sm text-mesa-500">
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-mesa-500">
               Seu líder pastoral vai te matricular nas temáticas da sua trilha. Quando isso acontecer, elas aparecem aqui.
             </p>
           </div>
         ) : mostrarSecoes ? (
-          <div className="space-y-10">
+          <div className="space-y-14">
             {grupos.map((grupo) => (
               <section key={grupo.label}>
-                <h2 className="mb-3 font-serif text-xl font-semibold text-mesa-800">
+                <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
                   {grupo.label}
                 </h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
                   {grupo.cursos.map((curso) => renderCard(curso))}
                 </div>
               </section>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {cursos.map((curso) => renderCard(curso))}
-          </div>
+          <section>
+            <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
+              Temáticas
+            </h2>
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
+              {cursos.map((curso) => renderCard(curso))}
+            </div>
+          </section>
         )}
 
         {/* Estante de livros lidos — só aparece quando há leitura concluída */}
         {livrosLidos.length > 0 && (
-          <section className="mt-14 border-t border-mesa-200 pt-10">
-            <div className="mb-1 flex items-baseline gap-3">
-              <h2 className="font-serif text-2xl font-semibold text-mesa-800">
+          <section className="mt-16 border-t border-mesa-200 pt-12">
+            <div className="mb-2 flex items-baseline gap-3">
+              <h2 className="font-serif text-2xl font-semibold text-mesa-900">
                 Livros lidos
               </h2>
               <span className="rounded-full bg-oliveira-100 px-2.5 py-0.5 text-xs font-semibold text-oliveira-700">
                 {livrosLidos.length}
               </span>
             </div>
-            <p className="mb-5 text-sm text-mesa-600">
+            <p className="mb-8 text-sm leading-relaxed text-mesa-600">
               As leituras que você concluiu, com a data em que fechou cada livro.
             </p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
               {livrosLidos.map(({ curso, em }) => {
                 const ogUrl = imagemMap.get(curso.id);
                 const capa =
@@ -292,9 +304,9 @@ export default async function DashboardPage() {
                   <Link
                     key={curso.id}
                     href={curso.external_path ?? `/cursos/${curso.slug}`}
-                    className="lift group flex flex-col overflow-hidden rounded-2xl border border-oliveira-200 bg-white transition hover:border-oliveira-400 hover:shadow-md"
+                    className="group flex flex-col gap-3"
                   >
-                    <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-oliveira-100 via-bege-100 to-laranja-100">
+                    <div className="lift relative aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-oliveira-100 via-bege-100 to-laranja-100 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.10)] ring-1 ring-oliveira-200/70">
                       {capa ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -302,19 +314,19 @@ export default async function DashboardPage() {
                           alt={curso.titulo}
                           loading="lazy"
                           decoding="async"
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                         />
                       ) : (
                         <div className="flex h-full items-center justify-center">
                           <Logo />
                         </div>
                       )}
-                      <span className="absolute left-2 top-2 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm">
+                      <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-oliveira-700/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur">
                         ✓ Lido
                       </span>
                     </div>
-                    <div className="flex flex-1 flex-col items-center justify-center gap-1 px-2.5 py-3 text-center">
-                      <h3 className="line-clamp-2 font-serif text-sm font-semibold leading-snug text-mesa-800">
+                    <div className="flex flex-col gap-1">
+                      <h3 className="line-clamp-2 font-serif text-[15px] font-semibold leading-snug text-mesa-800 transition-colors group-hover:text-laranja-600">
                         {curso.titulo}
                       </h3>
                       <p className="text-[11px] font-medium text-oliveira-700">

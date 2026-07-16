@@ -146,53 +146,59 @@ export async function AdminShell({
         </nav>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 md:grid md:grid-cols-[minmax(0,340px)_1fr] md:gap-8">
-        <aside className="md:sticky md:top-6 md:self-start">
-          <p className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-mesa-500">
-            Painel pastoral
-          </p>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 md:grid md:grid-cols-[minmax(0,320px)_1fr] md:gap-10">
+        <aside className="md:sticky md:top-8 md:self-start">
+          {/* Painel lateral como superfície própria: card destacado com cabeçalho
+              e divisor, cada função num cartão com ícone. Item ativo em greige
+              escuro (bg-mesa-700), sem trocar por terracota. */}
+          <div className="rounded-3xl border border-mesa-200 bg-white p-5 shadow-sm shadow-mesa-800/5">
+            <div className="mb-6 border-b border-mesa-100 pb-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-mesa-500">
+                Painel pastoral
+              </p>
+              <p className="mt-1 text-sm text-mesa-500">Gestão e acompanhamento</p>
+            </div>
 
-          {/* Seções em grade de 2 colunas (desktop e mobile) — dá pra ver tudo
-              de uma vez, cada função num cartão com ícone. */}
-          <nav className="space-y-4">
-            {porGrupo.map((g) => (
-              <div key={g.key}>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-mesa-400">
-                  {g.label}
-                </p>
-                <ul className="grid grid-cols-2 gap-2">
-                  {g.itens.map((it) => {
-                    const ativo = it.key === current;
-                    return (
-                      <li key={it.key}>
-                        <Link
-                          href={it.href}
-                          aria-current={ativo ? "page" : undefined}
-                          title={it.hint}
-                          className={`group flex h-full items-center gap-2.5 rounded-xl border p-2.5 transition ${
-                            ativo
-                              ? "border-mesa-700 bg-mesa-700 text-mesa-50 shadow-md shadow-mesa-800/25"
-                              : "border-mesa-200 bg-white text-mesa-700 hover:border-laranja-300 hover:shadow-sm active:bg-mesa-100"
-                          }`}
-                        >
-                          <span
-                            className={`flex h-8 w-8 flex-none items-center justify-center rounded-lg text-base transition ${
-                              ativo ? "bg-white/15" : "bg-mesa-100 group-hover:bg-laranja-100"
+            <nav className="space-y-6">
+              {porGrupo.map((g) => (
+                <div key={g.key}>
+                  <p className="mb-2.5 pl-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-mesa-400">
+                    {g.label}
+                  </p>
+                  <ul className="grid grid-cols-2 gap-2.5">
+                    {g.itens.map((it) => {
+                      const ativo = it.key === current;
+                      return (
+                        <li key={it.key}>
+                          <Link
+                            href={it.href}
+                            aria-current={ativo ? "page" : undefined}
+                            title={it.hint}
+                            className={`group flex h-full items-center gap-2.5 rounded-xl border p-3 transition ${
+                              ativo
+                                ? "border-mesa-700 bg-mesa-700 text-mesa-50 shadow-md shadow-mesa-800/25"
+                                : "border-mesa-200 bg-bege-50 text-mesa-700 hover:-translate-y-0.5 hover:border-laranja-300 hover:bg-white hover:shadow-sm active:bg-mesa-100"
                             }`}
                           >
-                            {ICONE[it.key] ?? "•"}
-                          </span>
-                          <span className="min-w-0 text-sm font-semibold leading-tight">
-                            {it.label}
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-          </nav>
+                            <span
+                              className={`flex h-9 w-9 flex-none items-center justify-center rounded-lg text-base transition ${
+                                ativo ? "bg-white/15" : "bg-white shadow-sm group-hover:bg-laranja-100"
+                              }`}
+                            >
+                              {ICONE[it.key] ?? "•"}
+                            </span>
+                            <span className="min-w-0 text-sm font-semibold leading-tight">
+                              {it.label}
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </nav>
+          </div>
         </aside>
 
         <section className="mt-6 md:mt-0">{children}</section>
