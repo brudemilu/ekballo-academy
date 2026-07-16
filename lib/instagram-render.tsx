@@ -169,25 +169,25 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
         alt=""
         width={W}
         height={H}
-        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.1 }}
+        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.03 }}
       />
-      {/* véu de papel BEM leve (mantém a foto vibrante, só amarra o tom) */}
+      {/* topo levemente escurecido — o kicker dourado sempre lê sobre céu claro */}
       <div
         style={{
           display: "flex",
           position: "absolute",
           inset: 0,
-          background: `linear-gradient(180deg, rgba(244,234,203,0.28) 0%, rgba(244,234,203,0.12) 40%, rgba(244,234,203,0) 72%)`,
+          background: `linear-gradient(180deg, rgba(22,26,40,0.34) 0%, rgba(22,26,40,0.1) 12%, rgba(22,26,40,0) 26%)`,
         }}
       />
-      {/* clarão de papel BEM suave atrás do texto (só ajuda a leitura,
-          sem virar halo/sombra). foto vibra forte nas bordas/embaixo. */}
+      {/* wash de leitura atrás do texto — suave, claro e EVEN (sem halo/blob),
+          só o suficiente pro navy ler; a foto continua vibrante nas bordas. */}
       <div
         style={{
           display: "flex",
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(72% 46% at 50% 48%, rgba(244,234,203,0.82) 0%, rgba(244,234,203,0.52) 44%, rgba(244,234,203,0.12) 70%, rgba(244,234,203,0) 84%)`,
+          background: `radial-gradient(80% 54% at 50% 50%, rgba(250,247,238,0.66) 0%, rgba(250,247,238,0.36) 48%, rgba(250,247,238,0) 78%)`,
         }}
       />
       {/* luz quente canto sup-esq */}
@@ -228,7 +228,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           alt=""
           width={W}
           height={Math.round(H * 0.42)}
-          style={{ position: "absolute", left: 0, top: Math.round(H * 0.4), width: W, height: Math.round(H * 0.42), objectFit: "cover", opacity: 0.1 }}
+          style={{ position: "absolute", left: 0, top: Math.round(H * 0.4), width: W, height: Math.round(H * 0.42), objectFit: "cover", opacity: 0.04 }}
         />
       ) : null}
 
@@ -348,7 +348,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
           alt=""
           width={W}
           height={H}
-          style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.1 }}
+          style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.05 }}
         />
       ) : null}
 
