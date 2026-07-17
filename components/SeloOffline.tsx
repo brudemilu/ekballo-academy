@@ -38,8 +38,13 @@ export function SeloOffline({ slug }: { slug: string }) {
 
   if (!baixado) return null;
   return (
-    <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-oliveira-600/95 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm backdrop-blur">
-      ↓ offline
+    <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-mesa-900/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md ring-1 ring-white/25 backdrop-blur">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="12" height="12" aria-hidden>
+        <path d="M12 3v12" />
+        <path d="m7 11 5 4 5-4" />
+        <path d="M5 21h14" />
+      </svg>
+      Offline
     </span>
   );
 }
