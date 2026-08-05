@@ -94,6 +94,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
   } | null>(null);
   const [erroEnvio, setErroEnvio] = useState<string | null>(null);
   const [temVoz, setTemVoz] = useState(true);
+  const [motivoSemVoz, setMotivoSemVoz] = useState<"ios" | "navegador">("navegador");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const motorRef = useRef<MotorFala | null>(null);
@@ -105,7 +106,21 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
 
   useEffect(() => {
     const janela = window as JanelaComFala;
+    const ua = navigator.userAgent;
+    // No iPhone/iPad todo navegador roda sobre o Safari — Chrome e Edge de lá
+    // não mudam nada. O webkitSpeechRecognition existe, mas trava: abre o
+    // microfone e nunca devolve resultado. Melhor não oferecer do que prender.
+    // (iPadOS se apresenta como Macintosh; o toque é o que o denuncia.)
+    const ehIOS =
+      /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+
+    if (ehIOS) {
+      setTemVoz(false);
+      setMotivoSemVoz("ios");
+      return;
+    }
     setTemVoz(Boolean(janela.SpeechRecognition || janela.webkitSpeechRecognition));
+    setMotivoSemVoz("navegador");
   }, []);
 
   // Banco de palavras do "montar": embaralhado de forma determinística
@@ -596,12 +611,14 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                   )}
                 </>
               ) : (
-                <div className="mt-6">
-                  <p className="text-sm text-mesa-500">
-                    Este navegador não escuta o microfone. Fale a frase em voz alta e siga em frente.
+                <div className="mt-6 rounded-2xl border border-mesa-200 bg-bege-50 p-5">
+                  <p className="text-sm font-semibold text-mesa-800">
+                    🔊 Ouça o modelo, fale em voz alta e toque em “Já falei”.
                   </p>
-                  <p className="mt-2 text-xs text-mesa-400">
-                    Para o reconhecimento de fala, use o Chrome ou o Edge.
+                  <p className="mt-2 text-xs text-mesa-500">
+                    {motivoSemVoz === "ios"
+                      ? "No iPhone e no iPad o reconhecimento de fala não é confiável — e trocar de navegador não resolve, porque todos rodam sobre o Safari. Num computador com Chrome ou Edge, o microfone confere a sua pronúncia."
+                      : "Este navegador não escuta o microfone. No Chrome ou no Edge, ele confere a sua pronúncia."}
                   </p>
                 </div>
               )}
