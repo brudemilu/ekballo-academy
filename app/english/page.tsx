@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { RevealOnScroll } from "@/components/RevealOnScroll";
+import { getCurrentSession } from "@/lib/db";
+import { listTrilha } from "@/lib/english";
 
 const modules = [
   {
@@ -73,7 +75,18 @@ const features = [
   "Experiência premium para crianças, adolescentes e adultos",
 ];
 
-export default function EkballoEnglishPage() {
+export default async function EkballoEnglishPage() {
+  const session = await getCurrentSession();
+  // Só pra saber o que já está no ar — a vitrine descreve os 12 módulos do
+  // programa inteiro, inclusive os que ainda estão em produção.
+  const trilha = await listTrilha(session?.userId ?? null);
+  const noAr = new Set(
+    trilha.filter((m) => m.publicado && m.licoes.length > 0).map((m) => m.numero),
+  );
+
+  const entrarHref = session ? "/english/jornada" : "/cadastro";
+  const entrarLabel = session ? "Ir para a minha trilha" : "Quero entrar";
+
   return (
     <main className="min-h-screen bg-bege-50 text-bege-800">
       <header className="border-b border-bege-200 bg-bege-50/90 backdrop-blur">
@@ -84,10 +97,10 @@ export default function EkballoEnglishPage() {
               Voltar ao Ekballo
             </Link>
             <Link
-              href="/cadastro"
+              href={entrarHref}
               className="rounded-full bg-laranja-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-laranja-500/20 transition hover:bg-laranja-600"
             >
-              Quero entrar
+              {entrarLabel}
             </Link>
           </div>
         </nav>
@@ -108,10 +121,10 @@ export default function EkballoEnglishPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/cadastro"
+                href={session ? "/english/jornada" : "/cadastro"}
                 className="rounded-full bg-laranja-500 px-6 py-3 text-center font-semibold text-white shadow-xl shadow-laranja-500/25 transition hover:bg-laranja-600"
               >
-                Começar agora
+                {session ? "Continuar minha trilha" : "Começar agora"}
               </Link>
               <Link
                 href="/manifesto"
@@ -172,29 +185,37 @@ export default function EkballoEnglishPage() {
           </RevealOnScroll>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {modules.map((module, index) => (
-              <RevealOnScroll key={module.title} delay={(index % 3) as 0 | 1 | 2} as="article" className="rounded-3xl border border-bege-200 bg-bege-50 p-6 shadow-sm shadow-bege-700/5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">{module.title}</p>
-                <h3 className="mt-2 font-serif text-xl font-semibold text-bege-800">{module.subtitle}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-bege-700">{module.description}</p>
-              </RevealOnScroll>
-            ))}
+            {modules.map((module, index) => {
+              const disponivel = noAr.has(index + 1);
+              return (
+                <RevealOnScroll key={module.title} delay={(index % 3) as 0 | 1 | 2} as="article" className={`rounded-3xl border p-6 shadow-sm shadow-bege-700/5 ${disponivel ? "border-laranja-300 bg-laranja-50" : "border-bege-200 bg-bege-50"}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">{module.title}</p>
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${disponivel ? "bg-laranja-500 text-white" : "bg-white text-bege-600"}`}>
+                      {disponivel ? "No ar" : "Em produção"}
+                    </span>
+                  </div>
+                  <h3 className="mt-2 font-serif text-xl font-semibold text-bege-800">{module.subtitle}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-bege-700">{module.description}</p>
+                </RevealOnScroll>
+              );
+            })}
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-20">
         <RevealOnScroll as="div" className="rounded-[2rem] border border-bege-200 bg-gradient-to-br from-bege-100 to-white p-10 shadow-xl shadow-bege-700/10">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Próximo passo</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Já dá para começar</p>
           <h2 className="mt-3 font-serif text-3xl font-semibold text-bege-800 sm:text-4xl">
-            O projeto já está sendo organizado para virar uma experiência real no sistema.
+            O Módulo 1 está no ar, com lição diária, prática de fala e sequência.
           </h2>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-bege-700">
-            Nesta primeira etapa, a proposta foi transformada em uma página de lançamento, com visão, pilares, módulos e uma experiência premium. A próxima fase é estruturar a jornada completa dentro da plataforma Ekballo.
+          <p className="mt-4 max-w-3xl text-justify text-lg leading-relaxed text-bege-700 hyphens-auto">
+            São seis lições dentro da plataforma — cumprimentos, nome, como você está, números e idade, de onde você é, e frases de fé para o dia a dia. Cada lição mistura vocabulário com áudio, múltipla escolha, tradução, ditado, montagem de frase e um exercício de fala com o seu microfone. O progresso, a sequência de dias e as conquistas ficam registrados na sua trilha. Os demais módulos entram em seguida, na mesma estrutura.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/cadastro" className="rounded-full bg-laranja-500 px-6 py-3 text-center font-semibold text-white transition hover:bg-laranja-600">
-              Quero entrar no projeto
+            <Link href={entrarHref} className="rounded-full bg-laranja-500 px-6 py-3 text-center font-semibold text-white transition hover:bg-laranja-600">
+              {session ? "Ir para a minha trilha" : "Quero entrar no projeto"}
             </Link>
             <Link href="/" className="rounded-full border border-bege-300 px-6 py-3 text-center font-semibold text-bege-800 transition hover:border-laranja-400 hover:text-laranja-700">
               Voltar para a home

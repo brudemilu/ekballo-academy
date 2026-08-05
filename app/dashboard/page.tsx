@@ -10,6 +10,7 @@ import {
   getMaterialUrl,
 } from "@/lib/db";
 import { getDevocionalDoDia } from "@/lib/devocionais";
+import { getProximaLicao, getStreak } from "@/lib/english";
 import { podeVerAgenda } from "@/lib/permissoes";
 import { agruparPorCategoria } from "@/lib/categorias";
 import { SeloOffline } from "@/components/SeloOffline";
@@ -41,10 +42,12 @@ export default async function DashboardPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  const [todosCursos, matriculas, devocional] = await Promise.all([
+  const [todosCursos, matriculas, devocional, proximaLicao, englishStreak] = await Promise.all([
     listCursosPublicados(),
     listMatriculasByAluno(session.userId),
     getDevocionalDoDia(),
+    getProximaLicao(session.userId),
+    getStreak(session.userId),
   ]);
 
   const mostrarAgenda = podeVerAgenda(
@@ -188,8 +191,8 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {/* Atalhos: agenda + devocional (accent bar + botão circular) */}
-        {(mostrarAgenda || devocional) && (
+        {/* Atalhos: agenda + devocional + english (accent bar + botão circular) */}
+        {(mostrarAgenda || devocional || proximaLicao) && (
           <div className="mb-14 grid gap-5 lg:grid-cols-2">
             {/* Minha agenda (só pra quem tem acesso, ex.: Débora) */}
             {mostrarAgenda && (
@@ -237,6 +240,37 @@ export default async function DashboardPage() {
                   </p>
                 </div>
                 <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white/70 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
+                  →
+                </span>
+              </Link>
+            )}
+
+            {/* Ekballo English — lição do dia + sequência */}
+            {proximaLicao && (
+              <Link
+                href={`/english/licao/${proximaLicao.slug}`}
+                className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
+              >
+                <span className="absolute inset-y-0 left-0 w-1 bg-laranja-500" aria-hidden />
+                <div className="min-w-0 pl-2">
+                  <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-700">
+                    Ekballo English
+                    {englishStreak.dias_seguidos > 0 && (
+                      <span className="rounded-full bg-laranja-50 px-2 py-0.5 tracking-normal text-laranja-700">
+                        🔥 {englishStreak.dias_seguidos}
+                      </span>
+                    )}
+                  </p>
+                  <h2 lang="en" className="font-serif text-xl font-semibold text-mesa-900">
+                    🗣️ {proximaLicao.titulo}
+                  </h2>
+                  <p className="mt-1.5 text-sm leading-relaxed text-mesa-600">
+                    {englishStreak.total_licoes === 0
+                      ? "Sua primeira lição de inglês está pronta."
+                      : `${proximaLicao.titulo_pt} — mantenha a sequência de hoje.`}
+                  </p>
+                </div>
+                <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-mesa-100 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
                   →
                 </span>
               </Link>
