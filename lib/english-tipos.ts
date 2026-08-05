@@ -39,9 +39,15 @@ export type EnglishTipoExercicio =
   | "traducao"
   | "ouvir"
   | "montar"
-  | "falar";
+  | "falar"
+  | "imagem";
 
-export type EnglishAlternativa = { texto: string; correta: boolean };
+/**
+ * `imagem` só é preenchida no exercício "escolha a imagem". Nesse tipo o
+ * `texto` NÃO vai pra tela — serve pra devolutiva e pra correção. Mostrar a
+ * palavra escrita ao lado da figura entregaria a resposta.
+ */
+export type EnglishAlternativa = { texto: string; correta: boolean; imagem?: string | null };
 
 export type EnglishExercicio = {
   id: string;
@@ -56,6 +62,7 @@ export type EnglishExercicio = {
   alternativas: EnglishAlternativa[];
   dica: string | null;
   audio_texto: string | null;
+  imagem_url: string | null;
 };
 
 export type EnglishProgresso = {

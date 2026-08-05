@@ -38,6 +38,7 @@ type Veredito = "certo" | "errado" | null;
 // Exercícios de vocabulário ensinam, não avaliam — ficam fora da nota.
 const VALE_NOTA: Record<string, boolean> = {
   vocabulario: false, escolha: true, traducao: true, ouvir: true, montar: true, falar: true,
+  imagem: true,
 };
 
 // ---------- voz do navegador ----------
@@ -158,7 +159,8 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
     if (!exercicio) return false;
     switch (exercicio.tipo) {
       case "vocabulario": return true;
-      case "escolha": return escolhida !== null;
+      case "escolha":
+      case "imagem": return escolhida !== null;
       case "traducao":
       case "ouvir": return digitado.trim().length > 0;
       case "montar": return montadas.length > 0;
@@ -173,7 +175,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
     if (!exercicio || veredito) return;
 
     let certo = true;
-    if (exercicio.tipo === "escolha") {
+    if (exercicio.tipo === "escolha" || exercicio.tipo === "imagem") {
       certo = exercicio.alternativas.some((a) => a.correta && a.texto === escolhida);
     } else if (exercicio.tipo === "traducao" || exercicio.tipo === "ouvir") {
       certo = respostaCorreta(digitado, exercicio.resposta, exercicio.aceitas);
@@ -393,7 +395,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
   // ---------------- tela do exercício ----------------
 
   const respostaEsperada =
-    exercicio.tipo === "escolha"
+    exercicio.tipo === "escolha" || exercicio.tipo === "imagem"
       ? exercicio.alternativas.find((a) => a.correta)?.texto || ""
       : exercicio.resposta || "";
 
@@ -433,6 +435,15 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
           {/* ---- vocabulário ---- */}
           {exercicio.tipo === "vocabulario" && (
             <div className="rounded-3xl border border-mesa-200 bg-white p-8 text-center shadow-sm shadow-mesa-800/5">
+              {exercicio.imagem_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={exercicio.imagem_url}
+                  alt=""
+                  aria-hidden
+                  className="mx-auto mb-6 h-40 w-40 rounded-2xl object-contain sm:h-48 sm:w-48"
+                />
+              )}
               <p lang="en" className="font-serif text-4xl font-semibold text-mesa-900 sm:text-5xl">
                 {exercicio.pergunta}
               </p>
@@ -477,6 +488,68 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {/* ---- escolha a imagem ---- */}
+          {/* A palavra em inglês fica grande no topo e as figuras embaixo, sem
+              legenda nenhuma: é o ponto do exercício. Rótulo escrito ao lado da
+              figura entregaria a resposta e devolveria a muleta da tradução. */}
+          {exercicio.tipo === "imagem" && (
+            <div>
+              <div className="mb-6 flex flex-col items-center gap-3">
+                <p lang="en" className="font-serif text-4xl font-semibold text-mesa-900 sm:text-5xl">
+                  {exercicio.pergunta}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => pronunciar(exercicio.audio_texto || exercicio.pergunta || "")}
+                  className="rounded-full border border-laranja-300 bg-laranja-50 px-5 py-2 text-sm font-semibold text-laranja-700 transition hover:bg-laranja-100"
+                >
+                  🔊 Ouvir
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {exercicio.alternativas.map((alt, i) => {
+                  const marcada = escolhida === alt.texto;
+                  const mostrarCerta = veredito !== null && alt.correta;
+                  const mostrarErrada = veredito === "errado" && marcada && !alt.correta;
+                  return (
+                    <button
+                      key={alt.texto}
+                      type="button"
+                      disabled={veredito !== null}
+                      onClick={() => setEscolhida(alt.texto)}
+                      aria-label={`Opção ${i + 1}`}
+                      className={`overflow-hidden rounded-2xl border-2 bg-white p-2 transition ${
+                        mostrarCerta
+                          ? "border-oliveira-600 ring-2 ring-oliveira-600"
+                          : mostrarErrada
+                            ? "border-laranja-500 ring-2 ring-laranja-500"
+                            : marcada
+                              ? "border-laranja-400 ring-2 ring-laranja-300"
+                              : "border-mesa-200 hover:border-laranja-300"
+                      }`}
+                    >
+                      {alt.imagem ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={alt.imagem}
+                          alt=""
+                          aria-hidden
+                          className="aspect-square w-full rounded-xl object-contain"
+                        />
+                      ) : (
+                        // Sem figura ainda: cai pra palavra, pra não virar botão vazio.
+                        <span className="flex aspect-square w-full items-center justify-center rounded-xl bg-bege-50 p-3 text-lg text-mesa-700">
+                          {alt.texto}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
