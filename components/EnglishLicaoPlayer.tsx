@@ -50,9 +50,14 @@ type MotorFala = {
   start: () => void;
   stop: () => void;
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((e: { error?: string }) => void) | null;
   onend: (() => void) | null;
 };
+
+// Depois disto desistimos de esperar o motor de fala. Existe navegador que
+// abre o microfone e nunca dispara onend nem onerror — sem esse corte, o
+// aluno fica preso no "Ouvindo..." sem botão nenhum habilitado.
+const LIMITE_ESCUTA_MS = 10000;
 
 type JanelaComFala = Window & {
   SpeechRecognition?: new () => MotorFala;
@@ -79,6 +84,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
   const [revelado, setRevelado] = useState(false);
   const [ouvindo, setOuvindo] = useState(false);
   const [transcricao, setTranscricao] = useState("");
+  const [erroFala, setErroFala] = useState<string | null>(null);
   const [acertos, setAcertos] = useState(0);
   const [avaliados, setAvaliados] = useState(0);
   const [finalizando, setFinalizando] = useState(false);
@@ -91,6 +97,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
 
   const inputRef = useRef<HTMLInputElement>(null);
   const motorRef = useRef<MotorFala | null>(null);
+  const limiteRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const exercicio = exercicios[indice];
   const ultimo = indice >= exercicios.length - 1;
@@ -127,7 +134,8 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
 
   // Para o microfone e a voz ao sair da tela.
   useEffect(() => () => {
-    motorRef.current?.stop();
+    if (limiteRef.current) clearTimeout(limiteRef.current);
+    try { motorRef.current?.stop(); } catch { /* motor já morto */ }
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
@@ -139,7 +147,9 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
       case "traducao":
       case "ouvir": return digitado.trim().length > 0;
       case "montar": return montadas.length > 0;
-      case "falar": return transcricao.trim().length > 0 || !temVoz;
+      // Sem microfone (ou com microfone que falhou), o aluno segue na palavra
+      // dele. O exercício de fala nunca pode ser uma parede.
+      case "falar": return transcricao.trim().length > 0 || !temVoz || erroFala !== null;
       default: return false;
     }
   })();
@@ -157,7 +167,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
     } else if (exercicio.tipo === "falar") {
       // Sem microfone, vale a palavra do aluno. Com microfone, aceita a frase
       // solta dentro do que foi reconhecido (o motor costuma acrescentar coisa).
-      if (!temVoz) {
+      if (!temVoz || (erroFala !== null && !transcricao.trim())) {
         certo = true;
       } else {
         const dito = normalizarResposta(transcricao);
@@ -207,6 +217,16 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
     setMontadas([]);
     setRevelado(false);
     setTranscricao("");
+    setErroFala(null);
+    pararEscuta();
+  }
+
+  /** Encerra a escuta e solta tudo. Idempotente — pode ser chamada duas vezes. */
+  function pararEscuta() {
+    if (limiteRef.current) { clearTimeout(limiteRef.current); limiteRef.current = null; }
+    try { motorRef.current?.stop(); } catch { /* motor já encerrado */ }
+    motorRef.current = null;
+    setOuvindo(false);
   }
 
   function escutar() {
@@ -214,21 +234,55 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
     const Motor = janela.SpeechRecognition || janela.webkitSpeechRecognition;
     if (!Motor) { setTemVoz(false); return; }
 
-    const motor = new Motor();
+    pararEscuta();          // não deixa dois motores abertos
+    setErroFala(null);
+    setTranscricao("");
+
+    let motor: MotorFala;
+    try {
+      motor = new Motor();
+    } catch {
+      setTemVoz(false);
+      return;
+    }
+
     motorRef.current = motor;
     motor.lang = "en-US";
     motor.interimResults = false;
     motor.maxAlternatives = 1;
     motor.continuous = false;
+
     motor.onresult = (e) => {
-      const texto = e.results?.[0]?.[0]?.transcript || "";
-      setTranscricao(texto);
+      setTranscricao(e.results?.[0]?.[0]?.transcript || "");
+      pararEscuta();
     };
-    motor.onerror = () => setOuvindo(false);
-    motor.onend = () => setOuvindo(false);
-    setTranscricao("");
+    motor.onerror = (e) => {
+      const codigo = e?.error;
+      setErroFala(
+        codigo === "not-allowed" || codigo === "service-not-allowed"
+          ? "O navegador bloqueou o microfone. Libere o acesso nas permissões deste site — ou siga sem gravar."
+          : codigo === "no-speech"
+            ? "Não ouvi nada. Tente de novo, mais perto do microfone."
+            : "O microfone não respondeu. Tente de novo ou siga sem gravar.",
+      );
+      pararEscuta();
+    };
+    motor.onend = () => pararEscuta();
+
     setOuvindo(true);
-    motor.start();
+    try {
+      motor.start();
+    } catch {
+      // start() estoura, por exemplo, se o motor já estiver rodando
+      setErroFala("Não consegui abrir o microfone. Você pode seguir sem gravar.");
+      pararEscuta();
+      return;
+    }
+
+    limiteRef.current = setTimeout(() => {
+      setErroFala("O microfone não respondeu a tempo. Tente de novo ou siga sem gravar.");
+      pararEscuta();
+    }, LIMITE_ESCUTA_MS);
   }
 
   // ---------------- tela final ----------------
@@ -514,20 +568,31 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                 <>
                   <button
                     type="button"
-                    disabled={veredito !== null || ouvindo}
-                    onClick={escutar}
+                    disabled={veredito !== null}
+                    onClick={ouvindo ? pararEscuta : escutar}
                     className={`mt-6 block w-full rounded-2xl px-6 py-5 text-lg font-semibold transition ${
                       ouvindo
                         ? "animate-pulse-soft bg-laranja-600 text-white"
                         : "bg-laranja-500 text-white hover:bg-laranja-600"
                     } disabled:opacity-60`}
                   >
-                    {ouvindo ? "🎙️ Ouvindo... fale agora" : "🎙️ Tocar e falar"}
+                    {ouvindo ? "🎙️ Ouvindo... toque para parar" : "🎙️ Tocar e falar"}
                   </button>
+
                   {transcricao && (
                     <p className="mt-4 text-mesa-700">
                       Entendi: <span lang="en" className="font-semibold">{transcricao}</span>
                     </p>
+                  )}
+
+                  {erroFala && (
+                    <div className="mt-4 rounded-2xl border border-laranja-200 bg-laranja-50 p-4 text-left">
+                      <p className="text-sm text-laranja-800">{erroFala}</p>
+                      <p className="mt-2 text-xs text-mesa-500">
+                        Fale a frase em voz alta do seu jeito e toque em “Já falei” — a lição segue
+                        normalmente.
+                      </p>
+                    </div>
                   )}
                 </>
               ) : (
@@ -591,7 +656,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
             >
               {exercicio.tipo === "vocabulario"
                 ? "Entendi"
-                : exercicio.tipo === "falar" && !temVoz
+                : exercicio.tipo === "falar" && (!temVoz || (erroFala !== null && !transcricao.trim()))
                   ? "Já falei"
                   : "Conferir"}
             </button>
