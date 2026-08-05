@@ -1,20 +1,42 @@
 // Service worker — Ekballo Academy
 // Funções:
-//   1. App-shell: cacheia assets estáticos pra app instalado funcionar offline parcial.
+//   1. App-shell: cacheia assets estáticos e rotas principais pra app funcionar offline.
 //   2. Web Push: recebe push do backend, exibe notificação, foca/abre URL ao clicar.
 
-const CACHE_VERSION = "ekballo-v3";
+const CACHE_VERSION = "ekballo-v4";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",
   "/icon-maskable-512.png",
   "/apple-icon.png",
+  "/offline.html",
 ];
+const APP_SHELL_ROUTES = ["/", "/dashboard", "/biblioteca"];
+
+async function cacheResponse(request, response) {
+  const cache = await caches.open(CACHE_VERSION);
+  await cache.put(request, response.clone());
+  return response;
+}
+
+async function getCachedOrFallback(request) {
+  const cache = await caches.open(CACHE_VERSION);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+
+  const fallback = await cache.match("/offline.html");
+  if (fallback) return fallback;
+
+  return new Response(
+    `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Offline</title><style>body{font-family:system-ui,sans-serif;background:#17140F;color:#f7efe3;display:grid;place-items:center;min-height:100vh;margin:0;padding:24px;text-align:center}</style></head><body><div><h1>Você está offline</h1><p>A biblioteca já baixada continua disponível neste dispositivo.</p><p><a href="/biblioteca" style="color:#ff8a3d">Abrir biblioteca</a></p></div></body></html>`,
+    { headers: { "Content-Type": "text/html; charset=utf-8" } }
+  );
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_VERSION).then((cache) => cache.addAll([...STATIC_ASSETS, ...APP_SHELL_ROUTES]))
   );
   self.skipWaiting();
 });
@@ -32,31 +54,19 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first com fallback pro cache. Apenas assets estáticos.
+// Network-first para navegação e cache-first para assets estáticos.
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Biblioteca offline: cacheia a navegação pra abrir sem internet. A página é
-  // client puro (lê o IndexedDB), então o documento cacheado + os chunks bastam.
-  if (request.mode === "navigate" && url.pathname.startsWith("/biblioteca")) {
+  // Rotas principais do app (shell + biblioteca) devem continuar abertas offline.
+  if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
-          return response;
-        })
-        .catch(async () => {
-          const cache = await caches.open(CACHE_VERSION);
-          return (
-            (await cache.match(request)) ||
-            (await cache.match("/biblioteca")) ||
-            Response.error()
-          );
-        })
+        .then((response) => cacheResponse(request, response))
+        .catch(() => getCachedOrFallback(request))
     );
     return;
   }
@@ -68,11 +78,7 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(
     fetch(request)
-      .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
-        return response;
-      })
+      .then((response) => cacheResponse(request, response))
       .catch(() => caches.match(request))
   );
 });

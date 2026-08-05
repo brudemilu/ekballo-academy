@@ -173,6 +173,38 @@ export default async function AdminPage() {
         </Link>
       )}
 
+      <div className="mb-8 grid gap-3 lg:grid-cols-3">
+        {[
+          {
+            title: "Ekballo English",
+            description: "Painel pastoral, gestão do curso e acompanhamento do aluno.",
+            href: "/admin/english",
+            accent: "border-laranja-300 bg-laranja-50",
+          },
+          {
+            title: "Acompanhamento",
+            description: "Reflexões, devolutivas e evolução pastoral das respostas.",
+            href: "/admin/respostas",
+            accent: "border-oliveira-300 bg-oliveira-50",
+          },
+          {
+            title: "Lembretes",
+            description: "Envie lembretes por push para incentivar a atividade diária.",
+            href: "/admin/english",
+            accent: "border-mesa-300 bg-white",
+          },
+        ].map((card) => (
+          <Link
+            key={card.title}
+            href={card.href}
+            className={`lift rounded-2xl border p-5 shadow-sm transition hover:shadow-md ${card.accent}`}
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">{card.title}</p>
+            <p className="mt-2 text-sm leading-relaxed text-mesa-700">{card.description}</p>
+          </Link>
+        ))}
+      </div>
+
       <div className="mb-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {cards.map((s) => {
           const destaque = s.alerta && s.value > 0;

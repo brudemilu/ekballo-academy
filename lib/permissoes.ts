@@ -51,6 +51,7 @@ export function nomePapel(papel: string | null | undefined): string {
 export const TAB_PERMISSAO: Record<string, Permissao | null> = {
   painel: null,
   dashboard: null,
+  english: null,
   cursos: "conteudo",
   respostas: "acompanhamento",
   alunos: "discipulos",
