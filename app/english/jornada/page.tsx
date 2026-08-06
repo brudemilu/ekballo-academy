@@ -55,7 +55,7 @@ export default async function EnglishJornadaPage() {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
         {/* ---------- cabeçalho + streak ---------- */}
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">Ekballo English</p>
-        <h1 className="mt-2 font-serif text-3xl font-semibold text-mesa-900 sm:text-4xl">
+        <h1 className="mt-2 font-display text-3xl font-semibold text-mesa-900 sm:text-4xl">
           Hello, {primeiroNome}!
         </h1>
         <p className="mt-3 max-w-2xl text-lg leading-relaxed text-mesa-600">
@@ -94,7 +94,7 @@ export default async function EnglishJornadaPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">
               {totalConcluidas === 0 ? "Comece por aqui" : "Sua próxima lição"}
             </p>
-            <h2 lang="en" className="mt-2 font-serif text-2xl font-semibold text-mesa-900 sm:text-3xl">
+            <h2 lang="en" className="mt-2 font-display text-2xl font-semibold text-mesa-900 sm:text-3xl">
               {proxima.titulo}
             </h2>
             <p className="mt-1 text-mesa-600">{proxima.titulo_pt}</p>
@@ -113,7 +113,7 @@ export default async function EnglishJornadaPage() {
         {/* ---------- conquistas ---------- */}
         {conquistas.length > 0 && (
           <section className="mt-10">
-            <h2 className="font-serif text-xl font-semibold text-mesa-900">Suas conquistas</h2>
+            <h2 className="font-display text-xl font-semibold text-mesa-900">Suas conquistas</h2>
             <div className="mt-4 flex flex-wrap gap-3">
               {conquistas.map((c) => {
                 const info = nomeConquista(c.chave);
@@ -134,7 +134,7 @@ export default async function EnglishJornadaPage() {
 
         {/* ---------- trilha de módulos ---------- */}
         <section className="mt-12 space-y-6">
-          <h2 className="font-serif text-2xl font-semibold text-mesa-900">A trilha</h2>
+          <h2 className="font-display text-2xl font-semibold text-mesa-900">A trilha</h2>
 
           {trilha.map((modulo) => {
             const emPreparo = !modulo.publicado || modulo.licoes.length === 0;
@@ -152,7 +152,7 @@ export default async function EnglishJornadaPage() {
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">
                       Módulo {modulo.numero} · {NIVEL_ROTULO[modulo.nivel] || modulo.nivel}
                     </p>
-                    <h3 className="mt-1 font-serif text-xl font-semibold text-mesa-900">
+                    <h3 className="mt-1 font-display text-xl font-semibold text-mesa-900">
                       {modulo.titulo}
                       {modulo.titulo_en && (
                         <span lang="en" className="ml-2 text-base font-normal text-mesa-500">
@@ -166,7 +166,7 @@ export default async function EnglishJornadaPage() {
                       emPreparo
                         ? "bg-mesa-200 text-mesa-600"
                         : completo
-                          ? "bg-oliveira-200 text-mesa-800"
+                          ? "bg-acerto-500 text-white"
                           : "bg-laranja-100 text-laranja-700"
                     }`}
                   >
@@ -193,14 +193,14 @@ export default async function EnglishJornadaPage() {
                           <span
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
                               licao.concluida
-                                ? "bg-oliveira-600 text-white"
+                                ? "bg-acerto-500 text-white"
                                 : "border-2 border-mesa-300 text-mesa-500"
                             }`}
                           >
                             {licao.concluida ? "✓" : licao.numero}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span lang="en" className="block font-semibold text-mesa-900">
+                            <span lang="en" className="block font-display text-lg font-semibold tracking-[-0.01em] text-mesa-900">
                               {licao.titulo}
                             </span>
                             <span className="block text-sm text-mesa-500">{licao.titulo_pt}</span>

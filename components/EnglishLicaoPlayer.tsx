@@ -104,6 +104,39 @@ function pronunciarNoNavegador(texto: string) {
   window.speechSynthesis.speak(fala);
 }
 
+/**
+ * ESPÉCIME — a assinatura visual do curso.
+ *
+ * A palavra em inglês é o objeto de estudo, então recebe tratamento de
+ * espécime de catálogo: enorme, e logo abaixo a pronúncia aproximada
+ * ("gud mór-nin"), que já existe no banco e que quase nenhum app de idioma
+ * põe em primeiro plano. O português desce a legenda — antes ele disputava
+ * tamanho com o inglês, e disputa vira ruído: o aluno lia o português e
+ * pulava o que veio aprender.
+ */
+function Especime({
+  en, dica, pt, compacto = false,
+}: { en: string; dica?: string | null; pt?: string | null; compacto?: boolean }) {
+  return (
+    <div className="text-center">
+      <p
+        lang="en"
+        className={`font-display font-semibold leading-[0.95] tracking-[-0.03em] text-mesa-900 ${
+          compacto ? "text-4xl sm:text-5xl" : "text-5xl sm:text-7xl"
+        }`}
+      >
+        {en}
+      </p>
+      {dica ? (
+        <p className="mt-4 font-ui text-xs font-semibold uppercase tracking-[0.3em] text-laranja-600 sm:text-sm">
+          {dica}
+        </p>
+      ) : null}
+      {pt ? <p className="mt-5 font-ui text-base text-mesa-500">{pt}</p> : null}
+    </div>
+  );
+}
+
 export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: Props) {
   const router = useRouter();
 
@@ -469,13 +502,20 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
           >
             ✕
           </Link>
-          <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-mesa-200">
-            <div
-              className="h-full rounded-full bg-laranja-500 transition-all duration-300"
-              style={{ width: `${progresso}%` }}
-            />
+          {/* Um segmento por exercício, não uma barra contínua: numa prática
+              curta o que o aluno quer saber é QUANTOS PASSOS FALTAM, e barra
+              não responde isso. */}
+          <div className="flex flex-1 items-center gap-1" aria-hidden>
+            {exercicios.map((e, i) => (
+              <span
+                key={e.id}
+                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                  i < indice ? "bg-laranja-500" : i === indice ? "bg-laranja-300" : "bg-mesa-200"
+                }`}
+              />
+            ))}
           </div>
-          <span className="text-sm font-semibold tabular-nums text-mesa-500">
+          <span className="font-ui text-sm font-semibold tabular-nums text-mesa-500">
             {indice + 1}/{exercicios.length}
           </span>
         </div>
@@ -499,16 +539,14 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                   src={exercicio.imagem_url}
                   alt=""
                   aria-hidden
-                  className="mx-auto mb-6 h-40 w-40 rounded-2xl object-contain sm:h-48 sm:w-48"
+                  className="mx-auto mb-8 h-32 w-32 rounded-2xl object-contain sm:h-40 sm:w-40"
                 />
               )}
-              <p lang="en" className="font-serif text-4xl font-semibold text-mesa-900 sm:text-5xl">
-                {exercicio.pergunta}
-              </p>
-              {exercicio.dica && (
-                <p className="mt-3 text-sm italic text-mesa-500">som aproximado: {exercicio.dica}</p>
-              )}
-              <p className="mt-5 text-lg text-mesa-600">{exercicio.pergunta_pt}</p>
+              <Especime
+                en={exercicio.pergunta || ""}
+                dica={exercicio.dica}
+                pt={exercicio.pergunta_pt}
+              />
               <button
                 type="button"
                 onClick={() => ouvirExercicio(exercicio)}
@@ -534,9 +572,9 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                     onClick={() => setEscolhida(alt.texto)}
                     className={`w-full rounded-2xl border-2 px-5 py-4 text-left text-lg transition ${
                       mostrarCerta
-                        ? "border-oliveira-600 bg-oliveira-100 text-mesa-900"
+                        ? "border-acerto-500 bg-acerto-50 text-acerto-700"
                         : mostrarErrada
-                          ? "border-laranja-500 bg-laranja-50 text-laranja-800"
+                          ? "border-erro-500 bg-erro-50 text-erro-600"
                           : marcada
                             ? "border-laranja-400 bg-laranja-50 text-mesa-900"
                             : "border-mesa-200 bg-white text-mesa-800 hover:border-laranja-300"
@@ -556,9 +594,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
           {exercicio.tipo === "imagem" && (
             <div>
               <div className="mb-6 flex flex-col items-center gap-3">
-                <p lang="en" className="font-serif text-4xl font-semibold text-mesa-900 sm:text-5xl">
-                  {exercicio.pergunta}
-                </p>
+                <Especime en={exercicio.pergunta || ""} dica={exercicio.dica} compacto />
                 <button
                   type="button"
                   onClick={() => ouvirExercicio(exercicio)}
@@ -582,9 +618,9 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                       aria-label={`Opção ${i + 1}`}
                       className={`overflow-hidden rounded-2xl border-2 bg-white p-2 transition ${
                         mostrarCerta
-                          ? "border-oliveira-600 ring-2 ring-oliveira-600"
+                          ? "border-acerto-500 ring-2 ring-acerto-500"
                           : mostrarErrada
-                            ? "border-laranja-500 ring-2 ring-laranja-500"
+                            ? "border-erro-500 ring-2 ring-erro-500"
                             : marcada
                               ? "border-laranja-400 ring-2 ring-laranja-300"
                               : "border-mesa-200 hover:border-laranja-300"
@@ -615,7 +651,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
           {(exercicio.tipo === "traducao" || exercicio.tipo === "ouvir") && (
             <div className="rounded-3xl border border-mesa-200 bg-white p-6 shadow-sm shadow-mesa-800/5 sm:p-8">
               {exercicio.tipo === "traducao" ? (
-                <p className="text-center font-serif text-3xl font-semibold text-mesa-900">
+                <p className="text-center font-display text-3xl font-semibold tracking-[-0.02em] text-mesa-900 sm:text-4xl">
                   {exercicio.pergunta_pt}
                 </p>
               ) : (
@@ -697,10 +733,12 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
           {/* ---- falar ---- */}
           {exercicio.tipo === "falar" && (
             <div className="rounded-3xl border border-mesa-200 bg-white p-8 text-center shadow-sm shadow-mesa-800/5">
-              <p lang="en" className="font-serif text-3xl font-semibold text-mesa-900 sm:text-4xl">
-                {exercicio.pergunta}
-              </p>
-              <p className="mt-3 text-mesa-600">{exercicio.pergunta_pt}</p>
+              <Especime
+                en={exercicio.pergunta || ""}
+                dica={exercicio.dica}
+                pt={exercicio.pergunta_pt}
+                compacto
+              />
 
               <button
                 type="button"
@@ -775,9 +813,9 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
       <footer
         className={`border-t transition-colors ${
           veredito === "certo"
-            ? "border-oliveira-300 bg-oliveira-100"
+            ? "border-acerto-200 bg-acerto-50"
             : veredito === "errado"
-              ? "border-laranja-300 bg-laranja-50"
+              ? "border-erro-200 bg-erro-50"
               : "border-mesa-200 bg-white"
         }`}
       >
@@ -789,7 +827,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
               </p>
             )}
             {veredito === "errado" && (
-              <p className="text-laranja-800">
+              <p className="text-erro-600">
                 Resposta certa: <span lang="en" className="font-semibold">{respostaEsperada}</span>
               </p>
             )}

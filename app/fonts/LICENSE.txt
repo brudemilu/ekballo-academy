@@ -1,0 +1,7 @@
+Fontes embutidas neste diretório, ambas sob SIL Open Font License 1.1:
+
+  bricolage-latin.woff2   Bricolage Grotesque — https://github.com/googlefonts/bricolage
+  instrument-latin.woff2  Instrument Sans     — https://github.com/Instrument/instrument-sans
+
+A OFL permite uso, embutimento e redistribuição, inclusive comercial.
+Subconjunto "latin" apenas: cobre todos os acentos do português.

@@ -113,7 +113,7 @@ export default async function EkballoEnglishPage() {
             <p className="mb-4 inline-flex rounded-full border border-laranja-200 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-laranja-700">
               Ekballo English
             </p>
-            <h1 className="font-serif text-4xl font-semibold leading-tight text-bege-800 sm:text-5xl lg:text-6xl">
+            <h1 className="font-display text-4xl font-semibold leading-tight text-bege-800 sm:text-5xl lg:text-6xl">
               Aprender inglês com propósito, fé e confiança.
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-bege-700">
@@ -155,7 +155,7 @@ export default async function EkballoEnglishPage() {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <RevealOnScroll className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Por que Ekballo English</p>
-          <h2 className="mt-3 font-serif text-3xl font-semibold text-bege-800 sm:text-4xl">
+          <h2 className="mt-3 font-display text-3xl font-semibold text-bege-800 sm:text-4xl">
             Não é só um curso de inglês. É uma jornada de formação.
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-bege-700">
@@ -179,7 +179,7 @@ export default async function EkballoEnglishPage() {
         <div className="mx-auto max-w-7xl px-6 py-20">
           <RevealOnScroll className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Estrutura do curso</p>
-            <h2 className="mt-3 font-serif text-3xl font-semibold text-bege-800 sm:text-4xl">
+            <h2 className="mt-3 font-display text-3xl font-semibold text-bege-800 sm:text-4xl">
               Do zero à fala com confiança, em 12 módulos pensados para crescer.
             </h2>
           </RevealOnScroll>
@@ -195,7 +195,7 @@ export default async function EkballoEnglishPage() {
                       {disponivel ? "No ar" : "Em produção"}
                     </span>
                   </div>
-                  <h3 className="mt-2 font-serif text-xl font-semibold text-bege-800">{module.subtitle}</h3>
+                  <h3 className="mt-2 font-display text-xl font-semibold text-bege-800">{module.subtitle}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-bege-700">{module.description}</p>
                 </RevealOnScroll>
               );
@@ -207,7 +207,7 @@ export default async function EkballoEnglishPage() {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <RevealOnScroll as="div" className="rounded-[2rem] border border-bege-200 bg-gradient-to-br from-bege-100 to-white p-10 shadow-xl shadow-bege-700/10">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Já dá para começar</p>
-          <h2 className="mt-3 font-serif text-3xl font-semibold text-bege-800 sm:text-4xl">
+          <h2 className="mt-3 font-display text-3xl font-semibold text-bege-800 sm:text-4xl">
             O Módulo 1 está no ar, com lição diária, prática de fala e sequência.
           </h2>
           <p className="mt-4 max-w-3xl text-justify text-lg leading-relaxed text-bege-700 hyphens-auto">

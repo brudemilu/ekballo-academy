@@ -55,6 +55,24 @@ export default {
           800: "#262320",
           900: "#16130F",
         },
+        // ---- Feedback do English ----
+        // Precisavam existir: o "acerto" usava oliveira-600, e a paleta
+        // colapsou oliveira em cinza — ou seja, acertar pintava a tela de
+        // cinza. E o erro não podia usar o coral, que é o botão principal:
+        // errado e "clique aqui" na mesma cor confunde.
+        acerto: {
+          50: "#EAF3EE",
+          200: "#B9D7C6",
+          500: "#2F6B4F",
+          600: "#255840",
+          700: "#1B4230",
+        },
+        erro: {
+          50: "#FDECEA",
+          200: "#F5C2BC",
+          500: "#B3261E",
+          600: "#8F1E17",
+        },
         // Alias mesa → bege (compatibilidade) — mesmo greige quente claro
         mesa: {
           50: "#FBFAF8",
@@ -72,6 +90,11 @@ export default {
       fontFamily: {
         serif: ["Georgia", "ui-serif", "serif"],
         sans: ["-apple-system", "BlinkMacSystemFont", "Inter", "Segoe UI", "system-ui", "sans-serif"],
+        // Só no English (ver app/fonts/ekballo.ts). O resto da plataforma
+        // continua em Georgia + fonte do sistema, de propósito: são dois
+        // produtos com temperamentos diferentes.
+        display: ["var(--fonte-display)", "Georgia", "serif"],
+        ui: ["var(--fonte-ui)", "-apple-system", "sans-serif"],
       },
       animation: {
         "fade-up": "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards",
