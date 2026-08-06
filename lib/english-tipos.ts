@@ -63,6 +63,9 @@ export type EnglishExercicio = {
   dica: string | null;
   audio_texto: string | null;
   imagem_url: string | null;
+  /** MP3 pré-gerado com voz neural. Quando existe, manda nele; a voz do
+   *  navegador (speechSynthesis) fica só de plano B. */
+  audio_url: string | null;
 };
 
 export type EnglishProgresso = {

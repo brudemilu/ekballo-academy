@@ -56,7 +56,7 @@ const MOCK_EXERCICIOS: EnglishExercicio[] = [
   {
     id: "mock-ex-1", licao_id: "mock-licao-1", ordem: 1, tipo: "vocabulario",
     enunciado: "Ouça e repita", pergunta: "Good morning", pergunta_pt: "Bom dia",
-    resposta: null, aceitas: [], alternativas: [], dica: "gud mór-nin", audio_texto: "Good morning", imagem_url: null,
+    resposta: null, aceitas: [], alternativas: [], dica: "gud mór-nin", audio_texto: "Good morning", imagem_url: null, audio_url: null,
   },
   {
     id: "mock-ex-2", licao_id: "mock-licao-1", ordem: 2, tipo: "escolha",
@@ -68,22 +68,22 @@ const MOCK_EXERCICIOS: EnglishExercicio[] = [
       { texto: "Goodbye", correta: false },
       { texto: "See you later", correta: false },
     ],
-    dica: null, audio_texto: null, imagem_url: null,
+    dica: null, audio_texto: null, imagem_url: null, audio_url: null,
   },
   {
     id: "mock-ex-3", licao_id: "mock-licao-1", ordem: 3, tipo: "traducao",
     enunciado: "Escreva em inglês", pergunta: null, pergunta_pt: "Boa tarde",
-    resposta: "Good afternoon", aceitas: [], alternativas: [], dica: null, audio_texto: "Good afternoon", imagem_url: null,
+    resposta: "Good afternoon", aceitas: [], alternativas: [], dica: null, audio_texto: "Good afternoon", imagem_url: null, audio_url: null,
   },
   {
     id: "mock-ex-4", licao_id: "mock-licao-1", ordem: 4, tipo: "montar",
     enunciado: "Monte a frase", pergunta: null, pergunta_pt: "Até mais tarde",
-    resposta: "See you later", aceitas: [], alternativas: [], dica: null, audio_texto: "See you later", imagem_url: null,
+    resposta: "See you later", aceitas: [], alternativas: [], dica: null, audio_texto: "See you later", imagem_url: null, audio_url: null,
   },
   {
     id: "mock-ex-5", licao_id: "mock-licao-1", ordem: 5, tipo: "falar",
     enunciado: "Fale em voz alta", pergunta: "Good morning!", pergunta_pt: "Bom dia!",
-    resposta: "Good morning", aceitas: [], alternativas: [], dica: null, audio_texto: "Good morning", imagem_url: null,
+    resposta: "Good morning", aceitas: [], alternativas: [], dica: null, audio_texto: "Good morning", imagem_url: null, audio_url: null,
   },
 ];
 

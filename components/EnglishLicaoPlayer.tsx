@@ -20,10 +20,14 @@ import {
 // resultado pra /api/english/concluir (progresso + streak +
 // conquista).
 //
-// Voz é 100% do navegador — speechSynthesis pra ouvir e
-// SpeechRecognition pra falar. Sem custo de servidor e sem
-// arquivo de áudio; onde não houver suporte, o exercício de fala
-// vira honra ("Já falei") em vez de sumir.
+// OUVIR: MP3 pré-gerado com voz neural (Edge TTS), servido
+// estático de public/english/audio. A voz do navegador só entra
+// como plano B — ela varia demais entre aparelhos, e num curso de
+// idioma a pronúncia de referência não pode depender de quem abre.
+//
+// FALAR: SpeechRecognition do navegador, onde houver. No iOS não
+// há suporte confiável, então o exercício vira honra ("Já falei")
+// em vez de sumir ou travar.
 // =============================================================
 
 type Props = {
@@ -65,12 +69,38 @@ type JanelaComFala = Window & {
   webkitSpeechRecognition?: new () => MotorFala;
 };
 
-function pronunciar(texto: string) {
+// Plano B, quando o exercício não tem MP3 pré-gerado. Aqui a voz é a do
+// aparelho, e a qualidade varia MUITO — por isso escolhemos explicitamente
+// a melhor voz inglesa disponível em vez de aceitar o padrão do navegador,
+// que no Chrome do desktop costuma ser uma voz compacta quase ininteligível.
+const VOZES_PREFERIDAS = [
+  /natural/i,                 // Microsoft *Neural/Natural — as melhores
+  /google (us|uk) english/i,  // Chrome desktop
+  /samantha|alex|daniel/i,    // macOS / iOS
+  /aria|jenny|guy|libby/i,    // Windows
+];
+
+function melhorVozIngles(): SpeechSynthesisVoice | null {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+  const inglesas = window.speechSynthesis
+    .getVoices()
+    .filter((v) => v.lang?.toLowerCase().startsWith("en"));
+  if (!inglesas.length) return null;
+  for (const padrao of VOZES_PREFERIDAS) {
+    const achada = inglesas.find((v) => padrao.test(v.name));
+    if (achada) return achada;
+  }
+  return inglesas.find((v) => v.lang?.toLowerCase() === "en-us") || inglesas[0];
+}
+
+function pronunciarNoNavegador(texto: string) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const fala = new SpeechSynthesisUtterance(texto);
   fala.lang = "en-US";
-  fala.rate = 0.85; // devagar: é aula, não locução
+  fala.rate = 0.95; // 0.85 arrastava e embolava as vozes compactas
+  const voz = melhorVozIngles();
+  if (voz) fala.voice = voz;
   window.speechSynthesis.speak(fala);
 }
 
@@ -100,6 +130,33 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
   const inputRef = useRef<HTMLInputElement>(null);
   const motorRef = useRef<MotorFala | null>(null);
   const limiteRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  /**
+   * Toca o áudio do exercício. Manda o MP3 pré-gerado (voz neural, igual em
+   * todo aparelho); só cai na voz do navegador se não houver arquivo ou se o
+   * arquivo falhar.
+   */
+  const ouvirExercicio = useCallback((ex: EnglishExercicio | undefined) => {
+    if (!ex) return;
+    const texto = ex.audio_texto || ex.pergunta || ex.resposta || "";
+
+    if (ex.audio_url) {
+      try {
+        audioRef.current?.pause();
+        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
+        const som = new Audio(ex.audio_url);
+        audioRef.current = som;
+        void som.play().catch(() => pronunciarNoNavegador(texto));
+        return;
+      } catch {
+        // arquivo indisponível — segue pro plano B
+      }
+    }
+    pronunciarNoNavegador(texto);
+  }, []);
 
   const exercicio = exercicios[indice];
   const ultimo = indice >= exercicios.length - 1;
@@ -142,16 +199,17 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
 
   // Ao entrar num exercício de ouvir, toca o áudio sozinho.
   useEffect(() => {
-    if (exercicio?.tipo === "ouvir" && exercicio.audio_texto) pronunciar(exercicio.audio_texto);
+    if (exercicio?.tipo === "ouvir") ouvirExercicio(exercicio);
     if (exercicio?.tipo === "traducao" || exercicio?.tipo === "ouvir") {
       inputRef.current?.focus();
     }
-  }, [exercicio]);
+  }, [exercicio, ouvirExercicio]);
 
   // Para o microfone e a voz ao sair da tela.
   useEffect(() => () => {
     if (limiteRef.current) clearTimeout(limiteRef.current);
     try { motorRef.current?.stop(); } catch { /* motor já morto */ }
+    audioRef.current?.pause();
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
@@ -453,7 +511,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
               <p className="mt-5 text-lg text-mesa-600">{exercicio.pergunta_pt}</p>
               <button
                 type="button"
-                onClick={() => pronunciar(exercicio.audio_texto || exercicio.pergunta || "")}
+                onClick={() => ouvirExercicio(exercicio)}
                 className="mt-6 rounded-full border border-laranja-300 bg-laranja-50 px-6 py-3 font-semibold text-laranja-700 transition hover:bg-laranja-100"
               >
                 🔊 Ouvir
@@ -503,7 +561,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                 </p>
                 <button
                   type="button"
-                  onClick={() => pronunciar(exercicio.audio_texto || exercicio.pergunta || "")}
+                  onClick={() => ouvirExercicio(exercicio)}
                   className="rounded-full border border-laranja-300 bg-laranja-50 px-5 py-2 text-sm font-semibold text-laranja-700 transition hover:bg-laranja-100"
                 >
                   🔊 Ouvir
@@ -564,7 +622,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
                 <div className="text-center">
                   <button
                     type="button"
-                    onClick={() => pronunciar(exercicio.audio_texto || exercicio.resposta || "")}
+                    onClick={() => ouvirExercicio(exercicio)}
                     className="rounded-full border border-laranja-300 bg-laranja-50 px-8 py-4 text-lg font-semibold text-laranja-700 transition hover:bg-laranja-100"
                   >
                     🔊 Ouvir de novo
@@ -646,7 +704,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
 
               <button
                 type="button"
-                onClick={() => pronunciar(exercicio.audio_texto || exercicio.resposta || "")}
+                onClick={() => ouvirExercicio(exercicio)}
                 className="mt-5 rounded-full border border-mesa-300 px-5 py-2 text-sm font-semibold text-mesa-700 transition hover:border-laranja-400"
               >
                 🔊 Ouvir o modelo
