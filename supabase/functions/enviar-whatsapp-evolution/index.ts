@@ -1,6 +1,6 @@
 // Edge Function: enviar-whatsapp-evolution
-// Dispara mensagem de TEXTO via Evolution GO (whatsmeow).
-// https://github.com/EvolutionAPI/evolution-go
+// Dispara mensagem de TEXTO via Evolution API v2 (gateway no próprio box).
+// Ver o porquê da migração em ../_shared/evolution.ts.
 //
 // Substitui a antiga `enviar-whatsapp` (Z-API). Mantém o mesmo contrato de
 // entrada/saída pra que /api/admin/enviar-mensagem não precise saber qual
@@ -16,15 +16,11 @@
 //
 // Autenticada via header `x-internal-secret` (server-to-server).
 //
-// --- Modelo de auth da Evolution GO (descoberto na prática) ---
-// A Global API Key só serve pra gerenciar instâncias (create/list/delete).
-// Pra OPERAR uma instância (enviar, conectar, status) o header `apikey` recebe
-// o TOKEN DA INSTÂNCIA. É esse token que configuramos em EVOLUTION_INSTANCE_TOKEN.
-//
 // Env vars (Supabase Edge Function secrets):
-//   EVOLUTION_BASE_URL        ex: https://evogo.7iegroup.com.br
-//   EVOLUTION_INSTANCE_TOKEN  token da instância (vai no header `apikey`)
-//   INTERNAL_SECRET           segredo compartilhado server-to-server
+//   EVOLUTION_BASE_URL       ex: https://evolution.escoladodiscipuloimw.com.br
+//   EVOLUTION_APIKEY         chave da API
+//   EVOLUTION_INSTANCE_NAME  nome da instância (default "ekballo")
+//   INTERNAL_SECRET          segredo compartilhado server-to-server
 
 import {
   checarSegredo,
@@ -32,6 +28,7 @@ import {
   extrairMessageId,
   jsonResponse,
   resolverDestino,
+  rota,
 } from "../_shared/evolution.ts";
 
 type Payload = {
@@ -60,13 +57,9 @@ Deno.serve(async (req) => {
   const mensagem = (payload.mensagem || "").trim();
   if (!mensagem) return jsonResponse({ erro: "mensagem obrigatória" }, 400);
 
-  const { ok, status, body } = await evolutionFetch("/send/text", {
+  const { ok, status, body } = await evolutionFetch(rota("/message/sendText"), {
     method: "POST",
-    body: JSON.stringify({
-      number: destino.number,
-      text: mensagem,
-      formatJid: destino.formatJid,
-    }),
+    body: JSON.stringify({ number: destino.number, text: mensagem }),
   });
 
   if (!ok) {

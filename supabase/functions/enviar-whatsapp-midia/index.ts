@@ -1,7 +1,9 @@
 // Edge Function: enviar-whatsapp-midia
-// Dispara mensagem de MÍDIA (imagem, vídeo, áudio, documento) via Evolution GO,
-// tanto pra contato privado quanto pra grupo.
-// https://github.com/EvolutionAPI/evolution-go  (POST /send/media)
+// Dispara mensagem de MÍDIA (imagem, vídeo, áudio, documento) via Evolution
+// API v2, tanto pra contato privado quanto pra grupo.
+//
+// Na v2 o ÁUDIO tem endpoint próprio (sendWhatsAppAudio) e não cabe no
+// sendMedia — por isso o branch abaixo. Ver ../_shared/evolution.ts.
 //
 // Body (POST):
 //   {
@@ -25,6 +27,7 @@ import {
   extrairMessageId,
   jsonResponse,
   resolverDestino,
+  rota,
 } from "../_shared/evolution.ts";
 
 type TipoMidia = "image" | "video" | "audio" | "document";
@@ -66,20 +69,19 @@ Deno.serve(async (req) => {
     return jsonResponse({ erro: `tipo inválido; use um de ${TIPOS_VALIDOS.join(", ")}` }, 400);
   }
 
-  const corpo: Record<string, unknown> = {
-    number: destino.number,
-    url,
-    type: tipo,
-    formatJid: destino.formatJid,
-  };
-  // Áudio (voz/ptt) não leva legenda; os demais aceitam.
-  if (payload.legenda && tipo !== "audio") corpo.caption = payload.legenda.trim();
-  if (payload.filename) corpo.filename = payload.filename.trim();
+  // Áudio segue por outra porta na v2, e sem legenda (é mensagem de voz).
+  const ehAudio = tipo === "audio";
+  const corpo: Record<string, unknown> = ehAudio
+    ? { number: destino.number, audio: url }
+    : { number: destino.number, mediatype: tipo, media: url };
 
-  const { ok, status, body } = await evolutionFetch("/send/media", {
-    method: "POST",
-    body: JSON.stringify(corpo),
-  });
+  if (!ehAudio && payload.legenda) corpo.caption = payload.legenda.trim();
+  if (!ehAudio && payload.filename) corpo.fileName = payload.filename.trim();
+
+  const { ok, status, body } = await evolutionFetch(
+    rota(ehAudio ? "/message/sendWhatsAppAudio" : "/message/sendMedia"),
+    { method: "POST", body: JSON.stringify(corpo) },
+  );
 
   if (!ok) {
     console.error("Evolution media error", status, body);

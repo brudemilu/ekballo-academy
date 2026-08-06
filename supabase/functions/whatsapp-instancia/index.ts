@@ -1,36 +1,56 @@
 // Edge Function: whatsapp-instancia
-// Gerencia a instância de WhatsApp na Evolution GO: ver status, conectar
-// (gerar QR code pra parear), e listar grupos. Usado pelo painel admin
-// /admin/whatsapp pra permitir que o pareamento seja feito A QUALQUER MOMENTO.
+// Gerencia a instância de WhatsApp na Evolution API v2: ver status, conectar
+// (gerar QR / código de pareamento), listar grupos e registrar o webhook de
+// recebimento. Usada pelo painel admin /admin/whatsapp pra permitir que o
+// pareamento seja feito A QUALQUER MOMENTO.
 //
-// Body (POST): { acao: "status" | "conectar" | "qr" | "grupos" }
-//   - status   -> { connected, loggedIn }                       GET  /instance/status
-//   - conectar -> dispara a conexão e devolve o QR              POST /instance/connect + GET /instance/qr
-//   - qr       -> { qrcode } (data:image/png;base64,...)        GET  /instance/qr
-//   - grupos   -> { grupos: [...] }                             GET  /group/myall
+// O contrato de entrada/saída é o MESMO de antes (quando o gateway era a
+// Evolution GO), pra que o painel admin não precise saber qual provider está
+// por trás. O que mudou foi só o mapeamento pros endpoints da v2:
+//
+//   status   -> { connected, loggedIn, nome }   GET  /instance/connectionState/{i}
+//   conectar -> { ..., qrcode, pairingCode }    GET  /instance/connect/{i}
+//   qr       -> { qrcode, pairingCode }         GET  /instance/connect/{i}
+//   grupos   -> { grupos: [...] }               GET  /group/fetchAllGroups/{i}
+//   webhook  -> registra a URL de recebimento   POST /webhook/set/{i}
+//
+// DIFERENÇA QUE PEGA: na v2 NÃO existe /instance/qr. O QR (base64) e o código
+// de pareamento vêm juntos na resposta do connect — por isso "qr" e "conectar"
+// batem no mesmo endpoint aqui.
 //
 // Autenticada via header `x-internal-secret` (server-to-server).
-//
-// Env vars (Supabase Edge Function secrets):
-//   EVOLUTION_BASE_URL, EVOLUTION_INSTANCE_TOKEN, INTERNAL_SECRET
 
-import { checarSegredo, evolutionFetch, jsonResponse } from "../_shared/evolution.ts";
+import {
+  checarSegredo,
+  evolutionFetch,
+  jsonResponse,
+  rota,
+  EVOLUTION_INSTANCE,
+} from "../_shared/evolution.ts";
 
 type Acao = "status" | "conectar" | "qr" | "grupos" | "webhook";
 
+/** Na v2 o estado vem em `instance.state`: open | close | connecting. */
 function lerStatus(body: unknown) {
-  const data = ((body || {}) as { data?: Record<string, unknown> }).data || {};
+  const inst = ((body || {}) as { instance?: Record<string, unknown> }).instance || {};
+  const state = typeof inst.state === "string" ? inst.state : "close";
+  const aberto = state === "open";
   return {
-    connected: !!data.Connected,
-    loggedIn: !!data.LoggedIn,
-    nome: typeof data.Name === "string" ? data.Name : null,
+    connected: aberto,
+    loggedIn: aberto,
+    estado: state,
+    nome: typeof inst.instanceName === "string" ? inst.instanceName : EVOLUTION_INSTANCE,
   };
 }
 
-function lerQr(body: unknown): string | null {
-  const data = ((body || {}) as { data?: Record<string, unknown> }).data || {};
-  const q = data.Qrcode ?? data.qrcode ?? data.QRCode;
-  return typeof q === "string" && q.length > 0 ? q : null;
+/** O connect devolve `base64` (data URI do QR) e `pairingCode` (código curto). */
+function lerConexao(body: unknown) {
+  const b = (body || {}) as Record<string, unknown>;
+  const base64 = typeof b.base64 === "string" && b.base64.length > 0 ? b.base64 : null;
+  const pairing = typeof b.pairingCode === "string" && b.pairingCode.length > 0
+    ? b.pairingCode
+    : null;
+  return { qrcode: base64, pairingCode: pairing };
 }
 
 Deno.serve(async (req) => {
@@ -48,80 +68,79 @@ Deno.serve(async (req) => {
   const acao = reqBody.acao as Acao;
 
   if (acao === "status") {
-    const { ok, status, body } = await evolutionFetch("/instance/status", { method: "GET" });
+    const { ok, status, body } = await evolutionFetch(rota("/instance/connectionState"), {
+      method: "GET",
+    });
     if (!ok) return jsonResponse({ erro: "falha ao consultar status", evolution_status: status }, 502);
     return jsonResponse(lerStatus(body));
   }
 
-  if (acao === "conectar") {
-    // Inicia (ou reinicia) a sessão e busca um QR fresco pra parear.
-    // Se vier `url`, já registra o webhook de recebimento no mesmo connect
-    // (no Evolution GO o webhook é setado aqui) — assim reconectar não zera.
-    const urlConn = typeof reqBody.url === "string" ? reqBody.url : "";
-    const connectBody: Record<string, unknown> = { immediate: true };
-    if (urlConn) {
-      connectBody.webhookUrl = urlConn;
-      connectBody.subscribe = ["MESSAGE"];
-      connectBody.rabbitmqEnabled = "disabled";
-      connectBody.websocketEnable = "disabled";
-      connectBody.natsEnabled = "disabled";
-    }
-    await evolutionFetch("/instance/connect", {
-      method: "POST",
-      body: JSON.stringify(connectBody),
-    });
-    const st = await evolutionFetch("/instance/status", { method: "GET" });
+  if (acao === "conectar" || acao === "qr") {
+    // Se já estiver conectado, o connect não devolve QR — então checa antes
+    // pra dar uma resposta honesta em vez de "qrcode: null" sem explicação.
+    const st = await evolutionFetch(rota("/instance/connectionState"), { method: "GET" });
     const status = lerStatus(st.body);
     if (status.loggedIn) {
-      return jsonResponse({ ...status, qrcode: null, mensagem: "já conectado" });
+      return jsonResponse({ ...status, qrcode: null, pairingCode: null, mensagem: "já conectado" });
     }
-    const qrResp = await evolutionFetch("/instance/qr", { method: "GET" });
-    return jsonResponse({ ...status, qrcode: lerQr(qrResp.body) });
-  }
 
-  if (acao === "qr") {
-    const { ok, status, body } = await evolutionFetch("/instance/qr", { method: "GET" });
-    if (!ok) return jsonResponse({ erro: "falha ao obter QR", evolution_status: status }, 502);
-    return jsonResponse({ qrcode: lerQr(body) });
+    // `telefone` opcional: quando vem, a v2 devolve também o código de
+    // pareamento, que é bem mais prático que ler QR no celular.
+    const telefone = typeof reqBody.telefone === "string"
+      ? reqBody.telefone.replace(/\D+/g, "")
+      : "";
+    const caminho = rota("/instance/connect") + (telefone ? `?number=${telefone}` : "");
+
+    const conn = await evolutionFetch(caminho, { method: "GET" });
+    if (!conn.ok) {
+      return jsonResponse({ erro: "falha ao conectar", evolution_status: conn.status }, 502);
+    }
+    return jsonResponse({ ...status, ...lerConexao(conn.body) });
   }
 
   if (acao === "grupos") {
-    // /group/list busca a lista completa do servidor (em testes /group/myall
-    // retornava vazio mesmo conectado; /group/list traz todos os grupos).
-    const { ok, status, body } = await evolutionFetch("/group/list", { method: "GET" });
+    const { ok, status, body } = await evolutionFetch(
+      rota("/group/fetchAllGroups") + "?getParticipants=false",
+      { method: "GET" },
+    );
     if (!ok) return jsonResponse({ erro: "falha ao listar grupos", evolution_status: status }, 502);
-    const data = ((body || {}) as { data?: unknown }).data;
-    return jsonResponse({ grupos: Array.isArray(data) ? data : [] });
+    const lista = Array.isArray(body)
+      ? body
+      : ((body || {}) as { data?: unknown }).data;
+    return jsonResponse({ grupos: Array.isArray(lista) ? lista : [] });
   }
 
   if (acao === "webhook") {
-    // (Re)registra o webhook de RECEBIMENTO na instância do Evolution GO, pra
-    // que as mensagens que chegam (áudio/texto) sejam POSTadas no app. A `url`
-    // (com o secret) é montada pelo route admin e passada aqui — o segredo não
-    // vive nesta função. Retorna a config atual + o resultado de cada tentativa
-    // (a API de webhook varia entre builds do Evolution GO).
+    // (Re)registra o webhook de RECEBIMENTO, pra que as mensagens que chegam
+    // (áudio/texto) sejam POSTadas no app. A `url` (com o secret) é montada
+    // pelo route admin — o segredo não vive nesta função.
+    //
+    // Na v2 o webhook tem endpoint próprio (não vai mais junto do connect,
+    // como era na GO) e o evento de mensagem recebida é MESSAGES_UPSERT.
     const url = typeof reqBody.url === "string" ? reqBody.url : "";
     if (!url) return jsonResponse({ erro: "url do webhook obrigatória" }, 400);
 
-    // No Evolution GO o webhook é configurado no POST /instance/connect
-    // (webhookUrl + subscribe). "MESSAGE" cobre as mensagens recebidas.
-    const r = await evolutionFetch("/instance/connect", {
+    const r = await evolutionFetch(rota("/webhook/set"), {
       method: "POST",
       body: JSON.stringify({
-        webhookUrl: url,
-        subscribe: ["MESSAGE"],
-        rabbitmqEnabled: "disabled",
-        websocketEnable: "disabled",
-        natsEnabled: "disabled",
+        webhook: {
+          enabled: true,
+          url,
+          events: ["MESSAGES_UPSERT"],
+          byEvents: false,
+          base64: true,
+        },
       }),
     });
-    const st = await evolutionFetch("/instance/status", { method: "GET" });
+
+    const st = await evolutionFetch(rota("/instance/connectionState"), { method: "GET" });
     return jsonResponse({
       ok: r.ok,
-      connect: { status: r.status, body: r.body },
+      evolution_status: r.status,
+      resposta: r.body,
       status: lerStatus(st.body),
     });
   }
 
-  return jsonResponse({ erro: "ação desconhecida" }, 400);
+  return jsonResponse({ erro: "ação inválida" }, 400);
 });

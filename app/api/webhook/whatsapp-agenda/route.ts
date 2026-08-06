@@ -20,16 +20,24 @@ function str(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 
-// Shape do Evolution GO: body.data.Info {Chat,Sender,IsFromMe,IsGroup} +
-// body.data.Message {conversation|extendedTextMessage.text|audioMessage}.
+// Aceita os dois formatos, porque o gateway mudou em ago/2026:
+//   Evolution GO  — body.data.Info {Chat,Sender,IsFromMe,IsGroup}
+//                   + body.data.Message {conversation|...|audioMessage}
+//   Evolution v2  — body.data.key {remoteJid,fromMe,participant}
+//                   + body.data.message {conversation|...|audioMessage}
+// O que mudou de lugar de verdade foi o identificador do chat: na v2 ele vive
+// dentro de `key`, não solto em `data`.
 function extrair(body: Record<string, unknown>) {
   const data = obj(body.data ?? body);
   const info = obj(data.Info);
+  const key = obj(data.key);
   const message = obj(data.Message ?? data.message);
 
-  const fromMe = info.IsFromMe === true || obj(data.key).fromMe === true;
-  const chat = str(info.Chat || data.remoteJid);
-  const sender = str(info.Sender || chat);
+  const fromMe = info.IsFromMe === true || key.fromMe === true;
+  const chat = str(info.Chat || key.remoteJid || data.remoteJid);
+  // Em grupo a v2 identifica o autor em `participant`; em conversa direta ele
+  // não vem, e aí remetente e conversa são a mesma coisa (self-chat).
+  const sender = str(info.Sender || key.participant || chat);
   const isGrupo = info.IsGroup === true || chat.includes("@g.us");
   // self-chat = mensagem pra você mesmo (remetente == conversa)
   const selfChat = !!chat && chat === sender;
