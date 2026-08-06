@@ -10,8 +10,10 @@ const MENSAGEM_PADRAO =
 
 // Rotas onde o botão flutuante NÃO aparece (atrapalha leitura / sobrepõe UI).
 // Páginas internas de estudo: leitor de aula, leitor da Bíblia e detalhe
-// de dia de plano de leitura.
-const ESCONDER_PREFIXOS = ["/cursos", "/biblia", "/planos"];
+// de dia de plano de leitura. E todo o /admin: lá o botão é inútil (é a CTA
+// pública de contato, e quem está no painel é justamente quem responde) e
+// ficava sobreposto às ferramentas no canto inferior direito.
+const ESCONDER_PREFIXOS = ["/cursos", "/biblia", "/planos", "/admin"];
 
 export function WhatsAppFloat() {
   const pathname = usePathname();
