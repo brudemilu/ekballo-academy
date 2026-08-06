@@ -491,7 +491,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
       : exercicio.resposta || "";
 
   return (
-    <div className="flex min-h-screen flex-col bg-bege-50">
+    <div className="min-h-screen bg-bege-50">
       {/* topo: sair + barra de progresso */}
       <header className="border-b border-mesa-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4 sm:px-6">
@@ -521,13 +521,11 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6 sm:py-12">
+      <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">
           Módulo {modulo.numero} · Lição {licao.numero}
         </p>
-        {/* Instrução, não manchete: quem manda visualmente aqui é o espécime.
-            Antes isto era Georgia 2xl/3xl e disputava atenção com a palavra. */}
-        <h1 className="mt-1.5 font-ui text-lg font-medium text-mesa-600 sm:text-xl">
+        <h1 className="mt-2 font-serif text-2xl font-semibold text-mesa-900 sm:text-3xl">
           {exercicio.enunciado}
         </h1>
 
