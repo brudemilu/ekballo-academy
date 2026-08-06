@@ -521,13 +521,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
         </div>
       </header>
 
-      {/* Conteúdo centralizado no espaço livre, não colado no topo. Com o
-          rodapé fixo embaixo e o conteúdo no topo, uma tela alta de celular
-          abria um vazio enorme no meio e o botão parecia órfão. Centralizando,
-          a sobra se distribui acima e abaixo do cartão. O rodapé segue fixo de
-          propósito: numa sequência de 13 exercícios, botão que muda de lugar
-          custa mais que um pouco de espaço vazio. */}
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-6 sm:px-6 sm:py-10">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6 sm:py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">
           Módulo {modulo.numero} · Lição {licao.numero}
         </p>
@@ -827,7 +821,14 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
               : "border-mesa-200 bg-white"
         }`}
       >
-        <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        {/* O botão sobe um pouco da borda: `env(safe-area-inset-bottom)` cobre a
+            faixa do indicador do iPhone, e o mínimo de 1.75rem garante folga
+            também em aparelho sem essa faixa. Colado na borda, o polegar
+            esbarrava no gesto de voltar do sistema. */}
+        <div
+          className="mx-auto flex max-w-3xl flex-col gap-4 px-4 pt-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+          style={{ paddingBottom: "max(1.75rem, env(safe-area-inset-bottom))" }}
+        >
           <div className="min-h-[1.5rem] text-sm">
             {veredito === "certo" && (
               <p className="font-semibold text-mesa-900">

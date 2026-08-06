@@ -13,7 +13,11 @@ const MENSAGEM_PADRAO =
 // de dia de plano de leitura. E todo o /admin: lá o botão é inútil (é a CTA
 // pública de contato, e quem está no painel é justamente quem responde) e
 // ficava sobreposto às ferramentas no canto inferior direito.
-const ESCONDER_PREFIXOS = ["/cursos", "/biblia", "/planos", "/admin"];
+//
+// /english entra pelo mesmo motivo do canto inferior: a lição tem o botão de
+// avançar fixo no rodapé, e o flutuante caía bem em cima dele — atrapalhava
+// justamente o toque que o aluno repete dezenas de vezes por lição.
+const ESCONDER_PREFIXOS = ["/cursos", "/biblia", "/planos", "/admin", "/english"];
 
 export function WhatsAppFloat() {
   const pathname = usePathname();
