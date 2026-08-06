@@ -171,3 +171,17 @@ body {
 /* Hide scrollbar utility for marquee */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* =============================================================
+   EKBALLO ENGLISH · trava do tamanho óptico
+   Bricolage Grotesque é variável e tem eixo `opsz`. Solto, o
+   navegador redesenha as letras conforme o tamanho — e aí a mesma
+   fonte em "Hello" (pequeno, na trilha) e em "Good morning"
+   (gigante, na lição) sai com formas diferentes o bastante pra
+   parecerem duas fontes. Travado, as letras são as mesmas em
+   qualquer tamanho.
+   ============================================================= */
+.font-display {
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 24, "wdth" 100;
+}
