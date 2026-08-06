@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { agendaUnificadaDoDia, diaSP, formatarMensagemLembrete } from "@/lib/agenda-resumo";
+import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -35,22 +36,28 @@ function autorizado(req: NextRequest): boolean {
   return agenda !== "" && q === agenda;
 }
 
-// Envia direto na Evolution GO (mesma instância do resto do site), sem hop por
-// edge function. Timeout próprio por envio pra nunca pendurar a função.
+// Envia pela edge function `enviar-whatsapp-evolution` — o mesmo caminho do
+// webhook da agenda, do recuperar-senha e do painel. Antes esta rota falava
+// direto com a Evolution GO (`/send/text` + token de instância); ao migrar o
+// gateway pro Evolution v2 do box, o endpoint virou 404 e o lembrete diário
+// parou calado. Concentrando o envio na edge function, o conhecimento do
+// gateway (endpoint, instância, apikey) fica num lugar só e uma próxima
+// migração não precisa ser repetida aqui. Timeout próprio por envio pra nunca
+// pendurar a função.
 async function enviarWhatsApp(numero: string, mensagem: string): Promise<boolean> {
-  const base = (process.env.EVOLUTION_BASE_URL || "").replace(/\/+$/, "");
-  const token = process.env.EVOLUTION_INSTANCE_TOKEN;
-  if (!base || !token) {
-    console.error("[lembrete] Evolution não configurada (falta EVOLUTION_BASE_URL/INSTANCE_TOKEN)");
+  const base = supabaseFunctionsBase();
+  const secret = process.env.INTERNAL_SECRET;
+  if (!base || !secret) {
+    console.error("[lembrete] envio não configurado (falta SUPABASE_FUNCTIONS_URL/INTERNAL_SECRET)");
     return false;
   }
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 20_000);
   try {
-    const res = await fetch(`${base}/send/text`, {
+    const res = await fetch(`${base}/enviar-whatsapp-evolution`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", apikey: token },
-      body: JSON.stringify({ number: numero, text: mensagem, formatJid: true }),
+      headers: { "Content-Type": "application/json", "x-internal-secret": secret },
+      body: JSON.stringify({ destinatario: numero, mensagem }),
       signal: ctrl.signal,
     });
     if (!res.ok) {

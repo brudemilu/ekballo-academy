@@ -21,6 +21,7 @@ import {
   extrairMessageId,
   jsonResponse,
   resolverDestino,
+  rota,
 } from "../_shared/evolution.ts";
 
 const FILA_CRON_SECRET = Deno.env.get("FILA_CRON_SECRET") || "";
@@ -56,12 +57,14 @@ Deno.serve(async (req) => {
   if (!destino) {
     erro = "telefone inválido";
   } else {
-    const resp = await evolutionFetch("/send/text", {
+    // Rota da v2 leva a instância (`/message/sendText/{instancia}`); o
+    // `/send/text` da Evolution GO responde 404 aqui e a fila falhava calada.
+    // `formatJid` também era da GO — o helper v2 já entrega o número resolvido.
+    const resp = await evolutionFetch(rota("/message/sendText"), {
       method: "POST",
       body: JSON.stringify({
         number: destino.number,
         text: item.corpo,
-        formatJid: destino.formatJid,
       }),
     });
     ok = resp.ok;
