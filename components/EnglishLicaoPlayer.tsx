@@ -521,18 +521,26 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6 sm:py-12">
+      {/* Conteúdo centralizado no espaço livre, não colado no topo. Com o
+          rodapé fixo embaixo e o conteúdo no topo, uma tela alta de celular
+          abria um vazio enorme no meio e o botão parecia órfão. Centralizando,
+          a sobra se distribui acima e abaixo do cartão. O rodapé segue fixo de
+          propósito: numa sequência de 13 exercícios, botão que muda de lugar
+          custa mais que um pouco de espaço vazio. */}
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-6 sm:px-6 sm:py-10">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">
           Módulo {modulo.numero} · Lição {licao.numero}
         </p>
-        <h1 className="mt-2 font-serif text-2xl font-semibold text-mesa-900 sm:text-3xl">
+        {/* Instrução, não manchete: quem manda visualmente aqui é o espécime.
+            Antes isto era Georgia 2xl/3xl e disputava atenção com a palavra. */}
+        <h1 className="mt-1.5 font-ui text-lg font-medium text-mesa-600 sm:text-xl">
           {exercicio.enunciado}
         </h1>
 
-        <div className="mt-8">
+        <div className="mt-6 sm:mt-8">
           {/* ---- vocabulário ---- */}
           {exercicio.tipo === "vocabulario" && (
-            <div className="rounded-3xl border border-mesa-200 bg-white p-8 text-center shadow-sm shadow-mesa-800/5">
+            <div className="rounded-3xl border border-mesa-200 bg-white px-6 py-10 text-center shadow-sm shadow-mesa-800/5 sm:px-10">
               {exercicio.imagem_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -732,7 +740,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
 
           {/* ---- falar ---- */}
           {exercicio.tipo === "falar" && (
-            <div className="rounded-3xl border border-mesa-200 bg-white p-8 text-center shadow-sm shadow-mesa-800/5">
+            <div className="rounded-3xl border border-mesa-200 bg-white px-6 py-10 text-center shadow-sm shadow-mesa-800/5 sm:px-10">
               <Especime
                 en={exercicio.pergunta || ""}
                 dica={exercicio.dica}
