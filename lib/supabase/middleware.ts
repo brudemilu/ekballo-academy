@@ -58,13 +58,19 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && isProtectedAluno) {
-    const { data: profile } = await supabase
+    const { data: profile, error: erroPerfil } = await supabase
       .from("profiles")
       .select("is_admin, acesso_liberado")
       .eq("id", user.id)
       .single();
 
-    if (!profile?.is_admin && profile?.acesso_liberado !== true) {
+    // Barra só quando o perfil diz EXPLICITAMENTE que o acesso não foi
+    // liberado. Se a consulta falhar, deixa passar: em 07/08/2026 esta
+    // checagem foi publicada antes da coluna acesso_liberado existir no banco,
+    // o select quebrou, o perfil voltou nulo e a regra trancou TODOS fora da
+    // plataforma — inclusive o admin, que é justamente quem libera os outros.
+    // Erro de infraestrutura não pode virar bloqueio geral.
+    if (!erroPerfil && profile && !profile.is_admin && profile.acesso_liberado === false) {
       return pendingRedirect(path);
     }
   }
@@ -76,7 +82,9 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.is_admin || profile?.acesso_liberado === true) {
+    // Mesma lógica ao contrário: só deixa de mandar pro dashboard quem está
+    // explicitamente pendente.
+    if (profile?.is_admin || profile?.acesso_liberado !== false) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

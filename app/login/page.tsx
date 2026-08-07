@@ -63,13 +63,16 @@ function LoginForm() {
       return;
     }
 
-    const { data: profileData } = await supabase
+    const { data: profileData, error: erroPerfil } = await supabase
       .from("profiles")
       .select("acesso_liberado, is_admin")
       .eq("id", data.user.id)
       .single();
 
-    if (!profileData?.is_admin && profileData?.acesso_liberado !== true) {
+    // Recusa só quem está EXPLICITAMENTE pendente. Se a consulta falhar, entra:
+    // ver a nota em lib/supabase/middleware.ts — essa checagem já trancou a
+    // plataforma inteira quando a coluna ainda não existia no banco.
+    if (!erroPerfil && profileData && !profileData.is_admin && profileData.acesso_liberado === false) {
       await supabase.auth.signOut();
       setErro("Seu acesso ainda está pendente. O administrador precisa liberar seu cadastro antes de entrar.");
       setLoading(false);
