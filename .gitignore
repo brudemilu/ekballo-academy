@@ -54,3 +54,9 @@ scripts/.venv-tts/
 
 # Supabase CLI
 supabase/.temp
+
+# Artefatos de trabalho que não devem ser versionados.
+# ATENÇÃO: tmp/livros/ É versionado de propósito (73 json de importação de
+# livro) — por isso o ignore é por caminho, não a pasta tmp/ inteira.
+tmp/pdfs/
+tmp/english-audio.sql

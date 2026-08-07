@@ -13,6 +13,8 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { isMockMode } from "@/lib/mock-data";
+import { diaEmSaoPaulo } from "@/lib/english-pratica";
+import { embaralharComSemente } from "@/lib/english-tipos";
 import type {
   EnglishExercicio,
   EnglishLicao,
@@ -337,4 +339,103 @@ export async function listModulosAdmin(): Promise<
       exercicios: ids.reduce((soma, id) => soma + (exerciciosPorLicao.get(id) || 0), 0),
     };
   });
+}
+
+// ---------------- Revisão espaçada ----------------
+
+export type RevisaoDoDia = {
+  exercicios: EnglishExercicio[];
+  /** Quantas lições diferentes a seleção cobre — vira legenda na tela. */
+  licoesCobertas: number;
+  /** Lições concluídas há mais tempo, que é o que a revisão prioriza. */
+  disponivel: boolean;
+};
+
+/** Quantos exercícios entram na revisão do dia. Curto de propósito: a
+ *  revisão compete com a lição nova, e revisão longa some da rotina. */
+const TAMANHO_REVISAO = 10;
+
+/**
+ * Monta a revisão do dia a partir do que o aluno JÁ concluiu.
+ *
+ * Prioriza por duas coisas, nesta ordem de peso:
+ *   • há quanto tempo a lição foi concluída — é o esquecimento que
+ *     justifica a revisão existir;
+ *   • quão mal ele foi nela — errar muito e nunca reencontrar é a
+ *     pior combinação possível.
+ *
+ * Exercícios de `vocabulario` ficam de fora: eles ensinam, não cobram,
+ * e revisão sem cobrança não mede nada.
+ *
+ * A seleção é determinística por (aluno + dia): recarregar a página dá a
+ * mesma revisão, e amanhã dá outra. Sem isso, a cada refresh o aluno
+ * receberia exercícios diferentes e a revisão viraria loteria.
+ */
+export async function montarRevisao(alunoId: string): Promise<RevisaoDoDia> {
+  const vazio: RevisaoDoDia = { exercicios: [], licoesCobertas: 0, disponivel: false };
+  if (isMockMode()) return vazio;
+
+  const supabase = await createClient();
+
+  const { data: prog } = await supabase
+    .from("english_progresso")
+    .select("licao_id, acertos, total, concluido_em")
+    .eq("aluno_id", alunoId);
+
+  const concluidas = (prog || []) as EnglishProgresso[];
+  if (!concluidas.length) return vazio;
+
+  const agora = Date.now();
+  const prioridade = (p: EnglishProgresso) => {
+    const dias = Math.max(0, (agora - new Date(p.concluido_em).getTime()) / 86_400_000);
+    const erro = p.total > 0 ? 1 - p.acertos / p.total : 0;
+    return dias + erro * 14; // errar tudo pesa como duas semanas de esquecimento
+  };
+
+  const ordenadas = [...concluidas].sort((a, b) => prioridade(b) - prioridade(a));
+  // Pega de várias lições, não só da pior: revisão de uma lição só vira
+  // repetição, e o ganho da revisão espaçada está em misturar contextos.
+  const escolhidas = ordenadas.slice(0, TAMANHO_REVISAO);
+
+  const { data: exs } = await supabase
+    .from("english_exercicios")
+    .select("*")
+    .in("licao_id", escolhidas.map((l) => l.licao_id))
+    .neq("tipo", "vocabulario")
+    .order("ordem");
+
+  const candidatos = ((exs || []) as EnglishExercicio[]).map((e) => ({
+    ...e,
+    aceitas: Array.isArray(e.aceitas) ? e.aceitas : [],
+    alternativas: Array.isArray(e.alternativas) ? e.alternativas : [],
+  }));
+  if (!candidatos.length) return vazio;
+
+  // Um exercício por lição primeiro (cobre o máximo de contextos), e só
+  // depois completa com sobras — senão uma lição com muitos exercícios
+  // dominaria a revisão inteira.
+  const semente = `${alunoId}:${diaEmSaoPaulo()}`;
+  const porLicao = new Map<string, EnglishExercicio[]>();
+  for (const e of candidatos) {
+    porLicao.set(e.licao_id, [...(porLicao.get(e.licao_id) || []), e]);
+  }
+
+  const primeiraRodada: EnglishExercicio[] = [];
+  const sobras: EnglishExercicio[] = [];
+  for (const [licaoId, lista] of porLicao) {
+    const baralho = embaralharComSemente(lista, `${semente}:${licaoId}`);
+    primeiraRodada.push(baralho[0]);
+    sobras.push(...baralho.slice(1));
+  }
+
+  const selecao = [
+    ...embaralharComSemente(primeiraRodada, semente),
+    ...embaralharComSemente(sobras, `${semente}:sobra`),
+  ].slice(0, TAMANHO_REVISAO);
+
+  return {
+    exercicios: selecao,
+    licoesCobertas: new Set(selecao.map((e) => e.licao_id)).size,
+    disponivel: true,
+  };
 }

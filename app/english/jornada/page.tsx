@@ -8,6 +8,7 @@ import {
   getStreak,
   listConquistas,
   listTrilha,
+  montarRevisao,
   nomeConquista,
   type EnglishModuloComLicoes,
 } from "@/lib/english";
@@ -129,11 +130,12 @@ export default async function EnglishJornadaPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  const [trilha, streak, conquistas, proxima] = await Promise.all([
+  const [trilha, streak, conquistas, proxima, revisao] = await Promise.all([
     listTrilha(session.userId),
     getStreak(session.userId),
     listConquistas(session.userId),
     getProximaLicao(session.userId),
+    montarRevisao(session.userId),
   ]);
 
   const totalLicoes = trilha.reduce((s, m) => s + m.licoes.length, 0);
@@ -195,6 +197,29 @@ export default async function EnglishJornadaPage() {
               {totalConcluidas === 0 ? "Começar" : "Continuar"} →
             </Link>
           </section>
+        )}
+
+        {/* ---------- revisão do dia ----------
+            Fica logo abaixo da lição nova e não acima: avançar continua sendo
+            o caminho principal. Mas aparece sempre que houver o que revisar,
+            porque lição vista uma única vez evapora em duas semanas. */}
+        {revisao.disponivel && (
+          <Link
+            href="/english/revisao"
+            className="mt-4 flex items-center gap-4 rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-laranja-300"
+          >
+            <span className="text-2xl" aria-hidden>🔁</span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-display text-lg font-semibold text-mesa-900">
+                Revisão do dia
+              </span>
+              <span className="block font-ui text-sm text-mesa-500">
+                {revisao.exercicios.length} exercícios de {revisao.licoesCobertas}{" "}
+                {revisao.licoesCobertas === 1 ? "lição já feita" : "lições já feitas"} · conta na sequência
+              </span>
+            </span>
+            <span className="shrink-0 text-mesa-400" aria-hidden>›</span>
+          </Link>
         )}
 
         {/* ---------- onde ele está no curso ---------- */}

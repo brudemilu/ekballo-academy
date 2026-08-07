@@ -100,6 +100,7 @@ export const ENGLISH_CONQUISTAS: Record<string, { nome: string; emoji: string; d
   "streak-30": { nome: "One month", emoji: "🏆", descricao: "Trinta dias seguidos de prática." },
   "licao-perfeita": { nome: "Perfect", emoji: "💯", descricao: "Uma lição inteira sem errar." },
   "modulo-1": { nome: "First steps", emoji: "🎓", descricao: "Concluiu o Módulo 1 inteiro." },
+  "primeira-revisao": { nome: "Look back", emoji: "🔁", descricao: "Fez a primeira revisão do que já aprendeu." },
 };
 
 export function nomeConquista(chave: string) {

@@ -35,6 +35,10 @@ type Props = {
   licao: EnglishLicao;
   exercicios: EnglishExercicio[];
   proximaSlug: string | null;
+  /** Revisão do dia: mesma mecânica, mas os exercícios vêm de várias lições
+   *  já concluídas. Não conclui lição nem altera a nota dela — só registra a
+   *  revisão e segura a sequência. */
+  revisao?: boolean;
 };
 
 type Veredito = "certo" | "errado" | null;
@@ -137,7 +141,7 @@ function Especime({
   );
 }
 
-export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: Props) {
+export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, revisao = false }: Props) {
   const router = useRouter();
 
   const [indice, setIndice] = useState(0);
@@ -296,10 +300,14 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
     setFinalizando(true);
     setErroEnvio(null);
     try {
-      const res = await fetch("/api/english/concluir", {
+      const res = await fetch(revisao ? "/api/english/revisar" : "/api/english/concluir", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ licaoId: licao.id, acertos: totalAcertos, total: totalAvaliado }),
+        body: JSON.stringify(
+          revisao
+            ? { acertos: totalAcertos, total: totalAvaliado, exercicios: exercicios.map((e) => e.id) }
+            : { licaoId: licao.id, acertos: totalAcertos, total: totalAvaliado },
+        ),
       });
       const dados = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(dados.erro || "Não deu para salvar o seu progresso.");
@@ -311,7 +319,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
     } finally {
       setFinalizando(false);
     }
-  }, [licao.id, router]);
+  }, [licao.id, revisao, exercicios, router]);
 
   function avancar() {
     if (ultimo) {
@@ -405,7 +413,9 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
             {nota === 100 ? "Perfect!" : nota >= 70 ? "Well done!" : "Keep going!"}
           </h1>
           <p className="mt-2 text-mesa-600">
-            Você concluiu <strong>{licao.titulo}</strong>.
+            {revisao
+              ? "Você revisou o que já tinha aprendido."
+              : <>Você concluiu <strong>{licao.titulo}</strong>.</>}
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -523,7 +533,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
 
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">
-          Módulo {modulo.numero} · Lição {licao.numero}
+          {revisao ? "Revisão do dia" : `Módulo ${modulo.numero} · Lição ${licao.numero}`}
         </p>
         <h1 className="mt-2 font-serif text-2xl font-semibold text-mesa-900 sm:text-3xl">
           {exercicio.enunciado}
@@ -796,7 +806,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug }: P
         </div>
 
         {/* versículo da lição, no primeiro exercício */}
-        {indice === 0 && licao.versiculo_en && (
+        {!revisao && indice === 0 && licao.versiculo_en && (
           <div className="mt-8 rounded-2xl border border-mesa-200 bg-white/70 p-5 text-center">
             <p lang="en" className="font-serif text-lg italic text-mesa-800">
               “{licao.versiculo_en}”

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { registrarPratica } from "@/lib/english-pratica";
 
 // =============================================================
 // EKBALLO ENGLISH · Conclusão de lição
@@ -10,20 +11,6 @@ import { createClient } from "@/lib/supabase/server";
 // O "dia" do streak é o dia civil em São Paulo, não UTC — senão
 // quem pratica às 22h perde a sequência na virada do fuso.
 // =============================================================
-
-const TZ = "America/Sao_Paulo";
-
-function diaEmSaoPaulo(): string {
-  // en-CA formata como YYYY-MM-DD
-  return new Date().toLocaleDateString("en-CA", { timeZone: TZ });
-}
-
-function diaAnterior(dia: string): string {
-  // Ancora ao meio-dia UTC pra não escorregar de dia em nenhum fuso.
-  const d = new Date(`${dia}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -73,39 +60,15 @@ export async function POST(req: NextRequest) {
   );
 
   // ---------- streak ----------
-  const hoje = diaEmSaoPaulo();
-  const { data: streakAtual } = await supabase
-    .from("english_streak")
-    .select("dias_seguidos, recorde, ultimo_dia, total_licoes")
-    .eq("aluno_id", user.id)
-    .maybeSingle();
-
-  let diasSeguidos: number;
-  if (streakAtual?.ultimo_dia === hoje) {
-    diasSeguidos = streakAtual.dias_seguidos || 1;      // já praticou hoje: mantém
-  } else if (streakAtual?.ultimo_dia === diaAnterior(hoje)) {
-    diasSeguidos = (streakAtual.dias_seguidos || 0) + 1; // praticou ontem: soma
-  } else {
-    diasSeguidos = 1;                                    // quebrou (ou é o primeiro dia)
-  }
-
-  const streak = {
-    aluno_id: user.id,
-    dias_seguidos: diasSeguidos,
-    recorde: Math.max(streakAtual?.recorde ?? 0, diasSeguidos),
-    ultimo_dia: hoje,
-    total_licoes: (streakAtual?.total_licoes ?? 0) + 1,
-    atualizado_em: new Date().toISOString(),
-  };
-  await supabase.from("english_streak").upsert(streak, { onConflict: "aluno_id" });
+  const streak = await registrarPratica(supabase, user.id);
 
   // ---------- conquistas ----------
   const candidatas: string[] = [];
   if (primeiraVez) candidatas.push("primeira-licao");
   if (total > 0 && acertos === total) candidatas.push("licao-perfeita");
-  if (diasSeguidos >= 3) candidatas.push("streak-3");
-  if (diasSeguidos >= 7) candidatas.push("streak-7");
-  if (diasSeguidos >= 30) candidatas.push("streak-30");
+  if (streak.dias_seguidos >= 3) candidatas.push("streak-3");
+  if (streak.dias_seguidos >= 7) candidatas.push("streak-7");
+  if (streak.dias_seguidos >= 30) candidatas.push("streak-30");
 
   // Módulo inteiro concluído?
   const { data: irmas } = await supabase
