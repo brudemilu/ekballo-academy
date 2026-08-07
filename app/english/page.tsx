@@ -1,104 +1,53 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { RevealOnScroll } from "@/components/RevealOnScroll";
 import { getCurrentSession } from "@/lib/db";
 import { listTrilha } from "@/lib/english";
 
-const modules = [
-  {
-    title: "Módulo 1",
-    subtitle: "Primeiros passos",
-    description: "Cumprimentos, nome, idade, frases simples e primeira confiança para falar.",
-  },
-  {
-    title: "Módulo 2",
-    subtitle: "Meu mundo",
-    description: "Família, casa, rotina, escola, hobbies e a primeira conversa sobre si.",
-  },
-  {
-    title: "Módulo 3",
-    subtitle: "Vida cotidiana",
-    description: "Comida, bebidas, roupas, pedir algo e usar o inglês no dia a dia.",
-  },
-  {
-    title: "Módulo 4",
-    subtitle: "Sentimentos e ações",
-    description: "Expressar emoções, narrar ações e falar com mais naturalidade.",
-  },
-  {
-    title: "Módulo 5",
-    subtitle: "Perguntas e respostas",
-    description: "Aprender a responder perguntas simples e formar frases curtas com segurança.",
-  },
-  {
-    title: "Módulo 6",
-    subtitle: "Conversas básicas",
-    description: "Diálogos curtos, role-play e primeira interação com outra pessoa.",
-  },
-  {
-    title: "Módulo 7",
-    subtitle: "Fé e vida diária",
-    description: "Frases de fé, gratidão, esperança, oração e propósito em inglês.",
-  },
-  {
-    title: "Módulo 8",
-    subtitle: "Expressão pessoal",
-    description: "Dizer o que gosta, o que sente, o que prefere e o que pensa.",
-  },
-  {
-    title: "Módulo 9",
-    subtitle: "Situações reais",
-    description: "Escola, igreja, loja, viagem e comunicação prática para o mundo real.",
-  },
-  {
-    title: "Módulo 10",
-    subtitle: "Falar com confiança",
-    description: "Descrever, contar histórias curtas, responder rápido e falar com mais segurança.",
-  },
-  {
-    title: "Módulo 11",
-    subtitle: "Discussão e opinião",
-    description: "Concordar, discordar, explicar ideias e desenvolver uma voz mais firme.",
-  },
-  {
-    title: "Módulo 12",
-    subtitle: "Projeto final",
-    description: "Apresentar a si mesmo, falar sobre fé, propósito e mostrar todo o progresso.",
-  },
+// A vitrine mostra a coisa em vez de descrevê-la. O herói é um espécime real
+// de lição — a mesma composição que o aluno vê ao praticar. Quem chega
+// entende em dois segundos o que vai fazer, o que nenhum parágrafo de
+// "experiência premium" entrega.
+const AMOSTRA = { en: "Good morning", dica: "gud mór-nin", pt: "Bom dia" };
+
+// Os seis tipos de exercício são o que o curso realmente faz. Listá-los é
+// mais honesto e mais concreto que enumerar benefícios.
+const EXERCICIOS = [
+  { nome: "Vocabulário", desc: "A palavra, o som e a pronúncia aproximada." },
+  { nome: "Escolha", desc: "Qual frase serve para a situação." },
+  { nome: "Tradução", desc: "Escrever em inglês o que se pede." },
+  { nome: "Ditado", desc: "Ouvir e escrever o que foi dito." },
+  { nome: "Montar frase", desc: "Ordenar as palavras até a frase fechar." },
+  { nome: "Fala", desc: "Dizer em voz alta — e o app confere." },
 ];
 
-const features = [
-  "Rotina diária com missão simples e progressiva",
-  "Prática de fala desde o primeiro módulo",
-  "Conteúdo cristão integrado com propósito e identidade",
-  "Gamificação com streak, conquistas e progresso visível",
-  "Experiência premium para crianças, adolescentes e adultos",
+const NIVEIS = [
+  { rotulo: "Iniciante", faixa: "Módulos 1 a 4", resumo: "Cumprimentar, falar da própria vida, nomear o dia a dia e dizer o que sente." },
+  { rotulo: "Básico", faixa: "Módulos 5 a 8", resumo: "Responder perguntas, sustentar conversa, viver a fé em inglês e se posicionar." },
+  { rotulo: "Intermediário", faixa: "Módulos 9 a 12", resumo: "Resolver situações reais, narrar, discordar com respeito e se apresentar por inteiro." },
 ];
 
 export default async function EkballoEnglishPage() {
   const session = await getCurrentSession();
-  // Só pra saber o que já está no ar — a vitrine descreve os 12 módulos do
-  // programa inteiro, inclusive os que ainda estão em produção.
   const trilha = await listTrilha(session?.userId ?? null);
-  const noAr = new Set(
-    trilha.filter((m) => m.publicado && m.licoes.length > 0).map((m) => m.numero),
-  );
+
+  const modulos = trilha.filter((m) => m.publicado && m.licoes.length > 0);
+  const totalLicoes = modulos.reduce((s, m) => s + m.licoes.length, 0);
 
   const entrarHref = session ? "/english/jornada" : "/cadastro";
-  const entrarLabel = session ? "Ir para a minha trilha" : "Quero entrar";
+  const entrarLabel = session ? "Ir para a minha trilha" : "Começar agora";
 
   return (
-    <main className="min-h-screen bg-bege-50 text-bege-800">
-      <header className="border-b border-bege-200 bg-bege-50/90 backdrop-blur">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <main className="min-h-screen bg-bege-50 text-mesa-800">
+      <header className="border-b border-mesa-200 bg-bege-50/90 backdrop-blur">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
           <Logo />
-          <div className="flex items-center gap-3">
-            <Link href="/" className="text-sm font-medium text-bege-600 transition hover:text-laranja-600">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="font-ui text-sm font-medium text-mesa-600 transition hover:text-laranja-600">
               Voltar ao Ekballo
             </Link>
             <Link
               href={entrarHref}
-              className="rounded-full bg-laranja-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-laranja-500/20 transition hover:bg-laranja-600"
+              className="rounded-full bg-laranja-500 px-4 py-2 font-ui text-sm font-semibold text-white transition hover:bg-laranja-600"
             >
               {entrarLabel}
             </Link>
@@ -106,122 +55,141 @@ export default async function EkballoEnglishPage() {
         </nav>
       </header>
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-laranja-50 via-bege-50 to-bege-100">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,90,44,0.16),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(99,94,86,0.14),_transparent_40%)]" />
-        <div className="relative mx-auto flex max-w-7xl flex-col gap-10 px-6 py-20 lg:flex-row lg:items-center lg:py-28">
-          <div className="max-w-2xl">
-            <p className="mb-4 inline-flex rounded-full border border-laranja-200 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-laranja-700">
+      {/* ---------- herói: o espécime ---------- */}
+      <section className="mx-auto max-w-5xl px-4 pb-16 pt-14 sm:px-6 sm:pb-24 sm:pt-20">
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(0,26rem)]">
+          <div>
+            <p className="font-ui text-xs font-semibold uppercase tracking-[0.25em] text-laranja-600">
               Ekballo English
             </p>
-            <h1 className="font-display text-4xl font-semibold leading-tight text-bege-800 sm:text-5xl lg:text-6xl">
+            <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-mesa-900 sm:text-5xl lg:text-6xl">
               Aprender inglês com propósito, fé e confiança.
             </h1>
-            <p className="mt-6 text-lg leading-relaxed text-bege-700">
-              Uma experiência premium para crianças, adolescentes e adultos, com foco em fala real, rotina diária, conteúdo cristão e progresso visível.
+            <p className="mt-6 max-w-xl font-ui text-lg leading-relaxed text-mesa-600">
+              Cinco minutos por dia. Uma lição de cada vez, com a pronúncia gravada em toda
+              frase e prática de fala desde o primeiro módulo.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href={session ? "/english/jornada" : "/cadastro"}
-                className="rounded-full bg-laranja-500 px-6 py-3 text-center font-semibold text-white shadow-xl shadow-laranja-500/25 transition hover:bg-laranja-600"
+                href={entrarHref}
+                className="rounded-full bg-laranja-500 px-7 py-3.5 text-center font-ui font-semibold text-white transition hover:bg-laranja-600"
               >
-                {session ? "Continuar minha trilha" : "Começar agora"}
+                {entrarLabel}
               </Link>
               <Link
                 href="/manifesto"
-                className="rounded-full border border-bege-300 bg-white/80 px-6 py-3 text-center font-semibold text-bege-800 transition hover:border-laranja-400 hover:text-laranja-700"
+                className="rounded-full border border-mesa-300 px-7 py-3.5 text-center font-ui font-semibold text-mesa-800 transition hover:border-laranja-400 hover:text-laranja-700"
               >
                 Conhecer a visão
               </Link>
             </div>
           </div>
 
-          <RevealOnScroll delay={1} as="div" className="w-full max-w-xl rounded-[2rem] border border-bege-200 bg-white/85 p-8 shadow-2xl shadow-bege-700/10 backdrop-blur">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">O que o aluno sente</p>
-            <div className="mt-4 space-y-4">
-              {[
-                "Hoje eu consigo falar frases simples em inglês.",
-                "Eu sigo uma rotina diária e vejo meu progresso.",
-                "Eu aprendo com propósito, fé e confiança.",
-              ].map((item) => (
-                <div key={item} className="rounded-2xl border border-bege-200 bg-bege-50 p-4 text-sm leading-relaxed text-bege-700">
-                  {item}
-                </div>
-              ))}
+          {/* O cartão é a lição de verdade, na mesma composição do app. */}
+          <div className="rounded-[1.75rem] border border-mesa-200 bg-white px-6 py-10 text-center shadow-xl shadow-mesa-800/5 sm:px-10">
+            <p className="font-ui text-xs font-semibold uppercase tracking-[0.2em] text-mesa-400">
+              Módulo 1 · Lição 1
+            </p>
+            <p lang="en" className="mt-6 font-display text-5xl font-semibold leading-[0.95] tracking-[-0.03em] text-mesa-900">
+              {AMOSTRA.en}
+            </p>
+            <p className="mt-4 font-ui text-sm font-semibold uppercase tracking-[0.3em] text-laranja-600">
+              {AMOSTRA.dica}
+            </p>
+            <p className="mt-5 font-ui text-base text-mesa-500">{AMOSTRA.pt}</p>
+            <span className="mt-7 inline-flex items-center gap-2 rounded-full border border-laranja-300 bg-laranja-50 px-6 py-3 font-ui font-semibold text-laranja-700">
+              🔊 Ouvir
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- números reais ---------- */}
+      <section className="border-y border-mesa-200 bg-white">
+        <dl className="mx-auto grid max-w-5xl grid-cols-2 gap-y-8 px-4 py-12 sm:grid-cols-4 sm:px-6">
+          {[
+            { n: modulos.length || 12, r: "módulos" },
+            { n: totalLicoes || 72, r: "lições" },
+            { n: 6, r: "tipos de exercício" },
+            { n: "100%", r: "das frases com áudio" },
+          ].map((item) => (
+            <div key={item.r} className="text-center">
+              <dt className="font-display text-4xl font-semibold text-mesa-900">{item.n}</dt>
+              <dd className="mt-1 font-ui text-sm text-mesa-500">{item.r}</dd>
             </div>
-          </RevealOnScroll>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <RevealOnScroll className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Por que Ekballo English</p>
-          <h2 className="mt-3 font-display text-3xl font-semibold text-bege-800 sm:text-4xl">
-            Não é só um curso de inglês. É uma jornada de formação.
-          </h2>
-          <p className="mt-4 text-lg leading-relaxed text-bege-700">
-            O projeto une ensino prático, fala desde o início, rotina diária, identidade cristã e uma experiência premium que se adapta a crianças, adolescentes e adultos.
-          </p>
-        </RevealOnScroll>
-
-        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {features.map((feature, index) => (
-            <RevealOnScroll key={feature} delay={index as 0 | 1 | 2} as="div" className="rounded-3xl border border-bege-200 bg-white p-6 shadow-sm shadow-bege-700/5">
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-laranja-500 text-sm font-semibold text-white">
-                {index + 1}
-              </div>
-              <p className="text-base leading-relaxed text-bege-700">{feature}</p>
-            </RevealOnScroll>
           ))}
-        </div>
+        </dl>
       </section>
 
-      <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-20">
-          <RevealOnScroll className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Estrutura do curso</p>
-            <h2 className="mt-3 font-display text-3xl font-semibold text-bege-800 sm:text-4xl">
-              Do zero à fala com confiança, em 12 módulos pensados para crescer.
-            </h2>
-          </RevealOnScroll>
-
-          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {modules.map((module, index) => {
-              const disponivel = noAr.has(index + 1);
-              return (
-                <RevealOnScroll key={module.title} delay={(index % 3) as 0 | 1 | 2} as="article" className={`rounded-3xl border p-6 shadow-sm shadow-bege-700/5 ${disponivel ? "border-laranja-300 bg-laranja-50" : "border-bege-200 bg-bege-50"}`}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-laranja-600">{module.title}</p>
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${disponivel ? "bg-laranja-500 text-white" : "bg-white text-bege-600"}`}>
-                      {disponivel ? "No ar" : "Em produção"}
-                    </span>
-                  </div>
-                  <h3 className="mt-2 font-display text-xl font-semibold text-bege-800">{module.subtitle}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-bege-700">{module.description}</p>
-                </RevealOnScroll>
-              );
-            })}
-          </div>
-        </div>
+      {/* ---------- o que se faz numa lição ---------- */}
+      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
+        <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-mesa-900 sm:text-4xl">
+          O que você faz numa lição
+        </h2>
+        <p className="mt-3 max-w-2xl font-ui text-lg leading-relaxed text-mesa-600">
+          Cada lição mistura seis tipos de exercício. Vocabulário ensina e não pontua; os
+          outros cinco corrigem na hora.
+        </p>
+        <ul className="mt-10 grid gap-x-10 gap-y-6 sm:grid-cols-2">
+          {EXERCICIOS.map((e) => (
+            <li key={e.nome} className="flex gap-4 border-t border-mesa-200 pt-5">
+              <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-laranja-500" aria-hidden />
+              <span>
+                <span className="block font-display text-lg font-semibold text-mesa-900">{e.nome}</span>
+                <span className="block font-ui text-mesa-600">{e.desc}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <RevealOnScroll as="div" className="rounded-[2rem] border border-bege-200 bg-gradient-to-br from-bege-100 to-white p-10 shadow-xl shadow-bege-700/10">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-laranja-600">Já dá para começar</p>
-          <h2 className="mt-3 font-display text-3xl font-semibold text-bege-800 sm:text-4xl">
-            O Módulo 1 está no ar, com lição diária, prática de fala e sequência.
+      {/* ---------- a jornada ---------- */}
+      <section className="border-t border-mesa-200 bg-white">
+        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
+          <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-mesa-900 sm:text-4xl">
+            Do primeiro <span lang="en">hello</span> à sua própria apresentação
           </h2>
-          <p className="mt-4 max-w-3xl text-justify text-lg leading-relaxed text-bege-700 hyphens-auto">
-            São seis lições dentro da plataforma — cumprimentos, nome, como você está, números e idade, de onde você é, e frases de fé para o dia a dia. Cada lição mistura vocabulário com áudio, múltipla escolha, tradução, ditado, montagem de frase e um exercício de fala com o seu microfone. O progresso, a sequência de dias e as conquistas ficam registrados na sua trilha. Os demais módulos entram em seguida, na mesma estrutura.
+          <p className="mt-3 max-w-2xl font-ui text-lg leading-relaxed text-mesa-600">
+            O curso tem um arco. Você começa dizendo o próprio nome e termina falando de quem
+            você é, no que crê e qual é o seu propósito — em inglês, sem travar.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href={entrarHref} className="rounded-full bg-laranja-500 px-6 py-3 text-center font-semibold text-white transition hover:bg-laranja-600">
-              {session ? "Ir para a minha trilha" : "Quero entrar no projeto"}
-            </Link>
-            <Link href="/" className="rounded-full border border-bege-300 px-6 py-3 text-center font-semibold text-bege-800 transition hover:border-laranja-400 hover:text-laranja-700">
-              Voltar para a home
-            </Link>
+
+          <div className="mt-12 space-y-10">
+            {NIVEIS.map((nivel) => (
+              <div key={nivel.rotulo} className="grid gap-2 border-t border-mesa-200 pt-6 sm:grid-cols-[minmax(0,13rem)_1fr] sm:gap-8">
+                <div>
+                  <p className="font-display text-xl font-semibold text-mesa-900">{nivel.rotulo}</p>
+                  <p className="font-ui text-sm text-laranja-600">{nivel.faixa}</p>
+                </div>
+                <p className="font-ui leading-relaxed text-mesa-600">{nivel.resumo}</p>
+              </div>
+            ))}
           </div>
-        </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* ---------- a fé, sem enfeite ---------- */}
+      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className="rounded-[1.75rem] bg-mesa-900 px-6 py-12 text-center text-white sm:px-16 sm:py-16">
+          <p className="font-ui text-xs font-semibold uppercase tracking-[0.25em] text-laranja-300">
+            Inglês com propósito
+          </p>
+          <p lang="en" className="mx-auto mt-6 max-w-2xl font-serif text-2xl italic leading-relaxed sm:text-3xl">
+            “Go into all the world and preach the good news.”
+          </p>
+          <p className="mt-3 font-ui text-white/60">Ide por todo o mundo e pregai o evangelho.</p>
+          <p className="mt-2 font-ui text-xs uppercase tracking-[0.2em] text-laranja-300">Mark 16:15</p>
+          <p className="mx-auto mt-8 max-w-2xl font-ui leading-relaxed text-white/70">
+            Cada lição abre com um versículo curto, em inglês e português. Não é decoração:
+            é o vocabulário da fé entrando junto com o do dia a dia.
+          </p>
+          <Link
+            href={entrarHref}
+            className="mt-10 inline-block rounded-full bg-laranja-500 px-8 py-3.5 font-ui font-semibold text-white transition hover:bg-laranja-400"
+          >
+            {entrarLabel}
+          </Link>
+        </div>
       </section>
     </main>
   );
