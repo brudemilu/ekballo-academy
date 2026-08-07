@@ -25,9 +25,12 @@ import {
 // como plano B — ela varia demais entre aparelhos, e num curso de
 // idioma a pronúncia de referência não pode depender de quem abre.
 //
-// FALAR: SpeechRecognition do navegador, onde houver. No iOS não
-// há suporte confiável, então o exercício vira honra ("Já falei")
-// em vez de sumir ou travar.
+// FALAR: o aluno GRAVA a voz e o servidor transcreve (Whisper via
+// Groq) pra comparar com a frase esperada. Antes isso usava o
+// reconhecimento do navegador, que só existe no Chrome/Edge do
+// computador — ou seja, não corrigia quem estuda pelo celular, que
+// é a maioria. Gravar funciona em todo aparelho moderno.
+// Onde nem gravar dá, o exercício vira honra ("Já falei").
 // =============================================================
 
 type Props = {
@@ -50,28 +53,6 @@ const VALE_NOTA: Record<string, boolean> = {
 };
 
 // ---------- voz do navegador ----------
-
-type MotorFala = {
-  lang: string;
-  interimResults: boolean;
-  maxAlternatives: number;
-  continuous: boolean;
-  start: () => void;
-  stop: () => void;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onerror: ((e: { error?: string }) => void) | null;
-  onend: (() => void) | null;
-};
-
-// Depois disto desistimos de esperar o motor de fala. Existe navegador que
-// abre o microfone e nunca dispara onend nem onerror — sem esse corte, o
-// aluno fica preso no "Ouvindo..." sem botão nenhum habilitado.
-const LIMITE_ESCUTA_MS = 10000;
-
-type JanelaComFala = Window & {
-  SpeechRecognition?: new () => MotorFala;
-  webkitSpeechRecognition?: new () => MotorFala;
-};
 
 // Plano B, quando o exercício não tem MP3 pré-gerado. Aqui a voz é a do
 // aparelho, e a qualidade varia MUITO — por isso escolhemos explicitamente
@@ -150,7 +131,9 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
   const [escolhida, setEscolhida] = useState<string | null>(null);
   const [montadas, setMontadas] = useState<string[]>([]);
   const [revelado, setRevelado] = useState(false);
-  const [ouvindo, setOuvindo] = useState(false);
+  const [gravando, setGravando] = useState(false);
+  const [analisando, setAnalisando] = useState(false);
+  const [minhaGravacao, setMinhaGravacao] = useState<string | null>(null);
   const [transcricao, setTranscricao] = useState("");
   const [erroFala, setErroFala] = useState<string | null>(null);
   const [acertos, setAcertos] = useState(0);
@@ -161,11 +144,12 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
     novasConquistas: string[];
   } | null>(null);
   const [erroEnvio, setErroEnvio] = useState<string | null>(null);
-  const [temVoz, setTemVoz] = useState(true);
-  const [motivoSemVoz, setMotivoSemVoz] = useState<"ios" | "navegador">("navegador");
+  // Se o aparelho não grava (navegador antigo, permissão negada em nível de
+  // sistema), o exercício de fala vira honra em vez de virar parede.
+  const [podeGravar, setPodeGravar] = useState(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const motorRef = useRef<MotorFala | null>(null);
+  const gravadorRef = useRef<MediaRecorder | null>(null);
   const limiteRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -200,22 +184,15 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
   const progresso = exercicios.length ? Math.round((indice / exercicios.length) * 100) : 0;
 
   useEffect(() => {
-    const janela = window as JanelaComFala;
-    const ua = navigator.userAgent;
-    // No iPhone/iPad todo navegador roda sobre o Safari — Chrome e Edge de lá
-    // não mudam nada. O webkitSpeechRecognition existe, mas trava: abre o
-    // microfone e nunca devolve resultado. Melhor não oferecer do que prender.
-    // (iPadOS se apresenta como Macintosh; o toque é o que o denuncia.)
-    const ehIOS =
-      /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-
-    if (ehIOS) {
-      setTemVoz(false);
-      setMotivoSemVoz("ios");
-      return;
-    }
-    setTemVoz(Boolean(janela.SpeechRecognition || janela.webkitSpeechRecognition));
-    setMotivoSemVoz("navegador");
+    // Gravar funciona em todo aparelho moderno, iPhone incluído — ao
+    // contrário do reconhecimento de fala do navegador, que só existia no
+    // Chrome/Edge do computador e deixava sem correção justamente quem
+    // estuda pelo celular.
+    setPodeGravar(
+      typeof window !== "undefined" &&
+      typeof MediaRecorder !== "undefined" &&
+      Boolean(navigator.mediaDevices?.getUserMedia),
+    );
   }, []);
 
   // Banco de palavras do "montar": embaralhado de forma determinística
@@ -245,7 +222,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
   // Para o microfone e a voz ao sair da tela.
   useEffect(() => () => {
     if (limiteRef.current) clearTimeout(limiteRef.current);
-    try { motorRef.current?.stop(); } catch { /* motor já morto */ }
+    try { gravadorRef.current?.stop(); } catch { /* já parado */ }
     audioRef.current?.pause();
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
@@ -261,7 +238,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
       case "montar": return montadas.length > 0;
       // Sem microfone (ou com microfone que falhou), o aluno segue na palavra
       // dele. O exercício de fala nunca pode ser uma parede.
-      case "falar": return transcricao.trim().length > 0 || !temVoz || erroFala !== null;
+      case "falar": return !podeGravar || erroFala !== null;
       default: return false;
     }
   })();
@@ -277,18 +254,18 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
     } else if (exercicio.tipo === "montar") {
       certo = respostaCorreta(montadas.join(" "), exercicio.resposta, exercicio.aceitas);
     } else if (exercicio.tipo === "falar") {
-      // Sem microfone, vale a palavra do aluno. Com microfone, aceita a frase
-      // solta dentro do que foi reconhecido (o motor costuma acrescentar coisa).
-      if (!temVoz || (erroFala !== null && !transcricao.trim())) {
-        certo = true;
-      } else {
-        const dito = normalizarResposta(transcricao);
-        const alvo = normalizarResposta(exercicio.resposta || "");
-        certo = respostaCorreta(transcricao, exercicio.resposta, exercicio.aceitas)
-          || (alvo.length > 0 && dito.includes(alvo));
-      }
+      // Aqui o botão só fica ativo quando NÃO houve gravação (sem microfone
+      // ou com falha) — nesse caso vale a palavra do aluno. Quando há
+      // gravação, quem decide é conferirPronuncia, pela transcrição.
+      certo = true;
     }
 
+    registrarVeredito(certo);
+  }
+
+  /** Fecha o exercício: contabiliza (quando o tipo vale nota) e mostra o veredito. */
+  function registrarVeredito(certo: boolean) {
+    if (!exercicio || veredito) return;
     if (VALE_NOTA[exercicio.tipo]) {
       setAvaliados((n) => n + 1);
       if (certo) setAcertos((n) => n + 1);
@@ -334,71 +311,91 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
     setRevelado(false);
     setTranscricao("");
     setErroFala(null);
-    pararEscuta();
+    setMinhaGravacao(null);
+    setAnalisando(false);
+    pararGravacao();
   }
 
-  /** Encerra a escuta e solta tudo. Idempotente — pode ser chamada duas vezes. */
-  function pararEscuta() {
+  /** Encerra a gravação e solta o microfone. Idempotente. */
+  function pararGravacao() {
     if (limiteRef.current) { clearTimeout(limiteRef.current); limiteRef.current = null; }
-    try { motorRef.current?.stop(); } catch { /* motor já encerrado */ }
-    motorRef.current = null;
-    setOuvindo(false);
+    try { gravadorRef.current?.stop(); } catch { /* já parado */ }
+    setGravando(false);
   }
 
-  function escutar() {
-    const janela = window as JanelaComFala;
-    const Motor = janela.SpeechRecognition || janela.webkitSpeechRecognition;
-    if (!Motor) { setTemVoz(false); return; }
-
-    pararEscuta();          // não deixa dois motores abertos
+  /** Grava a fala do aluno, guarda para ele se ouvir, e manda conferir. */
+  async function gravar() {
     setErroFala(null);
     setTranscricao("");
+    setMinhaGravacao(null);
 
-    let motor: MotorFala;
+    let trilha: MediaStream;
     try {
-      motor = new Motor();
+      trilha = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      setTemVoz(false);
+      setErroFala("O navegador bloqueou o microfone. Libere o acesso nas permissões deste site — ou siga sem gravar.");
+      setPodeGravar(false);
       return;
     }
 
-    motorRef.current = motor;
-    motor.lang = "en-US";
-    motor.interimResults = false;
-    motor.maxAlternatives = 1;
-    motor.continuous = false;
-
-    motor.onresult = (e) => {
-      setTranscricao(e.results?.[0]?.[0]?.transcript || "");
-      pararEscuta();
-    };
-    motor.onerror = (e) => {
-      const codigo = e?.error;
-      setErroFala(
-        codigo === "not-allowed" || codigo === "service-not-allowed"
-          ? "O navegador bloqueou o microfone. Libere o acesso nas permissões deste site — ou siga sem gravar."
-          : codigo === "no-speech"
-            ? "Não ouvi nada. Tente de novo, mais perto do microfone."
-            : "O microfone não respondeu. Tente de novo ou siga sem gravar.",
-      );
-      pararEscuta();
-    };
-    motor.onend = () => pararEscuta();
-
-    setOuvindo(true);
+    let gravador: MediaRecorder;
     try {
-      motor.start();
+      gravador = new MediaRecorder(trilha);
     } catch {
-      // start() estoura, por exemplo, se o motor já estiver rodando
-      setErroFala("Não consegui abrir o microfone. Você pode seguir sem gravar.");
-      pararEscuta();
+      trilha.getTracks().forEach((t) => t.stop());
+      setPodeGravar(false);
       return;
     }
+    gravadorRef.current = gravador;
 
-    limiteRef.current = setTimeout(() => {
-      setErroFala("O microfone não respondeu a tempo. Tente de novo ou siga sem gravar.");
-      pararEscuta();
-    }, LIMITE_ESCUTA_MS);
+    const pedacos: BlobPart[] = [];
+    gravador.ondataavailable = (e) => { if (e.data.size > 0) pedacos.push(e.data); };
+
+    gravador.onstop = async () => {
+      trilha.getTracks().forEach((t) => t.stop()); // solta o microfone
+      setGravando(false);
+      const tipo = gravador.mimeType || "audio/webm";
+      const blob = new Blob(pedacos, { type: tipo });
+      if (blob.size === 0) {
+        setErroFala("Não gravou nada. Tente de novo, mais perto do microfone.");
+        return;
+      }
+      // Guarda para o aluno se ouvir — comparar a própria voz com o modelo
+      // é metade do aprendizado de pronúncia, e não custa nada.
+      setMinhaGravacao(URL.createObjectURL(blob));
+      await conferirPronuncia(blob, tipo);
+    };
+
+    setGravando(true);
+    gravador.start();
+    // Corte de segurança: frase de lição é curta, e microfone aberto
+    // esquecido vira arquivo grande e conta desnecessária.
+    limiteRef.current = setTimeout(pararGravacao, 8000);
+  }
+
+  /** Manda o áudio pro servidor, que transcreve e compara. */
+  async function conferirPronuncia(blob: Blob, tipo: string) {
+    if (!exercicio?.resposta) return;
+    setAnalisando(true);
+    try {
+      const extensao = tipo.includes("mp4") ? "m4a" : tipo.includes("ogg") ? "ogg" : "webm";
+      const form = new FormData();
+      form.append("audio", blob, `fala.${extensao}`);
+      form.append("nome", `fala.${extensao}`);
+      form.append("esperado", exercicio.resposta);
+      form.append("aceitas", JSON.stringify(exercicio.aceitas || []));
+
+      const res = await fetch("/api/english/pronuncia", { method: "POST", body: form });
+      const dados = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(dados.erro || "não consegui ouvir agora");
+
+      setTranscricao(dados.transcricao || "");
+      registrarVeredito(Boolean(dados.correto));
+    } catch (e) {
+      setErroFala(e instanceof Error ? e.message : "não consegui ouvir agora");
+    } finally {
+      setAnalisando(false);
+    }
   }
 
   // ---------------- tela final ----------------
@@ -758,24 +755,49 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
                 🔊 Ouvir o modelo
               </button>
 
-              {temVoz ? (
+              {podeGravar ? (
                 <>
                   <button
                     type="button"
-                    disabled={veredito !== null}
-                    onClick={ouvindo ? pararEscuta : escutar}
+                    disabled={veredito !== null || analisando}
+                    onClick={gravando ? pararGravacao : gravar}
                     className={`mt-6 block w-full rounded-2xl px-6 py-5 text-lg font-semibold transition ${
-                      ouvindo
+                      gravando
                         ? "animate-pulse-soft bg-laranja-600 text-white"
                         : "bg-laranja-500 text-white hover:bg-laranja-600"
                     } disabled:opacity-60`}
                   >
-                    {ouvindo ? "🎙️ Ouvindo... toque para parar" : "🎙️ Tocar e falar"}
+                    {analisando
+                      ? "Conferindo..."
+                      : gravando
+                        ? "🎙️ Gravando... toque para parar"
+                        : "🎙️ Gravar minha voz"}
                   </button>
+
+                  {/* Ouvir a própria gravação ao lado do modelo é metade do
+                      aprendizado de pronúncia — e não custa nada. */}
+                  {minhaGravacao && (
+                    <div className="mt-4 flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => { void new Audio(minhaGravacao).play(); }}
+                        className="rounded-full border border-mesa-300 px-5 py-2 text-sm font-semibold text-mesa-700 transition hover:border-laranja-400"
+                      >
+                        ▶️ Ouvir você
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => ouvirExercicio(exercicio)}
+                        className="rounded-full border border-mesa-300 px-5 py-2 text-sm font-semibold text-mesa-700 transition hover:border-laranja-400"
+                      >
+                        🔊 Ouvir o modelo
+                      </button>
+                    </div>
+                  )}
 
                   {transcricao && (
                     <p className="mt-4 text-mesa-700">
-                      Entendi: <span lang="en" className="font-semibold">{transcricao}</span>
+                      Ouvi: <span lang="en" className="font-semibold">{transcricao}</span>
                     </p>
                   )}
 
@@ -783,8 +805,8 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
                     <div className="mt-4 rounded-2xl border border-laranja-200 bg-laranja-50 p-4 text-left">
                       <p className="text-sm text-laranja-800">{erroFala}</p>
                       <p className="mt-2 text-xs text-mesa-500">
-                        Fale a frase em voz alta do seu jeito e toque em “Já falei” — a lição segue
-                        normalmente.
+                        Fale a frase em voz alta do seu jeito e toque em “Já falei” — a lição
+                        segue normalmente.
                       </p>
                     </div>
                   )}
@@ -795,9 +817,8 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
                     🔊 Ouça o modelo, fale em voz alta e toque em “Já falei”.
                   </p>
                   <p className="mt-2 text-xs text-mesa-500">
-                    {motivoSemVoz === "ios"
-                      ? "No iPhone e no iPad o reconhecimento de fala não é confiável — e trocar de navegador não resolve, porque todos rodam sobre o Safari. Num computador com Chrome ou Edge, o microfone confere a sua pronúncia."
-                      : "Este navegador não escuta o microfone. No Chrome ou no Edge, ele confere a sua pronúncia."}
+                    Este aparelho não deixa gravar o microfone, então a correção automática
+                    não roda aqui. A lição segue normalmente.
                   </p>
                 </div>
               )}
@@ -859,7 +880,7 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
             >
               {exercicio.tipo === "vocabulario"
                 ? "Entendi"
-                : exercicio.tipo === "falar" && (!temVoz || (erroFala !== null && !transcricao.trim()))
+                : exercicio.tipo === "falar" && (!podeGravar || erroFala !== null)
                   ? "Já falei"
                   : "Conferir"}
             </button>
