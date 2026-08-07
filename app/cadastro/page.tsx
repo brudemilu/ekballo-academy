@@ -84,6 +84,7 @@ export default function CadastroPage() {
         nome,
         email,
         telefone: telefoneNorm,
+        acesso_liberado: false,
       });
     }
 
@@ -111,7 +112,8 @@ export default function CadastroPage() {
             </h1>
             <p className="mb-6 text-mesa-600">
               Te enviamos um e-mail de confirmação para <strong>{email}</strong>. Abra
-              sua caixa de entrada e clique no link para ativar sua conta.
+              sua caixa de entrada e clique no link para ativar sua conta. Depois disso,
+              seu acesso ficará pendente até que o administrador faça a liberação.
             </p>
             <Link
               href="/login"

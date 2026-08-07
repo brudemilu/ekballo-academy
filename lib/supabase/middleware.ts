@@ -36,6 +36,13 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+  const pendingRedirect = (targetPath: string) => {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", targetPath);
+    url.searchParams.set("pendente", "1");
+    return NextResponse.redirect(url);
+  };
   const isProtectedAluno =
     path.startsWith("/dashboard") ||
     path.startsWith("/cursos") ||
@@ -50,16 +57,36 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (user && isProtectedAluno) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin, acesso_liberado")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_admin && profile?.acesso_liberado !== true) {
+      return pendingRedirect(path);
+    }
+  }
+
   if (user && isAuthPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin, acesso_liberado")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.is_admin || profile?.acesso_liberado === true) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (user && isProtectedAdmin) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_admin, papel")
+      .select("is_admin, papel, acesso_liberado")
       .eq("id", user.id)
       .single();
 

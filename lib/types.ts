@@ -4,6 +4,7 @@ export type Profile = {
   email: string;
   telefone: string | null;
   is_admin: boolean;
+  acesso_liberado?: boolean | null;
   // Perfil de acesso. master = tudo; coordenador/lider = conforme matriz;
   // discipulo = sem painel. Pode vir ausente em registros antigos.
   papel?: "master" | "coordenador" | "lider" | "discipulo";

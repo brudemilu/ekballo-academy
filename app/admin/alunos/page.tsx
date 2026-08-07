@@ -11,6 +11,7 @@ export default async function AlunosPage() {
 
   const alunos = await listAllAlunos();
   const semTelefone = alunos.filter((a) => !a.telefone && !a.is_admin).length;
+  const pendentes = alunos.filter((a) => !a.is_admin && !a.acesso_liberado).length;
 
   return (
     <AdminShell current="alunos" session={session}>
@@ -20,11 +21,20 @@ export default async function AlunosPage() {
       <h1 className="mb-2 font-serif text-4xl font-semibold text-mesa-800">
         {alunos.length} discípulos na mesa
       </h1>
-      {semTelefone > 0 && (
-        <p className="mb-6 text-sm text-mesa-600">
-          {semTelefone} {semTelefone === 1 ? "discípulo" : "discípulos"} ainda sem
-          telefone — não recebem WhatsApp até atualizarem o perfil.
-        </p>
+      {(semTelefone > 0 || pendentes > 0) && (
+        <div className="mb-6 space-y-2 text-sm text-mesa-600">
+          {semTelefone > 0 && (
+            <p>
+              {semTelefone} {semTelefone === 1 ? "discípulo" : "discípulos"} ainda sem
+              telefone — não recebem WhatsApp até atualizarem o perfil.
+            </p>
+          )}
+          {pendentes > 0 && (
+            <p>
+              {pendentes} {pendentes === 1 ? "discípulo" : "discípulos"} ainda aguardando liberação de acesso.
+            </p>
+          )}
+        </div>
       )}
 
       {alunos.length === 0 ? (
@@ -53,6 +63,11 @@ export default async function AlunosPage() {
                     {a.is_admin && (
                       <span className="ml-2 inline-block rounded-full bg-oliveira-100 px-2 py-0.5 text-[11px] font-medium text-oliveira-700">
                         Admin
+                      </span>
+                    )}
+                    {!a.is_admin && !a.acesso_liberado && (
+                      <span className="ml-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                        Pendente
                       </span>
                     )}
                     <p className="truncate text-xs text-mesa-500">{a.email}</p>
@@ -130,6 +145,11 @@ export default async function AlunosPage() {
                       {a.is_admin && (
                         <span className="mt-0.5 inline-block rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
                           Admin
+                        </span>
+                      )}
+                      {!a.is_admin && !a.acesso_liberado && (
+                        <span className="mt-0.5 ml-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                          Pendente
                         </span>
                       )}
                     </Link>

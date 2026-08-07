@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     souMaster = profile?.papel === "master" || (!!profile?.is_admin && !profile?.papel);
   }
 
-  let body: { alunoId?: string; nome?: string; telefone?: string; turma?: string; papel?: string };
+  let body: { alunoId?: string; nome?: string; telefone?: string; turma?: string; papel?: string; acesso_liberado?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
   // Papel: só o master pode alterar. Mantém is_admin coerente com o papel.
   const PAPEIS_VALIDOS = ["master", "coordenador", "lider", "discipulo"];
   const update: Record<string, unknown> = { nome, telefone, turma };
+  if (typeof body.acesso_liberado === "boolean") {
+    update.acesso_liberado = body.acesso_liberado;
+  }
   if (souMaster && body.papel && PAPEIS_VALIDOS.includes(body.papel)) {
     update.papel = body.papel;
     update.is_admin = body.papel !== "discipulo";

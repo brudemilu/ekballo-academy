@@ -597,11 +597,12 @@ function ordenarPorNome(
 }
 
 export async function listAllAlunos(): Promise<{
-  id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string; respostasCount: number; tematicas: string[];
+  id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; acesso_liberado: boolean; created_at: string; respostasCount: number; tematicas: string[];
 }[]> {
   if (isMockMode()) {
     return MOCK_ALUNOS.map((a) => ({
       ...a,
+      acesso_liberado: true,
       respostasCount: MOCK_RESPOSTAS.filter((r) => r.aluno_id === a.id).length,
       tematicas: MOCK_MATRICULAS
         .filter((m) => m.aluno_id === a.id)
@@ -612,7 +613,7 @@ export async function listAllAlunos(): Promise<{
   const supabase = await createClient();
   const { data: alunos } = await supabase
     .from("profiles")
-    .select("id, nome, email, telefone, turma, is_admin, created_at");
+    .select("id, nome, email, telefone, turma, is_admin, acesso_liberado, created_at");
   const { data: r } = await supabase.from("respostas").select("aluno_id");
   const map = new Map<string, number>();
   (r || []).forEach((x: { aluno_id: string }) => map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1));
@@ -630,8 +631,9 @@ export async function listAllAlunos(): Promise<{
     temaMap.set(m.aluno_id, arr);
   });
   return (alunos || [])
-    .map((a: { id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; created_at: string }) => ({
+    .map((a: { id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; acesso_liberado: boolean | null; created_at: string }) => ({
       ...a,
+      acesso_liberado: !!a.acesso_liberado,
       respostasCount: map.get(a.id) || 0,
       tematicas: temaMap.get(a.id) || [],
     }))

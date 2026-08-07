@@ -19,7 +19,7 @@ export function AdminAlunoForm({
   souMaster = false,
 }: {
   alunoId: string;
-  initial: { nome: string; email: string; telefone: string; turma: string; papel?: string };
+  initial: { nome: string; email: string; telefone: string; turma: string; papel?: string; acesso_liberado?: boolean | null };
   souMaster?: boolean;
 }) {
   const router = useRouter();
@@ -27,6 +27,7 @@ export function AdminAlunoForm({
   const [telefone, setTelefone] = useState(formatTelefoneBR(initial.telefone));
   const [turma, setTurma] = useState(initial.turma);
   const [papel, setPapel] = useState(initial.papel || "discipulo");
+  const [acessoLiberado, setAcessoLiberado] = useState(!!initial.acesso_liberado);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
@@ -72,6 +73,7 @@ export function AdminAlunoForm({
         nome: nomeTrim,
         telefone: telefoneNorm,
         turma: turma.trim(),
+        acesso_liberado: acessoLiberado,
         ...(souMaster ? { papel } : {}),
       }),
     });
@@ -149,6 +151,23 @@ export function AdminAlunoForm({
             className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-4 py-2.5 outline-none transition focus:border-laranja-400 focus:bg-white focus:ring-2 focus:ring-laranja-100"
           />
         </div>
+      </div>
+
+      <div className="rounded-xl border border-mesa-200 bg-mesa-50 p-4">
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={acessoLiberado}
+            onChange={(e) => setAcessoLiberado(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-mesa-300 text-laranja-600 focus:ring-laranja-500"
+          />
+          <span>
+            <span className="block text-sm font-medium text-mesa-800">Liberar acesso ao sistema</span>
+            <span className="mt-1 block text-xs text-mesa-600">
+              Usuários sem essa liberação ficam com o acesso bloqueado até a aprovação do administrador.
+            </span>
+          </span>
+        </label>
       </div>
 
       {souMaster && (

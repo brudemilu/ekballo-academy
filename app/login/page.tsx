@@ -21,6 +21,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
   const senhaAlterada = searchParams.get("senha") === "alterada";
+  const acessoPendente = searchParams.get("pendente") === "1";
 
   const [email, setEmail] = useState(MOCK ? "iabolsa@bmbr.com.br" : "");
   const [senha, setSenha] = useState(MOCK ? "qualquer-senha" : "");
@@ -40,7 +41,7 @@ function LoginForm() {
     }
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
     });
@@ -58,6 +59,19 @@ function LoginForm() {
       } else {
         setErro("Não foi possível entrar. Tente novamente.");
       }
+      setLoading(false);
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("acesso_liberado, is_admin")
+      .eq("id", data.user.id)
+      .single();
+
+    if (!profileData?.is_admin && profileData?.acesso_liberado !== true) {
+      await supabase.auth.signOut();
+      setErro("Seu acesso ainda está pendente. O administrador precisa liberar seu cadastro antes de entrar.");
       setLoading(false);
       return;
     }
@@ -92,6 +106,12 @@ function LoginForm() {
           {senhaAlterada && (
             <div className="mb-6 rounded-lg border border-oliveira-200 bg-oliveira-50 px-4 py-3 text-sm text-oliveira-800">
               Senha alterada com sucesso! Entre com a nova senha.
+            </div>
+          )}
+
+          {acessoPendente && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Seu acesso ainda não foi liberado. Aguarde a aprovação do administrador para entrar na plataforma.
             </div>
           )}
 
