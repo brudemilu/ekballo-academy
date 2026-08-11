@@ -4,6 +4,7 @@ import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import { BaixarOffline } from "@/components/BaixarOffline";
+import { BarraProgresso } from "@/components/ContinuandoLeitura";
 import AudioLivroControle from "@/components/AudioLivroControle";
 import {
   getCurrentSession,
@@ -42,6 +43,22 @@ export default async function CursoPage({
     : aulasRaw;
 
   const concluidas = new Set(progresso.map((p) => p.aula_id));
+
+  // Progresso do livro + retomada. A mesa pra retomar é a primeira pendente
+  // depois da última lida — quem pulou o prefácio não é jogado de volta pra ele.
+  const totalMesas = aulas.length;
+  const lidas = aulas.filter((a) => concluidas.has(a.id)).length;
+  const pctLidas = totalMesas > 0 ? Math.round((lidas / totalMesas) * 100) : 0;
+  const ultimoLidoIdx = aulas.reduce(
+    (acc, a, i) => (concluidas.has(a.id) ? i : acc),
+    -1,
+  );
+  const retomar =
+    lidas > 0 && lidas < totalMesas
+      ? aulas.slice(ultimoLidoIdx + 1).find((a) => !concluidas.has(a.id)) ??
+        aulas.find((a) => !concluidas.has(a.id)) ??
+        null
+      : null;
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -104,6 +121,32 @@ export default async function CursoPage({
         <div className="mb-12">
           <BaixarOffline slug={curso.slug} />
         </div>
+
+        {totalMesas > 0 && lidas > 0 && (
+          <div className="mb-10 rounded-2xl border border-laranja-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-laranja-700">
+                {lidas >= totalMesas ? "Leitura concluída" : "Sua leitura"}
+              </p>
+              <p className="text-sm font-medium text-mesa-700">
+                {lidas} de {totalMesas} mesas
+                <span className="text-mesa-400"> · </span>
+                <span className="text-laranja-700">{pctLidas}%</span>
+              </p>
+            </div>
+            <div className="mt-3">
+              <BarraProgresso concluidas={lidas} total={totalMesas} />
+            </div>
+            {retomar && (
+              <Link
+                href={`/cursos/${curso.slug}/aulas/${retomar.id}`}
+                className="mt-5 inline-flex items-center gap-2 rounded-full bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600"
+              >
+                Continuar na mesa {rotuloNumeroAula(retomar)} →
+              </Link>
+            )}
+          </div>
+        )}
 
         <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-800">
           Mesas de discipulado

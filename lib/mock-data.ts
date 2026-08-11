@@ -215,6 +215,49 @@ export function matriculasByAluno(alunoId: string) {
   return MOCK_MATRICULAS.filter((m) => m.aluno_id === alunoId);
 }
 
+// ===== Marcador de leitura (onde parei em cada livro) =====
+// Espelha a tabela `leitura_marcador`. Estado mutável de módulo, como o
+// MOCK_MC_ANSWERS: some quando o servidor reinicia, o que é aceitável no mock.
+export const MOCK_LEITURAS: {
+  aluno_id: string;
+  curso_id: string;
+  aula_id: string | null;
+  atualizado_em: string;
+  dispensado_em: string | null;
+}[] = [];
+
+export function leiturasByAluno(alunoId: string) {
+  return MOCK_LEITURAS.filter((l) => l.aluno_id === alunoId);
+}
+
+// aulaId null + dispensadoEm = "tirar da lista"; caso contrário é a marcação
+// normal de "abri esta mesa".
+export function setMockLeitura(
+  alunoId: string,
+  cursoId: string,
+  aulaId: string | null,
+  dispensadoEm: string | null = null,
+) {
+  const agora = new Date().toISOString();
+  const atual = MOCK_LEITURAS.find(
+    (l) => l.aluno_id === alunoId && l.curso_id === cursoId,
+  );
+  if (atual) {
+    if (aulaId) atual.aula_id = aulaId;
+    // dispensar mexe nas duas datas juntas (mesmo relógio), como no banco
+    atual.atualizado_em = dispensadoEm ?? agora;
+    if (dispensadoEm) atual.dispensado_em = dispensadoEm;
+    return;
+  }
+  MOCK_LEITURAS.push({
+    aluno_id: alunoId,
+    curso_id: cursoId,
+    aula_id: aulaId,
+    atualizado_em: dispensadoEm ?? agora,
+    dispensado_em: dispensadoEm,
+  });
+}
+
 // ===== Estado mutável de respostas MC (apenas em modo mock) =====
 // Map: `${alunoId}::${atividadeId}` → alternativaId
 const MOCK_MC_ANSWERS = new Map<string, string>();

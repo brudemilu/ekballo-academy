@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
@@ -20,6 +21,7 @@ import {
   listAulasComStatus,
   listDestaquesByAula,
   jaConcluiu,
+  registrarLeitura,
 } from "@/lib/db";
 
 export default async function AulaPage({
@@ -42,6 +44,11 @@ export default async function AulaPage({
 
   const aula = await getAula(aulaId, curso.id);
   if (!aula) notFound();
+
+  // Guarda onde ele parou neste livro. Roda DEPOIS da resposta (`after`), então
+  // não atrasa a abertura da mesa — e é o que põe o livro em "Continuando a
+  // leitura" já na primeira página aberta, sem esperar concluir mesa nenhuma.
+  after(() => registrarLeitura(session.userId, curso.id, aula.id));
 
   // Mesa de discipulado: toda mesa é acessível, sem desbloqueio linear.
   // aulasStatus é usado só para navegação (anterior/próxima) e progresso.

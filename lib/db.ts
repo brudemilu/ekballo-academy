@@ -37,6 +37,8 @@ import {
   respostasByAluno as mockRespByAluno,
   progressoByAluno as mockProgByAluno,
   matriculasByAluno as mockMatByAluno,
+  leiturasByAluno as mockLeiturasByAluno,
+  setMockLeitura,
   alternativasByAtividade as mockAltByAtv,
   aulaCompleta as mockAulaCompleta,
   getMockMcAnswer,
@@ -325,6 +327,110 @@ export async function jaConcluiu(alunoId: string, aulaId: string): Promise<boole
     .eq("aula_id", aulaId)
     .maybeSingle();
   return !!data;
+}
+
+// -------- LEITURA EM ANDAMENTO --------
+
+// Progresso do aluno em cada livro que ele já abriu (ou em que está
+// matriculado). Alimenta a seção "Continuando a leitura" do painel e a barra
+// de progresso do card. Uma chamada só (rpc `progresso_leitura`), independente
+// de matrícula — o master lê os livros sem se matricular.
+export type ProgressoLeitura = {
+  curso_id: string;
+  total_aulas: number;
+  concluidas: number;
+  proxima_aula_id: string | null;
+  proxima_aula_titulo: string | null;
+  proxima_aula_ordem: number | null;
+  ultima_em: string | null;
+  dispensado_em: string | null;
+};
+
+export async function listProgressoLeitura(alunoId: string): Promise<ProgressoLeitura[]> {
+  if (isMockMode()) {
+    const concluidas = new Set(mockProgByAluno(alunoId).map((p) => p.aula_id));
+    const cursoIds = new Set<string>([
+      ...mockMatByAluno(alunoId).map((m) => m.curso_id),
+      ...MOCK_AULAS.filter((a) => concluidas.has(a.id)).map((a) => a.curso_id),
+      ...mockLeiturasByAluno(alunoId).map((l) => l.curso_id),
+    ]);
+    return [...cursoIds].map((cursoId) => {
+      const aulas = mockAulasByCurso(cursoId);
+      const marcador = mockLeiturasByAluno(alunoId).find((l) => l.curso_id === cursoId);
+      const marcadorValido =
+        marcador?.aula_id && !concluidas.has(marcador.aula_id) ? marcador.aula_id : null;
+      // Mesma regra do SQL: retoma na primeira pendente depois da última lida.
+      const ultimoLidoIdx = aulas.reduce(
+        (acc, a, i) => (concluidas.has(a.id) ? i : acc),
+        -1,
+      );
+      const pendente =
+        aulas.slice(ultimoLidoIdx + 1).find((a) => !concluidas.has(a.id)) ??
+        aulas.find((a) => !concluidas.has(a.id)) ??
+        null;
+      const proximaId = marcadorValido ?? pendente?.id ?? null;
+      const proxima = aulas.find((a) => a.id === proximaId) ?? null;
+      return {
+        curso_id: cursoId,
+        total_aulas: aulas.length,
+        concluidas: aulas.filter((a) => concluidas.has(a.id)).length,
+        proxima_aula_id: proximaId,
+        proxima_aula_titulo: proxima?.titulo ?? null,
+        proxima_aula_ordem: proxima?.ordem ?? null,
+        ultima_em: marcador?.atualizado_em ?? null,
+        dispensado_em: marcador?.dispensado_em ?? null,
+      };
+    });
+  }
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("progresso_leitura");
+  return (data || []) as ProgressoLeitura[];
+}
+
+// Marca onde o aluno parou. Chamado ao ABRIR a mesa (não só ao concluir), pra
+// que o livro entre em destaque desde a primeira página lida. Falha em silêncio:
+// é um "nice to have" e nunca deve derrubar a leitura.
+export async function registrarLeitura(
+  alunoId: string,
+  cursoId: string,
+  aulaId: string,
+): Promise<void> {
+  if (isMockMode()) {
+    setMockLeitura(alunoId, cursoId, aulaId);
+    return;
+  }
+  try {
+    const supabase = await createClient();
+    await supabase.from("leitura_marcador").upsert(
+      {
+        aluno_id: alunoId,
+        curso_id: cursoId,
+        aula_id: aulaId,
+        atualizado_em: new Date().toISOString(),
+      },
+      { onConflict: "aluno_id,curso_id" },
+    );
+  } catch {
+    // sem marcador o painel só perde a ordenação por recência
+  }
+}
+
+// Tira o livro do destaque sem apagar progresso nenhum. Volta a aparecer
+// assim que ele abrir ou concluir outra mesa (a data aqui é comparada com a
+// última atividade do aluno no livro).
+export async function dispensarLeitura(alunoId: string, cursoId: string): Promise<void> {
+  const agora = new Date().toISOString();
+  if (isMockMode()) {
+    setMockLeitura(alunoId, cursoId, null, agora);
+    return;
+  }
+  const supabase = await createClient();
+  // `atualizado_em` vai junto pra as duas datas virem do mesmo relógio — o
+  // painel esconde quando dispensado_em >= ultima_em.
+  await supabase.from("leitura_marcador").upsert(
+    { aluno_id: alunoId, curso_id: cursoId, atualizado_em: agora, dispensado_em: agora },
+    { onConflict: "aluno_id,curso_id" },
+  );
 }
 
 // -------- MATRICULAS --------

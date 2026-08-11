@@ -7,8 +7,14 @@ import {
   getCurrentSession,
   listCursosPublicados,
   listMatriculasByAluno,
+  listProgressoLeitura,
   getMaterialUrl,
 } from "@/lib/db";
+import {
+  ContinuandoLeitura,
+  BarraProgresso,
+  type ItemLeitura,
+} from "@/components/ContinuandoLeitura";
 import { getDevocionalDoDia } from "@/lib/devocionais";
 import { getProximaLicao, getStreak } from "@/lib/english";
 import { podeVerAgenda } from "@/lib/permissoes";
@@ -22,6 +28,14 @@ function greetingName(nome?: string | null): string {
   const parts = nome.trim().split(/\s+/);
   if (parts[0]?.endsWith(".") && parts[1]) return `${parts[0]} ${parts[1]}`;
   return parts[0];
+}
+
+// Timestamp em ms (0 quando não há data). Datas vindas do banco e do app usam
+// sufixos diferentes ("+00:00" vs "Z"), então comparar como texto não serve.
+function instante(iso?: string | null): number {
+  if (!iso) return 0;
+  const t = Date.parse(iso);
+  return Number.isNaN(t) ? 0 : t;
 }
 
 // "8 de julho de 2026" — data em que a leitura foi concluída.
@@ -42,13 +56,15 @@ export default async function DashboardPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  const [todosCursos, matriculas, devocional, proximaLicao, englishStreak] = await Promise.all([
-    listCursosPublicados(),
-    listMatriculasByAluno(session.userId),
-    getDevocionalDoDia(),
-    getProximaLicao(session.userId),
-    getStreak(session.userId),
-  ]);
+  const [todosCursos, matriculas, leituras, devocional, proximaLicao, englishStreak] =
+    await Promise.all([
+      listCursosPublicados(),
+      listMatriculasByAluno(session.userId),
+      listProgressoLeitura(session.userId),
+      getDevocionalDoDia(),
+      getProximaLicao(session.userId),
+      getStreak(session.userId),
+    ]);
 
   const mostrarAgenda = podeVerAgenda(
     session.profile?.papel,
@@ -81,6 +97,58 @@ export default async function DashboardPage() {
   const grupos = agruparPorCategoria(cursos);
   const mostrarSecoes = grupos.length > 1;
 
+  // Capa do card: estática quando existe, senão a OG tipográfica (em retrato).
+  const capaDe = (curso: (typeof cursos)[number]) => {
+    const ogUrl = imagemMap.get(curso.id);
+    return (
+      CAPA_LIVRO[curso.slug] ??
+      (ogUrl?.startsWith("/api/og/curso/") ? `${ogUrl}?formato=retrato&v=4` : ogUrl ?? null)
+    );
+  };
+
+  // Leitura em andamento: livro aberto, começado e ainda não fechado. Vai pro
+  // topo do painel porque era justamente o que sumia no meio da vitrine — e
+  // vale mesmo sem matrícula (o master lê os livros sem se matricular).
+  const leituraMap = new Map(leituras.map((l) => [l.curso_id, l]));
+  const emLeitura: ItemLeitura[] = cursos
+    .filter((curso) => {
+      const l = leituraMap.get(curso.id);
+      if (!l || l.total_aulas === 0) return false;
+      if (matriculasMap.get(curso.id)?.concluido_em) return false;
+      if (l.concluidas >= l.total_aulas) return false;
+      // Dispensado pelo ✕ — volta sozinho quando ele lê algo novo no livro.
+      // Compara em ms: o app grava "…Z" e o PostgREST devolve "…+00:00",
+      // então comparar as strings daria resultado errado.
+      if (l.dispensado_em && Date.parse(l.dispensado_em) >= instante(l.ultima_em)) {
+        return false;
+      }
+      // "Começou" = concluiu ao menos uma mesa ou abriu o livro alguma vez.
+      return l.concluidas > 0 || !!l.ultima_em;
+    })
+    .sort(
+      (a, b) =>
+        instante(leituraMap.get(b.id)?.ultima_em) -
+        instante(leituraMap.get(a.id)?.ultima_em),
+    )
+    .map((curso) => {
+      const l = leituraMap.get(curso.id)!;
+      const paginaCurso = curso.external_path ?? `/cursos/${curso.slug}`;
+      return {
+        cursoId: curso.id,
+        titulo: curso.titulo,
+        href:
+          !curso.external_path && l.proxima_aula_id
+            ? `/cursos/${curso.slug}/aulas/${l.proxima_aula_id}`
+            : paginaCurso,
+        capa: capaDe(curso),
+        concluidas: l.concluidas,
+        total: l.total_aulas,
+        proxima: l.proxima_aula_titulo
+          ? { titulo: l.proxima_aula_titulo, ordem: l.proxima_aula_ordem ?? 0 }
+          : null,
+      };
+    });
+
   // Livros lidos = matrículas concluídas (o trigger marca `concluido_em` quando
   // todas as mesas do livro terminam). Vão pra uma estante própria, mais recente
   // primeiro, com a data em que a leitura foi fechada.
@@ -94,15 +162,23 @@ export default async function DashboardPage() {
     const matricula = matriculasMap.get(curso.id);
     const concluido = matricula?.concluido_em;
     const href = curso.external_path ?? `/cursos/${curso.slug}`;
-    const ogUrl = imagemMap.get(curso.id);
-    const capa = CAPA_LIVRO[curso.slug] ?? (
-      ogUrl?.startsWith("/api/og/curso/")
-        ? `${ogUrl}?formato=retrato&v=4`
-        : ogUrl ?? null
-    );
+    const capa = capaDe(curso);
+    // Livro em andamento ganha anel laranja e barra de progresso no pé da capa —
+    // é o que faz ele saltar aos olhos no meio da estante inteira.
+    const leitura = leituraMap.get(curso.id);
+    const emAndamento =
+      !concluido &&
+      !!leitura &&
+      leitura.total_aulas > 0 &&
+      leitura.concluidas > 0 &&
+      leitura.concluidas < leitura.total_aulas;
     return (
       <Link key={curso.id} href={href} className="group flex flex-col gap-3">
-        <div className="lift relative aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.10)] ring-1 ring-mesa-200/70">
+        <div
+          className={`lift relative aspect-[3/4] overflow-hidden rounded-2xl bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.10)] ring-1 ${
+            emAndamento ? "ring-2 ring-laranja-400" : "ring-mesa-200/70"
+          }`}
+        >
           {capa ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -120,6 +196,10 @@ export default async function DashboardPage() {
           {concluido ? (
             <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-oliveira-700/95 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur">
               ✓ Concluído
+            </span>
+          ) : emAndamento ? (
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-laranja-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur">
+              Lendo · {leitura!.concluidas}/{leitura!.total_aulas}
             </span>
           ) : matricula ? (
             <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-laranja-200 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-laranja-600 shadow-sm backdrop-blur">
@@ -141,6 +221,14 @@ export default async function DashboardPage() {
               🎧 Gerando áudio…
             </span>
           ) : null}
+          {emAndamento && (
+            <div className="absolute inset-x-0 bottom-0 bg-white/85 px-2 py-1.5 backdrop-blur">
+              <BarraProgresso
+                concluidas={leitura!.concluidas}
+                total={leitura!.total_aulas}
+              />
+            </div>
+          )}
         </div>
         <h3 className="line-clamp-2 font-serif text-[15px] font-semibold leading-snug text-mesa-800 transition-colors group-hover:text-laranja-600">
           {curso.titulo}
@@ -279,6 +367,8 @@ export default async function DashboardPage() {
         )}
 
 
+        <ContinuandoLeitura itens={emLeitura} />
+
         {cursos.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-mesa-300 bg-white/60 px-6 py-20 text-center">
             <p className="font-serif text-2xl text-mesa-700">
@@ -328,12 +418,7 @@ export default async function DashboardPage() {
             </p>
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
               {livrosLidos.map(({ curso, em }) => {
-                const ogUrl = imagemMap.get(curso.id);
-                const capa =
-                  CAPA_LIVRO[curso.slug] ??
-                  (ogUrl?.startsWith("/api/og/curso/")
-                    ? `${ogUrl}?formato=retrato&v=4`
-                    : ogUrl ?? null);
+                const capa = capaDe(curso);
                 return (
                   <Link
                     key={curso.id}
