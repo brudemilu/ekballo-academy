@@ -9,8 +9,14 @@ import {
   listRecentRespostas,
   listCursosPublicados,
   listLeiturasConcluidas,
+  listProgressoLeitura,
   getMaterialUrl,
 } from "@/lib/db";
+import {
+  ContinuandoLeitura,
+  BarraProgresso,
+  type ItemLeitura,
+} from "@/components/ContinuandoLeitura";
 import { agruparPorCategoria } from "@/lib/categorias";
 import { SeloOffline } from "@/components/SeloOffline";
 import { CAPA_LIVRO } from "@/lib/capas";
@@ -37,6 +43,14 @@ function dataConclusao(iso: string): string {
   }
 }
 
+// Timestamp em ms (0 quando não há data). Datas do banco e do app usam sufixos
+// diferentes ("+00:00" vs "Z"), então comparar como texto não serve.
+function instante(iso?: string | null): number {
+  if (!iso) return 0;
+  const t = Date.parse(iso);
+  return Number.isNaN(t) ? 0 : t;
+}
+
 // Primeiro nome (a estante fica mais leve do que o nome completo).
 function primeiroNome(nome?: string | null): string {
   if (!nome) return "Discípulo";
@@ -53,11 +67,12 @@ export default async function AdminPage() {
     session.profile?.papel || (session.profile?.is_admin ? "master" : "discipulo");
   const isMaster = papel === "master";
 
-  const [stats, ultimas, cursos, leituras] = await Promise.all([
+  const [stats, ultimas, cursos, leituras, minhasLeituras] = await Promise.all([
     getAdminStats(),
     listRecentRespostas(8),
     listCursosPublicados(),
     isMaster ? listLeiturasConcluidas() : Promise.resolve([]),
+    listProgressoLeitura(session.userId),
   ]);
   // Pula o signed URL dos livros com capa estática (CAPA_LIVRO) — não é usado
   // no card e era o maior gargalo (uma chamada de rede por curso, ~193).
@@ -72,6 +87,49 @@ export default async function AdminPage() {
   const gruposCursos = agruparPorCategoria(cursos);
   const mostrarSecoes = gruposCursos.length > 1;
 
+  // Minha leitura em andamento. Vale aqui e não só no /dashboard porque o
+  // middleware manda todo admin de /dashboard pra cá — o painel do aluno o
+  // master nunca chega a ver.
+  const leituraMap = new Map(minhasLeituras.map((l) => [l.curso_id, l]));
+  const emLeitura: ItemLeitura[] = cursos
+    .filter((curso) => {
+      const l = leituraMap.get(curso.id);
+      if (!l || l.total_aulas === 0) return false;
+      if (l.concluidas >= l.total_aulas) return false;
+      if (l.dispensado_em && instante(l.dispensado_em) >= instante(l.ultima_em)) {
+        return false;
+      }
+      return l.concluidas > 0 || !!l.ultima_em;
+    })
+    .sort(
+      (a, b) =>
+        instante(leituraMap.get(b.id)?.ultima_em) -
+        instante(leituraMap.get(a.id)?.ultima_em),
+    )
+    .map((curso) => {
+      const l = leituraMap.get(curso.id)!;
+      const ogUrl = imagemMap.get(curso.id);
+      const paginaCurso = curso.external_path ?? `/cursos/${curso.slug}`;
+      return {
+        cursoId: curso.id,
+        titulo: curso.titulo,
+        href:
+          !curso.external_path && l.proxima_aula_id
+            ? `/cursos/${curso.slug}/aulas/${l.proxima_aula_id}`
+            : paginaCurso,
+        capa:
+          CAPA_LIVRO[curso.slug] ??
+          (ogUrl?.startsWith("/api/og/curso/")
+            ? `${ogUrl}?formato=retrato&v=4`
+            : ogUrl ?? null),
+        concluidas: l.concluidas,
+        total: l.total_aulas,
+        proxima: l.proxima_aula_titulo
+          ? { titulo: l.proxima_aula_titulo, ordem: l.proxima_aula_ordem ?? 0 }
+          : null,
+      };
+    });
+
   const renderCardCurso = (curso: (typeof cursos)[number]) => {
     const ogUrl = imagemMap.get(curso.id);
     const capa = CAPA_LIVRO[curso.slug] ?? (
@@ -79,13 +137,37 @@ export default async function AdminPage() {
         ? `${ogUrl}?formato=retrato&v=4`
         : ogUrl ?? null
     );
+    // Mesmo destaque da vitrine do aluno: livro em andamento salta aos olhos.
+    const leitura = leituraMap.get(curso.id);
+    const emAndamento =
+      !!leitura &&
+      leitura.total_aulas > 0 &&
+      leitura.concluidas > 0 &&
+      leitura.concluidas < leitura.total_aulas;
     return (
       <Link
         key={curso.id}
         href={curso.external_path ?? `/cursos/${curso.slug}`}
-        className="lift group flex flex-col overflow-hidden rounded-2xl border border-bege-200 bg-white transition hover:border-laranja-300 hover:shadow-md"
+        className={`lift group flex flex-col overflow-hidden rounded-2xl border bg-white transition hover:shadow-md ${
+          emAndamento
+            ? "border-laranja-400 ring-1 ring-laranja-300"
+            : "border-bege-200 hover:border-laranja-300"
+        }`}
       >
         <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-laranja-100 via-bege-100 to-oliveira-100">
+          {emAndamento && (
+            <>
+              <span className="absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-full bg-laranja-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+                Lendo · {leitura!.concluidas}/{leitura!.total_aulas}
+              </span>
+              <div className="absolute inset-x-0 bottom-0 z-10 bg-white/85 px-2 py-1.5 backdrop-blur">
+                <BarraProgresso
+                  concluidas={leitura!.concluidas}
+                  total={leitura!.total_aulas}
+                />
+              </div>
+            </>
+          )}
           {capa ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -172,6 +254,8 @@ export default async function AdminPage() {
           </span>
         </Link>
       )}
+
+      <ContinuandoLeitura itens={emLeitura} />
 
       <div className="mb-8 grid gap-3 lg:grid-cols-3">
         {[
