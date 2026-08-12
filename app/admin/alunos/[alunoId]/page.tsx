@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { MatriculaToggle } from "@/components/MatriculaToggle";
 import { AdminAlunoForm } from "@/components/AdminAlunoForm";
+import { AdminRedefinirSenha } from "@/components/AdminRedefinirSenha";
 import {
   getCurrentSession,
   getAlunoById,
@@ -105,6 +106,20 @@ export default async function AdminAlunoPage({
               papel: aluno.papel || "discipulo",
               acesso_liberado: aluno.acesso_liberado,
             }}
+          />
+        </div>
+      </details>
+
+      <details className="mb-10 rounded-2xl border border-mesa-200 bg-white p-6">
+        <summary className="cursor-pointer select-none font-serif text-xl font-semibold text-mesa-800">
+          Redefinir senha
+        </summary>
+        <div className="mt-5">
+          <AdminRedefinirSenha
+            alunoId={alunoId}
+            nome={aluno.nome || ""}
+            email={aluno.email}
+            telefone={aluno.telefone}
           />
         </div>
       </details>
