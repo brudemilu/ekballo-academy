@@ -9,6 +9,7 @@ import { lerAgendaGoogle } from "@/lib/agenda";
 import { AgendaPainel } from "@/components/AgendaPainel";
 import { AssinarGoogleAgenda } from "@/components/AssinarGoogleAgenda";
 import { podeVerAgenda } from "@/lib/permissoes";
+import { siteBase } from "@/lib/site-url";
 
 // Página sempre dinâmica: depende de login (cookies) e lê o Google Calendar ao vivo.
 export const dynamic = "force-dynamic";
@@ -51,10 +52,10 @@ export default async function AgendaPage() {
 
   // Link iCal (com o segredo) pra assinar os compromissos no Google Agenda.
   // Só pro admin/master (o link concede leitura dos compromissos).
-  const siteBase = process.env.NEXT_PUBLIC_SITE_URL || "https://ekballo-academy.vercel.app";
+  const base = siteBase();
   const icsUrl =
     session.profile?.is_admin && process.env.AGENDA_SYNC_SECRET
-      ? `${siteBase.replace(/\/+$/, "")}/api/agenda/ics?key=${encodeURIComponent(process.env.AGENDA_SYNC_SECRET)}`
+      ? `${base}/api/agenda/ics?key=${encodeURIComponent(process.env.AGENDA_SYNC_SECRET)}`
       : null;
 
   return (

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { selfOrigin } from "@/lib/site-url";
 
 // Processador das mensagens agendadas. Chamado pelo pg_cron (a cada minuto)
 // via pg_net. Autenticado por AGENDADAS_CRON_SECRET (do Vault, no header).
@@ -12,7 +13,12 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET!;
 const AGENDADAS_CRON_SECRET = process.env.AGENDADAS_CRON_SECRET || "";
-const BASE_URL = "https://ekballo-academy.vercel.app";
+// Chamada do app pra ele mesmo: 127.0.0.1, não o domínio público. O literal
+// antigo apontava pro ekballo-academy.vercel.app (morto desde a migração pro
+// Contabo), então toda agendada vencida falhava no fetch. Sair pelo domínio
+// público também seria errado: atrás do Traefik o self-fetch quebra por TLS,
+// o mesmo bug que derrubou as rotas OG.
+const BASE_URL = selfOrigin();
 
 const admin = () => createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 

@@ -3,6 +3,7 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { telefoneBloqueadoBroadcast } from "@/lib/destinatarios";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
+import { webhookBase } from "@/lib/site-url";
 
 // Painel WhatsApp (Evolution GO): proxy admin-gated pras edge functions.
 //   GET                      -> status da instância
@@ -57,7 +58,12 @@ function chamarEdge(url: string, body: unknown) {
 function montarWebhookUrl(): string | null {
   const secret = process.env.AGENDA_WHATSAPP_SECRET || "";
   if (!secret) return null;
-  const base = process.env.WEBHOOK_PUBLIC_BASE || "https://ekballo-academy.vercel.app";
+  // Sem fallback pra domínio fixo: o literal antigo apontava pro
+  // ekballo-academy.vercel.app, morto desde a migração pro Contabo. Registrar
+  // o webhook num host inexistente deixa o "agendar pelo WhatsApp" mudo sem
+  // erro visível — melhor falhar aqui, alto e claro.
+  const base = webhookBase();
+  if (!base) return null;
   return `${base}/api/webhook/whatsapp-agenda?secret=${encodeURIComponent(secret)}`;
 }
 
@@ -114,7 +120,14 @@ export async function POST(req: NextRequest) {
     if (acao === "webhook") {
       const url = montarWebhookUrl();
       if (!url) {
-        return NextResponse.json({ erro: "AGENDA_WHATSAPP_SECRET não configurado" }, { status: 500 });
+        return NextResponse.json(
+          {
+            erro:
+              "Falta configurar AGENDA_WHATSAPP_SECRET ou o endereço público " +
+              "(NEXT_PUBLIC_SITE_URL / WEBHOOK_PUBLIC_BASE).",
+          },
+          { status: 500 },
+        );
       }
       const resp = await chamarEdge(EDGE_INSTANCIA_URL, { acao: "webhook", url });
       return NextResponse.json(await resp.json(), { status: resp.status });

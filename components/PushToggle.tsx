@@ -130,7 +130,7 @@ export function PushToggle() {
         <p className="mt-2 text-sm text-mesa-700">
           Você bloqueou notificações pra este site. Pra liberar, vá nas
           configurações do navegador → Permissões → Notificações → permitir
-          para ekballo-academy.vercel.app.
+          para {typeof window !== "undefined" ? window.location.host : "este site"}.
         </p>
       </div>
     );
