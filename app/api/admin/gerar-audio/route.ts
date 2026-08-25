@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   if (acao === "cancelar") {
     await admin
       .from("cursos")
-      .update({ audio_status: "nenhum", audio_lock_ate: null })
+      .update({ audio_status: "nenhum", audio_falhas: 0, audio_lock_ate: null })
       .eq("id", cursoId);
     return NextResponse.json({ ok: true, status: "nenhum" });
   }
@@ -53,6 +53,11 @@ export async function POST(req: NextRequest) {
       audio_total: total ?? 0,
       audio_progresso: feitas ?? 0,
       audio_pedido_em: new Date().toISOString(),
+      // ZERAR é essencial: o worker desiste do livro em MAX_FALHAS falhas
+      // seguidas. Sem zerar, um livro que já errou antes voltava com o contador
+      // estourado e morria na primeira falha do novo pedido — pro master parecia
+      // que "clicar em gerar áudio não faz nada". (bug corrigido 24/08/2026)
+      audio_falhas: 0,
       audio_lock_ate: null,
     })
     .eq("id", cursoId);
