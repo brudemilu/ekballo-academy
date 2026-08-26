@@ -194,13 +194,25 @@ body {
    Tipografia ABNT: prosa justificada + hifenização pt-BR.
    ============================================================= */
 .prose-anotacao {
-  line-height: 1.7;
+  /* Entrelinhas: 1.78 é mais arejado que o 1.7 anterior — texto corrido em
+     tela cansa menos com um pouco mais de respiro entre as linhas. O valor
+     vira variável para o seletor de espaçamento da barra poder trocá-lo. */
+  --entrelinhas: 1.78;
+  --respiro-paragrafo: 1.05em;
+  line-height: var(--entrelinhas);
   font-size: 1.0625rem;
   color: #262320;              /* greige-800 */
   word-break: break-word;
+  letter-spacing: 0.001em;
 }
+/* Seletor "Entrelinhas" da barra de ferramentas (preferência de leitura,
+   guardada no navegador — não muda o conteúdo salvo). */
+.prose-anotacao[data-espaco="compacto"] { --entrelinhas: 1.5;  --respiro-paragrafo: 0.75em; }
+.prose-anotacao[data-espaco="normal"]   { --entrelinhas: 1.78; --respiro-paragrafo: 1.05em; }
+.prose-anotacao[data-espaco="amplo"]    { --entrelinhas: 2.1;  --respiro-paragrafo: 1.5em; }
+
 .prose-anotacao p {
-  margin-bottom: 0.9em;
+  margin-bottom: var(--respiro-paragrafo);
   text-align: justify;
   text-justify: inter-word;
   hyphens: auto;
@@ -216,16 +228,18 @@ body {
   font-family: Georgia, serif;
   font-size: 1.5rem;
   font-weight: 600;
+  line-height: 1.3;
   color: #262320;
-  margin: 1.5em 0 0.5em;
+  margin: 1.7em 0 0.55em;
   text-align: left;
 }
 .prose-anotacao h3 {
   font-family: Georgia, serif;
   font-size: 1.2rem;
   font-weight: 600;
+  line-height: 1.35;
   color: #B4320C;              /* terracota */
-  margin: 1.3em 0 0.4em;
+  margin: 1.5em 0 0.45em;
   text-align: left;
 }
 .prose-anotacao h4 {
@@ -243,14 +257,14 @@ body {
 
 .prose-anotacao blockquote {
   border-left: 3px solid #FF5A2C;
-  padding: 0.1em 0 0.1em 1.1rem;
+  padding: 0.2em 0 0.2em 1.15rem;
   font-style: italic;
   color: #48433E;
-  margin: 1.2em 0;
+  margin: 1.35em 0;
 }
-.prose-anotacao ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.9em; }
-.prose-anotacao ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 0.9em; }
-.prose-anotacao li { margin-bottom: 0.3em; text-align: left; }
+.prose-anotacao ul { list-style: disc; padding-left: 1.5rem; margin-bottom: var(--respiro-paragrafo); }
+.prose-anotacao ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: var(--respiro-paragrafo); }
+.prose-anotacao li { margin-bottom: 0.42em; text-align: left; }
 .prose-anotacao ul ul { list-style: circle; margin-bottom: 0; }
 .prose-anotacao a {
   color: #B4320C;
@@ -338,7 +352,7 @@ body {
 .prose-anotacao li[data-tarefa="1"] { color: #7E786F; text-decoration: line-through; }
 
 /* Densidade menor no card de anotação dentro da mesa */
-.prose-anotacao-compacta { font-size: 1rem; line-height: 1.6; }
+.prose-anotacao-compacta { font-size: 1rem; --entrelinhas: 1.65; --respiro-paragrafo: 0.85em; }
 
 /* =============================================================
    FOLHA DE IMPRESSÃO / PDF  ("Salvar em PDF" = imprimir no navegador)

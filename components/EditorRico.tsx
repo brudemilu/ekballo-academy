@@ -12,12 +12,22 @@
 // O innerHTML é escrito UMA vez, na montagem: React não pode re-renderizar o
 // conteúdo a cada tecla, senão o cursor pula. Quem troca de anotação usa `key`
 // no componente pai pra forçar remontagem.
+//
+// ---- ACENTOS (regra que não pode ser quebrada) ----
+// Digitar "ã" num teclado ABNT não é uma tecla: é uma COMPOSIÇÃO. O navegador
+// abre um texto provisório no ponto do cursor quando você aperta o ~ e só o
+// materializa quando chega o "a". Enquanto isso estiver aberto, mexer no DOM,
+// chamar execCommand ou dar preventDefault ABORTA a composição — e o acento
+// simplesmente some. Por isso todo handler daqui começa perguntando se há
+// composição em curso e, se houver, não faz absolutamente nada até o
+// `compositionend`.
 // =============================================================
 
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -44,6 +54,27 @@ const ESTADO_ZERO: EstadoBotoes = {
 };
 
 const BLOCOS = ["P", "H2", "H3", "H4", "BLOCKQUOTE", "PRE", "LI", "DIV"];
+
+// Estilos de bloco oferecidos no seletor — texto por extenso em vez de
+// ícones crípticos ("T" grande e "T" pequeno não diziam nada).
+const ESTILOS: { valor: string; rotulo: string; dica: string }[] = [
+  { valor: "p", rotulo: "Texto normal", dica: "Parágrafo comum" },
+  { valor: "h2", rotulo: "Título", dica: "Título de seção" },
+  { valor: "h3", rotulo: "Subtítulo", dica: "Subdivisão do título" },
+  { valor: "h4", rotulo: "Rótulo", dica: "Etiqueta pequena, em maiúsculas" },
+  { valor: "blockquote", rotulo: "Citação", dica: "Trecho citado, recuado" },
+  { valor: "pre", rotulo: "Código", dica: "Texto monoespaçado" },
+];
+
+type Espaco = "compacto" | "normal" | "amplo";
+
+const ESPACOS: { valor: Espaco; rotulo: string }[] = [
+  { valor: "compacto", rotulo: "Compacto" },
+  { valor: "normal", rotulo: "Normal" },
+  { valor: "amplo", rotulo: "Amplo" },
+];
+
+const K_ESPACO = "anotacao:espacamento";
 
 function blocoAtual(raiz: HTMLElement): HTMLElement | null {
   const sel = window.getSelection();
@@ -77,11 +108,16 @@ export function EditorRico({
 }) {
   const areaRef = useRef<HTMLDivElement>(null);
   const rangeSalvo = useRef<Range | null>(null);
+  // Verdadeiro entre compositionstart e compositionend (acento em curso).
+  const compondo = useRef(false);
+
   const [estado, setEstado] = useState<EstadoBotoes>(ESTADO_ZERO);
   const [vazio, setVazio] = useState(!htmlInicial.trim());
   const [painelLink, setPainelLink] = useState(false);
   const [urlLink, setUrlLink] = useState("");
   const [painelCor, setPainelCor] = useState(false);
+  const [painelAlinhar, setPainelAlinhar] = useState(false);
+  const [espaco, setEspaco] = useState<Espaco>("normal");
 
   // Conteúdo inicial + preferência de tags (<b> em vez de <span style>).
   useLayoutEffect(() => {
@@ -96,6 +132,24 @@ export function EditorRico({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Espaçamento entre linhas é preferência de leitura: vale pra todas as
+  // anotações, então mora no localStorage e não no banco.
+  useEffect(() => {
+    try {
+      const salvo = localStorage.getItem(K_ESPACO) as Espaco | null;
+      if (salvo && ESPACOS.some((e) => e.valor === salvo)) setEspaco(salvo);
+    } catch {
+      // aba anônima: fica no padrão
+    }
+  }, []);
+
+  function trocarEspaco(novo: Espaco) {
+    setEspaco(novo);
+    try {
+      localStorage.setItem(K_ESPACO, novo);
+    } catch {}
+  }
 
   // execCommand deixa lixo estrutural: cria <ul> DENTRO do <p> em que o cursor
   // estava (HTML inválido, some ao recarregar) e não repassa o data-tarefa pros
@@ -122,19 +176,21 @@ export function EditorRico({
 
   const emitir = useCallback(() => {
     const area = areaRef.current;
-    if (!area) return;
+    // Composição em curso: sair sem tocar em nada. O texto provisório do
+    // acento ainda está no DOM e qualquer mexida aqui o mataria.
+    if (!area || compondo.current) return;
     normalizarEstrutura(area);
-    const html = area.innerHTML;
     setVazio(!area.textContent?.trim() && !area.querySelector("img, hr, table"));
-    onChange(html);
+    onChange(area.innerHTML);
   }, [onChange, normalizarEstrutura]);
 
   const sincronizarBotoes = useCallback(() => {
     const area = areaRef.current;
-    if (!area || !area.contains(document.getSelection()?.anchorNode ?? null)) return;
+    if (!area || compondo.current) return;
+    if (!area.contains(document.getSelection()?.anchorNode ?? null)) return;
     const bloco = blocoAtual(area);
     try {
-      setEstado({
+      const novo: EstadoBotoes = {
         bold: document.queryCommandState("bold"),
         italic: document.queryCommandState("italic"),
         underline: document.queryCommandState("underline"),
@@ -142,7 +198,15 @@ export function EditorRico({
         insertUnorderedList: document.queryCommandState("insertUnorderedList"),
         insertOrderedList: document.queryCommandState("insertOrderedList"),
         bloco: (bloco?.tagName || "P").toLowerCase(),
-      });
+      };
+      // Só re-renderiza quando algo mudou de fato: `selectionchange` dispara a
+      // cada tecla, e um setState por tecla é re-render à toa embaixo do
+      // cursor — justamente o que atrapalha a digitação.
+      setEstado((atual) =>
+        (Object.keys(novo) as (keyof EstadoBotoes)[]).every((k) => atual[k] === novo[k])
+          ? atual
+          : novo,
+      );
     } catch {
       // queryCommandState pode lançar quando a seleção está fora do editor
     }
@@ -174,6 +238,7 @@ export function EditorRico({
 
   const cmd = useCallback(
     (comando: string, valor?: string) => {
+      if (compondo.current) return;
       areaRef.current?.focus();
       try {
         document.execCommand(comando, false, valor);
@@ -186,15 +251,14 @@ export function EditorRico({
     [emitir, sincronizarBotoes],
   );
 
-  function aplicarBloco(tag: string) {
-    // Alterna: clicar em "Título" de novo volta pra parágrafo.
-    const alvo = estado.bloco === tag.toLowerCase() ? "p" : tag;
-    cmd("formatBlock", `<${alvo}>`);
+  function aplicarEstilo(tag: string) {
+    cmd("formatBlock", `<${tag}>`);
   }
 
   function aplicarAlinhamento(align: "left" | "center" | "right" | "justify") {
     const area = areaRef.current;
     const bloco = area ? blocoAtual(area) : null;
+    setPainelAlinhar(false);
     if (!bloco) return;
     if (align === "left") bloco.removeAttribute("data-align");
     else bloco.setAttribute("data-align", align);
@@ -203,7 +267,7 @@ export function EditorRico({
 
   function marcarTexto(cor: string) {
     const area = areaRef.current;
-    if (!area) return;
+    if (!area || compondo.current) return;
     area.focus();
     try {
       // hiliteColor exige styleWithCSS ligado; volta a desligar em seguida pra
@@ -223,7 +287,6 @@ export function EditorRico({
     const sel = window.getSelection();
     if (!area || !sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
-    // Desembrulha <mark> e spans de fundo que cruzam a seleção.
     const marcas = Array.from(area.querySelectorAll("mark, span[style*='background']"));
     for (const marca of marcas) {
       if (!range.intersectsNode(marca)) continue;
@@ -240,7 +303,7 @@ export function EditorRico({
   // mecanismo dele — que sabe converter o bloco atual — e só decoramos.
   function inserirChecklist() {
     const area = areaRef.current;
-    if (!area) return;
+    if (!area || compondo.current) return;
     area.focus();
     try {
       if (!document.queryCommandState("insertUnorderedList")) {
@@ -280,7 +343,6 @@ export function EditorRico({
   }
 
   // Colar: qualquer HTML de fora passa pelo mesmo sanitizador do servidor.
-  // Com Shift, cola como texto puro.
   function handlePaste(e: React.ClipboardEvent<HTMLDivElement>) {
     e.preventDefault();
     const html = e.clipboardData.getData("text/html");
@@ -292,7 +354,6 @@ export function EditorRico({
         return;
       }
     }
-    // Texto puro: preserva parágrafos, escapando o que vier junto.
     const paragrafos = texto
       .split(/\n{2,}/)
       .map((p) =>
@@ -322,7 +383,16 @@ export function EditorRico({
 
   // Atalhos + conversões de markdown enquanto digita.
   function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    // Composição em curso (acento, IME, autocorreção do celular): a tecla
+    // pertence ao teclado, não ao editor. `keyCode === 229` é como os
+    // navegadores sinalizam "esta tecla é da composição".
+    if (compondo.current || e.nativeEvent.isComposing || e.keyCode === 229) return;
+
     const meta = e.metaKey || e.ctrlKey;
+    // AltGr no Windows chega como Ctrl+Alt — e é assim que muita gente digita
+    // símbolos. Tratar isso como "Ctrl" roubaria a tecla do teclado.
+    const altGr = e.ctrlKey && e.altKey;
+    if (altGr) return;
 
     if (meta && e.key.toLowerCase() === "s") {
       e.preventDefault();
@@ -335,9 +405,6 @@ export function EditorRico({
       setPainelLink(true);
       return;
     }
-    // Negrito/itálico/sublinhado no atalho: o contentEditable até trata
-    // sozinho, mas o comportamento varia por navegador — e o rodapé do editor
-    // promete os três. Melhor executar explicitamente.
     if (meta && !e.shiftKey && ["b", "i", "u"].includes(e.key.toLowerCase())) {
       e.preventDefault();
       cmd({ b: "bold", i: "italic", u: "underline" }[e.key.toLowerCase()] as string);
@@ -373,31 +440,34 @@ export function EditorRico({
       if (!area || !bloco || !sel || !sel.isCollapsed) return;
       const prefixo = (sel.anchorNode?.textContent || "").slice(0, sel.anchorOffset);
       const atalhos: Record<string, () => void> = {
-        "#": () => aplicarBloco("H2"),
-        "##": () => aplicarBloco("H2"),
-        "###": () => aplicarBloco("H3"),
+        "#": () => aplicarEstilo("h2"),
+        "##": () => aplicarEstilo("h2"),
+        "###": () => aplicarEstilo("h3"),
         "-": () => cmd("insertUnorderedList"),
         "*": () => cmd("insertUnorderedList"),
         "1.": () => cmd("insertOrderedList"),
-        ">": () => aplicarBloco("BLOCKQUOTE"),
+        ">": () => aplicarEstilo("blockquote"),
         "[]": inserirChecklist,
         "[ ]": inserirChecklist,
       };
       const acao = atalhos[prefixo];
       if (!acao || bloco.tagName === "PRE") return;
       e.preventDefault();
-      // Apaga o prefixo digitado antes de aplicar o formato.
       for (let i = 0; i < prefixo.length; i++) document.execCommand("delete");
       acao();
     }
   }
 
-  const btn = (ativo: boolean) =>
+  // Objeto estável: recriar o style a cada render faz o React reescrever o
+  // atributo do contentEditable a cada tecla.
+  const estiloArea = useMemo(() => ({ minHeight: alturaMinima }), [alturaMinima]);
+
+  const btn = (ativo: boolean, extra = "") =>
     `flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm transition ${
       ativo
         ? "bg-laranja-500 text-white shadow-sm"
         : "text-mesa-600 hover:bg-mesa-100 hover:text-mesa-900"
-    }`;
+    } ${extra}`;
 
   const Sep = () => <span className="mx-1 h-5 w-px flex-none bg-mesa-200" aria-hidden />;
 
@@ -407,36 +477,33 @@ export function EditorRico({
       <div className="sticky top-0 z-20 border-b border-mesa-200 bg-white/95 backdrop-blur">
         <div className="flex flex-wrap items-center gap-0.5 px-2 py-2">
           <button type="button" onClick={() => cmd("undo")} className={btn(false)} title="Desfazer (Ctrl+Z)">
-            ↶
+            <Icone nome="desfazer" />
           </button>
           <button type="button" onClick={() => cmd("redo")} className={btn(false)} title="Refazer (Ctrl+Shift+Z)">
-            ↷
+            <Icone nome="refazer" />
           </button>
           <Sep />
 
-          <button
-            type="button"
-            onClick={() => aplicarBloco("H2")}
-            className={btn(estado.bloco === "h2")}
-            title="Título"
+          {/* Estilo do bloco: por extenso, não mais dois "T" indistinguíveis */}
+          <select
+            value={ESTILOS.some((s) => s.valor === estado.bloco) ? estado.bloco : "p"}
+            onChange={(e) => aplicarEstilo(e.target.value)}
+            title="Estilo do parágrafo"
+            className="h-8 rounded-lg border border-mesa-200 bg-white px-2 text-xs font-medium text-mesa-700 outline-none transition hover:bg-mesa-50 focus:border-laranja-400"
           >
-            <span className="font-serif font-semibold">T</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => aplicarBloco("H3")}
-            className={btn(estado.bloco === "h3")}
-            title="Subtítulo"
-          >
-            <span className="font-serif text-xs font-semibold">T</span>
-          </button>
+            {ESTILOS.map((s) => (
+              <option key={s.valor} value={s.valor} title={s.dica}>
+                {s.rotulo}
+              </option>
+            ))}
+          </select>
           <Sep />
 
           <button type="button" onClick={() => cmd("bold")} className={btn(estado.bold)} title="Negrito (Ctrl+B)">
-            <b>N</b>
+            <span className="font-serif text-base font-bold leading-none">N</span>
           </button>
           <button type="button" onClick={() => cmd("italic")} className={btn(estado.italic)} title="Itálico (Ctrl+I)">
-            <i className="font-serif">I</i>
+            <span className="font-serif text-base italic leading-none">I</span>
           </button>
           <button
             type="button"
@@ -444,15 +511,15 @@ export function EditorRico({
             className={btn(estado.underline)}
             title="Sublinhado (Ctrl+U)"
           >
-            <u>S</u>
+            <span className="font-serif text-base leading-none underline underline-offset-2">S</span>
           </button>
           <button
             type="button"
             onClick={() => cmd("strikeThrough")}
             className={btn(estado.strikeThrough)}
-            title="Tachado (Ctrl+Shift+X)"
+            title="Riscado (Ctrl+Shift+X)"
           >
-            <s>R</s>
+            <span className="font-serif text-base leading-none line-through">S</span>
           </button>
 
           {/* Marca-texto */}
@@ -462,11 +529,12 @@ export function EditorRico({
               onClick={() => {
                 guardarSelecao();
                 setPainelCor((v) => !v);
+                setPainelAlinhar(false);
               }}
               className={btn(painelCor)}
               title="Marca-texto (Ctrl+Shift+H)"
             >
-              🖍
+              <Icone nome="marcador" />
             </button>
             {painelCor && (
               <div className="absolute left-0 top-9 z-30 flex items-center gap-1 rounded-xl border border-mesa-200 bg-white p-1.5 shadow-lg">
@@ -506,7 +574,7 @@ export function EditorRico({
             className={btn(estado.insertUnorderedList)}
             title="Lista com marcadores"
           >
-            ☰
+            <Icone nome="lista" />
           </button>
           <button
             type="button"
@@ -514,60 +582,87 @@ export function EditorRico({
             className={btn(estado.insertOrderedList)}
             title="Lista numerada"
           >
-            <span className="text-xs font-semibold">1.</span>
+            <Icone nome="listaNumerada" />
           </button>
           <button type="button" onClick={inserirChecklist} className={btn(false)} title="Lista de tarefas">
-            ☑
+            <Icone nome="tarefas" />
           </button>
           <Sep />
 
-          <button
-            type="button"
-            onClick={() => aplicarBloco("BLOCKQUOTE")}
-            className={btn(estado.bloco === "blockquote")}
-            title="Citação"
-          >
-            <span className="font-serif text-base leading-none">&ldquo;</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => aplicarBloco("PRE")}
-            className={btn(estado.bloco === "pre")}
-            title="Bloco de código"
-          >
-            <span className="font-mono text-xs">{"</>"}</span>
-          </button>
           <button type="button" onClick={inserirDivisor} className={btn(false)} title="Linha divisória">
-            —
+            <Icone nome="divisor" />
           </button>
 
           {!compacto && (
             <>
-              <Sep />
-              <button
-                type="button"
-                onClick={() => aplicarAlinhamento("left")}
-                className={btn(false)}
-                title="Alinhar à esquerda"
-              >
-                ⬅
-              </button>
-              <button
-                type="button"
-                onClick={() => aplicarAlinhamento("center")}
-                className={btn(false)}
-                title="Centralizar"
-              >
-                ⬌
-              </button>
-              <button
-                type="button"
-                onClick={() => aplicarAlinhamento("justify")}
-                className={btn(false)}
-                title="Justificar (padrão ABNT)"
-              >
-                ☰
-              </button>
+              {/* Alinhamento agrupado num menu — quatro botões soltos poluíam
+                  a barra e as setas não diziam o que faziam. */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPainelAlinhar((v) => !v);
+                    setPainelCor(false);
+                  }}
+                  className={btn(painelAlinhar)}
+                  title="Alinhamento do parágrafo"
+                >
+                  <Icone nome="alinharJustificado" />
+                </button>
+                {painelAlinhar && (
+                  <div className="absolute left-0 top-9 z-30 flex items-center gap-0.5 rounded-xl border border-mesa-200 bg-white p-1.5 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => aplicarAlinhamento("left")}
+                      className={btn(false)}
+                      title="À esquerda"
+                    >
+                      <Icone nome="alinharEsquerda" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => aplicarAlinhamento("center")}
+                      className={btn(false)}
+                      title="Centralizado"
+                    >
+                      <Icone nome="alinharCentro" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => aplicarAlinhamento("right")}
+                      className={btn(false)}
+                      title="À direita"
+                    >
+                      <Icone nome="alinharDireita" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => aplicarAlinhamento("justify")}
+                      className={btn(false)}
+                      title="Justificado (padrão do texto)"
+                    >
+                      <Icone nome="alinharJustificado" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Espaçamento entre linhas */}
+              <div className="flex items-center gap-1 rounded-lg border border-mesa-200 px-1.5 py-0.5">
+                <Icone nome="entrelinhas" />
+                <select
+                  value={espaco}
+                  onChange={(e) => trocarEspaco(e.target.value as Espaco)}
+                  title="Espaço entre as linhas do texto"
+                  className="h-6 bg-transparent text-xs font-medium text-mesa-700 outline-none"
+                >
+                  {ESPACOS.map((e) => (
+                    <option key={e.valor} value={e.valor}>
+                      {e.rotulo}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </>
           )}
           <Sep />
@@ -581,10 +676,10 @@ export function EditorRico({
             className={btn(painelLink)}
             title="Inserir link (Ctrl+K)"
           >
-            🔗
+            <Icone nome="link" />
           </button>
           <button type="button" onClick={limparFormatacao} className={btn(false)} title="Limpar formatação">
-            ⌫
+            <Icone nome="limpar" />
           </button>
         </div>
 
@@ -642,6 +737,7 @@ export function EditorRico({
           aria-label="Conteúdo da anotação"
           spellCheck
           lang="pt-BR"
+          data-espaco={espaco}
           onInput={emitir}
           onBlur={emitir}
           onPaste={handlePaste}
@@ -649,10 +745,148 @@ export function EditorRico({
           onKeyDown={handleKeyDown}
           onKeyUp={sincronizarBotoes}
           onMouseUp={sincronizarBotoes}
-          className="prose-anotacao px-6 py-6 outline-none sm:px-8"
-          style={{ minHeight: alturaMinima }}
+          // Sem estes três, um acento digitado no teclado se perde: o
+          // navegador abre a composição, o onInput dispara no meio dela e
+          // qualquer alteração no DOM a cancela.
+          onCompositionStart={() => {
+            compondo.current = true;
+          }}
+          onCompositionUpdate={() => {
+            compondo.current = true;
+          }}
+          onCompositionEnd={() => {
+            compondo.current = false;
+            // Agora sim: o caractere composto já está no DOM.
+            emitir();
+            sincronizarBotoes();
+          }}
+          className={`prose-anotacao px-6 py-6 outline-none sm:px-8 ${
+            compacto ? "prose-anotacao-compacta" : ""
+          }`}
+          style={estiloArea}
         />
       </div>
     </div>
   );
+}
+
+// Ícones desenhados à mão: o projeto não tem biblioteca de ícones e não vale
+// trazer uma por causa de dez glifos.
+function Icone({ nome }: { nome: string }) {
+  const comum = {
+    width: 16,
+    height: 16,
+    viewBox: "0 0 20 20",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.7,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  switch (nome) {
+    case "desfazer":
+      return (
+        <svg {...comum}>
+          <path d="M4 9h8a4 4 0 0 1 0 8h-1" />
+          <path d="M7 6 4 9l3 3" />
+        </svg>
+      );
+    case "refazer":
+      return (
+        <svg {...comum}>
+          <path d="M16 9H8a4 4 0 0 0 0 8h1" />
+          <path d="m13 6 3 3-3 3" />
+        </svg>
+      );
+    case "lista":
+      return (
+        <svg {...comum}>
+          <circle cx="4" cy="6" r="1.1" fill="currentColor" stroke="none" />
+          <circle cx="4" cy="10" r="1.1" fill="currentColor" stroke="none" />
+          <circle cx="4" cy="14" r="1.1" fill="currentColor" stroke="none" />
+          <path d="M8 6h8M8 10h8M8 14h8" />
+        </svg>
+      );
+    case "listaNumerada":
+      return (
+        <svg {...comum}>
+          <path d="M8 6h8M8 10h8M8 14h8" />
+          <text x="2" y="8" fontSize="6" fill="currentColor" stroke="none">1</text>
+          <text x="2" y="16" fontSize="6" fill="currentColor" stroke="none">2</text>
+        </svg>
+      );
+    case "tarefas":
+      return (
+        <svg {...comum}>
+          <rect x="2.5" y="4" width="4" height="4" rx="1" />
+          <path d="m3.4 6 .9.9L6 5.2" />
+          <rect x="2.5" y="12" width="4" height="4" rx="1" />
+          <path d="M9 6h8M9 14h8" />
+        </svg>
+      );
+    case "marcador":
+      return (
+        <svg {...comum}>
+          <path d="m12 3 5 5-7 7H5v-5z" />
+          <path d="M3 18h14" strokeWidth="2.4" />
+        </svg>
+      );
+    case "divisor":
+      return (
+        <svg {...comum}>
+          <path d="M3 10h14" strokeWidth="2" />
+          <path d="M5 5h10M5 15h10" opacity="0.35" />
+        </svg>
+      );
+    case "alinharEsquerda":
+      return (
+        <svg {...comum}>
+          <path d="M3 5h14M3 9h8M3 13h14M3 17h8" />
+        </svg>
+      );
+    case "alinharCentro":
+      return (
+        <svg {...comum}>
+          <path d="M3 5h14M6 9h8M3 13h14M6 17h8" />
+        </svg>
+      );
+    case "alinharDireita":
+      return (
+        <svg {...comum}>
+          <path d="M3 5h14M9 9h8M3 13h14M9 17h8" />
+        </svg>
+      );
+    case "alinharJustificado":
+      return (
+        <svg {...comum}>
+          <path d="M3 5h14M3 9h14M3 13h14M3 17h14" />
+        </svg>
+      );
+    case "entrelinhas":
+      return (
+        <svg {...comum}>
+          <path d="M8 5h9M8 10h9M8 15h9" />
+          <path d="M4 5v10" />
+          <path d="m2.6 6.4 1.4-1.4 1.4 1.4M2.6 13.6 4 15l1.4-1.4" />
+        </svg>
+      );
+    case "link":
+      return (
+        <svg {...comum}>
+          <path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.6-2.6a3 3 0 0 0-4.2-4.2l-1 1" />
+          <path d="M11.5 8.5a3 3 0 0 0-4.2 0l-2.6 2.6a3 3 0 0 0 4.2 4.2l1-1" />
+        </svg>
+      );
+    case "limpar":
+      return (
+        <svg {...comum}>
+          <path d="M6 5h10M11 5l-2 10" />
+          <path d="m13 11 4 4M17 11l-4 4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
