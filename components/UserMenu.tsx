@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { podeUsarCaderno } from "@/lib/permissoes";
 
 export function UserMenu({
   nome,
@@ -14,6 +15,8 @@ export function UserMenu({
   isAdmin: boolean;
 }) {
   const router = useRouter();
+  // O caderno é liberado pessoa a pessoa; quem não tem acesso nem vê o atalho.
+  const temCaderno = podeUsarCaderno(undefined, isAdmin, email);
 
   async function handleSair() {
     const supabase = createClient();
@@ -24,6 +27,17 @@ export function UserMenu({
 
   return (
     <div className="flex items-center gap-3">
+      {/* Caderno: atalho fixo — precisa ser alcançável de qualquer página
+          (mesa, devocional, painel), não só do dashboard. */}
+      {temCaderno && (
+      <Link
+        href="/anotacoes"
+        className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700"
+        title="Minhas anotações"
+      >
+        ✍️ <span className="hidden sm:inline">Caderno</span>
+      </Link>
+      )}
       {isAdmin && (
         <Link
           href="/admin"

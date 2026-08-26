@@ -88,6 +88,24 @@ export function permissaoDaRota(path: string): Permissao | null {
   return match ? match.permissao : null;
 }
 
+// -------- CADERNO DE ANOTAÇÕES: acesso restrito --------
+// O caderno (/anotacoes) é pessoal e privado: cada pessoa vê só o que ela
+// mesma escreveu — ninguém lê o caderno de ninguém, nem o master.
+// Por decisão do Bruno (ago/2026), começa liberado só pra ele; para abrir pra
+// outra pessoa, basta acrescentar o e-mail dela aqui (ela ganha o PRÓPRIO
+// caderno, não acesso ao dos outros).
+export const CADERNO_EMAILS: string[] = [];
+
+export function podeUsarCaderno(
+  papel: string | null | undefined,
+  isAdmin: boolean | null | undefined,
+  email: string | null | undefined,
+): boolean {
+  const ehMaster = papel === "master" || (!papel && !!isAdmin);
+  if (ehMaster) return true;
+  return !!email && CADERNO_EMAILS.includes(email.trim().toLowerCase());
+}
+
 // -------- AGENDA PESSOAL: acesso restrito --------
 // A agenda (/admin/agenda) é pessoal do pastor (master). Estes e-mails extras
 // também podem ver — e SÓ a agenda, nada mais do admin.

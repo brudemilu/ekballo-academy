@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Destaque } from "@/lib/types";
+import { selecaoConsultavel, type Verbete } from "@/lib/dicionario-comum";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -110,6 +111,33 @@ function Quadro({ bloco }: { bloco: string }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+
+// ---- Figuras (gráficos e diagramas do livro original) ----
+// Bloco "[figura] /caminho/da/imagem.png | Legenda opcional". Existe porque
+// vários livros trazem diagrama que o texto referencia diretamente ("o diagrama
+// abaixo representa..."): sem a figura, o leitor cai numa remissão vazia.
+function ehFigura(paragrafo: string): boolean {
+  return /^\[figura\]/i.test(paragrafo.trim());
+}
+
+function Figura({ bloco }: { bloco: string }) {
+  const corpo = bloco.trim().replace(/^\[figura\]\s*/i, "");
+  const [src, ...resto] = corpo.split("|");
+  const legenda = resto.join("|").trim();
+  return (
+    <figure className="my-6">
+      <img
+        src={src.trim()}
+        alt={legenda || "Figura do livro"}
+        className="mx-auto w-full max-w-2xl rounded-xl border border-mesa-300 bg-white p-3"
+      />
+      {legenda && (
+        <figcaption className="mt-2 text-center text-sm text-mesa-600">{legenda}</figcaption>
+      )}
+    </figure>
   );
 }
 
@@ -221,6 +249,13 @@ export function AulaConteudo({
   const [modalTexto, setModalTexto] = useState<string | null>(null);
   // Quando != null, a barra flutuante vira um campo de comentário.
   const [comentEditor, setComentEditor] = useState<string | null>(null);
+  // Quando != null, a barra vira o cartão de dicionário da palavra selecionada.
+  const [verbete, setVerbete] = useState<{
+    palavra: string;
+    carregando: boolean;
+    dados: Verbete | null;
+    erro: string | null;
+  } | null>(null);
   // Toque (celular/tablet): a barra fica ancorada embaixo da tela, longe do
   // menu nativo do iOS e com alvos maiores.
   const [toque, setToque] = useState(false);
@@ -237,7 +272,7 @@ export function AulaConteudo({
     if (termo.length < 2) return out;
     const q = normalizarBusca(termo);
     paragrafos.forEach((p, i) => {
-      if (ehQuadro(p.texto)) return;
+      if (ehQuadro(p.texto) || ehFigura(p.texto)) return;
       const np = normalizarBusca(p.texto);
       let from = 0;
       for (;;) {
@@ -277,6 +312,11 @@ export function AulaConteudo({
   useEffect(() => {
     comentEditorRef.current = comentEditor;
   }, [comentEditor]);
+  // Idem pro cartão de dicionário: rolar a página não pode fechá-lo no meio da leitura.
+  const verbeteRef = useRef(false);
+  useEffect(() => {
+    verbeteRef.current = verbete !== null;
+  }, [verbete]);
 
   useEffect(() => {
     setToque(window.matchMedia?.("(pointer: coarse)").matches ?? false);
@@ -285,13 +325,14 @@ export function AulaConteudo({
   const esconder = useCallback(() => {
     setToolbar(null);
     setComentEditor(null);
+    setVerbete(null);
   }, []);
 
   useEffect(() => {
     // Não esconder enquanto o campo de nota está aberto: no celular, abrir o
     // teclado dispara scroll/resize e fecharia o campo no exato momento.
     const onScroll = () => {
-      if (comentEditorRef.current !== null) return;
+      if (comentEditorRef.current !== null || verbeteRef.current) return;
       esconder();
     };
     window.addEventListener("scroll", onScroll, true);
@@ -333,6 +374,7 @@ export function AulaConteudo({
     const texto = sel.toString().trim();
     if (!texto || fim <= inicio) return;
     const rect = range.getBoundingClientRect();
+    setVerbete(null);
     setToolbar({
       tipo: "selecao",
       x: rect.left + rect.width / 2,
@@ -412,6 +454,36 @@ export function AulaConteudo({
     esconder();
   }
 
+  // Frase em volta do trecho: é o que faz o dicionário explicar o sentido
+  // usado ALI, e não um sentido qualquer da palavra.
+  function contextoDoTrecho(paragrafo: number, inicio: number, fim: number): string {
+    const p = paragrafos[paragrafo]?.texto ?? "";
+    return p.slice(Math.max(0, inicio - 160), Math.min(p.length, fim + 160));
+  }
+
+  async function consultarSignificado(palavra: string, contexto: string) {
+    setComentEditor(null);
+    setVerbete({ palavra, carregando: true, dados: null, erro: null });
+    try {
+      const res = await fetch(
+        `/api/dicionario?q=${encodeURIComponent(palavra)}&ctx=${encodeURIComponent(contexto)}`
+      );
+      const json = await res.json();
+      if (!res.ok || !json?.ok) {
+        setVerbete({
+          palavra,
+          carregando: false,
+          dados: null,
+          erro: typeof json?.erro === "string" ? json.erro : "Não consegui consultar agora.",
+        });
+        return;
+      }
+      setVerbete({ palavra, carregando: false, dados: json.verbete as Verbete, erro: null });
+    } catch {
+      setVerbete({ palavra, carregando: false, dados: null, erro: "Sem conexão com o dicionário." });
+    }
+  }
+
   function abrirImagem(texto: string) {
     esconder();
     window.getSelection()?.removeAllRanges();
@@ -422,7 +494,7 @@ export function AulaConteudo({
     <>
       <p className="mb-4 flex items-center gap-2 rounded-lg bg-mesa-50 px-3 py-2 text-xs text-mesa-500">
         <span>✨</span>
-        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem. Para desfazer, toque no grifo e escolha “Desmarcar”.
+        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem. Selecionou só uma palavra? Toque em “Significado” pra ver o sentido e os sinônimos. Para desfazer, toque no grifo e escolha “Desmarcar”.
       </p>
 
       {/* Campo de busca de palavras/frases no capítulo */}
@@ -484,6 +556,9 @@ export function AulaConteudo({
         {paragrafos.map((paragrafo, i) => {
           if (ehQuadro(paragrafo.texto)) {
             return <Quadro key={i} bloco={paragrafo.texto} />;
+          }
+          if (ehFigura(paragrafo.texto)) {
+            return <Figura key={i} bloco={paragrafo.texto} />;
           }
           const titulos = faixasDeTitulo(paragrafo.texto);
           const grifos = destaques
@@ -635,7 +710,65 @@ export function AulaConteudo({
           }
           style={toque ? undefined : { left: toolbar.x, top: toolbar.y - 8 }}
         >
-          {comentEditor !== null ? (
+          {verbete ? (
+            <div
+              className={`${toque ? "w-full max-w-md" : "w-72"} rounded-2xl border border-mesa-200 bg-white p-3 shadow-lg`}
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-mesa-800">
+                  📖 {verbete.palavra}
+                </p>
+                <button
+                  onClick={esconder}
+                  aria-label="Fechar"
+                  className="-mr-1 -mt-1 rounded-full px-2 py-0.5 text-sm text-mesa-400 hover:bg-mesa-100"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {verbete.carregando ? (
+                <p className="mt-2 text-xs text-mesa-500">Consultando o dicionário…</p>
+              ) : verbete.erro ? (
+                <p className="mt-2 text-xs text-red-600">{verbete.erro}</p>
+              ) : verbete.dados ? (
+                <>
+                  {verbete.dados.classe && (
+                    <p className="mt-0.5 text-xs italic text-mesa-400">{verbete.dados.classe}</p>
+                  )}
+                  {verbete.dados.significado && (
+                    <p className="mt-2 text-sm leading-relaxed text-mesa-700">
+                      {verbete.dados.significado}
+                    </p>
+                  )}
+                  {verbete.dados.sinonimos.length > 0 && (
+                    <div className="mt-2.5">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-mesa-400">
+                        Sinônimos
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {verbete.dados.sinonimos.map((sin) => (
+                          <span
+                            key={sin}
+                            className="rounded-full bg-mesa-100 px-2 py-0.5 text-xs text-mesa-700"
+                          >
+                            {sin}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {verbete.dados.noTexto && (
+                    <p className="mt-2.5 border-t border-mesa-100 pt-2 text-xs leading-relaxed text-mesa-600">
+                      <span className="font-medium text-mesa-700">No texto: </span>
+                      {verbete.dados.noTexto}
+                    </p>
+                  )}
+                </>
+              ) : null}
+            </div>
+          ) : comentEditor !== null ? (
             <div className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}>
               <textarea
                 autoFocus
@@ -719,6 +852,20 @@ export function AulaConteudo({
                   >
                     💬 Comentar
                   </button>
+                  {selecaoConsultavel(toolbar.texto) && (
+                    <button
+                      onClick={() =>
+                        consultarSignificado(
+                          toolbar.texto,
+                          contextoDoTrecho(toolbar.paragrafo, toolbar.inicio, toolbar.fim)
+                        )
+                      }
+                      title="Significado e sinônimos"
+                      className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
+                    >
+                      📖 Significado
+                    </button>
+                  )}
                   <button
                     onClick={() => abrirImagem(toolbar.texto)}
                     className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
@@ -746,6 +893,21 @@ export function AulaConteudo({
                   >
                     💬 Comentar
                   </button>
+                  {selecaoConsultavel(toolbar.texto) && (
+                    <button
+                      onClick={() => {
+                        const d = destaques.find((x) => x.id === toolbar.id);
+                        consultarSignificado(
+                          toolbar.texto,
+                          d ? contextoDoTrecho(d.paragrafo, d.inicio, d.fim) : ""
+                        );
+                      }}
+                      title="Significado e sinônimos"
+                      className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
+                    >
+                      📖 Significado
+                    </button>
+                  )}
                   <button
                     onClick={() => abrirImagem(toolbar.texto)}
                     className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}

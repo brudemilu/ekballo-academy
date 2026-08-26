@@ -109,6 +109,18 @@ Página [app/admin/youtube/page.tsx](app/admin/youtube/page.tsx) deixa o admin c
 
 **Aviso legal:** copyright e ToS do YouTube são responsabilidade do admin (banner no painel).
 
+### Caderno de anotações (vertente própria do discípulo)
+
+Espaço de escrita livre, separado das reflexões pastorais: anotação de aula, trabalho, ideia, esboço de pregação. **Privado por padrão** — nem o master lê, a menos que o discípulo marque `compartilhada_lider`.
+
+- **Tabela** `anotacoes` (migration `229_anotacoes.sql`): `titulo`, `conteudo_html` (sanitizado), `conteudo_texto` (espelho p/ busca e prévia), `categoria`, `cor`, `tags[]`, `curso_id`/`aula_id` (vínculo opcional com a leitura), `fixada`, `arquivada`, `compartilhada_lider`. RLS: dono faz tudo; admin só faz SELECT do que foi compartilhado.
+- **Rotas**: `/anotacoes` (mural com busca/filtros), `/anotacoes/[id]` (editor), `/anotacoes/imprimir` (folha A4 — `?id=` para uma, filtros para o caderno todo, `&auto=1` abre o diálogo de impressão), `/admin/anotacoes` (o que os discípulos compartilharam, somente leitura). API: `/api/anotacoes` (GET/POST) e `/api/anotacoes/[id]` (GET/PATCH/DELETE).
+- **Editor** ([components/EditorRico.tsx](components/EditorRico.tsx)): contentEditable + `document.execCommand`, **sem dependência nova** (TipTap custaria ~200 kB num app com 7 deps). Título/subtítulo, N/I/S/tachado, marca-texto em 5 cores, listas (marcadores, numerada, tarefas), citação, código, divisor, link, alinhamento, limpar formatação, atalhos (Ctrl+B/I/U/K/S, Ctrl+Shift+X/H) e conversões ao digitar (`## `, `- `, `1. `, `> `, `[] `). Alinhamento e checklist são feitos na mão sobre o DOM — execCommand não cobre. `normalizarEstrutura()` conserta o lixo que o execCommand deixa (`<ul>` dentro de `<p>`, `<li>` sem `data-tarefa`).
+- **Segurança**: todo HTML passa por [lib/sanitizar-html.ts](lib/sanitizar-html.ts) **no servidor** antes de gravar (o cliente é onde está o atacante). O sanitizador RECONSTRÓI a partir de whitelist em vez de remover o que parece perigoso; `<span style="background-color">` vira `<mark data-cor>`. Testado contra 17 vetores (script, onerror, `javascript:` quebrado, svg, iframe).
+- **PDF sem biblioteca**: `/anotacoes/imprimir` é montada como A4 e o navegador gera o arquivo (`window.print()` → "Salvar como PDF"). Regras em `@media print` no [globals.css](app/globals.css); `.nao-imprimir` some do papel; cada anotação começa em página nova. Exporta também `.md`, `.txt`, `.html` e copia pra área de transferência.
+- **Onde aparece**: card no `/dashboard`, atalho fixo no `UserMenu` (todas as páginas do aluno) e o card "Anotações desta mesa" dentro de `/cursos/[slug]/aulas/[aulaId]` (cria a anotação já ligada ao livro e à mesa).
+- **Autosave**: PATCH após 1,2 s de pausa na digitação; rascunho paralelo em `localStorage` que é oferecido de volta se a aba morreu antes de gravar.
+
 ### Tailwind palette
 
 Custom palette in [tailwind.config.ts](tailwind.config.ts): `bege` (warm cream → chocolate), `laranja` (terracotta CTA), `oliveira` (warm olive). `mesa` is a **backwards-compatibility alias for `bege`** — existing pages and components still use `mesa-*` classes heavily. Either prefix works; don't rip out `mesa-*` for cosmetic consistency.

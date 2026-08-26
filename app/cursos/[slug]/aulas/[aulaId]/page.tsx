@@ -8,6 +8,7 @@ import { MarcarConcluida } from "@/components/MarcarConcluida";
 import { AulaConteudo } from "@/components/AulaConteudo";
 import { LeitorMesa } from "@/components/LeitorMesa";
 import { AvaliacaoParach } from "@/components/AvaliacaoParach";
+import { AnotacoesDaMesa } from "@/components/AnotacoesDaMesa";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
   getCurrentSession,
@@ -23,6 +24,8 @@ import {
   jaConcluiu,
   registrarLeitura,
 } from "@/lib/db";
+import { listAnotacoesDaAula } from "@/lib/anotacoes";
+import { podeUsarCaderno } from "@/lib/permissoes";
 
 export default async function AulaPage({
   params,
@@ -54,7 +57,10 @@ export default async function AulaPage({
   // aulasStatus é usado só para navegação (anterior/próxima) e progresso.
   const aulasStatus = await listAulasComStatus(curso.id, session.userId, true);
 
-  const [atividades, respostas, concluida, materialUrl, audioUrl, leituraUrl, destaques] = await Promise.all([
+  const [
+    atividades, respostas, concluida, materialUrl, audioUrl, leituraUrl, destaques,
+    anotacoes,
+  ] = await Promise.all([
     listAtividadesByAula(aulaId),
     listRespostasByAluno(session.userId),
     jaConcluiu(session.userId, aulaId),
@@ -62,7 +68,15 @@ export default async function AulaPage({
     getAudioUrl(aula.audio_url),
     getAudioUrl(aula.audio_leitura_url),
     listDestaquesByAula(session.userId, aulaId),
+    listAnotacoesDaAula(session.userId, aulaId),
   ]);
+
+  // Caderno pessoal: liberado pessoa a pessoa (ver CADERNO_EMAILS).
+  const mostrarCaderno = podeUsarCaderno(
+    session.profile?.papel,
+    session.profile?.is_admin,
+    session.profile?.email ?? session.email,
+  );
 
   const respostasMap = new Map(respostas.map((r) => [r.atividade_id, r]));
   const indiceAtual = aulasStatus.findIndex((a) => a.id === aulaId);
@@ -234,6 +248,17 @@ export default async function AulaPage({
               );
             })}
           </div>
+        )}
+
+        {/* Caderno pessoal desta mesa — privado, separado das reflexões que o
+            líder lê. Fica depois das perguntas, antes da navegação. */}
+        {mostrarCaderno && (
+          <AnotacoesDaMesa
+            anotacoesIniciais={anotacoes}
+            cursoId={curso.id}
+            aulaId={aula.id}
+            tituloSugerido={`Mesa ${rotuloNumeroAula(aula)} — ${aula.titulo}`}
+          />
         )}
 
         <div className="flex flex-col gap-4 border-t border-mesa-200 pt-8 sm:flex-row sm:items-center sm:justify-between">

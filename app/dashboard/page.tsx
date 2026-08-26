@@ -16,8 +16,9 @@ import {
   type ItemLeitura,
 } from "@/components/ContinuandoLeitura";
 import { getDevocionalDoDia } from "@/lib/devocionais";
+import { contarAnotacoes } from "@/lib/anotacoes";
 import { getProximaLicao, getStreak } from "@/lib/english";
-import { podeVerAgenda } from "@/lib/permissoes";
+import { podeVerAgenda, podeUsarCaderno } from "@/lib/permissoes";
 import { agruparPorCategoria } from "@/lib/categorias";
 import { SeloOffline } from "@/components/SeloOffline";
 import { CAPA_LIVRO } from "@/lib/capas";
@@ -56,15 +57,24 @@ export default async function DashboardPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
-  const [todosCursos, matriculas, leituras, devocional, proximaLicao, englishStreak] =
-    await Promise.all([
+  const [
+    todosCursos, matriculas, leituras, devocional, proximaLicao, englishStreak,
+    totalAnotacoes,
+  ] = await Promise.all([
       listCursosPublicados(),
       listMatriculasByAluno(session.userId),
       listProgressoLeitura(session.userId),
       getDevocionalDoDia(),
       getProximaLicao(session.userId),
       getStreak(session.userId),
+      contarAnotacoes(session.userId),
     ]);
+
+  const mostrarCaderno = podeUsarCaderno(
+    session.profile?.papel,
+    session.profile?.is_admin,
+    session.profile?.email ?? session.email,
+  );
 
   const mostrarAgenda = podeVerAgenda(
     session.profile?.papel,
@@ -279,9 +289,35 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {/* Atalhos: agenda + devocional + english (accent bar + botão circular) */}
-        {(mostrarAgenda || devocional || proximaLicao) && (
-          <div className="mb-14 grid gap-5 lg:grid-cols-2">
+        {/* Atalhos: caderno + agenda + devocional + english (accent bar + botão circular) */}
+        <div className="mb-14 grid gap-5 lg:grid-cols-2">
+            {/* Meu caderno — espaço de escrita livre, privado de cada um.
+                Só aparece pra quem tem o caderno liberado. */}
+            {mostrarCaderno && (
+            <Link
+              href="/anotacoes"
+              className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
+            >
+              <span className="absolute inset-y-0 left-0 w-1 bg-mesa-700" aria-hidden />
+              <div className="min-w-0 pl-2">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">
+                  Caderno
+                </p>
+                <h2 className="font-serif text-xl font-semibold text-mesa-900">
+                  ✍️ Minhas anotações
+                </h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-mesa-600">
+                  {totalAnotacoes > 0
+                    ? `${totalAnotacoes} ${totalAnotacoes === 1 ? "anotação guardada" : "anotações guardadas"} — aula, trabalhos e ideias.`
+                    : "Aula, trabalhos, ideias. Escreva, formate e salve em PDF."}
+                </p>
+              </div>
+              <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-mesa-100 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
+                →
+              </span>
+            </Link>
+            )}
+
             {/* Minha agenda (só pra quem tem acesso, ex.: Débora) */}
             {mostrarAgenda && (
               <Link
@@ -363,9 +399,7 @@ export default async function DashboardPage() {
                 </span>
               </Link>
             )}
-          </div>
-        )}
-
+        </div>
 
         <ContinuandoLeitura itens={emLeitura} />
 

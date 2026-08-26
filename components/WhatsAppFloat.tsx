@@ -40,7 +40,7 @@ export function WhatsAppFloat() {
   if (!mostrar) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+    <div className="nao-imprimir fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {aberto && (
         <div className="w-72 origin-bottom-right animate-scale-in rounded-2xl border border-bege-200 bg-white p-4 shadow-2xl shadow-bege-700/20">
           <div className="mb-3 flex items-start gap-3">

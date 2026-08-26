@@ -185,3 +185,218 @@ body {
   font-optical-sizing: none;
   font-variation-settings: "opsz" 24, "wdth" 100;
 }
+
+/* =============================================================
+   CADERNO DE ANOTAÇÕES · prosa do editor e da leitura
+   Mesmas regras valem no contentEditable (enquanto escreve), no card
+   de leitura e na folha de impressão — a anotação precisa sair do
+   papel igualzinha ao que ele viu na tela.
+   Tipografia ABNT: prosa justificada + hifenização pt-BR.
+   ============================================================= */
+.prose-anotacao {
+  line-height: 1.7;
+  font-size: 1.0625rem;
+  color: #262320;              /* greige-800 */
+  word-break: break-word;
+}
+.prose-anotacao p {
+  margin-bottom: 0.9em;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+.prose-anotacao p:last-child { margin-bottom: 0; }
+.prose-anotacao [data-align="center"] { text-align: center; hyphens: manual; }
+.prose-anotacao [data-align="right"]  { text-align: right;  hyphens: manual; }
+.prose-anotacao [data-align="left"]   { text-align: left;   hyphens: manual; }
+.prose-anotacao [data-align="justify"]{ text-align: justify; }
+
+.prose-anotacao h2 {
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #262320;
+  margin: 1.5em 0 0.5em;
+  text-align: left;
+}
+.prose-anotacao h3 {
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #B4320C;              /* terracota */
+  margin: 1.3em 0 0.4em;
+  text-align: left;
+}
+.prose-anotacao h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #635E56;
+  margin: 1.2em 0 0.4em;
+  text-align: left;
+}
+.prose-anotacao h2:first-child,
+.prose-anotacao h3:first-child,
+.prose-anotacao h4:first-child { margin-top: 0; }
+
+.prose-anotacao blockquote {
+  border-left: 3px solid #FF5A2C;
+  padding: 0.1em 0 0.1em 1.1rem;
+  font-style: italic;
+  color: #48433E;
+  margin: 1.2em 0;
+}
+.prose-anotacao ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.9em; }
+.prose-anotacao ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 0.9em; }
+.prose-anotacao li { margin-bottom: 0.3em; text-align: left; }
+.prose-anotacao ul ul { list-style: circle; margin-bottom: 0; }
+.prose-anotacao a {
+  color: #B4320C;
+  text-decoration: underline;
+  text-decoration-color: rgba(180, 50, 12, 0.45);
+}
+.prose-anotacao hr {
+  border: none;
+  border-top: 1px solid #D2CCC2;
+  margin: 1.8em 0;
+}
+.prose-anotacao code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: #F3F0EB;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+.prose-anotacao pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: #F3F0EB;
+  border: 1px solid #E6E1D9;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin: 1.1em 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+.prose-anotacao table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.2em 0;
+  font-size: 0.95em;
+}
+.prose-anotacao th,
+.prose-anotacao td {
+  border: 1px solid #E6E1D9;
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+}
+.prose-anotacao th { background: #F3F0EB; font-weight: 600; }
+
+/* Marca-texto: a cor vem do atributo, não de style inline no HTML salvo. */
+.prose-anotacao mark { border-radius: 3px; padding: 0.05em 0.15em; }
+.prose-anotacao mark[data-cor="amarelo"] { background: #FEF08A; }
+.prose-anotacao mark[data-cor="verde"]   { background: #BBF7D0; }
+.prose-anotacao mark[data-cor="rosa"]    { background: #FBCFE8; }
+.prose-anotacao mark[data-cor="azul"]    { background: #BAE6FD; }
+.prose-anotacao mark[data-cor="laranja"] { background: #FFDECF; }
+
+/* Lista de tarefas — o quadradinho é desenhado aqui; o clique nele é
+   tratado pelo editor (detecção por posição no <li>). */
+.prose-anotacao ul[data-lista="tarefas"] { list-style: none; padding-left: 1.7rem; }
+.prose-anotacao li[data-tarefa] {
+  position: relative;
+  list-style: none;
+}
+.prose-anotacao li[data-tarefa]::before {
+  content: "";
+  position: absolute;
+  left: -1.55rem;
+  top: 0.32em;
+  width: 1.05em;
+  height: 1.05em;
+  border: 1.5px solid #A9A299;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+}
+.prose-anotacao li[data-tarefa="1"]::before {
+  background: #FF5A2C;
+  border-color: #FF5A2C;
+}
+.prose-anotacao li[data-tarefa="1"]::after {
+  content: "✓";
+  position: absolute;
+  left: -1.42rem;
+  top: 0.18em;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+}
+.prose-anotacao li[data-tarefa="1"] { color: #7E786F; text-decoration: line-through; }
+
+/* Densidade menor no card de anotação dentro da mesa */
+.prose-anotacao-compacta { font-size: 1rem; line-height: 1.6; }
+
+/* =============================================================
+   FOLHA DE IMPRESSÃO / PDF  ("Salvar em PDF" = imprimir no navegador)
+   O caderno não depende de biblioteca de PDF: a página /anotacoes/imprimir
+   é montada como papel A4 e o próprio navegador gera o arquivo.
+   ============================================================= */
+.folha-impressao {
+  --margem: 22mm;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm;
+  }
+  html, body {
+    background: #fff !important;
+  }
+  .nao-imprimir { display: none !important; }
+  .folha-impressao {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #fff !important;
+  }
+  .folha-anotacao {
+    break-inside: auto;
+    page-break-inside: auto;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 0 12mm !important;
+    background: #fff !important;
+  }
+  /* Cada anotação começa numa página nova quando são várias. */
+  .folha-anotacao + .folha-anotacao {
+    break-before: page;
+    page-break-before: always;
+  }
+  .prose-anotacao {
+    font-size: 11.5pt;
+    line-height: 1.55;
+    color: #000;
+  }
+  .prose-anotacao h2, .prose-anotacao h3, .prose-anotacao h4 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .prose-anotacao blockquote,
+  .prose-anotacao pre,
+  .prose-anotacao table { break-inside: avoid; page-break-inside: avoid; }
+  .prose-anotacao a { color: #000; text-decoration: underline; }
+  /* Marca-texto e cores precisam do print-color-adjust pra sair no PDF. */
+  .prose-anotacao mark,
+  .cabecalho-folha,
+  .etiqueta-folha {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
