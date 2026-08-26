@@ -27,7 +27,10 @@ import {
   normalizarTags,
   tituloExibido,
   dataHora,
+  DIAS_LIXEIRA,
+  rotuloExpurgo,
   type AnotacaoRich,
+  type PastaAnotacao,
   type CategoriaAnotacao,
   type CorAnotacao,
 } from "@/lib/anotacoes-meta";
@@ -43,10 +46,12 @@ const chaveRascunho = (id: string) => `anotacao:rascunho:${id}`;
 export function AnotacaoEditor({
   anotacao,
   cursos,
+  pastas,
   voltarHref = "/anotacoes",
 }: {
   anotacao: AnotacaoRich;
   cursos: CursoOpcao[];
+  pastas: PastaAnotacao[];
   voltarHref?: string;
 }) {
   const router = useRouter();
@@ -58,6 +63,7 @@ export function AnotacaoEditor({
   const [tags, setTags] = useState<string[]>(anotacao.tags ?? []);
   const [tagDigitando, setTagDigitando] = useState("");
   const [cursoId, setCursoId] = useState(anotacao.curso_id ?? "");
+  const [pastaId, setPastaId] = useState(anotacao.pasta_id ?? "");
   const [fixada, setFixada] = useState(anotacao.fixada);
   const [arquivada, setArquivada] = useState(anotacao.arquivada);
 
@@ -78,6 +84,7 @@ export function AnotacaoEditor({
     cor: anotacao.cor as string,
     tags: (anotacao.tags ?? []).join(","),
     cursoId: anotacao.curso_id ?? "",
+    pastaId: anotacao.pasta_id ?? "",
     fixada: anotacao.fixada,
     arquivada: anotacao.arquivada,
   });
@@ -138,6 +145,7 @@ export function AnotacaoEditor({
         cor: cor as string,
         tags: tags.join(","),
         cursoId,
+        pastaId,
         fixada,
         arquivada,
       };
@@ -160,6 +168,7 @@ export function AnotacaoEditor({
             cor,
             tags,
             curso_id: cursoId || null,
+            pasta_id: pastaId || null,
             fixada,
             arquivada,
             ...extra,
@@ -179,7 +188,7 @@ export function AnotacaoEditor({
       }
     },
     [
-      anotacao.id, titulo, categoria, cor, tags, cursoId,
+      anotacao.id, titulo, categoria, cor, tags, cursoId, pastaId,
       fixada, arquivada, router,
     ],
   );
@@ -303,6 +312,7 @@ ${html}</body></html>`;
         cor,
         tags,
         curso_id: cursoId || null,
+        pasta_id: pastaId || null,
         aula_id: anotacao.aula_id,
       }),
     });
@@ -312,6 +322,7 @@ ${html}</body></html>`;
     }
   }
 
+  // "Excluir" manda pra lixeira; de lá dá pra restaurar por DIAS_LIXEIRA dias.
   async function excluir() {
     const res = await fetch(`/api/anotacoes/${anotacao.id}`, { method: "DELETE" });
     if (res.ok) {
@@ -323,6 +334,15 @@ ${html}</body></html>`;
       router.push("/anotacoes");
       router.refresh();
     }
+  }
+
+  async function restaurar() {
+    await fetch(`/api/anotacoes/${anotacao.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ restaurar: true }),
+    });
+    router.refresh();
   }
 
   function adicionarTag(bruto: string) {
@@ -448,6 +468,20 @@ ${html}</body></html>`;
             </button>
           </div>
         </div>
+
+        {anotacao.excluida_em && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-erro-200 bg-erro-50 px-4 py-3">
+            <p className="text-sm text-erro-600">
+              Esta anotação está na lixeira — {rotuloExpurgo(anotacao.excluida_em)}.
+            </p>
+            <button
+              onClick={restaurar}
+              className="rounded-full bg-erro-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-erro-600"
+            >
+              ↩ Restaurar
+            </button>
+          </div>
+        )}
 
         {avisoRascunho && (
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-laranja-200 bg-laranja-50 px-4 py-3">
@@ -629,6 +663,29 @@ ${html}</body></html>`;
                 </select>
               </Bloco>
 
+              <Bloco titulo="Pasta">
+                <select
+                  value={pastaId}
+                  onChange={(e) => {
+                    setPastaId(e.target.value);
+                    marcarPendente();
+                  }}
+                  className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-xs text-mesa-700 outline-none focus:border-laranja-400"
+                >
+                  <option value="">Sem pasta</option>
+                  {pastas.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome}
+                    </option>
+                  ))}
+                </select>
+                {pastas.length === 0 && (
+                  <p className="mt-2 text-[11px] leading-relaxed text-mesa-400">
+                    Crie pastas no caderno para agrupar por curso ou assunto.
+                  </p>
+                )}
+              </Bloco>
+
               <Bloco titulo="Organização">
                 <button
                   onClick={() => {
@@ -647,8 +704,9 @@ ${html}</body></html>`;
                 </button>
                 {confirmarExclusao ? (
                   <div className="rounded-lg border border-erro-200 bg-erro-50 p-2.5">
-                    <p className="mb-2 text-xs text-erro-600">
-                      Excluir de vez? Não dá para desfazer.
+                    <p className="mb-2 text-xs leading-relaxed text-erro-600">
+                      Mandar para a lixeira? Fica {DIAS_LIXEIRA} dias lá, dá para
+                      restaurar.
                     </p>
                     <div className="flex gap-2">
                       <button
@@ -668,6 +726,7 @@ ${html}</body></html>`;
                 ) : (
                   <button
                     onClick={() => setConfirmarExclusao(true)}
+                    title={`Vai para a lixeira e some sozinha em ${DIAS_LIXEIRA} dias`}
                     className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-xs font-medium text-erro-500 hover:bg-erro-50"
                   >
                     🗑 Excluir

@@ -5,6 +5,8 @@ import {
   getAnotacao,
   atualizarAnotacao,
   excluirAnotacao,
+  moverParaLixeira,
+  restaurarAnotacao,
   type EntradaAnotacao,
 } from "@/lib/anotacoes";
 
@@ -39,11 +41,20 @@ export async function PATCH(req: Request, { params }: Ctx) {
   }
   const { id } = await params;
 
-  let corpo: EntradaAnotacao;
+  let corpo: EntradaAnotacao & { restaurar?: boolean };
   try {
-    corpo = (await req.json()) as EntradaAnotacao;
+    corpo = (await req.json()) as EntradaAnotacao & { restaurar?: boolean };
   } catch {
     return NextResponse.json({ ok: false, erro: "corpo inválido" }, { status: 400 });
+  }
+
+  // Tirar da lixeira é um PATCH à parte: `excluida_em` não é campo editável
+  // pelo cliente (senão daria pra forjar a data do expurgo).
+  if (corpo.restaurar) {
+    const ok = await restaurarAnotacao(id, session.userId);
+    if (!ok) {
+      return NextResponse.json({ ok: false, erro: "não encontrada" }, { status: 404 });
+    }
   }
 
   const anotacao = await atualizarAnotacao(id, session.userId, corpo);
@@ -53,7 +64,9 @@ export async function PATCH(req: Request, { params }: Ctx) {
   return NextResponse.json({ ok: true, anotacao });
 }
 
-export async function DELETE(_req: Request, { params }: Ctx) {
+// Excluir = mover pra lixeira (recuperável por 30 dias).
+// `?definitivo=1` apaga de verdade — só do botão dentro da lixeira.
+export async function DELETE(req: Request, { params }: Ctx) {
   const session = await getCurrentSession();
   if (!session) {
     return NextResponse.json({ ok: false, erro: "não autenticado" }, { status: 401 });
@@ -62,9 +75,12 @@ export async function DELETE(_req: Request, { params }: Ctx) {
     return NextResponse.json({ ok: false, erro: "sem acesso ao caderno" }, { status: 403 });
   }
   const { id } = await params;
-  const ok = await excluirAnotacao(id, session.userId);
+  const definitivo = new URL(req.url).searchParams.get("definitivo") === "1";
+  const ok = definitivo
+    ? await excluirAnotacao(id, session.userId)
+    : await moverParaLixeira(id, session.userId);
   if (!ok) {
     return NextResponse.json({ ok: false, erro: "não encontrada" }, { status: 404 });
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, definitivo });
 }

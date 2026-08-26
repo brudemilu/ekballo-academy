@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { BotaoImprimir } from "@/components/BotaoImprimir";
 import { podeUsarCaderno } from "@/lib/permissoes";
 import { getCurrentSession } from "@/lib/db";
-import { listAnotacoes, getAnotacao } from "@/lib/anotacoes";
+import { listAnotacoes, getAnotacao, listPastas } from "@/lib/anotacoes";
 import { sanitizarHtml } from "@/lib/sanitizar-html";
 import {
   CATEGORIA_MAP,
@@ -42,6 +42,7 @@ export default async function ImprimirPage({
   const categoria = um("categoria");
   const curso = um("curso");
   const tag = um("tag");
+  const pasta = um("pasta");
   const arquivadas = um("arquivadas") === "1";
   const auto = um("auto") === "1";
 
@@ -58,9 +59,16 @@ export default async function ImprimirPage({
       (a) =>
         a.arquivada === arquivadas &&
         (!categoria || a.categoria === categoria) &&
+        (!pasta || a.pasta_id === pasta) &&
         (!tag || (a.tags ?? []).includes(tag)),
     );
   }
+
+  // Nome da pasta vem da lista de pastas, não do join da anotação: assim o
+  // cabeçalho continua certo mesmo numa pasta que ficou sem anotações.
+  const pastaNome = pasta
+    ? (await listPastas(session.userId)).find((p) => p.id === pasta)?.nome ?? null
+    : null;
 
   const umaSo = anotacoes.length === 1 && !!id;
   const autor = session.profile?.nome || session.profile?.email || session.email;
@@ -91,13 +99,16 @@ export default async function ImprimirPage({
               Ekballo Academy · Caderno de anotações
             </p>
             <h1 className="mt-2 font-serif text-3xl font-semibold text-mesa-900">
-              {categoria
-                ? `Anotações · ${CATEGORIA_MAP.get(categoria as never)?.rotulo ?? categoria}`
-                : arquivadas
-                  ? "Anotações arquivadas"
-                  : "Meu caderno"}
+              {pastaNome
+                ? pastaNome
+                : categoria
+                  ? `Anotações · ${CATEGORIA_MAP.get(categoria as never)?.rotulo ?? categoria}`
+                  : arquivadas
+                    ? "Anotações arquivadas"
+                    : "Meu caderno"}
             </h1>
             <p className="mt-2 text-sm text-mesa-600">
+              {pastaNome ? "📁 pasta · " : ""}
               {autor} · {anotacoes.length}{" "}
               {anotacoes.length === 1 ? "anotação" : "anotações"} · gerado em{" "}
               {dataLonga(new Date().toISOString())}
@@ -121,6 +132,7 @@ export default async function ImprimirPage({
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-mesa-500">
                     {cat?.emoji} {cat?.rotulo}
+                    {a.pasta_nome ? ` · 📁 ${a.pasta_nome}` : ""}
                     {a.curso_titulo ? ` · ${a.curso_titulo}` : ""}
                     {a.aula_titulo ? ` · ${a.aula_titulo}` : ""}
                   </p>

@@ -9,7 +9,7 @@ import {
   listCursosPublicados,
   listMatriculasByAluno,
 } from "@/lib/db";
-import { listAnotacoes } from "@/lib/anotacoes";
+import { listAnotacoes, listPastas } from "@/lib/anotacoes";
 
 export const metadata = {
   title: "Meu caderno — Ekballo Academy",
@@ -25,10 +25,12 @@ export default async function AnotacoesPage() {
     redirect("/dashboard");
   }
 
-  const [anotacoes, todosCursos, matriculas] = await Promise.all([
-    // Traz arquivadas junto: o mural alterna entre ativas e arquivadas sem
-    // ida extra ao servidor.
+  const [anotacoes, lixeira, pastas, todosCursos, matriculas] = await Promise.all([
+    // Traz arquivadas junto: o mural alterna entre pastas, arquivo e lixeira
+    // sem ida extra ao servidor.
     listAnotacoes(session.userId, { incluirArquivadas: true }),
+    listAnotacoes(session.userId, { incluirArquivadas: true, lixeira: true }),
+    listPastas(session.userId),
     listCursosPublicados(),
     listMatriculasByAluno(session.userId),
   ]);
@@ -68,8 +70,8 @@ export default async function AnotacoesPage() {
             </h1>
             <p className="mt-5 text-lg leading-relaxed text-mesa-600">
               O que você ouviu na aula, o trabalho que precisa entregar, a ideia que
-              apareceu no meio da leitura. Escreva, formate, salve em PDF — e nada
-              disso é visto por ninguém, a não ser que você compartilhe.
+              apareceu no meio da leitura. Organize em pastas, formate o texto,
+              salve em PDF — e nada disso é visto por mais ninguém.
             </p>
           </div>
           <Link
@@ -80,7 +82,12 @@ export default async function AnotacoesPage() {
           </Link>
         </div>
 
-        <ListaAnotacoes anotacoes={anotacoes} cursos={cursos} />
+        <ListaAnotacoes
+          anotacoes={anotacoes}
+          lixeira={lixeira}
+          pastas={pastas}
+          cursos={cursos}
+        />
       </div>
     </main>
   );

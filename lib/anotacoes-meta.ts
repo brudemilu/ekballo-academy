@@ -17,6 +17,19 @@ export type CategoriaAnotacao =
 
 export type CorAnotacao = "areia" | "terracota" | "oliva" | "azul" | "rosa" | "roxo";
 
+export type PastaAnotacao = {
+  id: string;
+  aluno_id: string;
+  nome: string;
+  cor: CorAnotacao;
+  ordem: number;
+  criado_em: string;
+  atualizado_em: string;
+};
+
+// Pasta com quantas anotações vivas ela guarda (a barra lateral mostra).
+export type PastaComContagem = PastaAnotacao & { total: number };
+
 export type Anotacao = {
   id: string;
   aluno_id: string;
@@ -28,8 +41,11 @@ export type Anotacao = {
   tags: string[];
   curso_id: string | null;
   aula_id: string | null;
+  pasta_id: string | null;
   fixada: boolean;
   arquivada: boolean;
+  // Carimbo da ida pra lixeira. null = anotação viva.
+  excluida_em: string | null;
   criado_em: string;
   atualizado_em: string;
 };
@@ -39,7 +55,31 @@ export type AnotacaoRich = Anotacao & {
   curso_titulo?: string | null;
   curso_slug?: string | null;
   aula_titulo?: string | null;
+  pasta_nome?: string | null;
 };
+
+// -------- Lixeira --------
+
+/** Dias que a anotação excluída fica recuperável antes do expurgo. */
+export const DIAS_LIXEIRA = 30;
+
+/**
+ * Quantos dias faltam pra anotação sumir de vez. Zero significa "hoje" —
+ * o job de expurgo roda de madrugada, então ainda dá pra restaurar.
+ */
+export function diasAteExpurgo(excluidaEm: string): number {
+  const t = Date.parse(excluidaEm);
+  if (Number.isNaN(t)) return DIAS_LIXEIRA;
+  const passados = (Date.now() - t) / 86_400_000;
+  return Math.max(0, Math.ceil(DIAS_LIXEIRA - passados));
+}
+
+export function rotuloExpurgo(excluidaEm: string): string {
+  const dias = diasAteExpurgo(excluidaEm);
+  if (dias === 0) return "some hoje";
+  if (dias === 1) return "some amanhã";
+  return `some em ${dias} dias`;
+}
 
 export const CATEGORIAS: {
   chave: CategoriaAnotacao;
