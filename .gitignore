@@ -60,3 +60,7 @@ supabase/.temp
 # livro) — por isso o ignore é por caminho, não a pasta tmp/ inteira.
 tmp/pdfs/
 tmp/english-audio.sql
+
+# Python (scripts de extração)
+__pycache__/
+*.pyc
