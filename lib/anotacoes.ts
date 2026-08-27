@@ -318,6 +318,15 @@ export async function restaurarAnotacao(id: string, alunoId: string): Promise<bo
 
 /** Apaga de verdade — sem volta. Só do botão explícito dentro da lixeira. */
 export async function excluirAnotacao(id: string, alunoId: string): Promise<boolean> {
+  // Os arquivos anexados precisam sair antes: a linha da tabela cai por
+  // cascade, mas o binário no bucket ficaria ocupando espaço para sempre.
+  try {
+    const { excluirAnexosDaAnotacao } = await import("@/lib/anotacoes-anexos");
+    await excluirAnexosDaAnotacao(id, alunoId);
+  } catch (e) {
+    console.error("[anotacoes] limpar anexos:", (e as Error).message);
+  }
+
   if (isMockMode()) {
     const i = MOCK_ANOTACOES.findIndex((a) => a.id === id && a.aluno_id === alunoId);
     if (i === -1) return false;
@@ -339,6 +348,15 @@ export async function excluirAnotacao(id: string, alunoId: string): Promise<bool
 
 /** Esvazia a lixeira inteira do aluno. Devolve quantas foram apagadas. */
 export async function esvaziarLixeira(alunoId: string): Promise<number> {
+  // Mesma limpeza da exclusão individual, para cada anotação da lixeira.
+  try {
+    const naLixeira = await listAnotacoes(alunoId, { lixeira: true, incluirArquivadas: true });
+    const { excluirAnexosDaAnotacao } = await import("@/lib/anotacoes-anexos");
+    for (const a of naLixeira) await excluirAnexosDaAnotacao(a.id, alunoId);
+  } catch (e) {
+    console.error("[anotacoes] limpar anexos da lixeira:", (e as Error).message);
+  }
+
   if (isMockMode()) {
     const alvos = MOCK_ANOTACOES.filter((a) => a.aluno_id === alunoId && a.excluida_em);
     for (const a of alvos) {

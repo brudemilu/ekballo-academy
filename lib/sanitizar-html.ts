@@ -23,6 +23,7 @@ const TAGS_PERMITIDAS = new Set([
   "table", "thead", "tbody", "tr", "th", "td",
   "span", // só sobrevive quando é marca-texto (vira <mark>); senão desembrulha
   "a",
+  "img",  // apenas anexos da própria pessoa — ver `srcDeAnexo` abaixo
 ]);
 
 // Tags cujo CONTEÚDO também precisa morrer (não basta tirar a tag).
@@ -32,7 +33,18 @@ const TAGS_LETAIS = new Set([
 ]);
 
 // Tags vazias (sem fechamento).
-const TAGS_VAZIAS = new Set(["br", "hr"]);
+const TAGS_VAZIAS = new Set(["br", "hr", "img"]);
+
+// Imagem só é aceita quando aponta para o endereço interno do anexo
+// (/api/anotacoes/anexos/{id}/arquivo). Assim não entra imagem de fora —
+// que vazaria o IP de quem lê para um servidor alheio — nem data: URI, que
+// engordaria a anotação em megabytes.
+const RE_SRC_ANEXO = /^\/api\/anotacoes\/anexos\/[0-9a-zA-Z-]{1,64}\/arquivo$/;
+
+function srcDeAnexo(src: string): string | null {
+  const limpo = src.trim();
+  return RE_SRC_ANEXO.test(limpo) ? limpo : null;
+}
 
 // Blocos: usados pra saber onde quebrar linha ao converter em texto puro.
 const TAGS_BLOCO = new Set([
@@ -134,6 +146,14 @@ function atributosPermitidos(tag: string, attrs: Atributos): string {
     saida.push(`href="${escaparAtributo(href)}"`);
     // Abrir fora não pode dar acesso ao window da plataforma.
     saida.push('target="_blank"', 'rel="noopener noreferrer nofollow"');
+  }
+
+  if (tag === "img") {
+    const src = srcDeAnexo(attrs.src || "");
+    if (!src) return ""; // imagem de fora: descartada junto com a tag
+    saida.push(`src="${escaparAtributo(src)}"`);
+    saida.push(`alt="${escaparAtributo((attrs.alt || "Anexo").slice(0, 200))}"`);
+    saida.push('loading="lazy"');
   }
 
   if (tag === "mark") {
@@ -277,6 +297,10 @@ export function sanitizarHtml(bruto: string, maxBytes = 400_000): string {
     }
 
     const attrsOk = atributosPermitidos(tag, attrs);
+    if (tag === "img" && !attrsOk) {
+      i = fecha + 1; // imagem sem origem confiável: descartada
+      continue;
+    }
     if (tag === "a" && !attrsOk) {
       if (!autoFechada) pilha.push("__drop__"); // link inseguro: fica só o texto
       i = fecha + 1;

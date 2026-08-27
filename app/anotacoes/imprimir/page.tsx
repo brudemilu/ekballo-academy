@@ -5,6 +5,7 @@ import { podeUsarCaderno } from "@/lib/permissoes";
 import { getCurrentSession } from "@/lib/db";
 import { listAnotacoes, getAnotacao, listPastas } from "@/lib/anotacoes";
 import { sanitizarHtml } from "@/lib/sanitizar-html";
+import { listAnexos, tamanhoLegivel } from "@/lib/anotacoes-anexos";
 import {
   CATEGORIA_MAP,
   CORES,
@@ -69,6 +70,16 @@ export default async function ImprimirPage({
   const pastaNome = pasta
     ? (await listPastas(session.userId)).find((p) => p.id === pasta)?.nome ?? null
     : null;
+
+  // Anexos de cada anotação: no papel viram uma lista no rodapé — o arquivo
+  // não cabe na folha, mas quem lê precisa saber que ele existe.
+  const anexosPorAnotacao = new Map(
+    await Promise.all(
+      anotacoes.map(
+        async (a) => [a.id, await listAnexos(a.id, session.userId)] as const,
+      ),
+    ),
+  );
 
   const umaSo = anotacoes.length === 1 && !!id;
   const autor = session.profile?.nome || session.profile?.email || session.email;
@@ -152,6 +163,24 @@ export default async function ImprimirPage({
                   className="prose-anotacao"
                   dangerouslySetInnerHTML={{ __html: sanitizarHtml(a.conteudo_html) }}
                 />
+
+                {(anexosPorAnotacao.get(a.id)?.length ?? 0) > 0 && (
+                  <div className="mt-6 border-t border-mesa-200 pt-3">
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-mesa-500">
+                      Anexos
+                    </p>
+                    <ul className="text-xs text-mesa-600">
+                      {anexosPorAnotacao.get(a.id)!.map((anexo) => (
+                        <li key={anexo.id}>
+                          📎 {anexo.nome}{" "}
+                          <span className="text-mesa-400">
+                            ({tamanhoLegivel(anexo.tamanho)})
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </article>
             );
           })

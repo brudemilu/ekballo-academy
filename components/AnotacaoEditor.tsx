@@ -17,6 +17,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EditorRico, type EditorApi } from "@/components/EditorRico";
 import { BuscaBiblia } from "@/components/BuscaBiblia";
+import { AnexosAnotacao } from "@/components/AnexosAnotacao";
+import type { Anexo } from "@/lib/anexos-meta";
 import { htmlParaTexto, contarPalavras } from "@/lib/sanitizar-html";
 import {
   CATEGORIAS,
@@ -49,12 +51,14 @@ export function AnotacaoEditor({
   cursos,
   pastas,
   versoesBiblia = [],
+  anexos = [],
   voltarHref = "/anotacoes",
 }: {
   anotacao: AnotacaoRich;
   cursos: CursoOpcao[];
   pastas: PastaAnotacao[];
   versoesBiblia?: { sigla: string; nome: string }[];
+  anexos?: Anexo[];
   voltarHref?: string;
 }) {
   const router = useRouter();
@@ -588,6 +592,15 @@ ${html}</body></html>`;
           {/* ---- Coluna dos metadados ---- */}
           {!foco && (
             <aside className="space-y-5">
+              <Bloco titulo="Anexos">
+                <AnexosAnotacao
+                  anotacaoId={anotacao.id}
+                  alunoId={anotacao.aluno_id}
+                  anexosIniciais={anexos}
+                  onInserirNoTexto={(html) => editorApi.current?.inserirHtml(html)}
+                />
+              </Bloco>
+
               <Bloco titulo="Bíblia">
                 <BuscaBiblia
                   versoes={versoesBiblia}
