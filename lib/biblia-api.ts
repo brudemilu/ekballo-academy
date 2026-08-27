@@ -65,3 +65,52 @@ export async function fetchCapituloViaApi(
     .filter((v) => v.versiculo > 0 && v.texto.length > 0)
     .sort((a, b) => a.versiculo - b.versiculo);
 }
+
+// ---- Busca por palavra nas versões que não estão no banco ----
+// A mesma fonte que serve os capítulos também procura texto
+// (`/find/{sigla}/?search=`). Consulta sob demanda: nada do texto dessas
+// traduções é copiado para o nosso banco — só a ACF (domínio público) mora
+// aqui. É o mesmo padrão de uso já adotado pelo leitor.
+type BollsAchado = {
+  pk?: number;
+  translation?: string;
+  book?: number;
+  chapter?: number;
+  verse?: number;
+  text?: string;
+};
+
+export async function buscarViaApi(
+  siglaBolls: string,
+  termo: string,
+  limite = 40,
+): Promise<{ livro_id: number; capitulo: number; versiculo: number; texto: string }[]> {
+  const url = `${API_BASE}/find/${encodeURIComponent(siglaBolls)}/?search=${encodeURIComponent(termo)}`;
+  try {
+    const resp = await fetch(url, {
+      // Mesma busca repetida (o discípulo digitando devagar) não precisa
+      // bater na fonte toda vez.
+      next: { revalidate: 60 * 60 * 6 },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) {
+      console.error(`bolls busca erro ${resp.status}`, url);
+      return [];
+    }
+    const data = (await resp.json()) as BollsAchado[];
+    if (!Array.isArray(data)) return [];
+    return data
+      .map((v) => ({
+        livro_id: v.book ?? 0,
+        capitulo: v.chapter ?? 0,
+        versiculo: v.verse ?? 0,
+        texto: stripHtml(v.text || ""),
+      }))
+      .filter((v) => v.livro_id > 0 && v.capitulo > 0 && v.versiculo > 0 && v.texto)
+      .slice(0, limite);
+  } catch (e) {
+    // Fonte fora do ar ou lenta: a busca devolve vazio, não derruba a página.
+    console.error("bolls busca falhou:", (e as Error).message);
+    return [];
+  }
+}

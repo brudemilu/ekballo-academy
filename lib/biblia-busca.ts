@@ -10,7 +10,6 @@ import { createClient } from "@/lib/supabase/server";
 import { isMockMode } from "@/lib/mock-data";
 import {
   listLivros,
-  getVersiculos,
   getCapitulo,
   VERSAO_PADRAO,
   type BibliaLivro,
@@ -36,26 +35,66 @@ export type ResultadoBusca = {
 };
 
 /**
- * Versões que dá pra PESQUISAR — não é o mesmo conjunto das versões que dá
- * pra LER. O leitor da Bíblia busca capítulo a capítulo numa API externa
- * quando a versão não está no banco (`fonte_api_sigla`), mas procurar uma
- * palavra exige o texto inteiro aqui dentro. Hoje só a ACF está: as demais
- * apareciam no seletor e devolviam zero resultado para qualquer palavra —
- * inclusive "Deus".
+ * Ordem de preferência do Bruno (ago/2026). O que estiver aqui aparece
+ * primeiro no seletor, e a primeira disponível é a versão padrão da busca.
+ */
+export const VERSOES_PRIORITARIAS = ["NVT", "NAA", "NVI"];
+
+/**
+ * Versões pesquisáveis, já na ordem de prioridade.
+ *
+ * Há dois caminhos, e é isso que decide qual:
+ *  - ACF mora no banco (domínio público, migration 018) → full-text local,
+ *    instantâneo e sem depender de ninguém.
+ *  - NVT, NAA, NVI e as demais são consultadas na fonte externa a cada
+ *    busca, do mesmo jeito que o leitor já faz com os capítulos. O texto
+ *    delas NÃO é copiado para o nosso banco.
  */
 export async function listVersoesComBusca(): Promise<string[]> {
   if (isMockMode()) return [VERSAO_PADRAO];
+
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("biblia_versiculos")
-    .select("versao")
-    .limit(2000);
-  if (error) {
-    console.error("[biblia-busca] listVersoesComBusca:", error.message);
-    return [VERSAO_PADRAO];
-  }
-  const siglas = new Set((data || []).map((l) => (l as { versao: string }).versao));
-  return siglas.size > 0 ? [...siglas] : [VERSAO_PADRAO];
+
+  const [{ data: locais }, { data: versoes }] = await Promise.all([
+    supabase.from("biblia_versiculos").select("versao").limit(2000),
+    supabase
+      .from("biblia_versoes")
+      .select("sigla, fonte_api_sigla, ativa")
+      .eq("ativa", true),
+  ]);
+
+  const comTextoLocal = new Set(
+    (locais || []).map((l) => (l as { versao: string }).versao),
+  );
+  const comFonteExterna = (versoes || [])
+    .filter((v) => (v as { fonte_api_sigla: string | null }).fonte_api_sigla)
+    .map((v) => (v as { sigla: string }).sigla);
+
+  const todas = [...new Set([...comTextoLocal, ...comFonteExterna])];
+  if (todas.length === 0) return [VERSAO_PADRAO];
+
+  // Prioritárias primeiro, na ordem pedida; o resto em seguida.
+  return todas.sort((a, b) => {
+    const ia = VERSOES_PRIORITARIAS.indexOf(a);
+    const ib = VERSOES_PRIORITARIAS.indexOf(b);
+    if (ia !== -1 || ib !== -1) {
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    }
+    return a.localeCompare(b);
+  });
+}
+
+/** Sigla da versão na fonte externa (NVI → NVIPT), ou null se é local. */
+async function siglaExterna(versao: string): Promise<string | null> {
+  if (isMockMode()) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("biblia_versoes")
+    .select("fonte_api_sigla, ativa")
+    .eq("sigla", versao)
+    .maybeSingle();
+  const row = data as { fonte_api_sigla: string | null; ativa: boolean } | null;
+  return row?.ativa ? row.fonte_api_sigla : null;
 }
 
 // Tira acento e caixa para comparar "João" com "joao".
@@ -185,11 +224,12 @@ export async function buscarNaBiblia(
     const achados: AchadoBiblia[] = [];
     if (ref.de) {
       const ate = ref.ate && ref.ate >= ref.de ? Math.min(ref.ate, ref.de + 30) : ref.de;
-      const alvos = [];
-      for (let v = ref.de; v <= ate; v++) {
-        alvos.push({ livro_id: ref.livro.id, capitulo: ref.capitulo, versiculo: v });
-      }
-      const versiculos = await getVersiculos(alvos, versao);
+      // `getCapitulo` conhece o caminho das duas fontes (banco e externa);
+      // `getVersiculos` só olha o banco, e por isso não servia para NVT/NAA/NVI.
+      const doCapitulo = await getCapitulo(ref.livro.id, ref.capitulo, versao);
+      const versiculos = doCapitulo.filter(
+        (v) => v.versiculo >= (ref.de as number) && v.versiculo <= ate,
+      );
       achados.push(
         ...versiculos.map((v) => ({
           livro_id: v.livro_id,
@@ -230,6 +270,31 @@ export async function buscarNaBiblia(
   // ---- 2) Palavra ou frase ----
   if (isMockMode()) {
     return { tipo: "texto", versao, aviso, achados: await buscarTextoMock(limpo, versao) };
+  }
+
+  // Versão que vem de fora não tem índice aqui: a busca é encaminhada à
+  // mesma fonte que serve os capítulos dela.
+  const externa = await siglaExterna(versao);
+  if (externa) {
+    const { buscarViaApi } = await import("@/lib/biblia-api");
+    const brutos = await buscarViaApi(externa, limpo, limite);
+    const porId = new Map(livros.map((l) => [l.id, l]));
+    return {
+      tipo: "texto",
+      versao,
+      aviso:
+        brutos.length === 0
+          ? "Nada encontrado nesta versão. Ela é consultada na fonte externa — se estiver fora do ar, tente a ACF."
+          : aviso,
+      achados: brutos.map((v) => ({
+        livro_id: v.livro_id,
+        livro_nome: porId.get(v.livro_id)?.nome ?? `Livro ${v.livro_id}`,
+        livro_abrev: porId.get(v.livro_id)?.abrev ?? "",
+        capitulo: v.capitulo,
+        versiculo: v.versiculo,
+        texto: v.texto,
+      })),
+    };
   }
 
   const supabase = await createClient();

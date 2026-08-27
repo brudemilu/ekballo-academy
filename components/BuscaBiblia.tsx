@@ -37,18 +37,21 @@ const ESPERA_BUSCA = 350; // ms parado antes de consultar o servidor
 
 export function BuscaBiblia({
   versoes,
-  versaoInicial = "ACF",
+  versaoInicial,
   onInserir,
   compacto = false,
 }: {
   versoes: { sigla: string; nome: string }[];
+  /** Sem isto, vale a primeira da lista — que vem na ordem de prioridade. */
   versaoInicial?: string;
   /** Quando existe, cada resultado ganha um botão que joga o texto na anotação. */
   onInserir?: (html: string) => void;
   compacto?: boolean;
 }) {
   const [termo, setTermo] = useState("");
-  const [versao, setVersao] = useState(versaoInicial);
+  const [versao, setVersao] = useState(
+    versaoInicial ?? versoes[0]?.sigla ?? "ACF",
+  );
   const [resultado, setResultado] = useState<Resposta | null>(null);
   const [buscando, setBuscando] = useState(false);
   const [copiado, setCopiado] = useState<string | null>(null);

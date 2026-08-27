@@ -65,8 +65,11 @@ export default async function AnotacaoPage({
           anotacao={anotacao}
           cursos={cursos}
           pastas={pastas}
-          versoesBiblia={versoes
-            .filter((v) => versoesComBusca.includes(v.sigla))
+          // `versoesComBusca` já vem na ordem de prioridade (NVT, NAA, NVI…);
+          // é ela quem manda, não a ordem do leitor.
+          versoesBiblia={versoesComBusca
+            .map((sigla) => versoes.find((v) => v.sigla === sigla))
+            .filter((v): v is (typeof versoes)[number] => !!v)
             .map((v) => ({ sigla: v.sigla, nome: v.nome }))}
         />
       </div>
