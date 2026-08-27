@@ -87,15 +87,6 @@ const PRESETS: { valor: number; rotulo: string }[] = [
   { valor: 2.4, rotulo: "Bem espaçado" },
 ];
 
-const K_ESPACO = "anotacao:entrelinhas";
-// Valor antigo (compacto/normal/amplo), de antes do controle numérico.
-const K_ESPACO_ANTIGO = "anotacao:espacamento";
-const EQUIVALENTE: Record<string, number> = {
-  compacto: 1.4,
-  normal: 1.78,
-  amplo: 2.1,
-};
-
 function arredondar(v: number): number {
   return Math.round(v * 10) / 10;
 }
@@ -171,30 +162,41 @@ export function EditorRico({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Espaçamento entre linhas é preferência de leitura: vale pra todas as
-  // anotações, então mora no localStorage e não no banco.
-  useEffect(() => {
-    try {
-      const salvo = parseFloat(localStorage.getItem(K_ESPACO) || "");
-      if (Number.isFinite(salvo)) {
-        setEntrelinhas(limitar(salvo));
-        return;
-      }
-      // Quem já tinha escolhido "compacto/normal/amplo" antes do controle
-      // numérico não pode perder a preferência.
-      const antigo = localStorage.getItem(K_ESPACO_ANTIGO);
-      if (antigo && EQUIVALENTE[antigo]) setEntrelinhas(EQUIVALENTE[antigo]);
-    } catch {
-      // aba anônima: fica no padrão
+  /** Blocos tocados pela seleção; sem seleção, o bloco onde está o cursor. */
+  function blocosAlvo(area: HTMLElement): HTMLElement[] {
+    const sel = window.getSelection();
+    const todos = Array.from(
+      area.querySelectorAll<HTMLElement>("p, h2, h3, h4, blockquote, pre, li"),
+    );
+    if (!sel || sel.rangeCount === 0) return [];
+    const range = sel.getRangeAt(0);
+    if (sel.isCollapsed) {
+      const bloco = blocoAtual(area);
+      return bloco ? [bloco] : [];
     }
-  }, []);
+    const tocados = todos.filter((b) => range.intersectsNode(b));
+    return tocados.length ? tocados : todos;
+  }
 
-  function trocarEntrelinhas(novo: number) {
+  /**
+   * Espaçamento é formatação de texto, não configuração da tela: aplica no
+   * trecho selecionado (ou no parágrafo onde o cursor está), como negrito.
+   * `tudo` é o atalho explícito do menu para valer no documento inteiro.
+   */
+  function trocarEntrelinhas(novo: number, tudo = false) {
     const valor = limitar(novo);
     setEntrelinhas(valor);
-    try {
-      localStorage.setItem(K_ESPACO, String(valor));
-    } catch {}
+    const area = areaRef.current;
+    if (!area) return;
+
+    const alvos = tudo
+      ? Array.from(area.querySelectorAll<HTMLElement>("p, h2, h3, h4, blockquote, pre, li"))
+      : blocosAlvo(area);
+    if (alvos.length === 0) return;
+
+    const attr = String(Math.round(valor * 10));
+    for (const bloco of alvos) bloco.setAttribute("data-entrelinha", attr);
+    emitir();
   }
 
   // execCommand deixa lixo estrutural: cria <ul> DENTRO do <p> em que o cursor
@@ -245,6 +247,11 @@ export function EditorRico({
         insertOrderedList: document.queryCommandState("insertOrderedList"),
         bloco: (bloco?.tagName || "P").toLowerCase(),
       };
+      // O número no controle acompanha o parágrafo sob o cursor.
+      const doBloco = parseInt(bloco?.getAttribute("data-entrelinha") || "", 10);
+      setEntrelinhas(
+        Number.isFinite(doBloco) ? limitar(doBloco / 10) : ENTRELINHAS_PADRAO,
+      );
       // Só re-renderiza quando algo mudou de fato: `selectionchange` dispara a
       // cada tecla, e um setState por tecla é re-render à toa embaixo do
       // cursor — justamente o que atrapalha a digitação.
@@ -556,15 +563,11 @@ export function EditorRico({
 
   // Objeto estável: recriar o style a cada render faz o React reescrever o
   // atributo do contentEditable a cada tecla.
-  const estiloArea = useMemo(
-    () =>
-      ({
-        minHeight: alturaMinima,
-        // A variável governa entrelinha E espaço entre parágrafos (globals.css).
-        "--entrelinhas": String(entrelinhas),
-      }) as React.CSSProperties,
-    [alturaMinima, entrelinhas],
-  );
+  // Sem `--entrelinhas` aqui de propósito: essa variável valia para a área
+  // toda, e era ela que fazia o controle reespaçar o texto inteiro mesmo com
+  // um trecho selecionado. O espaçamento agora vive em cada bloco
+  // (data-entrelinha), como qualquer outra formatação.
+  const estiloArea = useMemo(() => ({ minHeight: alturaMinima }), [alturaMinima]);
 
   const btn = (ativo: boolean, extra = "") =>
     `flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm transition ${
@@ -580,6 +583,15 @@ export function EditorRico({
       {/* ---- Barra de ferramentas ---- */}
       <div
         ref={barraRef}
+        // Clicar num botão tira o foco do texto e o navegador DESFAZ a seleção
+        // antes do clique chegar — era por isso que o marca-texto não pintava
+        // nada. Bloquear o mousedown mantém a seleção viva; campos que
+        // precisam de foco (link, controle deslizante, listas) ficam de fora.
+        onMouseDown={(e) => {
+          const alvo = e.target as HTMLElement;
+          if (alvo.closest("input, select, textarea, label, option")) return;
+          e.preventDefault();
+        }}
         className="sticky top-0 z-20 border-b border-mesa-200 bg-white/95 backdrop-blur"
       >
         <div className="flex flex-wrap items-center gap-0.5 px-2 py-2">
@@ -813,6 +825,17 @@ export function EditorRico({
                         </span>
                       </button>
                     ))}
+                    <div className="my-1 border-t border-mesa-100" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        trocarEntrelinhas(entrelinhas, true);
+                        setPainelEspaco(false);
+                      }}
+                      className="w-full px-3 py-1.5 text-left text-xs text-mesa-600 hover:bg-mesa-50"
+                    >
+                      Aplicar a todo o texto
+                    </button>
                     <div className="my-1 border-t border-mesa-100" />
                     <label className="block px-3 py-1.5">
                       <span className="mb-1 block text-[10px] uppercase tracking-wide text-mesa-400">

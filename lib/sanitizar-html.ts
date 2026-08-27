@@ -65,6 +65,11 @@ for (const [nome, hex] of Object.entries(CORES_MARCADOR)) {
 
 const ALINHAMENTOS = new Set(["left", "center", "right", "justify"]);
 
+// Entrelinha por bloco, guardada como número inteiro (18 = 1,8). Não é style
+// inline (que não entra aqui por segurança): o CSS traduz o atributo.
+const ENTRELINHA_MIN = 12;
+const ENTRELINHA_MAX = 26;
+
 // Escapa texto preservando entidades que já estavam bem-formadas
 // (senão um "&nbsp;" colado viraria "&amp;nbsp;" na tela).
 function escaparTexto(txt: string): string {
@@ -111,6 +116,16 @@ function atributosPermitidos(tag: string, attrs: Atributos): string {
   const alinhar = (attrs["data-align"] || "").toLowerCase();
   if (ALINHAMENTOS.has(alinhar) && TAGS_BLOCO.has(tag)) {
     saida.push(`data-align="${alinhar}"`);
+  }
+
+  const entre = parseInt(attrs["data-entrelinha"] || "", 10);
+  if (
+    TAGS_BLOCO.has(tag) &&
+    Number.isFinite(entre) &&
+    entre >= ENTRELINHA_MIN &&
+    entre <= ENTRELINHA_MAX
+  ) {
+    saida.push(`data-entrelinha="${entre}"`);
   }
 
   if (tag === "a") {

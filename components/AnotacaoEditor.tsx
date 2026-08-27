@@ -97,12 +97,20 @@ export function AnotacaoEditor({
   const editorApi = useRef<EditorApi | null>(null);
   const htmlRef = useRef(html);
   htmlRef.current = html;
+  // Com o que o editor deve ser montado. Começa no conteúdo do servidor e só
+  // muda quando o discípulo recupera um rascunho — antes, "Recuperar"
+  // remontava o editor com `anotacao.conteudo_html` (a versão do servidor) e
+  // jogava fora exatamente o texto que se queria recuperar.
+  const htmlMontagemRef = useRef(anotacao.conteudo_html);
 
   const texto = useMemo(() => htmlParaTexto(html), [html]);
   const palavras = contarPalavras(texto);
   const minutos = Math.max(1, Math.round(palavras / 200));
 
   // ---- Rascunho local: rede de segurança contra queda de rede/aba ----
+  // Roda UMA vez, ao abrir a anotação. Antes dependia de `atualizado_em`, que
+  // muda a cada gravação — então o aviso "há um rascunho" reaparecia no meio
+  // da digitação, oferecendo devolver um texto mais velho que o da tela.
   useEffect(() => {
     try {
       const bruto = localStorage.getItem(chaveRascunho(anotacao.id));
@@ -116,7 +124,8 @@ export function AnotacaoEditor({
     } catch {
       // localStorage bloqueado (aba anônima): segue sem rascunho
     }
-  }, [anotacao.id, anotacao.atualizado_em, anotacao.conteudo_html, anotacao.titulo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anotacao.id]);
 
   function restaurarRascunho() {
     try {
@@ -127,7 +136,8 @@ export function AnotacaoEditor({
       setHtml(local.html);
       setEstado("pendente");
       setAvisoRascunho(null);
-      // Remonta o editor com o conteúdo recuperado.
+      // Remonta o editor com o conteúdo RECUPERADO (não o do servidor).
+      htmlMontagemRef.current = local.html;
       setRemontar((n) => n + 1);
     } catch {
       setAvisoRascunho(null);
@@ -188,14 +198,16 @@ export function AnotacaoEditor({
         try {
           localStorage.removeItem(chaveRascunho(anotacao.id));
         } catch {}
-        router.refresh();
+        // Sem router.refresh() aqui: re-renderizar a página a cada gravação
+        // troca as props embaixo de quem está escrevendo. As telas que
+        // dependem do dado atualizado (mural, lixeira) recarregam ao abrir.
       } catch {
         setEstado("erro");
       }
     },
     [
       anotacao.id, titulo, categoria, cor, tags, cursoId, pastaId,
-      fixada, arquivada, router,
+      fixada, arquivada,
     ],
   );
 
@@ -203,10 +215,14 @@ export function AnotacaoEditor({
   useEffect(() => {
     if (estado !== "pendente") return;
     try {
-      localStorage.setItem(
-        chaveRascunho(anotacao.id),
-        JSON.stringify({ html, titulo, em: new Date().toISOString() }),
-      );
+      // Só guarda se difere do que o servidor já tem — assim o rascunho nunca
+      // "compete" com uma versão igual e o aviso não aparece à toa.
+      if (html !== salvoRef.current.html || titulo !== salvoRef.current.titulo) {
+        localStorage.setItem(
+          chaveRascunho(anotacao.id),
+          JSON.stringify({ html, titulo, em: new Date().toISOString() }),
+        );
+      }
     } catch {}
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => void salvar(), ESPERA_AUTOSAVE);
@@ -548,7 +564,7 @@ ${html}</body></html>`;
             <EditorRico
               apiRef={editorApi}
               key={`${anotacao.id}-${remontar}`}
-              htmlInicial={anotacao.conteudo_html}
+              htmlInicial={htmlMontagemRef.current}
               onChange={(novo) => {
                 setHtml(novo);
                 setEstado("pendente");
