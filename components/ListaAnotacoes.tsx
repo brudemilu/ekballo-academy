@@ -48,12 +48,15 @@ export function ListaAnotacoes({
   pastas: pastasIniciais,
   cursos,
   versoesBiblia = [],
+  anexosPorAnotacao = {},
 }: {
   anotacoes: AnotacaoRich[];
   lixeira: AnotacaoRich[];
   pastas: PastaAnotacao[];
   cursos: { id: string; titulo: string }[];
   versoesBiblia?: { sigla: string; nome: string }[];
+  /** Quantos anexos cada anotação tem, para o selo no card. */
+  anexosPorAnotacao?: Record<string, number>;
 }) {
   const router = useRouter();
   const [criando, startCriar] = useTransition();
@@ -574,6 +577,7 @@ export function ListaAnotacoes({
                 key={a.id}
                 anotacao={a}
                 pastas={pastas}
+                anexos={anexosPorAnotacao[a.id] ?? 0}
                 naLixeira={naLixeira}
                 onFixar={() => patch(a.id, { fixada: !a.fixada })}
                 onArquivar={() => patch(a.id, { arquivada: !a.arquivada })}
@@ -664,6 +668,7 @@ function Chip({
 function CardAnotacao({
   anotacao,
   pastas,
+  anexos,
   naLixeira,
   onFixar,
   onArquivar,
@@ -674,6 +679,7 @@ function CardAnotacao({
 }: {
   anotacao: AnotacaoRich;
   pastas: PastaAnotacao[];
+  anexos: number;
   naLixeira: boolean;
   onFixar: () => void;
   onArquivar: () => void;
@@ -698,6 +704,14 @@ function CardAnotacao({
           {cat?.emoji} {cat?.rotulo}
         </span>
         {anotacao.fixada && !naLixeira && <span title="Fixada">📌</span>}
+        {anexos > 0 && (
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-mesa-600"
+            title={`${anexos} ${anexos === 1 ? "arquivo anexado" : "arquivos anexados"}`}
+          >
+            📎 {anexos}
+          </span>
+        )}
         {naLixeira && anotacao.excluida_em && (
           <span className="rounded-full bg-erro-50 px-2 py-0.5 text-[10px] font-semibold text-erro-500">
             🗑 {rotuloExpurgo(anotacao.excluida_em)}

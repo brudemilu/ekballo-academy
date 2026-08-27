@@ -37,6 +37,16 @@ import { sanitizarHtml, CORES_MARCADOR } from "@/lib/sanitizar-html";
 export type EditorApi = {
   /** Insere HTML no ponto do cursor (usado pela busca da Bíblia). */
   inserirHtml: (html: string) => void;
+  /**
+   * O conteúdo AGORA, lido do próprio editor.
+   *
+   * Quem grava precisa disto em vez do último valor emitido: se uma
+   * composição de acento não fechar (o foco sai no meio, o navegador engole o
+   * `compositionend`), a emissão fica bloqueada e o estado congela — e o
+   * "Salvar" passaria a comparar o texto velho com ele mesmo, concluir que
+   * nada mudou e não gravar nada.
+   */
+  lerHtml: () => string;
   focar: () => void;
 };
 
@@ -554,12 +564,18 @@ export function EditorRico({
         emitir();
         sincronizarBotoes();
       },
+      lerHtml: () => {
+        const area = areaRef.current;
+        if (!area) return "";
+        normalizarEstrutura(area);
+        return area.innerHTML;
+      },
       focar: () => areaRef.current?.focus(),
     };
     return () => {
       apiRef.current = null;
     };
-  }, [apiRef, emitir, sincronizarBotoes]);
+  }, [apiRef, emitir, sincronizarBotoes, normalizarEstrutura]);
 
   // Objeto estável: recriar o style a cada render faz o React reescrever o
   // atributo do contentEditable a cada tecla.
@@ -933,6 +949,9 @@ export function EditorRico({
             // Guarda onde o cursor estava: quem for buscar um versículo vai
             // tirar o foco daqui, e a inserção precisa voltar pro mesmo ponto.
             guardarSelecao();
+            // Perder o foco encerra qualquer composição pendente. Sem isto, um
+            // acento interrompido deixaria a flag ligada e o editor mudo.
+            compondo.current = false;
             emitir();
           }}
           onPaste={handlePaste}

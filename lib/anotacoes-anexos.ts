@@ -203,3 +203,31 @@ export async function excluirAnexosDaAnotacao(
   if (error) console.error("[anexos] limpar bucket:", error.message);
   return anexos.length;
 }
+
+/**
+ * Quantos anexos cada anotação tem. O mural mostra isso no card — sem ter de
+ * pedir os anexos de cada anotação um a um.
+ */
+export async function contarAnexosPorAnotacao(
+  alunoId: string,
+): Promise<Record<string, number>> {
+  const linhas = isMockMode()
+    ? mockStore.filter((a) => a.aluno_id === alunoId).map((a) => ({ anotacao_id: a.anotacao_id }))
+    : await (async () => {
+        const supabase = await createClient();
+        const { data, error } = await supabase
+          .from("anotacao_anexos")
+          .select("anotacao_id")
+          .eq("aluno_id", alunoId)
+          .limit(5000);
+        if (error) {
+          console.error("[anexos] contarAnexosPorAnotacao:", error.message);
+          return [];
+        }
+        return (data || []) as { anotacao_id: string }[];
+      })();
+
+  const conta: Record<string, number> = {};
+  for (const l of linhas) conta[l.anotacao_id] = (conta[l.anotacao_id] ?? 0) + 1;
+  return conta;
+}

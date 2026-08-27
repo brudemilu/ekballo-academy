@@ -12,6 +12,7 @@ import {
 import { listAnotacoes, listPastas } from "@/lib/anotacoes";
 import { listVersoes } from "@/lib/biblia";
 import { listVersoesComBusca } from "@/lib/biblia-busca";
+import { contarAnexosPorAnotacao } from "@/lib/anotacoes-anexos";
 
 export const metadata = {
   title: "Meu caderno — Ekballo Academy",
@@ -27,7 +28,7 @@ export default async function AnotacoesPage() {
     redirect("/dashboard");
   }
 
-  const [anotacoes, lixeira, pastas, todosCursos, matriculas, versoes, versoesComBusca] = await Promise.all([
+  const [anotacoes, lixeira, pastas, todosCursos, matriculas, versoes, versoesComBusca, anexosPorAnotacao] = await Promise.all([
     // Traz arquivadas junto: o mural alterna entre pastas, arquivo e lixeira
     // sem ida extra ao servidor.
     listAnotacoes(session.userId, { incluirArquivadas: true }),
@@ -37,6 +38,7 @@ export default async function AnotacoesPage() {
     listMatriculasByAluno(session.userId),
     listVersoes(),
     listVersoesComBusca(),
+    contarAnexosPorAnotacao(session.userId),
   ]);
 
   // Mesmo critério do painel: o master vê todos os livros, o discípulo vê
@@ -93,6 +95,7 @@ export default async function AnotacoesPage() {
           cursos={cursos}
           // `versoesComBusca` já vem na ordem de prioridade (NVT, NAA, NVI…);
           // é ela quem manda, não a ordem do leitor.
+          anexosPorAnotacao={anexosPorAnotacao}
           versoesBiblia={versoesComBusca
             .map((sigla) => versoes.find((v) => v.sigla === sigla))
             .filter((v): v is (typeof versoes)[number] => !!v)

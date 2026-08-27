@@ -158,9 +158,12 @@ export function AnotacaoEditor({
   // ---- Salvar ----
   const salvar = useCallback(
     async (extra?: Record<string, unknown>) => {
+      // Fonte da verdade é o editor, não o último valor emitido — ver
+      // EditorApi.lerHtml.
+      const htmlAgora = editorApi.current?.lerHtml() ?? htmlRef.current;
       const atual = {
         titulo,
-        html: htmlRef.current,
+        html: htmlAgora,
         categoria: categoria as string,
         cor: cor as string,
         tags: tags.join(","),
@@ -183,7 +186,7 @@ export function AnotacaoEditor({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             titulo,
-            conteudo_html: htmlRef.current,
+            conteudo_html: htmlAgora,
             categoria,
             cor,
             tags,
