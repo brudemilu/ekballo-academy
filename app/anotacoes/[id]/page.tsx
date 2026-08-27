@@ -10,6 +10,7 @@ import {
   listMatriculasByAluno,
 } from "@/lib/db";
 import { getAnotacao, listPastas } from "@/lib/anotacoes";
+import { listVersoes } from "@/lib/biblia";
 import { tituloExibido } from "@/lib/anotacoes-meta";
 
 export default async function AnotacaoPage({
@@ -29,10 +30,11 @@ export default async function AnotacaoPage({
   const anotacao = await getAnotacao(id, session.userId);
   if (!anotacao) notFound();
 
-  const [todosCursos, matriculas, pastas] = await Promise.all([
+  const [todosCursos, matriculas, pastas, versoes] = await Promise.all([
     listCursosPublicados(),
     listMatriculasByAluno(session.userId),
     listPastas(session.userId),
+    listVersoes(),
   ]);
   const matriculadas = new Set(matriculas.map((m) => m.curso_id));
   const cursos = (
@@ -57,7 +59,12 @@ export default async function AnotacaoPage({
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <AnotacaoEditor anotacao={anotacao} cursos={cursos} pastas={pastas} />
+        <AnotacaoEditor
+          anotacao={anotacao}
+          cursos={cursos}
+          pastas={pastas}
+          versoesBiblia={versoes.map((v) => ({ sigla: v.sigla, nome: v.nome }))}
+        />
       </div>
     </main>
   );

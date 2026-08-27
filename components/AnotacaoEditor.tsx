@@ -15,7 +15,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { EditorRico } from "@/components/EditorRico";
+import { EditorRico, type EditorApi } from "@/components/EditorRico";
+import { BuscaBiblia } from "@/components/BuscaBiblia";
 import { htmlParaTexto, contarPalavras } from "@/lib/sanitizar-html";
 import {
   CATEGORIAS,
@@ -47,11 +48,13 @@ export function AnotacaoEditor({
   anotacao,
   cursos,
   pastas,
+  versoesBiblia = [],
   voltarHref = "/anotacoes",
 }: {
   anotacao: AnotacaoRich;
   cursos: CursoOpcao[];
   pastas: PastaAnotacao[];
+  versoesBiblia?: { sigla: string; nome: string }[];
   voltarHref?: string;
 }) {
   const router = useRouter();
@@ -89,6 +92,9 @@ export function AnotacaoEditor({
     arquivada: anotacao.arquivada,
   });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Ponte com o editor: a busca da Bíblia escreve o versículo no ponto onde
+  // o cursor estava antes de o foco ir pro campo de pesquisa.
+  const editorApi = useRef<EditorApi | null>(null);
   const htmlRef = useRef(html);
   htmlRef.current = html;
 
@@ -540,6 +546,7 @@ ${html}</body></html>`;
             </div>
 
             <EditorRico
+              apiRef={editorApi}
               key={`${anotacao.id}-${remontar}`}
               htmlInicial={anotacao.conteudo_html}
               onChange={(novo) => {
@@ -565,6 +572,14 @@ ${html}</body></html>`;
           {/* ---- Coluna dos metadados ---- */}
           {!foco && (
             <aside className="space-y-5">
+              <Bloco titulo="Bíblia">
+                <BuscaBiblia
+                  versoes={versoesBiblia}
+                  onInserir={(html) => editorApi.current?.inserirHtml(html)}
+                  compacto
+                />
+              </Bloco>
+
               <Bloco titulo="Categoria">
                 <div className="flex flex-wrap gap-1.5">
                   {CATEGORIAS.map((c) => (

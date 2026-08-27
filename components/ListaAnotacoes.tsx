@@ -30,6 +30,7 @@ import {
   type PastaAnotacao,
 } from "@/lib/anotacoes-meta";
 import { resumir } from "@/lib/sanitizar-html";
+import { BuscaBiblia } from "@/components/BuscaBiblia";
 
 type Ordem = "recentes" | "criadas" | "alfabetica";
 
@@ -46,11 +47,13 @@ export function ListaAnotacoes({
   lixeira,
   pastas: pastasIniciais,
   cursos,
+  versoesBiblia = [],
 }: {
   anotacoes: AnotacaoRich[];
   lixeira: AnotacaoRich[];
   pastas: PastaAnotacao[];
   cursos: { id: string; titulo: string }[];
+  versoesBiblia?: { sigla: string; nome: string }[];
 }) {
   const router = useRouter();
   const [criando, startCriar] = useTransition();
@@ -373,6 +376,15 @@ export function ListaAnotacoes({
             Lixeira
           </ItemLateral>
         </nav>
+
+        {/* Consulta à Bíblia sem sair do caderno. Aqui só lê e copia — quem
+            quer inserir o versículo no texto faz isso dentro da anotação. */}
+        <div className="mt-4 rounded-xl border border-mesa-200 bg-white p-2.5">
+          <p className="mb-2 px-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-mesa-500">
+            📖 Bíblia
+          </p>
+          <BuscaBiblia versoes={versoesBiblia} compacto />
+        </div>
       </aside>
 
       {/* ================= CONTEÚDO ================= */}

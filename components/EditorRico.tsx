@@ -33,6 +33,13 @@ import {
 } from "react";
 import { sanitizarHtml, CORES_MARCADOR } from "@/lib/sanitizar-html";
 
+/** O que o editor deixa outros componentes fazerem no texto. */
+export type EditorApi = {
+  /** Insere HTML no ponto do cursor (usado pela busca da Bíblia). */
+  inserirHtml: (html: string) => void;
+  focar: () => void;
+};
+
 type EstadoBotoes = {
   bold: boolean;
   italic: boolean;
@@ -96,9 +103,12 @@ export function EditorRico({
   placeholder = "Comece a escrever…",
   alturaMinima = 420,
   compacto = false,
+  apiRef,
 }: {
   htmlInicial: string;
   onChange: (html: string) => void;
+  /** Preenchido na montagem com os comandos que o editor aceita de fora. */
+  apiRef?: { current: EditorApi | null };
   /** Ctrl/Cmd+S dentro do editor — salva sem esperar o autosave. */
   onSalvarAtalho?: () => void;
   placeholder?: string;
@@ -458,6 +468,32 @@ export function EditorRico({
     }
   }
 
+  // Ponte para quem escreve no texto de fora (a busca da Bíblia insere o
+  // versículo no ponto onde o cursor estava antes de ir pro campo de busca).
+  useEffect(() => {
+    if (!apiRef) return;
+    apiRef.current = {
+      inserirHtml: (html: string) => {
+        const area = areaRef.current;
+        if (!area) return;
+        area.focus();
+        restaurarSelecao();
+        const limpo = sanitizarHtml(html);
+        try {
+          document.execCommand("insertHTML", false, limpo);
+        } catch {
+          area.insertAdjacentHTML("beforeend", limpo);
+        }
+        emitir();
+        sincronizarBotoes();
+      },
+      focar: () => areaRef.current?.focus(),
+    };
+    return () => {
+      apiRef.current = null;
+    };
+  }, [apiRef, emitir, sincronizarBotoes]);
+
   // Objeto estável: recriar o style a cada render faz o React reescrever o
   // atributo do contentEditable a cada tecla.
   const estiloArea = useMemo(() => ({ minHeight: alturaMinima }), [alturaMinima]);
@@ -739,7 +775,12 @@ export function EditorRico({
           lang="pt-BR"
           data-espaco={espaco}
           onInput={emitir}
-          onBlur={emitir}
+          onBlur={() => {
+            // Guarda onde o cursor estava: quem for buscar um versículo vai
+            // tirar o foco daqui, e a inserção precisa voltar pro mesmo ponto.
+            guardarSelecao();
+            emitir();
+          }}
           onPaste={handlePaste}
           onClick={handleClick}
           onKeyDown={handleKeyDown}
