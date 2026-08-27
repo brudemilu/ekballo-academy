@@ -29,6 +29,8 @@ type Resposta = {
   versao: string;
   achados: Achado[];
   referencia?: string;
+  /** Ex.: a versão pedida não tem texto para pesquisar. */
+  aviso?: string;
 };
 
 const ESPERA_BUSCA = 350; // ms parado antes de consultar o servidor
@@ -158,6 +160,12 @@ export function BuscaBiblia({
       {termo.trim().length >= 2 && (
         <div className={`overflow-y-auto ${compacto ? "max-h-56" : "max-h-80"}`}>
           {buscando && <p className="px-1 py-2 text-[11px] text-mesa-400">Procurando…</p>}
+
+          {!buscando && resultado?.aviso && (
+            <p className="mb-1.5 rounded-lg bg-laranja-50 px-2 py-1.5 text-[10px] leading-relaxed text-laranja-700">
+              {resultado.aviso}
+            </p>
+          )}
 
           {!buscando && achados.length === 0 && (
             <p className="px-1 py-2 text-[11px] leading-relaxed text-mesa-400">

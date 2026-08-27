@@ -31,7 +31,32 @@ export type ResultadoBusca = {
   achados: AchadoBiblia[];
   /** Referência já formatada, quando a busca foi por referência. */
   referencia?: string;
+  /** Preenchido quando a busca teve de trocar de versão (ver abaixo). */
+  aviso?: string;
 };
+
+/**
+ * Versões que dá pra PESQUISAR — não é o mesmo conjunto das versões que dá
+ * pra LER. O leitor da Bíblia busca capítulo a capítulo numa API externa
+ * quando a versão não está no banco (`fonte_api_sigla`), mas procurar uma
+ * palavra exige o texto inteiro aqui dentro. Hoje só a ACF está: as demais
+ * apareciam no seletor e devolviam zero resultado para qualquer palavra —
+ * inclusive "Deus".
+ */
+export async function listVersoesComBusca(): Promise<string[]> {
+  if (isMockMode()) return [VERSAO_PADRAO];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("biblia_versiculos")
+    .select("versao")
+    .limit(2000);
+  if (error) {
+    console.error("[biblia-busca] listVersoesComBusca:", error.message);
+    return [VERSAO_PADRAO];
+  }
+  const siglas = new Set((data || []).map((l) => (l as { versao: string }).versao));
+  return siglas.size > 0 ? [...siglas] : [VERSAO_PADRAO];
+}
 
 // Tira acento e caixa para comparar "João" com "joao".
 function normalizar(txt: string): string {
@@ -136,11 +161,21 @@ async function buscarTextoMock(termo: string, versao: string): Promise<AchadoBib
  */
 export async function buscarNaBiblia(
   termo: string,
-  versao: string = VERSAO_PADRAO,
+  versaoPedida: string = VERSAO_PADRAO,
   limite = 40,
 ): Promise<ResultadoBusca> {
   const limpo = termo.trim();
-  if (limpo.length < 2) return { tipo: "vazio", versao, achados: [] };
+  if (limpo.length < 2) return { tipo: "vazio", versao: versaoPedida, achados: [] };
+
+  // Versão sem texto no banco não tem o que pesquisar: em vez de devolver
+  // "nada encontrado" (que faz parecer defeito), troca para uma que tenha e
+  // diz isso na resposta.
+  const comBusca = await listVersoesComBusca();
+  const versao = comBusca.includes(versaoPedida) ? versaoPedida : comBusca[0];
+  const aviso =
+    versao !== versaoPedida
+      ? `A busca por palavra existe só na ${versao} — a ${versaoPedida} é lida capítulo a capítulo.`
+      : undefined;
 
   const livros = await listLivros();
 
@@ -186,6 +221,7 @@ export async function buscarNaBiblia(
         versao,
         achados,
         referencia: formatarReferencia(ref),
+        aviso,
       };
     }
     // Referência sem resultado (versão não tem o trecho): tenta como texto.
@@ -193,7 +229,7 @@ export async function buscarNaBiblia(
 
   // ---- 2) Palavra ou frase ----
   if (isMockMode()) {
-    return { tipo: "texto", versao, achados: await buscarTextoMock(limpo, versao) };
+    return { tipo: "texto", versao, aviso, achados: await buscarTextoMock(limpo, versao) };
   }
 
   const supabase = await createClient();
@@ -204,7 +240,12 @@ export async function buscarNaBiblia(
   });
   if (error) {
     console.error("[biblia-busca] buscar_biblia:", error.message);
-    return { tipo: "texto", versao, achados: [] };
+    return {
+      tipo: "texto",
+      versao,
+      achados: [],
+      aviso: "A busca falhou agora — tente de novo em instantes.",
+    };
   }
-  return { tipo: "texto", versao, achados: (data || []) as AchadoBiblia[] };
+  return { tipo: "texto", versao, aviso, achados: (data || []) as AchadoBiblia[] };
 }

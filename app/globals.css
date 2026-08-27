@@ -195,22 +195,18 @@ body {
    ============================================================= */
 .prose-anotacao {
   /* Entrelinhas: 1.78 é mais arejado que o 1.7 anterior — texto corrido em
-     tela cansa menos com um pouco mais de respiro entre as linhas. O valor
-     vira variável para o seletor de espaçamento da barra poder trocá-lo. */
+     tela cansa menos com um pouco mais de respiro entre as linhas.
+     É UMA variável só: o controle "− 1,8 +" da barra escreve nela (style
+     inline) e o espaço entre parágrafos acompanha por cálculo, senão texto
+     bem espaçado ficaria com parágrafos grudados. */
   --entrelinhas: 1.78;
-  --respiro-paragrafo: 1.05em;
+  --respiro-paragrafo: calc(var(--entrelinhas) * 0.6em);
   line-height: var(--entrelinhas);
   font-size: 1.0625rem;
   color: #262320;              /* greige-800 */
   word-break: break-word;
   letter-spacing: 0.001em;
 }
-/* Seletor "Entrelinhas" da barra de ferramentas (preferência de leitura,
-   guardada no navegador — não muda o conteúdo salvo). */
-.prose-anotacao[data-espaco="compacto"] { --entrelinhas: 1.5;  --respiro-paragrafo: 0.75em; }
-.prose-anotacao[data-espaco="normal"]   { --entrelinhas: 1.78; --respiro-paragrafo: 1.05em; }
-.prose-anotacao[data-espaco="amplo"]    { --entrelinhas: 2.1;  --respiro-paragrafo: 1.5em; }
-
 .prose-anotacao p {
   margin-bottom: var(--respiro-paragrafo);
   text-align: justify;
@@ -352,7 +348,7 @@ body {
 .prose-anotacao li[data-tarefa="1"] { color: #7E786F; text-decoration: line-through; }
 
 /* Densidade menor no card de anotação dentro da mesa */
-.prose-anotacao-compacta { font-size: 1rem; --entrelinhas: 1.65; --respiro-paragrafo: 0.85em; }
+.prose-anotacao-compacta { font-size: 1rem; }
 
 /* =============================================================
    FOLHA DE IMPRESSÃO / PDF  ("Salvar em PDF" = imprimir no navegador)

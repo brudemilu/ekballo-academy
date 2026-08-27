@@ -73,15 +73,41 @@ const ESTILOS: { valor: string; rotulo: string; dica: string }[] = [
   { valor: "pre", rotulo: "Código", dica: "Texto monoespaçado" },
 ];
 
-type Espaco = "compacto" | "normal" | "amplo";
+// Entrelinhas contínuas: os botões − e + andam de PASSO em PASSO dentro da
+// faixa, e os presets são só atalhos para valores dessa mesma faixa.
+const ENTRELINHAS_MIN = 1.2;
+const ENTRELINHAS_MAX = 2.6;
+const ENTRELINHAS_PASSO = 0.1;
+const ENTRELINHAS_PADRAO = 1.78;
 
-const ESPACOS: { valor: Espaco; rotulo: string }[] = [
-  { valor: "compacto", rotulo: "Compacto" },
-  { valor: "normal", rotulo: "Normal" },
-  { valor: "amplo", rotulo: "Amplo" },
+const PRESETS: { valor: number; rotulo: string }[] = [
+  { valor: 1.4, rotulo: "Compacto" },
+  { valor: 1.78, rotulo: "Normal" },
+  { valor: 2.1, rotulo: "Amplo" },
+  { valor: 2.4, rotulo: "Bem espaçado" },
 ];
 
-const K_ESPACO = "anotacao:espacamento";
+const K_ESPACO = "anotacao:entrelinhas";
+// Valor antigo (compacto/normal/amplo), de antes do controle numérico.
+const K_ESPACO_ANTIGO = "anotacao:espacamento";
+const EQUIVALENTE: Record<string, number> = {
+  compacto: 1.4,
+  normal: 1.78,
+  amplo: 2.1,
+};
+
+function arredondar(v: number): number {
+  return Math.round(v * 10) / 10;
+}
+
+function limitar(v: number): number {
+  return arredondar(Math.min(ENTRELINHAS_MAX, Math.max(ENTRELINHAS_MIN, v)));
+}
+
+/** 1.8 → "1,8" (é número mostrado a quem lê em português). */
+function mostrarNumero(v: number): string {
+  return v.toFixed(1).replace(".", ",");
+}
 
 function blocoAtual(raiz: HTMLElement): HTMLElement | null {
   const sel = window.getSelection();
@@ -117,6 +143,7 @@ export function EditorRico({
   compacto?: boolean;
 }) {
   const areaRef = useRef<HTMLDivElement>(null);
+  const barraRef = useRef<HTMLDivElement>(null);
   const rangeSalvo = useRef<Range | null>(null);
   // Verdadeiro entre compositionstart e compositionend (acento em curso).
   const compondo = useRef(false);
@@ -127,7 +154,8 @@ export function EditorRico({
   const [urlLink, setUrlLink] = useState("");
   const [painelCor, setPainelCor] = useState(false);
   const [painelAlinhar, setPainelAlinhar] = useState(false);
-  const [espaco, setEspaco] = useState<Espaco>("normal");
+  const [entrelinhas, setEntrelinhas] = useState(ENTRELINHAS_PADRAO);
+  const [painelEspaco, setPainelEspaco] = useState(false);
 
   // Conteúdo inicial + preferência de tags (<b> em vez de <span style>).
   useLayoutEffect(() => {
@@ -147,17 +175,25 @@ export function EditorRico({
   // anotações, então mora no localStorage e não no banco.
   useEffect(() => {
     try {
-      const salvo = localStorage.getItem(K_ESPACO) as Espaco | null;
-      if (salvo && ESPACOS.some((e) => e.valor === salvo)) setEspaco(salvo);
+      const salvo = parseFloat(localStorage.getItem(K_ESPACO) || "");
+      if (Number.isFinite(salvo)) {
+        setEntrelinhas(limitar(salvo));
+        return;
+      }
+      // Quem já tinha escolhido "compacto/normal/amplo" antes do controle
+      // numérico não pode perder a preferência.
+      const antigo = localStorage.getItem(K_ESPACO_ANTIGO);
+      if (antigo && EQUIVALENTE[antigo]) setEntrelinhas(EQUIVALENTE[antigo]);
     } catch {
       // aba anônima: fica no padrão
     }
   }, []);
 
-  function trocarEspaco(novo: Espaco) {
-    setEspaco(novo);
+  function trocarEntrelinhas(novo: number) {
+    const valor = limitar(novo);
+    setEntrelinhas(valor);
     try {
-      localStorage.setItem(K_ESPACO, novo);
+      localStorage.setItem(K_ESPACO, String(valor));
     } catch {}
   }
 
@@ -226,6 +262,30 @@ export function EditorRico({
     document.addEventListener("selectionchange", sincronizarBotoes);
     return () => document.removeEventListener("selectionchange", sincronizarBotoes);
   }, [sincronizarBotoes]);
+
+  // Menu aberto (cores, alinhamento, entrelinhas, link) fecha ao clicar fora
+  // da barra ou ao apertar Esc — senão fica pendurado sobre o texto.
+  useEffect(() => {
+    function foraDaBarra(e: PointerEvent) {
+      if (barraRef.current?.contains(e.target as Node)) return;
+      setPainelCor(false);
+      setPainelAlinhar(false);
+      setPainelEspaco(false);
+    }
+    function escape(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      setPainelCor(false);
+      setPainelAlinhar(false);
+      setPainelEspaco(false);
+      setPainelLink(false);
+    }
+    document.addEventListener("pointerdown", foraDaBarra);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", foraDaBarra);
+      document.removeEventListener("keydown", escape);
+    };
+  }, []);
 
   // Guarda a seleção antes de o foco ir pro campo de link (o input rouba o
   // caret e, sem isso, o link seria aplicado no lugar errado).
@@ -496,7 +556,15 @@ export function EditorRico({
 
   // Objeto estável: recriar o style a cada render faz o React reescrever o
   // atributo do contentEditable a cada tecla.
-  const estiloArea = useMemo(() => ({ minHeight: alturaMinima }), [alturaMinima]);
+  const estiloArea = useMemo(
+    () =>
+      ({
+        minHeight: alturaMinima,
+        // A variável governa entrelinha E espaço entre parágrafos (globals.css).
+        "--entrelinhas": String(entrelinhas),
+      }) as React.CSSProperties,
+    [alturaMinima, entrelinhas],
+  );
 
   const btn = (ativo: boolean, extra = "") =>
     `flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm transition ${
@@ -510,7 +578,10 @@ export function EditorRico({
   return (
     <div className="overflow-hidden rounded-2xl border border-mesa-200 bg-white shadow-sm">
       {/* ---- Barra de ferramentas ---- */}
-      <div className="sticky top-0 z-20 border-b border-mesa-200 bg-white/95 backdrop-blur">
+      <div
+        ref={barraRef}
+        className="sticky top-0 z-20 border-b border-mesa-200 bg-white/95 backdrop-blur"
+      >
         <div className="flex flex-wrap items-center gap-0.5 px-2 py-2">
           <button type="button" onClick={() => cmd("undo")} className={btn(false)} title="Desfazer (Ctrl+Z)">
             <Icone nome="desfazer" />
@@ -683,21 +754,82 @@ export function EditorRico({
                 )}
               </div>
 
-              {/* Espaçamento entre linhas */}
-              <div className="flex items-center gap-1 rounded-lg border border-mesa-200 px-1.5 py-0.5">
-                <Icone nome="entrelinhas" />
-                <select
-                  value={espaco}
-                  onChange={(e) => trocarEspaco(e.target.value as Espaco)}
-                  title="Espaço entre as linhas do texto"
-                  className="h-6 bg-transparent text-xs font-medium text-mesa-700 outline-none"
+              {/* Entrelinhas: − e + andam de 0,1 em 0,1; o número no meio
+                  abre os atalhos (Compacto, Normal, Amplo…). */}
+              <div className="relative flex items-center gap-0.5 rounded-lg border border-mesa-200 px-1 py-0.5">
+                <span className="pl-0.5 text-mesa-500" title="Espaço entre as linhas">
+                  <Icone nome="entrelinhas" />
+                </span>
+                <button
+                  type="button"
+                  onClick={() => trocarEntrelinhas(entrelinhas - ENTRELINHAS_PASSO)}
+                  disabled={entrelinhas <= ENTRELINHAS_MIN}
+                  title="Diminuir o espaço entre as linhas"
+                  className="flex h-6 w-6 items-center justify-center rounded text-base leading-none text-mesa-600 transition hover:bg-mesa-100 disabled:opacity-30"
                 >
-                  {ESPACOS.map((e) => (
-                    <option key={e.valor} value={e.valor}>
-                      {e.rotulo}
-                    </option>
-                  ))}
-                </select>
+                  −
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPainelEspaco((v) => !v);
+                    setPainelCor(false);
+                    setPainelAlinhar(false);
+                  }}
+                  title="Escolher um espaçamento pronto"
+                  className="min-w-9 rounded px-1 text-xs font-semibold tabular-nums text-mesa-700 transition hover:bg-mesa-100"
+                >
+                  {mostrarNumero(entrelinhas)}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => trocarEntrelinhas(entrelinhas + ENTRELINHAS_PASSO)}
+                  disabled={entrelinhas >= ENTRELINHAS_MAX}
+                  title="Aumentar o espaço entre as linhas"
+                  className="flex h-6 w-6 items-center justify-center rounded text-base leading-none text-mesa-600 transition hover:bg-mesa-100 disabled:opacity-30"
+                >
+                  +
+                </button>
+
+                {painelEspaco && (
+                  <div className="absolute right-0 top-9 z-30 w-40 overflow-hidden rounded-xl border border-mesa-200 bg-white py-1 shadow-xl">
+                    {PRESETS.map((pre) => (
+                      <button
+                        key={pre.valor}
+                        type="button"
+                        onClick={() => {
+                          trocarEntrelinhas(pre.valor);
+                          setPainelEspaco(false);
+                        }}
+                        className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs transition hover:bg-mesa-50 ${
+                          Math.abs(entrelinhas - pre.valor) < 0.05
+                            ? "font-semibold text-laranja-700"
+                            : "text-mesa-700"
+                        }`}
+                      >
+                        {pre.rotulo}
+                        <span className="tabular-nums text-mesa-400">
+                          {mostrarNumero(pre.valor)}
+                        </span>
+                      </button>
+                    ))}
+                    <div className="my-1 border-t border-mesa-100" />
+                    <label className="block px-3 py-1.5">
+                      <span className="mb-1 block text-[10px] uppercase tracking-wide text-mesa-400">
+                        Ajuste fino
+                      </span>
+                      <input
+                        type="range"
+                        min={ENTRELINHAS_MIN}
+                        max={ENTRELINHAS_MAX}
+                        step={ENTRELINHAS_PASSO}
+                        value={entrelinhas}
+                        onChange={(e) => trocarEntrelinhas(parseFloat(e.target.value))}
+                        className="w-full accent-laranja-500"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -773,7 +905,6 @@ export function EditorRico({
           aria-label="Conteúdo da anotação"
           spellCheck
           lang="pt-BR"
-          data-espaco={espaco}
           onInput={emitir}
           onBlur={() => {
             // Guarda onde o cursor estava: quem for buscar um versículo vai

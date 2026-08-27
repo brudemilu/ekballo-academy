@@ -11,6 +11,7 @@ import {
 } from "@/lib/db";
 import { listAnotacoes, listPastas } from "@/lib/anotacoes";
 import { listVersoes } from "@/lib/biblia";
+import { listVersoesComBusca } from "@/lib/biblia-busca";
 
 export const metadata = {
   title: "Meu caderno — Ekballo Academy",
@@ -26,7 +27,7 @@ export default async function AnotacoesPage() {
     redirect("/dashboard");
   }
 
-  const [anotacoes, lixeira, pastas, todosCursos, matriculas, versoes] = await Promise.all([
+  const [anotacoes, lixeira, pastas, todosCursos, matriculas, versoes, versoesComBusca] = await Promise.all([
     // Traz arquivadas junto: o mural alterna entre pastas, arquivo e lixeira
     // sem ida extra ao servidor.
     listAnotacoes(session.userId, { incluirArquivadas: true }),
@@ -35,6 +36,7 @@ export default async function AnotacoesPage() {
     listCursosPublicados(),
     listMatriculasByAluno(session.userId),
     listVersoes(),
+    listVersoesComBusca(),
   ]);
 
   // Mesmo critério do painel: o master vê todos os livros, o discípulo vê
@@ -89,7 +91,9 @@ export default async function AnotacoesPage() {
           lixeira={lixeira}
           pastas={pastas}
           cursos={cursos}
-          versoesBiblia={versoes.map((v) => ({ sigla: v.sigla, nome: v.nome }))}
+          versoesBiblia={versoes
+            .filter((v) => versoesComBusca.includes(v.sigla))
+            .map((v) => ({ sigla: v.sigla, nome: v.nome }))}
         />
       </div>
     </main>

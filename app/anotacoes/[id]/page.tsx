@@ -11,6 +11,7 @@ import {
 } from "@/lib/db";
 import { getAnotacao, listPastas } from "@/lib/anotacoes";
 import { listVersoes } from "@/lib/biblia";
+import { listVersoesComBusca } from "@/lib/biblia-busca";
 import { tituloExibido } from "@/lib/anotacoes-meta";
 
 export default async function AnotacaoPage({
@@ -30,11 +31,12 @@ export default async function AnotacaoPage({
   const anotacao = await getAnotacao(id, session.userId);
   if (!anotacao) notFound();
 
-  const [todosCursos, matriculas, pastas, versoes] = await Promise.all([
+  const [todosCursos, matriculas, pastas, versoes, versoesComBusca] = await Promise.all([
     listCursosPublicados(),
     listMatriculasByAluno(session.userId),
     listPastas(session.userId),
     listVersoes(),
+    listVersoesComBusca(),
   ]);
   const matriculadas = new Set(matriculas.map((m) => m.curso_id));
   const cursos = (
@@ -63,7 +65,9 @@ export default async function AnotacaoPage({
           anotacao={anotacao}
           cursos={cursos}
           pastas={pastas}
-          versoesBiblia={versoes.map((v) => ({ sigla: v.sigla, nome: v.nome }))}
+          versoesBiblia={versoes
+            .filter((v) => versoesComBusca.includes(v.sigla))
+            .map((v) => ({ sigla: v.sigla, nome: v.nome }))}
         />
       </div>
     </main>
