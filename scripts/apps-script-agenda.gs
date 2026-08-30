@@ -15,9 +15,9 @@
  *      já existente) e cole este arquivo inteiro.
  *   2. Engrenagem (Configurações do projeto) -> "Propriedades do script" ->
  *      adicione a propriedade:
- *          AGENDA_SECRET = (o valor da env AGENDA_SYNC_SECRET da Vercel)
- *      (Vercel -> projeto ekballo-academy -> Settings -> Environment Variables
- *       -> AGENDA_SYNC_SECRET -> Reveal/Copiar.)
+ *          AGENDA_SECRET = (o valor da env AGENDA_SYNC_SECRET do app)
+ *      (fica no .env do servidor, em /opt/ekballo-app/.env — peça a quem
+ *       administra o box, ou leia no painel de variáveis do serviço.)
  *   3. Selecione a função "sincronizarAgenda" e clique em Executar uma vez —
  *      o Google vai pedir autorização de acesso à sua agenda; autorize.
  *   4. Relógio (Acionadores/Triggers) -> Adicionar acionador:
@@ -27,7 +27,12 @@
  * Pronto. A cada 10 min a agenda fica em dia nas duas direções.
  */
 
-const APP_BASE = "https://ekballo-academy.vercel.app";
+// Domínio do app. Mudou na migração pra self-hosted (jul/2026) — o antigo
+// (ekballo-academy.vercel.app) está morto. Dá pra sobrescrever pela propriedade
+// de script APP_BASE, sem mexer no código, se o endereço mudar de novo.
+const APP_BASE =
+  PropertiesService.getScriptProperties().getProperty("APP_BASE") ||
+  "https://ekballo.escoladodiscipuloimw.com.br";
 const SECRET = PropertiesService.getScriptProperties().getProperty("AGENDA_SECRET");
 
 // Janela sincronizada: de 7 dias atrás até ~4 meses à frente.
@@ -38,6 +43,47 @@ function sincronizarAgenda() {
   if (!SECRET) throw new Error("Falta a propriedade de script AGENDA_SECRET.");
   enviarGoogleParaEkballo();
   criarNoGoogleDoEkballo();
+}
+
+/**
+ * Rode esta função pra conferir se a senha está certa, sem mexer em nada.
+ * Sucesso aparece no log (Ctrl+Enter / "Registro de execução").
+ */
+function testarConexao() {
+  if (!SECRET) throw new Error("Falta a propriedade de script AGENDA_SECRET.");
+  const resp = UrlFetchApp.fetch(APP_BASE + "/api/agenda/push", {
+    method: "get",
+    headers: { "x-agenda-secret": SECRET },
+    muteHttpExceptions: true,
+  });
+  checar(resp, "falar com o app");
+  const n = (JSON.parse(resp.getContentText() || "{}").compromissos || []).length;
+  console.log("✅ Conexão OK com " + APP_BASE + ". Compromissos esperando: " + n);
+}
+
+/**
+ * Confere a resposta do app e ERRA ALTO quando dá problema.
+ *
+ * Sem isto o script fica mudo: todas as chamadas usam muteHttpExceptions, então
+ * uma senha errada devolvia 401 e a execução terminava "com sucesso" sem fazer
+ * nada — foi assim que a sincronização ficou meses parada sem ninguém notar.
+ */
+function checar(resp, oque) {
+  const codigo = resp.getResponseCode();
+  if (codigo === 401) {
+    throw new Error(
+      "O app recusou a senha (401) ao " + oque + ".\n\n" +
+        "Ajuste a propriedade de script AGENDA_SECRET: ela tem que ser igual ao " +
+        "trecho depois de 'key=' no link que aparece no painel do Ekballo, em " +
+        "/admin/agenda -> \"Ver estes compromissos no meu Google Agenda\".",
+    );
+  }
+  if (codigo >= 300) {
+    throw new Error(
+      "Falha ao " + oque + " (HTTP " + codigo + "): " + resp.getContentText().slice(0, 300),
+    );
+  }
+  return resp;
 }
 
 /** (1) Lê todas as agendas do Google e manda a janela pro Ekballo. */
@@ -58,13 +104,14 @@ function enviarGoogleParaEkballo() {
       });
     }
   }
-  UrlFetchApp.fetch(APP_BASE + "/api/agenda/sync", {
+  const resp = UrlFetchApp.fetch(APP_BASE + "/api/agenda/sync", {
     method: "post",
     contentType: "application/json",
     headers: { "x-agenda-secret": SECRET },
     payload: JSON.stringify({ de: de.toISOString(), ate: ate.toISOString(), eventos }),
     muteHttpExceptions: true,
   });
+  checar(resp, "enviar seus eventos do Google pro Ekballo");
 }
 
 /** (2) Cria no Google Calendar os compromissos do Ekballo (painel/WhatsApp). */
@@ -74,6 +121,7 @@ function criarNoGoogleDoEkballo() {
     headers: { "x-agenda-secret": SECRET },
     muteHttpExceptions: true,
   });
+  checar(resp, "ler os compromissos do Ekballo");
   const lista = (JSON.parse(resp.getContentText() || "{}").compromissos) || [];
   const cal = CalendarApp.getDefaultCalendar();
   for (const c of lista) {
@@ -89,13 +137,16 @@ function criarNoGoogleDoEkballo() {
         });
       }
       // remove do Ekballo (volta como evento do Google na próxima sync)
-      UrlFetchApp.fetch(APP_BASE + "/api/agenda/push", {
+      const rm = UrlFetchApp.fetch(APP_BASE + "/api/agenda/push", {
         method: "post",
         contentType: "application/json",
         headers: { "x-agenda-secret": SECRET },
         payload: JSON.stringify({ id: c.id }),
         muteHttpExceptions: true,
       });
+      // Se a remoção falhar calado, o mesmo compromisso volta a ser criado na
+      // próxima rodada — vira duplicata a cada 10 minutos.
+      checar(rm, "remover \"" + c.titulo + "\" da fila do Ekballo");
     } catch (err) {
       console.error("Falha ao criar no Google:", c.titulo, err);
     }

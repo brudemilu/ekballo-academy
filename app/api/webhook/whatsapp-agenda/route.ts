@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { addCompromisso } from "@/lib/db";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
 import { transcreverAudio } from "@/lib/agenda-audio";
+import { lerImagem } from "@/lib/agenda-imagem";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
+import { chatEhDoDono } from "@/lib/whatsapp-agenda-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,8 +12,9 @@ export const maxDuration = 60;
 // Webhook do Evolution: "manda no zap → cai na agenda".
 // O Evolution é configurado pra POSTar o evento messages.upsert aqui.
 // Protegido por ?secret= (AGENDA_WHATSAPP_SECRET). Só processa mensagens de
-// números na allowlist (AGENDA_WHATSAPP_DONOS) — senão qualquer um criaria
-// compromisso. Responde a confirmação via a edge function de envio.
+// chats na allowlist (AGENDA_WHATSAPP_DONOS) — senão uma mensagem enviada pelo
+// dono para outra pessoa poderia criar compromisso. Responde a confirmação via
+// a edge function de envio.
 
 function obj(v: unknown): Record<string, unknown> {
   return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
@@ -27,30 +30,54 @@ function str(v: unknown): string {
 //                   + body.data.message {conversation|...|audioMessage}
 // O que mudou de lugar de verdade foi o identificador do chat: na v2 ele vive
 // dentro de `key`, não solto em `data`.
-function extrair(body: Record<string, unknown>) {
+//
+// Metadados e conteúdo são extraídos em etapas separadas. Assim, uma conversa
+// que não seja o chat do próprio dono é descartada antes de o app sequer ler o
+// texto, a legenda ou a mídia recebida no payload.
+function extrairMetadados(body: Record<string, unknown>) {
   const data = obj(body.data ?? body);
   const info = obj(data.Info);
   const key = obj(data.key);
-  const message = obj(data.Message ?? data.message);
 
   const fromMe = info.IsFromMe === true || key.fromMe === true;
   const chat = str(info.Chat || key.remoteJid || data.remoteJid);
-  // Em grupo a v2 identifica o autor em `participant`; em conversa direta ele
-  // não vem, e aí remetente e conversa são a mesma coisa (self-chat).
-  const sender = str(info.Sender || key.participant || chat);
+  // Nas versões atuais, `remoteJid` pode ser um identificador privado `@lid`.
+  // Quando existe, `remoteJidAlt` traz o JID telefônico do MESMO chat. Nunca
+  // usamos body.sender/data.owner: eles identificam a instância e seriam iguais
+  // também nas conversas com terceiros.
+  const chatAlternativo = str(key.remoteJidAlt || data.remoteJidAlt);
   const isGrupo = info.IsGroup === true || chat.includes("@g.us");
-  // self-chat = mensagem pra você mesmo (remetente == conversa)
-  const selfChat = !!chat && chat === sender;
+
+  return { fromMe, isGrupo, chats: [chat, chatAlternativo].filter(Boolean) };
+}
+
+function extrairConteudo(body: Record<string, unknown>) {
+  const data = obj(body.data ?? body);
+  const message = obj(data.Message ?? data.message);
 
   const ext = obj(message.extendedTextMessage);
   const text = str(message.conversation || ext.text || data.text || data.body).trim();
 
   const audioMessage = obj(message.audioMessage ?? message.AudioMessage);
   const hasAudio = Object.keys(audioMessage).length > 0;
-  // o Evolution GO já manda o áudio decodificado em base64 no próprio payload
-  const audioB64 = str(message.base64 ?? message.Base64);
 
-  return { fromMe, isGrupo, selfChat, text, hasAudio, audioB64, message };
+  const imageMessage = obj(message.imageMessage ?? message.ImageMessage);
+  const hasImagem = Object.keys(imageMessage).length > 0;
+  // legenda da foto: é onde costuma vir o que a imagem não diz ("sexta que vem")
+  const legenda = str(imageMessage.caption ?? imageMessage.Caption).trim();
+
+  // o gateway já manda a mídia decodificada em base64 no próprio payload
+  // (webhookBase64); o campo é o mesmo para áudio e imagem
+  const midiaB64 = str(message.base64 ?? message.Base64);
+
+  return { text, hasAudio, hasImagem, legenda, midiaB64 };
+}
+
+function entradasDono(): string[] {
+  return (process.env.AGENDA_WHATSAPP_DONOS || "")
+    .split(/[\s,]+/)
+    .map((v) => v.trim().toLowerCase())
+    .filter(Boolean);
 }
 
 async function responder(numero: string, mensagem: string) {
@@ -96,31 +123,59 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }); // ignora payloads estranhos
   }
 
-  const { fromMe, isGrupo, selfChat, text, hasAudio, audioB64 } = extrair(body);
+  const { fromMe, isGrupo, chats } = extrairMetadados(body);
+  const donos = entradasDono();
 
-  // Responde sempre no TELEFONE do dono (1º da allowlist) — o chat vem como
-  // @lid (privacidade do WhatsApp), não dá pra responder nele de forma confiável.
-  const donoNum = (process.env.AGENDA_WHATSAPP_DONOS || "").split(/[\s,]+/)[0].replace(/\D/g, "");
+  // Responde sempre no TELEFONE do dono (1º número da allowlist).
+  const donoNum = (donos.find((dono) => !dono.includes("@")) || "").replace(/\D/g, "");
   const numero = donoNum;
 
-  // Autoriza por fromMe (a instância é o número do dono). Ignora grupos.
-  if (isGrupo || !fromMe) {
+  // O filtro é deliberadamente anterior à leitura de texto/áudio/imagem. `fromMe`
+  // sozinho não basta: ele também é true quando o dono escreve para terceiros.
+  if (isGrupo || !fromMe || !chats.some((chat) => chatEhDoDono(chat, donos))) {
     return NextResponse.json({ ok: true, ignorado: true });
   }
 
-  // Define o "pedido": TEXTO começando com "agenda", OU ÁUDIO na conversa "Você".
+  const { text, hasAudio, hasImagem, legenda, midiaB64 } = extrairConteudo(body);
+
+  // A partir daqui já sabemos que a mensagem está no chat "Você".
   let pedido = "";
-  const m = text.match(/^\s*agenda[:,\s-]+([\s\S]+)/i);
-  if (m) {
+  const m = text.match(/^\s*(?:agenda|agendar|agende)\b[:,\s-]+([\s\S]+)/i);
+  // A imagem é testada ANTES do texto de propósito: quando a foto tem legenda,
+  // a legenda sozinha ("agenda esse convite") não diz o que agendar — o que
+  // importa está na imagem. No chat "Você", toda imagem pode ser interpretada.
+  if (hasImagem) {
+    if (!midiaB64) {
+      await responder(numero, "🖼️ Recebi a imagem, mas ela veio sem conteúdo. Tenta mandar de novo?");
+      return NextResponse.json({ ok: true, imagem: "sem_base64" });
+    }
+    let daImagem = "";
+    try {
+      daImagem = await lerImagem(midiaB64);
+    } catch (e) {
+      console.log("[imagem] ler erro:", e instanceof Error ? e.message : e);
+    }
+    console.log("[imagem] texto lido:", daImagem.slice(0, 160));
+    if (!daImagem) {
+      await responder(
+        numero,
+        "🖼️ Recebi a imagem, mas não consegui ler o que está escrito nela. Manda uma foto mais nítida, ou escreve o compromisso?",
+      );
+      return NextResponse.json({ ok: true, imagem: "sem_texto" });
+    }
+    // a legenda completa o que o convite não traz ("sexta que vem", "às 20h")
+    const obs = legenda.replace(/^\s*(?:agenda|agendar|agende)\b[:,\s-]*/i, "").trim();
+    pedido = obs ? `${daImagem}\n\nObservação de quem enviou: ${obs}` : daImagem;
+  } else if (m) {
     pedido = m[1].trim();
-  } else if (hasAudio && selfChat) {
+  } else if (hasAudio) {
     // áudio pra você mesmo: o Evolution já manda o base64; transcreve (a IA filtra)
-    if (!audioB64) {
+    if (!midiaB64) {
       await responder(numero, "🎙️ Recebi seu áudio, mas veio sem o conteúdo. Tenta de novo?");
       return NextResponse.json({ ok: true, audio: "sem_base64" });
     }
     try {
-      pedido = await transcreverAudio(audioB64);
+      pedido = await transcreverAudio(midiaB64);
     } catch (e) {
       console.log("[audio] transcrever erro:", e instanceof Error ? e.message : e);
     }
@@ -154,7 +209,7 @@ export async function POST(req: NextRequest) {
     const quando = formatarBR(c.inicio, c.dia_todo);
     await responder(
       numero,
-      `✅ Marquei na agenda:\n*${c.titulo}*\n🗓️ ${quando}${c.local ? `\n📍 ${c.local}` : ""}`,
+      `✅ Recebi. Vou adicionar ao seu Google Agenda na próxima sincronização:\n*${c.titulo}*\n🗓️ ${quando}${c.local ? `\n📍 ${c.local}` : ""}`,
     );
     return NextResponse.json({ ok: true, criado: true });
   } catch (e) {
