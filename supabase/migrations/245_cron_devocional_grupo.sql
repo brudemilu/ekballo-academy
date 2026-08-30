@@ -44,6 +44,11 @@ begin
 end;
 $fn$;
 
+-- A função existe apenas para o pg_cron. SECURITY DEFINER em schema público
+-- recebe EXECUTE de PUBLIC por padrão; revogar evita que clientes disparem o
+-- envio do grupo pela Data API.
+revoke all on function public.disparar_devocional_grupo() from public, anon, authenticated;
+
 -- Reagenda de forma idempotente.
 select cron.unschedule('devocional-grupo-diario')
  where exists (select 1 from cron.job where jobname = 'devocional-grupo-diario');
