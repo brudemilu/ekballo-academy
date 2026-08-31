@@ -27,6 +27,7 @@
 //   node scripts/gerar-leituras.mjs                 # TODAS as temáticas (cursos publicados), pula as que já têm leitura
 //   node scripts/gerar-leituras.mjs --force         # regera mesmo as que já têm
 //   node scripts/gerar-leituras.mjs --slug=ego-transformado-keller   # só um curso
+//   node scripts/gerar-leituras.mjs --slug=o-pastor-imperfeito --aula=7 --force   # só uma aula
 //   node scripts/gerar-leituras.mjs --dry           # gera só o WAV local, sem subir/gravar
 //   VOZ_LEITURA=Sulafat node scripts/gerar-leituras.mjs   # troca a voz
 
@@ -36,6 +37,7 @@ import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import ffmpegStatic from "ffmpeg-static";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -81,12 +83,20 @@ const VOZ_DISPLAY = TTS_BACKEND === "edge" ? EDGE_VOICE : VOZ;
 // Tamanho-alvo de cada pedaço enviado ao TTS. O modelo tem limite de duração
 // de áudio por requisição; ~1800 chars de texto narrado cabem com folga.
 const MAX_CHARS = Number(process.env.LEITURA_MAX_CHARS || 1800);
+const GEMINI_CONCURRENCY = Math.max(1, Number(process.env.GEMINI_TTS_CONCURRENCY || 1));
 const MIN_CONTEUDO = 200; // aulas com conteúdo menor que isso são puladas
 
 const args = process.argv.slice(2);
 const FORCE = args.includes("--force");
 const DRY = args.includes("--dry");
 const slugArg = args.find((a) => a.startsWith("--slug="))?.split("=")[1];
+const aulaArgRaw = args.find((a) => a.startsWith("--aula="))?.split("=")[1];
+const aulaArg = aulaArgRaw === undefined ? undefined : Number(aulaArgRaw);
+
+if (aulaArgRaw !== undefined && (!Number.isInteger(aulaArg) || aulaArg < 1))
+  fail("--aula deve ser um número inteiro maior que zero.");
+if (aulaArg !== undefined && !slugArg)
+  fail("--aula deve ser usado junto com --slug.");
 
 if (TTS_BACKEND === "gemini" && !GEMINI_API_KEY)
   fail("Falta GEMINI_API_KEY no ambiente (ou no .env.local).");
@@ -375,15 +385,36 @@ async function processarAula(slug, aula) {
   if (TTS_BACKEND === "edge") {
     mp3 = await sintetizarAulaEdge(slug, aula, pedacos);
   } else {
-    const partes = [];
+    const partes = new Array(pedacos.length);
     let rate = 24000;
-    for (let i = 0; i < pedacos.length; i++) {
-      process.stdout.write(`   · sintetizando ${i + 1}/${pedacos.length}…\r`);
-      const r = await lerPedacoPCM(pedacos[i]);
-      partes.push(r.pcm);
-      rate = r.rate;
-      await sleep(1200); // respeita rate limit por minuto
-    }
+    const cacheDir = join(OUT, ".gemini-cache", `${slug}-${aula.id}`);
+    await mkdir(cacheDir, { recursive: true });
+    let proximo = 0;
+    let concluidos = 0;
+    const worker = async () => {
+      while (true) {
+        const i = proximo++;
+        if (i >= pedacos.length) return;
+        const hash = createHash("sha256")
+          .update(`${TTS_MODEL}\0${VOZ}\0${pedacos[i]}`)
+          .digest("hex")
+          .slice(0, 20);
+        const cachePath = join(cacheDir, `${hash}.pcm`);
+        try {
+          partes[i] = await readFile(cachePath);
+        } catch {
+          const r = await lerPedacoPCM(pedacos[i]);
+          partes[i] = r.pcm;
+          rate = r.rate;
+          await writeFile(cachePath, r.pcm);
+        }
+        concluidos++;
+        process.stdout.write(`   · concluídos ${concluidos}/${pedacos.length}…\r`);
+        await sleep(1200); // reduz rajadas entre requisições do mesmo worker
+      }
+    };
+    const concorrencia = Math.min(GEMINI_CONCURRENCY, pedacos.length);
+    await Promise.all(Array.from({ length: concorrencia }, () => worker()));
     mp3 = await wavParaMp3(pcmParaWav(Buffer.concat(partes), rate));
   }
 
@@ -462,12 +493,20 @@ async function main() {
       console.log(`\n=== ${curso.titulo} — interface custom (${curso.external_path}), pulando ===`);
       continue;
     }
-    const { data: aulas } = await supabase
+    let aulasQuery = supabase
       .from("aulas")
       .select("id,titulo,conteudo,ordem,audio_leitura_url")
       .eq("curso_id", curso.id)
       .order("ordem", { ascending: true });
+    if (aulaArg !== undefined) aulasQuery = aulasQuery.eq("ordem", aulaArg);
+    const { data: aulas } = await aulasQuery;
     console.log(`\n=== ${curso.titulo} — ${aulas?.length || 0} aulas ===`);
+
+    if (aulaArg !== undefined && !aulas?.length) {
+      console.log(`· aula ${aulaArg} não encontrada em ${curso.slug}`);
+      err++;
+      continue;
+    }
 
     for (const aula of aulas || []) {
       try {

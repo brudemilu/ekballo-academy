@@ -191,18 +191,6 @@ export default async function AulaPage({
             </div>
           )}
 
-          {leituraUrl && (
-            <div className="mb-8 rounded-xl border border-mesa-200 bg-mesa-50 p-4">
-              <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-mesa-600">
-                🔊 Ouça a leitura desta mesa — narração do texto
-              </p>
-              <audio controls preload="none" className="w-full">
-                <source src={leituraUrl} />
-                Seu navegador não suporta áudio.
-              </audio>
-            </div>
-          )}
-
           {!ehAvaliacao && aula.conteudo && (
             <AulaConteudo
               conteudo={aula.conteudo as string}
@@ -211,6 +199,7 @@ export default async function AulaPage({
               livroTitulo={curso.titulo}
               autor={curso.autor ?? null}
               destaquesIniciais={destaques}
+              leituraUrl={leituraUrl}
             />
           )}
         </article>

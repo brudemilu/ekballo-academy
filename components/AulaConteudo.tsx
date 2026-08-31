@@ -224,6 +224,7 @@ export function AulaConteudo({
   livroTitulo,
   autor,
   destaquesIniciais,
+  leituraUrl,
 }: {
   conteudo: string;
   aulaId: string;
@@ -231,18 +232,21 @@ export function AulaConteudo({
   livroTitulo: string;
   autor: string | null;
   destaquesIniciais: Destaque[];
+  leituraUrl?: string | null;
 }) {
   // Parágrafos do conteúdo. Os que começam com "[cite] " são citações em
   // bloco (textos bíblicos/citações que o livro destaca) — renderizam como
   // blockquote. O marcador é removido aqui pra não bagunçar os offsets de
   // grifo/busca.
-  const paragrafos = conteudo
-    .split("\n\n")
-    .map((p) =>
-      p.startsWith("[cite] ")
-        ? { texto: p.slice(7), cite: true }
-        : { texto: p, cite: false }
-    );
+  const paragrafos = useMemo(
+    () =>
+      conteudo.split("\n\n").map((p) =>
+        p.startsWith("[cite] ")
+          ? { texto: p.slice(7), cite: true }
+          : { texto: p, cite: false },
+      ),
+    [conteudo],
+  );
   const [destaques, setDestaques] = useState<Destaque[]>(destaquesIniciais);
   const [toolbar, setToolbar] = useState<ToolbarState>(null);
   const [salvando, setSalvando] = useState(false);
@@ -262,7 +266,47 @@ export function AulaConteudo({
   // Busca de palavras/frases dentro do capítulo.
   const [busca, setBusca] = useState("");
   const [buscaAtual, setBuscaAtual] = useState(0);
+  const [paragrafoNarrado, setParagrafoNarrado] = useState<number | null>(null);
+  const [audioTocando, setAudioTocando] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // O MP3 atual não traz marcações de tempo por palavra. Distribuímos a
+  // duração pela quantidade de texto de cada parágrafo, o que acompanha a
+  // narração com boa aproximação e continua correto depois de avançar/voltar.
+  const pesosNarracao = useMemo(() => {
+    const pesos = paragrafos.map((p) => {
+      const textoFalado = p.texto
+        .replace(/^\[(?:quadro|figura)\]\s*/i, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      return Math.max(1, textoFalado.length);
+    });
+    const total = pesos.reduce((soma, peso) => soma + peso, 0);
+    let acumulado = 0;
+    return pesos.map((peso) => {
+      const inicio = acumulado / total;
+      acumulado += peso;
+      return { inicio, fim: acumulado / total };
+    });
+  }, [paragrafos]);
+
+  const sincronizarNarracao = useCallback(
+    (audio: HTMLAudioElement) => {
+      if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+      const progresso = Math.min(1, Math.max(0, audio.currentTime / audio.duration));
+      const indice = pesosNarracao.findIndex((faixa) => progresso < faixa.fim);
+      setParagrafoNarrado(indice === -1 ? pesosNarracao.length - 1 : indice);
+    },
+    [pesosNarracao],
+  );
+
+  useEffect(() => {
+    if (!audioTocando || paragrafoNarrado === null) return;
+    const alvo = containerRef.current?.querySelector<HTMLElement>(
+      `[data-paragrafo="${paragrafoNarrado}"]`,
+    );
+    alvo?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [audioTocando, paragrafoNarrado]);
 
   const termo = busca.trim();
   // Todas as ocorrências do termo, em ordem (parágrafo + offset), ignorando
@@ -492,6 +536,36 @@ export function AulaConteudo({
 
   return (
     <>
+      {leituraUrl && (
+        <div className="sticky top-2 z-40 mb-5 rounded-xl border border-laranja-200 bg-white/95 p-4 shadow-md backdrop-blur">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-laranja-700">
+              🔊 Leitura acompanhada
+            </p>
+            <span className="text-[11px] text-mesa-500">
+              {audioTocando ? "Acompanhando o texto…" : "Dê play para acompanhar"}
+            </span>
+          </div>
+          <audio
+            controls
+            preload="metadata"
+            className="w-full"
+            src={leituraUrl}
+            onLoadedMetadata={(e) => sincronizarNarracao(e.currentTarget)}
+            onTimeUpdate={(e) => sincronizarNarracao(e.currentTarget)}
+            onSeeked={(e) => sincronizarNarracao(e.currentTarget)}
+            onPlay={(e) => {
+              setAudioTocando(true);
+              sincronizarNarracao(e.currentTarget);
+            }}
+            onPause={() => setAudioTocando(false)}
+            onEnded={() => setAudioTocando(false)}
+          >
+            Seu navegador não suporta áudio.
+          </audio>
+        </div>
+      )}
+
       <p className="mb-4 flex items-center gap-2 rounded-lg bg-mesa-50 px-3 py-2 text-xs text-mesa-500">
         <span>✨</span>
         Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem. Selecionou só uma palavra? Toque em “Significado” pra ver o sentido e os sinônimos. Para desfazer, toque no grifo e escolha “Desmarcar”.
@@ -554,11 +628,28 @@ export function AulaConteudo({
 
       <div ref={containerRef} className="prose-mesa">
         {paragrafos.map((paragrafo, i) => {
+          const sendoNarrado = paragrafoNarrado === i;
           if (ehQuadro(paragrafo.texto)) {
-            return <Quadro key={i} bloco={paragrafo.texto} />;
+            return (
+              <div
+                key={i}
+                data-paragrafo={i}
+                className={sendoNarrado ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4" : undefined}
+              >
+                <Quadro bloco={paragrafo.texto} />
+              </div>
+            );
           }
           if (ehFigura(paragrafo.texto)) {
-            return <Figura key={i} bloco={paragrafo.texto} />;
+            return (
+              <div
+                key={i}
+                data-paragrafo={i}
+                className={sendoNarrado ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4" : undefined}
+              >
+                <Figura bloco={paragrafo.texto} />
+              </div>
+            );
           }
           const titulos = faixasDeTitulo(paragrafo.texto);
           const grifos = destaques
@@ -570,7 +661,16 @@ export function AulaConteudo({
           });
           const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP);
           const corpo = (
-            <p key={i} data-paragrafo={i} className="whitespace-pre-wrap">
+            <p
+              key={i}
+              data-paragrafo={i}
+              aria-current={sendoNarrado ? "true" : undefined}
+              className={`whitespace-pre-wrap rounded-md transition-[background-color,box-shadow] duration-500 ${
+                sendoNarrado
+                  ? "-mx-2 bg-laranja-50 px-2 shadow-[0_0_0_2px_rgba(251,146,60,0.35)]"
+                  : ""
+              }`}
+            >
               {segs.map((seg, j) => {
                 if (seg.busca) {
                   const ativa = seg.buscaIdx === buscaAtual;
