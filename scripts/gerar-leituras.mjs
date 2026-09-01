@@ -66,6 +66,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABAS
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const TTS_MODEL = process.env.GEMINI_TTS_MODEL || "gemini-2.5-flash-preview-tts";
+const TTS_FALLBACK_MODEL = process.env.GEMINI_TTS_FALLBACK_MODEL || "";
 // Voz prebuilt do Gemini. "Sulafat" = quente/acolhedora; troque por VOZ_LEITURA.
 const VOZ = process.env.VOZ_LEITURA || "Sulafat";
 
@@ -198,8 +199,8 @@ function quebrarEmPedacos(conteudo) {
 }
 
 // ---------- Gemini: TTS de leitura literal (voz única) ----------
-async function lerPedacoPCM(texto) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent`;
+async function lerPedacoPCM(texto, model = TTS_MODEL) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   // O prefixo é DIREÇÃO de estilo (o TTS não o lê em voz alta) — mesmo
   // mecanismo usado em gerar-audios.mjs.
   const prompt = `Leia em português do Brasil, com voz pastoral, calma, clara e acolhedora, em ritmo tranquilo de leitura de livro. Leia exatamente o texto a seguir, sem comentar, resumir nem anunciar nada:\n\n${texto}`;
@@ -391,22 +392,43 @@ async function processarAula(slug, aula) {
     await mkdir(cacheDir, { recursive: true });
     let proximo = 0;
     let concluidos = 0;
+    let usarFallback = false;
     const worker = async () => {
       while (true) {
         const i = proximo++;
         if (i >= pedacos.length) return;
-        const hash = createHash("sha256")
-          .update(`${TTS_MODEL}\0${VOZ}\0${pedacos[i]}`)
-          .digest("hex")
-          .slice(0, 20);
-        const cachePath = join(cacheDir, `${hash}.pcm`);
-        try {
-          partes[i] = await readFile(cachePath);
-        } catch {
-          const r = await lerPedacoPCM(pedacos[i]);
+        const modelos = [TTS_MODEL, TTS_FALLBACK_MODEL].filter(Boolean);
+        let encontrado = false;
+        for (const model of modelos) {
+          const hash = createHash("sha256")
+            .update(`${model}\0${VOZ}\0${pedacos[i]}`)
+            .digest("hex")
+            .slice(0, 20);
+          try {
+            partes[i] = await readFile(join(cacheDir, `${hash}.pcm`));
+            encontrado = true;
+            break;
+          } catch {}
+        }
+        if (!encontrado) {
+          let model = usarFallback && TTS_FALLBACK_MODEL ? TTS_FALLBACK_MODEL : TTS_MODEL;
+          let r;
+          try {
+            r = await lerPedacoPCM(pedacos[i], model);
+          } catch (e) {
+            if (!(e instanceof QuotaDiariaError) || !TTS_FALLBACK_MODEL || model === TTS_FALLBACK_MODEL) throw e;
+            usarFallback = true;
+            model = TTS_FALLBACK_MODEL;
+            console.log(`\n   ↳ cota de ${TTS_MODEL} esgotada; continuando com ${model}`);
+            r = await lerPedacoPCM(pedacos[i], model);
+          }
           partes[i] = r.pcm;
           rate = r.rate;
-          await writeFile(cachePath, r.pcm);
+          const hash = createHash("sha256")
+            .update(`${model}\0${VOZ}\0${pedacos[i]}`)
+            .digest("hex")
+            .slice(0, 20);
+          await writeFile(join(cacheDir, `${hash}.pcm`), r.pcm);
         }
         concluidos++;
         process.stdout.write(`   · concluídos ${concluidos}/${pedacos.length}…\r`);
