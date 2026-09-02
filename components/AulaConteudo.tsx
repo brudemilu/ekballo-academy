@@ -308,6 +308,9 @@ export function AulaConteudo({
   const [busca, setBusca] = useState("");
   const [buscaAtual, setBuscaAtual] = useState(0);
   const [paragrafoNarrado, setParagrafoNarrado] = useState<number | null>(null);
+  // Grifo que a lista "Meus grifos" mandou procurar — fica piscando por um
+  // instante pra a pessoa achar o trecho dentro do parágrafo.
+  const [grifoFocado, setGrifoFocado] = useState<string | null>(null);
   const [audioTocando, setAudioTocando] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -382,6 +385,22 @@ export function AulaConteudo({
     const el = document.getElementById("busca-ativa");
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [buscaAtual, matches]);
+
+  // Da lista de grifos de volta ao texto: rola até o trecho marcado e o destaca
+  // por 2 s. O <mark> pode estar partido em vários pedaços (quando cai em cima
+  // de uma ocorrência da busca), então procura-se pelo primeiro pedaço.
+  const irParaGrifo = useCallback((id: string, paragrafo: number) => {
+    const raiz = containerRef.current;
+    // Se o grifo caiu num quadro ou numa figura, não há <mark> pra achar —
+    // aí basta levar a pessoa ao parágrafo.
+    const alvo =
+      raiz?.querySelector<HTMLElement>(`[data-grifo="${id}"]`) ??
+      raiz?.querySelector<HTMLElement>(`[data-paragrafo="${paragrafo}"]`);
+    if (!alvo) return;
+    alvo.scrollIntoView({ behavior: "smooth", block: "center" });
+    setGrifoFocado(id);
+    window.setTimeout(() => setGrifoFocado((atual) => (atual === id ? null : atual)), 2000);
+  }, []);
 
   const irMatch = useCallback(
     (dir: 1 | -1) => {
@@ -741,9 +760,11 @@ export function AulaConteudo({
                   );
                 }
                 if (seg.cor) {
+                  const focado = Boolean(seg.id) && seg.id === grifoFocado;
                   return (
                     <mark
                       key={j}
+                      data-grifo={seg.id}
                       title={seg.comentario || undefined}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -764,6 +785,8 @@ export function AulaConteudo({
                         cursor: "pointer",
                         fontWeight: seg.titulo ? 700 : undefined,
                         color: seg.titulo ? "#2A2724" : undefined,
+                        boxShadow: focado ? "0 0 0 3px #EA580C" : undefined,
+                        transition: "box-shadow 300ms",
                       }}
                     >
                       {seg.texto}
@@ -815,7 +838,15 @@ export function AulaConteudo({
                   style={{ backgroundColor: CORES[d.cor as Cor]?.swatch }}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-mesa-700">{d.texto}</p>
+                  {/* Volta pro trecho no texto — grifo solto fora do contexto
+                      não diz muita coisa. */}
+                  <button
+                    onClick={() => irParaGrifo(d.id, d.paragrafo)}
+                    className="block w-full text-left text-sm text-mesa-700 underline decoration-mesa-300 decoration-dotted underline-offset-4 hover:decoration-laranja-500 hover:text-mesa-900"
+                    title="Ler no texto"
+                  >
+                    {d.texto}
+                  </button>
                   {d.comentario && (
                     <p className="mt-1 flex items-start gap-1 text-xs italic text-mesa-500">
                       <span aria-hidden>💬</span>
