@@ -4,10 +4,29 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 // Aviso de "nova versão". Compara o build embutido no bundle (NEXT_PUBLIC_BUILD_ID,
 // fixado no momento do build) com o build atual do servidor (/api/version). Quando
-// divergem, há um deploy novo no ar — mostra um banner pedindo pra atualizar.
-// Resolve o caso do app instalado (PWA), onde o service worker segura a versão
-// antiga em cache e a tela não recarrega sozinha. Funciona igual no PC e no celular.
+// divergem, há um deploy novo no ar. Resolve o caso do app instalado (PWA), onde o
+// service worker segura a versão antiga em cache e a tela não recarrega sozinha.
+// Funciona igual no PC e no celular.
+//
+// A atualização é FORÇADA: em vez de esperar o toque no botão, a página recarrega
+// sozinha assim que dá — mas só quando ninguém perde nada com isso. Se a pessoa
+// está escrevendo (resposta, anotação, comentário) ou ouvindo a narração de um
+// capítulo, o recarregamento espera; o banner continua ali para quem quiser
+// atualizar na hora.
 const ATUAL = process.env.NEXT_PUBLIC_BUILD_ID || "dev";
+const ESPERA_INICIAL = 5000;
+const REPETE = 15000;
+
+function podeRecarregar(): boolean {
+  const alvo = document.activeElement as HTMLElement | null;
+  if (alvo && (alvo.tagName === "INPUT" || alvo.tagName === "TEXTAREA" || alvo.isContentEditable)) {
+    return false; // está digitando
+  }
+  const tocando = Array.from(document.querySelectorAll("audio, video")).some(
+    (m) => !(m as HTMLMediaElement).paused && !(m as HTMLMediaElement).ended
+  );
+  return !tocando;
+}
 
 export function UpdatePrompt() {
   const [novaVersao, setNovaVersao] = useState(false);
@@ -67,6 +86,24 @@ export function UpdatePrompt() {
     window.location.reload();
   }, []);
 
+  // Recarrega sozinho assim que a tela estiver ociosa.
+  useEffect(() => {
+    if (!novaVersao) return;
+    let vivo = true;
+    const tentar = () => {
+      if (!vivo || !podeRecarregar()) return;
+      vivo = false;
+      atualizar();
+    };
+    const inicial = window.setTimeout(tentar, ESPERA_INICIAL);
+    const ciclo = window.setInterval(tentar, REPETE);
+    return () => {
+      vivo = false;
+      window.clearTimeout(inicial);
+      window.clearInterval(ciclo);
+    };
+  }, [novaVersao, atualizar]);
+
   if (!novaVersao) return null;
 
   return (
@@ -77,14 +114,14 @@ export function UpdatePrompt() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">Nova versão disponível</p>
-          <p className="text-xs text-mesa-300">Atualize para ver as novidades.</p>
+          <p className="text-xs text-mesa-300">Atualizando sozinho em instantes.</p>
         </div>
         <button
           onClick={atualizar}
           disabled={atualizando}
           className="flex-none rounded-full bg-laranja-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-laranja-600 disabled:opacity-70"
         >
-          {atualizando ? "Atualizando…" : "Atualizar"}
+          {atualizando ? "Atualizando…" : "Atualizar agora"}
         </button>
       </div>
     </div>
