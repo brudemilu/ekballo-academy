@@ -27,6 +27,47 @@ function ehTitulo(linha: string): boolean {
   return true;
 }
 
+// ---- Subtítulo (linha curta em Caixa Alta de Título, sem ponto final) ----
+// Nível abaixo do título em CAIXA ALTA: "Descobrir a Nós Mesmos",
+// "Empenhemo-nos Pela Excelência". Sem marcação no texto para se apoiar, a
+// pista é a forma: parágrafo de uma linha só, curto, que não fecha frase e em
+// que as palavras de peso começam em maiúscula.
+const PALAVRA_MENOR = new Set([
+  "de", "da", "do", "das", "dos", "a", "o", "as", "os", "e", "em", "na", "no",
+  "nas", "nos", "com", "para", "por", "pela", "pelo", "pelas", "pelos", "que",
+  "à", "ao", "aos", "às", "um", "uma", "se", "sem", "sobre", "entre", "ou",
+  "não", "mais", "como", "até",
+]);
+
+function ehSubtitulo(paragrafo: string): boolean {
+  const t = paragrafo.trim();
+  if (!t || t.includes("\n") || t.length > 95) return false;
+  if ("—–-\"“'([*•".includes(t[0])) return false;
+  if (".!?:;,…\"”)»".includes(t[t.length - 1])) return false;
+  if (/\d$/.test(t)) return false; // cabeçalho corrido com número de página
+  if (t.includes(".") || t.includes(";")) return false; // referência bibliográfica
+  if (!/^[A-ZÀÁÂÃÄÇÉÊËÍÎÏÓÔÕÖÚÛÜ]/.test(t)) return false;
+  if (ehTitulo(t)) return false; // já é título de seção
+  const palavras = t.split(/\s+/);
+  if (palavras.length < 2 || palavras.length > 12) return false;
+  const fortes = palavras.filter((w) => !PALAVRA_MENOR.has(w.toLowerCase().replace(/[(),]/g, "")));
+  if (fortes.length < 2) return false;
+  const maiusculas = fortes.filter((w) => /^[A-ZÀÁÂÃÄÇÉÊËÍÎÏÓÔÕÖÚÛÜ“"']/.test(w)).length;
+  return maiusculas / fortes.length >= 0.8;
+}
+
+type Nivel = "titulo" | "subtitulo" | null;
+
+// O parágrafo INTEIRO é um cabeçalho? (linha de título solta no meio do texto
+// continua sendo só negrito, tratada em faixasDeTitulo)
+function nivelDoParagrafo(paragrafo: string, proximo: string | undefined): Nivel {
+  const t = paragrafo.trim();
+  if (!t.includes("\n") && ehTitulo(t)) return "titulo";
+  // cabeçalho não fecha capítulo: precisa de texto depois dele
+  if (proximo && ehSubtitulo(t)) return "subtitulo";
+  return null;
+}
+
 type Faixa = { start: number; end: number };
 
 function faixasDeTitulo(texto: string): Faixa[] {
@@ -651,7 +692,8 @@ export function AulaConteudo({
               </div>
             );
           }
-          const titulos = faixasDeTitulo(paragrafo.texto);
+          const nivel = nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
+          const titulos = nivel ? [] : faixasDeTitulo(paragrafo.texto);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
             .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
@@ -660,12 +702,15 @@ export function AulaConteudo({
             if (m.paragrafo === i) matchesP.push({ start: m.start, end: m.end, idx: gi });
           });
           const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP);
+          const Tag = nivel === "titulo" ? "h3" : nivel === "subtitulo" ? "h4" : "p";
           const corpo = (
-            <p
+            <Tag
               key={i}
               data-paragrafo={i}
               aria-current={sendoNarrado ? "true" : undefined}
               className={`whitespace-pre-wrap rounded-md transition-[background-color,box-shadow] duration-500 ${
+                nivel === "titulo" ? "titulo-secao" : nivel === "subtitulo" ? "subtitulo-secao" : ""
+              } ${
                 sendoNarrado
                   ? "-mx-2 bg-laranja-50 px-2 shadow-[0_0_0_2px_rgba(251,146,60,0.35)]"
                   : ""
@@ -737,7 +782,7 @@ export function AulaConteudo({
                 }
                 return <span key={j}>{seg.texto}</span>;
               })}
-            </p>
+            </Tag>
           );
           if (paragrafo.cite) {
             return (
