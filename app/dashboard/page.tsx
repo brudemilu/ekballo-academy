@@ -18,7 +18,7 @@ import {
 import { getDevocionalDoDia } from "@/lib/devocionais";
 import { contarAnotacoes } from "@/lib/anotacoes";
 import { getProximaLicao, getStreak } from "@/lib/english";
-import { podeVerAgenda, podeUsarCaderno } from "@/lib/permissoes";
+import { podeVerAgenda, podeUsarCaderno, podeUsarEnglish } from "@/lib/permissoes";
 import { agruparPorCategoria } from "@/lib/categorias";
 import { SeloOffline } from "@/components/SeloOffline";
 import { CAPA_LIVRO } from "@/lib/capas";
@@ -57,6 +57,14 @@ export default async function DashboardPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
 
+  // O English é por convite: só quem o master libera vê o card (e a
+  // trilha). Sem liberação nem consultamos lição/sequência.
+  const mostrarEnglish = podeUsarEnglish(
+    session.profile?.papel,
+    session.profile?.is_admin,
+    session.profile?.english_liberado,
+  );
+
   const [
     todosCursos, matriculas, leituras, devocional, proximaLicao, englishStreak,
     totalAnotacoes,
@@ -65,8 +73,10 @@ export default async function DashboardPage() {
       listMatriculasByAluno(session.userId),
       listProgressoLeitura(session.userId),
       getDevocionalDoDia(),
-      getProximaLicao(session.userId),
-      getStreak(session.userId),
+      mostrarEnglish ? getProximaLicao(session.userId) : Promise.resolve(null),
+      mostrarEnglish
+        ? getStreak(session.userId)
+        : Promise.resolve({ dias_seguidos: 0, recorde: 0, ultimo_dia: null, total_licoes: 0 }),
       contarAnotacoes(session.userId),
     ]);
 
@@ -369,8 +379,9 @@ export default async function DashboardPage() {
               </Link>
             )}
 
-            {/* Ekballo English — lição do dia + sequência */}
-            {proximaLicao && (
+            {/* Ekballo English — lição do dia + sequência.
+                Só para quem tem o curso liberado (acesso por convite). */}
+            {mostrarEnglish && proximaLicao && (
               <Link
                 href={`/english/licao/${proximaLicao.slug}`}
                 className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"

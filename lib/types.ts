@@ -5,6 +5,9 @@ export type Profile = {
   telefone: string | null;
   is_admin: boolean;
   acesso_liberado?: boolean | null;
+  // Ekballo English liberado pessoa a pessoa (o card e a trilha só
+  // aparecem para quem o master libera). Admin nunca depende disto.
+  english_liberado?: boolean | null;
   // Perfil de acesso. master = tudo; coordenador/lider = conforme matriz;
   // discipulo = sem painel. Pode vir ausente em registros antigos.
   papel?: "master" | "coordenador" | "lider" | "discipulo";

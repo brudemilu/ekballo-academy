@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { EnglishLicaoPlayer } from "@/components/EnglishLicaoPlayer";
 import { getCurrentSession } from "@/lib/db";
+import { podeUsarEnglish } from "@/lib/permissoes";
 import { getLicaoBySlug, listExerciciosByLicao, listTrilha } from "@/lib/english";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -14,6 +15,10 @@ export default async function EnglishLicaoPage({ params }: { params: Promise<{ s
 
   const session = await getCurrentSession();
   if (!session) redirect("/login");
+  // Acesso por convite: quem o master não liberou não entra na trilha.
+  if (!podeUsarEnglish(session.profile?.papel, session.profile?.is_admin, session.profile?.english_liberado)) {
+    redirect("/english");
+  }
 
   const achado = await getLicaoBySlug(slug);
   if (!achado || !achado.licao.publicado) notFound();

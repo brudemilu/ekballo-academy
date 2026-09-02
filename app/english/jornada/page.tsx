@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { getCurrentSession } from "@/lib/db";
+import { podeUsarEnglish } from "@/lib/permissoes";
 import {
   getProximaLicao,
   getStreak,
@@ -129,6 +130,10 @@ function Modulo({
 export default async function EnglishJornadaPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
+  // Acesso por convite: quem o master não liberou não entra na trilha.
+  if (!podeUsarEnglish(session.profile?.papel, session.profile?.is_admin, session.profile?.english_liberado)) {
+    redirect("/english");
+  }
 
   const [trilha, streak, conquistas, proxima, revisao] = await Promise.all([
     listTrilha(session.userId),

@@ -19,7 +19,7 @@ export function AdminAlunoForm({
   souMaster = false,
 }: {
   alunoId: string;
-  initial: { nome: string; email: string; telefone: string; turma: string; papel?: string; acesso_liberado?: boolean | null };
+  initial: { nome: string; email: string; telefone: string; turma: string; papel?: string; acesso_liberado?: boolean | null; english_liberado?: boolean | null };
   souMaster?: boolean;
 }) {
   const router = useRouter();
@@ -28,6 +28,7 @@ export function AdminAlunoForm({
   const [turma, setTurma] = useState(initial.turma);
   const [papel, setPapel] = useState(initial.papel || "discipulo");
   const [acessoLiberado, setAcessoLiberado] = useState(!!initial.acesso_liberado);
+  const [englishLiberado, setEnglishLiberado] = useState(!!initial.english_liberado);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
@@ -74,6 +75,7 @@ export function AdminAlunoForm({
         telefone: telefoneNorm,
         turma: turma.trim(),
         acesso_liberado: acessoLiberado,
+        english_liberado: englishLiberado,
         ...(souMaster ? { papel } : {}),
       }),
     });
@@ -165,6 +167,24 @@ export function AdminAlunoForm({
             <span className="block text-sm font-medium text-mesa-800">Liberar acesso ao sistema</span>
             <span className="mt-1 block text-xs text-mesa-600">
               Usuários sem essa liberação ficam com o acesso bloqueado até a aprovação do administrador.
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <div className="rounded-xl border border-mesa-200 bg-mesa-50 p-4">
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={englishLiberado}
+            onChange={(e) => setEnglishLiberado(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-mesa-300 text-laranja-600 focus:ring-laranja-500"
+          />
+          <span>
+            <span className="block text-sm font-medium text-mesa-800">Liberar o Ekballo English</span>
+            <span className="mt-1 block text-xs text-mesa-600">
+              O curso de inglês é por convite: sem essa marcação, o discípulo não
+              vê o card no painel nem entra na trilha.
             </span>
           </span>
         </label>

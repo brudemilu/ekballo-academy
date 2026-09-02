@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EnglishLicaoPlayer } from "@/components/EnglishLicaoPlayer";
 import { getCurrentSession } from "@/lib/db";
+import { podeUsarEnglish } from "@/lib/permissoes";
 import { montarRevisao } from "@/lib/english";
 import type { EnglishLicao, EnglishModulo } from "@/lib/english-tipos";
 
@@ -23,6 +24,10 @@ const LICAO_REVISAO: EnglishLicao = {
 export default async function EnglishRevisaoPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
+  // Acesso por convite: quem o master não liberou não entra na trilha.
+  if (!podeUsarEnglish(session.profile?.papel, session.profile?.is_admin, session.profile?.english_liberado)) {
+    redirect("/english");
+  }
 
   const revisao = await montarRevisao(session.userId);
 

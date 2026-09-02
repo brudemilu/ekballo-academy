@@ -258,6 +258,35 @@ export async function getEnglishAdminStats(): Promise<EnglishAdminStats> {
   };
 }
 
+/**
+ * Quem pode entrar no English — a lista que alimenta o controle de acesso
+ * no painel. O curso é por convite: cada discípulo é liberado na mão.
+ */
+export async function listAcessoEnglish(): Promise<{
+  id: string;
+  nome: string;
+  email: string;
+  liberado: boolean;
+}[]> {
+  if (isMockMode()) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, nome, email, english_liberado")
+    .eq("is_admin", false)
+    .order("nome", { ascending: true });
+
+  return ((data || []) as {
+    id: string; nome: string | null; email: string; english_liberado: boolean | null;
+  }[]).map((p) => ({
+    id: p.id,
+    nome: p.nome || p.email,
+    email: p.email,
+    liberado: !!p.english_liberado,
+  }));
+}
+
 /** Quem está praticando — alimenta o acompanhamento no painel pastoral. */
 export async function listEnglishAlunos(): Promise<{
   aluno_id: string;

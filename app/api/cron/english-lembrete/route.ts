@@ -78,6 +78,14 @@ export async function GET(req: NextRequest) {
   const hoje = diaEmSaoPaulo();
   const ontem = somaDias(hoje, -1);
 
+  // O English é por convite: quem não foi liberado não recebe lembrete
+  // de um curso que nem enxerga (ver profiles.english_liberado).
+  const { data: liberadosRaw } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("english_liberado", true);
+  const liberados = new Set(((liberadosRaw || []) as { id: string }[]).map((p) => p.id));
+
   const { data: streaks } = await admin
     .from("english_streak")
     .select("aluno_id, dias_seguidos, ultimo_dia");
@@ -92,6 +100,7 @@ export async function GET(req: NextRequest) {
 
   for (const s of linhas) {
     if (!s.ultimo_dia) continue;
+    if (!liberados.has(s.aluno_id)) continue;
     if (s.ultimo_dia === hoje) { jaFezHoje.add(s.aluno_id); continue; }
     if (s.ultimo_dia === ontem) { emRisco.push(s.aluno_id); continue; }
     const parado = diasEntre(s.ultimo_dia, hoje);
@@ -104,7 +113,8 @@ export async function GET(req: NextRequest) {
     const { data: alunos } = await admin
       .from("profiles")
       .select("id")
-      .eq("is_admin", false);
+      .eq("is_admin", false)
+      .eq("english_liberado", true);
     const comStreak = new Set(linhas.map((s) => s.aluno_id));
     nuncaComecaram = ((alunos || []) as { id: string }[])
       .map((a) => a.id)

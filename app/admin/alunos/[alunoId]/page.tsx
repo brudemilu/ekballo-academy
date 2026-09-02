@@ -84,6 +84,11 @@ export default async function AdminAlunoPage({
               Acesso liberado
             </span>
           )}
+          {!aluno.is_admin && aluno.english_liberado && (
+            <span className="rounded-full bg-laranja-100 px-3 py-1 font-medium text-laranja-700">
+              English liberado
+            </span>
+          )}
           <span className="rounded-full bg-mesa-50 px-3 py-1 text-mesa-500">
             Cadastro em {new Date(aluno.created_at).toLocaleDateString("pt-BR")}
           </span>
@@ -105,6 +110,7 @@ export default async function AdminAlunoPage({
               turma: aluno.turma || "",
               papel: aluno.papel || "discipulo",
               acesso_liberado: aluno.acesso_liberado,
+              english_liberado: aluno.english_liberado,
             }}
           />
         </div>

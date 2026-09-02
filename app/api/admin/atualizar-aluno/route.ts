@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     souMaster = profile?.papel === "master" || (!!profile?.is_admin && !profile?.papel);
   }
 
-  let body: { alunoId?: string; nome?: string; telefone?: string; turma?: string; papel?: string; acesso_liberado?: boolean };
+  let body: { alunoId?: string; nome?: string; telefone?: string; turma?: string; papel?: string; acesso_liberado?: boolean; english_liberado?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -41,6 +41,10 @@ export async function POST(req: NextRequest) {
   const update: Record<string, unknown> = { nome, telefone, turma };
   if (typeof body.acesso_liberado === "boolean") {
     update.acesso_liberado = body.acesso_liberado;
+  }
+  // English é por convite (ver lib/permissoes → podeUsarEnglish).
+  if (typeof body.english_liberado === "boolean") {
+    update.english_liberado = body.english_liberado;
   }
   if (souMaster && body.papel && PAPEIS_VALIDOS.includes(body.papel)) {
     update.papel = body.papel;

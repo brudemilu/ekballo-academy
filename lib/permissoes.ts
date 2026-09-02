@@ -120,3 +120,16 @@ export function podeVerAgenda(
   if (ehMaster) return true;
   return !!email && AGENDA_EMAILS.includes(email.trim().toLowerCase());
 }
+
+// -------- EKBALLO ENGLISH: acesso por convite --------
+// O English não é para todo mundo: o master escolhe quem entra
+// (ficha do discípulo em /admin/alunos ou o painel /admin/english).
+// A flag mora em `profiles.english_liberado`; admin/master sempre têm.
+export function podeUsarEnglish(
+  papel: string | null | undefined,
+  isAdmin: boolean | null | undefined,
+  englishLiberado: boolean | null | undefined,
+): boolean {
+  if (isAdmin || papel === "master") return true;
+  return englishLiberado === true;
+}
