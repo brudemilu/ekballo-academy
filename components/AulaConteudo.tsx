@@ -4,6 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Destaque } from "@/lib/types";
 import { selecaoConsultavel, type Verbete } from "@/lib/dicionario-comum";
+import {
+  acharReferencias,
+  ehFigura,
+  ehQuadro,
+  faixasDeTitulo,
+  lerParagrafos,
+  nivelDoParagrafo,
+  papeisDosParagrafos,
+  parseFigura,
+  parseQuadro,
+  type Faixa,
+} from "@/lib/estrutura-livro";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -16,99 +28,6 @@ const CORES: Record<Cor, { bg: string; swatch: string; nome: string }> = {
   azul: { bg: "#BAE6FD", swatch: "#38BDF8", nome: "Azul" },
 };
 const CORES_ORDEM: Cor[] = ["amarelo", "verde", "rosa", "azul"];
-
-// ---- Detecção de título (linha em CAIXA ALTA, curta, sem minúsculas) ----
-function ehTitulo(linha: string): boolean {
-  const t = linha.trim();
-  if (t.length < 2 || t.length > 70) return false;
-  if (t.startsWith("•")) return false;
-  if (/[a-zàáâãäçéêëíîïóôõöúûü]/.test(t)) return false; // tem minúscula → não é título
-  if (!/[A-ZÀÁÂÃÄÇÉÊËÍÎÏÓÔÕÖÚÛÜ]/.test(t)) return false; // precisa de ao menos 1 maiúscula
-  return true;
-}
-
-// ---- Subtítulo (linha curta em Caixa Alta de Título, sem ponto final) ----
-// Nível abaixo do título em CAIXA ALTA: "Descobrir a Nós Mesmos",
-// "Empenhemo-nos Pela Excelência". Sem marcação no texto para se apoiar, a
-// pista é a forma: parágrafo de uma linha só, curto, que não fecha frase e em
-// que as palavras de peso começam em maiúscula.
-const PALAVRA_MENOR = new Set([
-  "de", "da", "do", "das", "dos", "a", "o", "as", "os", "e", "em", "na", "no",
-  "nas", "nos", "com", "para", "por", "pela", "pelo", "pelas", "pelos", "que",
-  "à", "ao", "aos", "às", "um", "uma", "se", "sem", "sobre", "entre", "ou",
-  "não", "mais", "como", "até",
-]);
-
-function ehSubtitulo(paragrafo: string): boolean {
-  const t = paragrafo.trim();
-  if (!t || t.includes("\n") || t.length > 95) return false;
-  if ("—–-\"“'([*•".includes(t[0])) return false;
-  if (".!?:;,…\"”)»".includes(t[t.length - 1])) return false;
-  if (/\d$/.test(t)) return false; // cabeçalho corrido com número de página
-  if (t.includes(".") || t.includes(";")) return false; // referência bibliográfica
-  if (!/^[A-ZÀÁÂÃÄÇÉÊËÍÎÏÓÔÕÖÚÛÜ]/.test(t)) return false;
-  if (ehTitulo(t)) return false; // já é título de seção
-  const palavras = t.split(/\s+/);
-  if (palavras.length < 2 || palavras.length > 12) return false;
-  const fortes = palavras.filter((w) => !PALAVRA_MENOR.has(w.toLowerCase().replace(/[(),]/g, "")));
-  if (fortes.length < 2) return false;
-  const maiusculas = fortes.filter((w) => /^[A-ZÀÁÂÃÄÇÉÊËÍÎÏÓÔÕÖÚÛÜ“"']/.test(w)).length;
-  return maiusculas / fortes.length >= 0.8;
-}
-
-type Nivel = "titulo" | "subtitulo" | null;
-
-// O parágrafo INTEIRO é um cabeçalho? (linha de título solta no meio do texto
-// continua sendo só negrito, tratada em faixasDeTitulo)
-function nivelDoParagrafo(paragrafo: string, proximo: string | undefined): Nivel {
-  const t = paragrafo.trim();
-  if (!t.includes("\n") && ehTitulo(t)) return "titulo";
-  // cabeçalho não fecha capítulo: precisa de texto depois dele
-  if (proximo && ehSubtitulo(t)) return "subtitulo";
-  return null;
-}
-
-type Faixa = { start: number; end: number };
-
-function faixasDeTitulo(texto: string): Faixa[] {
-  const faixas: Faixa[] = [];
-  let offset = 0;
-  for (const linha of texto.split("\n")) {
-    if (ehTitulo(linha)) faixas.push({ start: offset, end: offset + linha.length });
-    offset += linha.length + 1; // +1 pelo \n
-  }
-  return faixas;
-}
-
-// ---- Quadros (tabelas/boxes fiéis ao PDF) ----
-// Bloco que começa com "[quadro] Título" e tem linhas com colunas separadas
-// por " | ". Uma linha só de traços (--- | ---) marca a linha anterior como
-// cabeçalho.
-function ehQuadro(paragrafo: string): boolean {
-  return /^\[quadro\]/i.test(paragrafo.trim());
-}
-
-function parseQuadro(paragrafo: string): {
-  titulo: string;
-  header: string[] | null;
-  linhas: string[][];
-} {
-  const linhasTxt = paragrafo.split("\n");
-  const titulo = linhasTxt[0].replace(/^\[quadro\]\s*/i, "").trim();
-  const corpo = linhasTxt.slice(1).filter((l) => l.trim() !== "");
-  let header: string[] | null = null;
-  const linhas: string[][] = [];
-  for (const linha of corpo) {
-    const cells = linha.split("|").map((c) => c.trim());
-    const ehSeparador = cells.every((c) => c === "" || /^-{2,}$/.test(c));
-    if (ehSeparador && linhas.length > 0) {
-      header = linhas.pop() ?? null;
-      continue;
-    }
-    linhas.push(cells);
-  }
-  return { titulo, header, linhas };
-}
 
 function Quadro({ bloco }: { bloco: string }) {
   const { titulo, header, linhas } = parseQuadro(bloco);
@@ -156,22 +75,12 @@ function Quadro({ bloco }: { bloco: string }) {
 }
 
 
-// ---- Figuras (gráficos e diagramas do livro original) ----
-// Bloco "[figura] /caminho/da/imagem.png | Legenda opcional". Existe porque
-// vários livros trazem diagrama que o texto referencia diretamente ("o diagrama
-// abaixo representa..."): sem a figura, o leitor cai numa remissão vazia.
-function ehFigura(paragrafo: string): boolean {
-  return /^\[figura\]/i.test(paragrafo.trim());
-}
-
 function Figura({ bloco }: { bloco: string }) {
-  const corpo = bloco.trim().replace(/^\[figura\]\s*/i, "");
-  const [src, ...resto] = corpo.split("|");
-  const legenda = resto.join("|").trim();
+  const { src, legenda } = parseFigura(bloco);
   return (
     <figure className="my-6">
       <img
-        src={src.trim()}
+        src={src}
         alt={legenda || "Figura do livro"}
         className="mx-auto w-full max-w-2xl rounded-xl border border-mesa-300 bg-white p-3"
       />
@@ -185,6 +94,8 @@ function Figura({ bloco }: { bloco: string }) {
 type Segmento = {
   texto: string;
   titulo: boolean;
+  /** trecho que é uma referência bíblica ("Rm 8.28") — só realce visual */
+  ref?: boolean;
   cor?: Cor;
   id?: string;
   comentario?: string | null;
@@ -208,10 +119,15 @@ function montarSegmentos(
   texto: string,
   titulos: Faixa[],
   grifos: { start: number; end: number; cor: Cor; id: string; comentario: string | null }[],
-  buscas: { start: number; end: number; idx: number }[] = []
+  buscas: { start: number; end: number; idx: number }[] = [],
+  refs: Faixa[] = []
 ): Segmento[] {
   const pontos = new Set<number>([0, texto.length]);
   for (const f of titulos) {
+    pontos.add(f.start);
+    pontos.add(f.end);
+  }
+  for (const f of refs) {
     pontos.add(f.start);
     pontos.add(f.end);
   }
@@ -230,11 +146,13 @@ function montarSegmentos(
     const e = ord[i + 1];
     if (e <= s) continue;
     const titulo = titulos.some((f) => f.start <= s && f.end >= e);
+    const ref = refs.some((f) => f.start <= s && f.end >= e);
     const g = grifos.find((x) => x.start <= s && x.end >= e);
     const b = buscas.find((x) => x.start <= s && x.end >= e);
     segs.push({
       texto: texto.slice(s, e),
       titulo,
+      ref,
       cor: g?.cor,
       id: g?.id,
       comentario: g?.comentario,
@@ -279,15 +197,9 @@ export function AulaConteudo({
   // bloco (textos bíblicos/citações que o livro destaca) — renderizam como
   // blockquote. O marcador é removido aqui pra não bagunçar os offsets de
   // grifo/busca.
-  const paragrafos = useMemo(
-    () =>
-      conteudo.split("\n\n").map((p) =>
-        p.startsWith("[cite] ")
-          ? { texto: p.slice(7), cite: true }
-          : { texto: p, cite: false },
-      ),
-    [conteudo],
-  );
+  const paragrafos = useMemo(() => lerParagrafos(conteudo), [conteudo]);
+  // Citações em bloco e as referências que as assinam (ver papeisDosParagrafos).
+  const papeis = useMemo(() => papeisDosParagrafos(paragrafos), [paragrafos]);
   const [destaques, setDestaques] = useState<Destaque[]>(destaquesIniciais);
   const [toolbar, setToolbar] = useState<ToolbarState>(null);
   const [salvando, setSalvando] = useState(false);
@@ -711,8 +623,12 @@ export function AulaConteudo({
               </div>
             );
           }
-          const nivel = nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
+          const papel = papeis[i];
+          const nivel = papel ? null : nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
           const titulos = nivel ? [] : faixasDeTitulo(paragrafo.texto);
+          // Referência bíblica no corpo do texto: realce só visual, por faixa
+          // de caractere, pra não deslocar os grifos já salvos.
+          const refs = nivel ? [] : acharReferencias(paragrafo.texto);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
             .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
@@ -720,15 +636,17 @@ export function AulaConteudo({
           matches.forEach((m, gi) => {
             if (m.paragrafo === i) matchesP.push({ start: m.start, end: m.end, idx: gi });
           });
-          const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP);
+          const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP, refs);
           const Tag = nivel === "titulo" ? "h3" : nivel === "subtitulo" ? "h4" : "p";
+          const classePapel =
+            papel === "cita" ? "cita-bloco" : papel === "cita-ref" ? "cita-ref" : "";
           const corpo = (
             <Tag
               key={i}
               data-paragrafo={i}
               aria-current={sendoNarrado ? "true" : undefined}
               className={`whitespace-pre-wrap rounded-md transition-[background-color,box-shadow] duration-500 ${
-                nivel === "titulo" ? "titulo-secao" : nivel === "subtitulo" ? "subtitulo-secao" : ""
+                nivel === "titulo" ? "titulo-secao" : nivel === "subtitulo" ? "subtitulo-secao" : classePapel
               } ${
                 sendoNarrado
                   ? "-mx-2 bg-laranja-50 px-2 shadow-[0_0_0_2px_rgba(251,146,60,0.35)]"
@@ -803,20 +721,17 @@ export function AulaConteudo({
                     </strong>
                   );
                 }
+                if (seg.ref) {
+                  return (
+                    <span key={j} className="ref-biblica">
+                      {seg.texto}
+                    </span>
+                  );
+                }
                 return <span key={j}>{seg.texto}</span>;
               })}
             </Tag>
           );
-          if (paragrafo.cite) {
-            return (
-              <blockquote
-                key={i}
-                className="my-5 rounded-r-lg border-l-4 border-laranja-400 bg-mesa-100/70 py-3 pl-5 pr-3 italic text-mesa-700 [&>p]:m-0"
-              >
-                {corpo}
-              </blockquote>
-            );
-          }
           return corpo;
         })}
       </div>
