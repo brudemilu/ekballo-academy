@@ -998,6 +998,17 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#AEC6E0",
     livroUrl: "/capas/campo-batalha-mente.jpg",
   },
+  "perspectivas": {
+    preLabel: "MOVIMENTO CRISTÃO MUNDIAL",
+    titulo: "Perspectivas",
+    subtitulo: "O propósito de Deus entre todos os povos",
+    rodape: "Guia de estudo — bíblica, histórica, cultural e estratégica",
+    bg: "linear-gradient(135deg, #101E33 0%, #1E3D63 52%, #35719E 100%)",
+    textoCor: "#EDF3FA",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9C4DE",
+    rodapeCor: "#A9C4DE",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;
