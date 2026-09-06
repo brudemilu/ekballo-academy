@@ -53,21 +53,38 @@ def _montar_texto(runs, limiar):
         fim = x + w
     return txt
 
+def _defeitos(txt):
+    """quantos defeitos esse corte deixou, nos dois sentidos: 'palavra'
+    comprida demais pra existir (corte alto demais gruda palavras) e letra
+    solta (corte baixo demais estilhaça a palavra). Devolve (grudadas,
+    estilhaçadas) pra dar pra ordenar do menos pior."""
+    grudadas = len(re.findall(r"[A-Za-zÀ-ÿ]{15,}", txt))
+    fichas = [p for p in txt.split() if p]
+    soltas = sum(1 for p in fichas if len(p) == 1)
+    excesso = max(0, soltas - max(2, int(0.30 * len(fichas))))
+    return grudadas, excesso
+
 def juntar_runs(runs):
     """concatena os trechos de uma linha. Alguns PDFs mandam cada letra como um
-    trecho separado, SEM espaço: o espaço tem de sair do vão horizontal.
-    Testamos os cortes candidatos e ficamos com o primeiro que não deixa
-    'palavra' comprida demais pra existir em português."""
+    trecho separado, SEM espaço: o espaço tem de sair do vão horizontal. O
+    corte não pode ser fixo (o tracking do título é diferente do corpo), então
+    testamos os candidatos e ficamos com o primeiro sem defeito — ou, se todos
+    tiverem, com o menos pior. Uma linha que é uma palavra só não tem vão de
+    palavra nenhum pra achar: aí qualquer corte baixo estilhaça, e o que
+    salva é justamente a contagem de letras soltas."""
     runs = sorted(runs, key=lambda i: i["r"][0])
     if len(runs) < 3:
         return _montar_texto(runs, 2.6)
     if sum(1 for r in runs if " " in r["t"]) > len(runs) / 3:
         return _montar_texto(runs, 2.6)   # o PDF já traz os espaços
+    tentativas = []
     for limiar in _cortes(runs)[:8]:
         txt = _montar_texto(runs, limiar)
-        if not re.search(r"[A-Za-zÀ-ÿ]{15,}", txt):
+        d = _defeitos(txt)
+        if d == (0, 0):
             return txt
-    return _montar_texto(runs, _cortes(runs)[0])
+        tentativas.append((d, txt))
+    return min(tentativas, key=lambda x: x[0])[1]
 
 def linhas(itens, tol=2.6):
     grupos = []
