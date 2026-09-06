@@ -86,7 +86,7 @@ export default async function DashboardPage() {
     session.profile?.email ?? session.email,
   );
 
-  const mostrarAgenda = podeVerAgenda(
+  const mostrarAgenda = !session.visaoAluno && podeVerAgenda(
     session.profile?.papel,
     session.profile?.is_admin,
     session.profile?.email ?? session.email,
@@ -277,6 +277,7 @@ export default async function DashboardPage() {
                 nome={session.profile?.nome || null}
                 email={session.profile?.email || session.email}
                 isAdmin={!!session.profile?.is_admin}
+                visaoAluno={session.visaoAluno}
               />
             </div>
           </div>

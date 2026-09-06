@@ -71,6 +71,7 @@ export default async function CursoPage({
             nome={session.profile?.nome || null}
             email={session.profile?.email || session.email}
             isAdmin={!!session.profile?.is_admin}
+            visaoAluno={session.visaoAluno}
           />
         </nav>
       </header>
@@ -103,13 +104,13 @@ export default async function CursoPage({
               {curso.descricao}
             </p>
           )}
-          {(session.profile?.is_admin ||
+          {((session.profile?.is_admin && !session.visaoAluno) ||
             (curso.audio_status && curso.audio_status !== "nenhum")) && (
             <div className="mt-6 border-t border-mesa-100 pt-5">
               <AudioLivroControle
                 cursoId={curso.id}
                 slug={curso.slug}
-                isMaster={!!session.profile?.is_admin}
+                isMaster={!!session.profile?.is_admin && !session.visaoAluno}
                 statusInicial={(curso.audio_status as "nenhum") ?? "nenhum"}
                 progressoInicial={curso.audio_progresso ?? 0}
                 totalInicial={curso.audio_total ?? 0}

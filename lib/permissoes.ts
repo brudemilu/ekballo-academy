@@ -133,3 +133,13 @@ export function podeUsarEnglish(
   if (isAdmin || papel === "master") return true;
   return englishLiberado === true;
 }
+
+// -------- MODO DE VISÃO: admin ↔ discípulo --------
+// O master pode "ver como discípulo": a plataforma esconde as afordâncias de
+// administração e ele navega igual a um aluno comum. É um ÓCULOS, não um
+// rebaixamento — o acesso continua total (todos os livros, caderno, English),
+// porque quem está olhando ainda é o dono da casa. Para resolver algo, ele
+// volta ao modo administrador pelo próprio menu.
+// O estado mora num cookie (sobrevive a navegação, reload e troca de aba).
+export const COOKIE_VISAO = "ekballo_visao";
+export const VISAO_ALUNO = "aluno";

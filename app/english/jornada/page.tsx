@@ -164,6 +164,7 @@ export default async function EnglishJornadaPage() {
               nome={session.profile?.nome ?? null}
               email={session.email}
               isAdmin={Boolean(session.profile?.is_admin)}
+              visaoAluno={session.visaoAluno}
             />
           </div>
         </nav>

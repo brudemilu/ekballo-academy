@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { podeUsarCaderno } from "@/lib/permissoes";
@@ -9,12 +10,32 @@ export function UserMenu({
   nome,
   email,
   isAdmin,
+  visaoAluno = false,
 }: {
   nome: string | null;
   email: string;
   isAdmin: boolean;
+  // Master vendo a plataforma pelos olhos de um discípulo. O acesso continua
+  // total (livros, caderno, English); o que some é a administração.
+  visaoAluno?: boolean;
 }) {
   const router = useRouter();
+  const [trocando, setTrocando] = useState(false);
+
+  async function trocarVisao(modo: "aluno" | "admin") {
+    setTrocando(true);
+    try {
+      await fetch("/api/visao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modo }),
+      });
+      router.push(modo === "aluno" ? "/dashboard" : "/admin");
+      router.refresh();
+    } finally {
+      setTrocando(false);
+    }
+  }
   // O caderno é liberado pessoa a pessoa; quem não tem acesso nem vê o atalho.
   const temCaderno = podeUsarCaderno(undefined, isAdmin, email);
 
@@ -38,13 +59,35 @@ export function UserMenu({
         ✍️ <span className="hidden sm:inline">Caderno</span>
       </Link>
       )}
-      {isAdmin && (
-        <Link
-          href="/admin"
-          className="hidden rounded-full border border-oliveira-300 bg-oliveira-50 px-3 py-1.5 text-xs font-medium text-oliveira-700 hover:bg-oliveira-100 sm:inline-block"
+      {isAdmin && visaoAluno && (
+        // No modo discípulo o único atalho administrativo é a porta de volta.
+        <button
+          onClick={() => trocarVisao("admin")}
+          disabled={trocando}
+          className="rounded-full border border-laranja-300 bg-laranja-50 px-3 py-1.5 text-xs font-medium text-laranja-700 transition hover:bg-laranja-100 disabled:opacity-60"
+          title="Você está vendo como discípulo. Voltar ao modo administrador."
         >
-          Painel admin
-        </Link>
+          👁️ <span className="hidden sm:inline">Modo discípulo · voltar ao admin</span>
+          <span className="sm:hidden">Admin</span>
+        </button>
+      )}
+      {isAdmin && !visaoAluno && (
+        <>
+          <Link
+            href="/admin"
+            className="hidden rounded-full border border-oliveira-300 bg-oliveira-50 px-3 py-1.5 text-xs font-medium text-oliveira-700 hover:bg-oliveira-100 sm:inline-block"
+          >
+            Painel admin
+          </Link>
+          <button
+            onClick={() => trocarVisao("aluno")}
+            disabled={trocando}
+            className="hidden rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700 disabled:opacity-60 sm:inline-block"
+            title="Ver a plataforma como um discípulo vê"
+          >
+            👁️ Ver como discípulo
+          </button>
+        </>
       )}
       <Link
         href="/perfil"

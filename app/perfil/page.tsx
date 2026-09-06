@@ -21,6 +21,7 @@ export default async function PerfilPage() {
             nome={session.profile?.nome || null}
             email={session.profile?.email || session.email}
             isAdmin={!!session.profile?.is_admin}
+            visaoAluno={session.visaoAluno}
           />
         </nav>
       </header>
