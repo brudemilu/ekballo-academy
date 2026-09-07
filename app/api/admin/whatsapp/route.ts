@@ -3,7 +3,7 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { telefoneBloqueadoBroadcast } from "@/lib/destinatarios";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
-import { webhookBase } from "@/lib/site-url";
+import { montarWebhookUrl } from "@/lib/whatsapp-webhook";
 
 // Painel WhatsApp (Evolution GO): proxy admin-gated pras edge functions.
 //   GET                      -> status da instância
@@ -51,20 +51,6 @@ function chamarEdge(url: string, body: unknown) {
     headers: { "x-internal-secret": INTERNAL_SECRET, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-}
-
-// URL do webhook de recebimento (com o secret), montada server-side. Usada tanto
-// pelo botão "webhook" quanto no "conectar" (pra reconexão já registrar o webhook).
-function montarWebhookUrl(): string | null {
-  const secret = process.env.AGENDA_WHATSAPP_SECRET || "";
-  if (!secret) return null;
-  // Sem fallback pra domínio fixo: o literal antigo apontava pro
-  // ekballo-academy.vercel.app, morto desde a migração pro Contabo. Registrar
-  // o webhook num host inexistente deixa o "agendar pelo WhatsApp" mudo sem
-  // erro visível — melhor falhar aqui, alto e claro.
-  const base = webhookBase();
-  if (!base) return null;
-  return `${base}/api/webhook/whatsapp-agenda?secret=${encodeURIComponent(secret)}`;
 }
 
 export async function GET() {
