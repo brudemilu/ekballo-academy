@@ -79,13 +79,15 @@ export function UserMenu({
           >
             Painel admin
           </Link>
+          {/* Visível TAMBÉM no celular: é de onde o master mais usa a
+              plataforma. No estreito fica só o olho, como o atalho do caderno. */}
           <button
             onClick={() => trocarVisao("aluno")}
             disabled={trocando}
-            className="hidden rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700 disabled:opacity-60 sm:inline-block"
+            className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700 disabled:opacity-60"
             title="Ver a plataforma como um discípulo vê"
           >
-            👁️ Ver como discípulo
+            👁️ <span className="hidden sm:inline">Ver como discípulo</span>
           </button>
         </>
       )}
