@@ -6,6 +6,7 @@ import {
   soDigitos,
   MSG_AMBIGUO,
 } from "@/lib/recuperacao-senha";
+import { limitar, chaveDoPedido, respostaExcedida } from "@/lib/rate-limit";
 
 // POST /api/recuperar-senha/confirmar
 // Body: { identificador: string, codigo: string, senha: string }
@@ -24,6 +25,17 @@ const INTERNAL_SECRET = process.env.INTERNAL_SECRET!;
 const MAX_TENTATIVAS = 5;
 
 export async function POST(req: NextRequest) {
+  // O código tem 6 dígitos: um milhão de combinações. Sem teto, dá para
+  // varrer todas e entrar na conta de qualquer pessoa. 10 por 15min por
+  // IP deixa a varredura levar séculos, e ainda cabe quem digitou errado.
+  const limite = limitar(chaveDoPedido(req, "confirmar"), 10, 15 * 60_000);
+  if (!limite.permitido) {
+    return respostaExcedida(
+      limite,
+      "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
+    );
+  }
+
   let body: { identificador?: string; codigo?: string; senha?: string };
   try {
     body = await req.json();

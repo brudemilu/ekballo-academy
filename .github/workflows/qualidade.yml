@@ -1,0 +1,153 @@
+name: Qualidade
+
+# O portão antes da master. Roda em todo PR e em todo push na master.
+#
+# O que BLOQUEIA e o que só AVISA é decisão consciente, não descuido:
+# verificação que bloqueia precisa passar hoje, senão a esteira nasce
+# vermelha e todo mundo aprende a ignorar o vermelho. As que ainda não
+# passam entram como aviso, com issue aberta para virarem bloqueio.
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+# PR novo cancela a execução anterior do mesmo PR — não adianta gastar
+# minuto verificando um commit que já foi substituído.
+concurrency:
+  group: qualidade-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # O build precisa dessas três. São valores de demonstração: a esteira
+  # NUNCA fala com o Supabase real. Chave de produção não entra em CI.
+  NEXT_PUBLIC_MOCK_MODE: "true"
+  NEXT_PUBLIC_SUPABASE_URL: "https://exemplo.supabase.co"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: "chave-de-mentira-para-o-build"
+
+jobs:
+  verificar:
+    name: Tipos, fronteiras, testes e build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Tipos
+        run: npm run tipos
+
+      - name: Fronteiras de arquitetura
+        run: npm run fronteiras
+
+      - name: Testes unitários com cobertura
+        run: npm run teste:cobertura
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: Orçamento de desempenho
+        run: node scripts/orcamento-bundle.mjs
+
+      - name: Guarda a cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: coverage/
+          retention-days: 7
+
+  estilo:
+    name: Formato e lint (só o que mudou)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # O Biome compara com a master; sem o histórico não há com o
+          # que comparar.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Só os arquivos alterados, de propósito. O código existente tem
+      # 836 apontamentos do Biome; exigir tudo de uma vez reprovaria todo
+      # PR desde o primeiro dia, e corrigir em massa criaria um diff de
+      # centenas de arquivos que enterra o histórico. Código novo nasce
+      # no padrão; o antigo é convertido aos poucos.
+      - name: Biome nos arquivos alterados
+        run: npx biome ci --changed --since=origin/master .
+
+  seguranca:
+    name: Segurança das dependências
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Bloqueia em alta e crítica. Moderada e baixa entram no relatório
+      # sem travar a entrega — senão uma falha sem correção disponível
+      # numa dependência transitiva paralisa o projeto inteiro.
+      - name: npm audit (alta e crítica)
+        run: npm audit --audit-level=high
+
+      - name: Relatório completo (não bloqueia)
+        if: always()
+        run: npm audit || true
+
+  morto:
+    name: Código morto
+    runs-on: ubuntu-latest
+    # AVISO, não bloqueio. O projeto já tem código órfão conhecido
+    # (issue #57), então isto nasceria vermelho. Vira bloqueio quando a
+    # #57 for resolvida.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Knip
+        run: npm run morto
+
+  e2e:
+    name: Ponta a ponta
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Instala o navegador
+        run: npx playwright install --with-deps chromium
+
+      - name: Build em modo demonstração
+        run: npm run build
+
+      # Modo demonstração: os testes rodam contra dados de mentira, sem
+      # tocar em Supabase nenhum. É o que torna seguro rodar em CI.
+      - name: Testes de ponta a ponta
+        run: npm run e2e
+
+      - name: Guarda o relatório quando falha
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-e2e
+          path: testes-e2e/relatorio/
+          retention-days: 7

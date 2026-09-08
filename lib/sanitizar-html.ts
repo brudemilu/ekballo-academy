@@ -35,6 +35,13 @@ const TAGS_LETAIS = new Set([
 // Tags vazias (sem fechamento).
 const TAGS_VAZIAS = new Set(["br", "hr", "img"]);
 
+// Letais que TAMBÉM são vazias: nunca existe `</meta>`, `</link>`,
+// `</base>` nem `</embed>`. Precisam de tratamento próprio — procurar o
+// fechamento delas é procurar o que não existe, e quem faz isso acaba
+// engolindo o documento inteiro. Ver o bloco de tag letal em
+// `sanitizarHtml`.
+const TAGS_LETAIS_VAZIAS = new Set(["link", "meta", "base", "embed"]);
+
 // Imagem só é aceita quando aponta para o endereço interno do anexo
 // (/api/anotacoes/anexos/{id}/arquivo). Assim não entra imagem de fora —
 // que vazaria o IP de quem lê para um servidor alheio — nem data: URI, que
@@ -252,9 +259,18 @@ export function sanitizarHtml(bruto: string, maxBytes = 400_000): string {
         i = fecha + 1;
         continue;
       }
+      // Vazia: não existe fechamento pra procurar. Pula só a tag e
+      // segue lendo — senão o resto da anotação ia embora junto.
+      if (TAGS_LETAIS_VAZIAS.has(tag)) {
+        i = fecha + 1;
+        continue;
+      }
       const reFim = new RegExp(`</\\s*${tag}\\b[^>]*>`, "i");
       const resto = entrada.slice(fecha + 1);
       const achou = resto.match(reFim);
+      // Sem fechamento numa tag que DEVERIA ter (ex.: <script> cortado no
+      // meio de uma colagem): aí descartar até o fim é o certo — é o lado
+      // seguro do erro. Perder texto é ruim; emitir script solto é pior.
       i = achou?.index === undefined
         ? entrada.length
         : fecha + 1 + achou.index + achou[0].length;

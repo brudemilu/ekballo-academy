@@ -1,0 +1,28 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "app/**/{page,layout,loading,error,not-found,route,template,default}.{ts,tsx}",
+    "middleware.ts",
+    "next.config.ts",
+    "tailwind.config.ts",
+    "playwright.config.ts",
+    "vitest.config.ts",
+    "testes/**/*.test.ts",
+    "testes-e2e/**/*.spec.ts",
+    "scripts/**/*.mjs"
+  ],
+  "project": ["app/**/*.{ts,tsx}", "components/**/*.tsx", "lib/**/*.ts"],
+  "ignore": [
+    "supabase/functions/**",
+    "scripts/**/*.py",
+    ".next/**",
+    "coverage/**"
+  ],
+  "ignoreDependencies": [
+    "autoprefixer",
+    "postcss",
+    "tailwindcss",
+    "@vitest/coverage-v8"
+  ],
+  "ignoreExportsUsedInFile": true
+}

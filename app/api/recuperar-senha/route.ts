@@ -8,6 +8,7 @@ import {
   MSG_AMBIGUO,
 } from "@/lib/recuperacao-senha";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
+import { limitar, chaveDoPedido, respostaExcedida } from "@/lib/rate-limit";
 
 // POST /api/recuperar-senha
 // Body: { identificador: string }  // e-mail OU telefone (WhatsApp) cadastrado
@@ -33,6 +34,18 @@ const RESPOSTA_GENERICA = {
 };
 
 export async function POST(req: NextRequest) {
+  // Cada chamada dispara uma mensagem no WhatsApp. Sem teto, alguém de
+  // fora queima a cota do gateway e enche o telefone de um aluno.
+  // 5 por 15min por IP: folgado para quem errou o próprio dado, apertado
+  // para quem está automatizando.
+  const limite = limitar(chaveDoPedido(req, "recuperar"), 5, 15 * 60_000);
+  if (!limite.permitido) {
+    return respostaExcedida(
+      limite,
+      "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
+    );
+  }
+
   let body: { identificador?: string };
   try {
     body = await req.json();

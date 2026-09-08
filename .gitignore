@@ -67,3 +67,10 @@ tmp/english-audio.sql
 # Python (scripts de extração)
 __pycache__/
 *.pyc
+
+# esteira de qualidade
+/coverage
+/testes-e2e/resultado
+/testes-e2e/relatorio
+/test-results
+/playwright-report

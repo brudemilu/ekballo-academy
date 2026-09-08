@@ -39,7 +39,33 @@ Never commit to `master` directly. Branch naming follows what the repo already u
 
 Issues, PR titles, PR descriptions and commit messages are in pt-BR, like the rest of the product. Commit messages here read as a sentence explaining the change, not as a code (`feat:` prefixes are fine in PR titles, which is the existing habit).
 
-### 5. Before opening the PR
+### 5. The quality gate runs on every PR
+
+`.github/workflows/qualidade.yml` runs on every PR to `master`. Locally, `npm run verificar` runs the same blocking checks in one go.
+
+| Job | Blocks? | What it does |
+|---|---|---|
+| `verificar` | **yes** | `tsc --noEmit`, architecture boundaries, unit tests + coverage, production build, performance budget |
+| `estilo` | **yes** | Biome, **on changed files only** |
+| `seguranca` | **yes** | `npm audit`, high and critical severity only |
+| `e2e` | **yes** | Playwright smoke tests against a real production build in mock mode |
+| `morto` | no (warns) | Knip — dead code |
+
+**Why some checks only warn:** a gate that is red on day one teaches everyone to ignore red. Knip warns because the project has known orphaned code (issue #57); Biome checks only changed files because the existing code has 836 findings and reformatting it all would bury the git history under a diff nobody can review. Both tighten as the debt is paid — that is deliberate, not neglect.
+
+**Never make a check pass by weakening it.** If the performance budget trips, either make the bundle smaller or raise the ceiling in the same PR *and say why in the description*. Silently raising a threshold to get green is how a quality gate becomes decoration.
+
+**What is deliberately NOT installed**, so nobody re-litigates it by accident: Datadog and New Relic (paid APM, absurd for ~24 students on one box), OpenTelemetry (no collector to ship to — pure overhead), Stryker (mutation testing needs a mature suite first), Endtest (commercial, redundant with Playwright), Commitlint (this repo writes commit messages as Portuguese prose on purpose; conventional-commits would fight that). Sentry is the one worth revisiting — it needs an account and a DSN from Bruno, and client-side errors are invisible today.
+
+### 6. Where tests go, and which kind
+
+- **`testes/*.test.ts` (Vitest)** — pure logic only: no database, no network, no browser. Today: the HTML sanitizer, the rate limiter. This is where detail belongs.
+- **`testes-e2e/*.spec.ts` (Playwright)** — the real app, production build, mock mode. Smoke level on purpose: screens open, respond, and throw no JS errors. E2E is expensive to maintain and breaks for silly reasons.
+- **Do not mock Supabase to test a route.** It costs a lot to maintain and proves little; that ground is covered by E2E.
+
+Assert what the student *sees*, not internal structure. A test tied to a class name breaks on every visual tweak and gets abandoned within months.
+
+### 7. Before opening the PR
 
 - `npm run build` must pass (this is the only type check — there is no test runner);
 - exercise the change for real when it is reachable through the UI (the browser-driven check under `webapp-testing` works, and mock mode is usually enough);
