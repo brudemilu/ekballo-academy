@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { type NextRequest, NextResponse } from "next/server";
+import { chaveDoPedido, limitar, respostaExcedida } from "@/lib/rate-limit";
 import {
   acharPerfil,
   hashCodigo,
-  soDigitos,
   MSG_AMBIGUO,
+  soDigitos,
 } from "@/lib/recuperacao-senha";
-import { limitar, chaveDoPedido, respostaExcedida } from "@/lib/rate-limit";
 
 // POST /api/recuperar-senha/confirmar
 // Body: { identificador: string, codigo: string, senha: string }
@@ -50,13 +50,13 @@ export async function POST(req: NextRequest) {
   if (!identificador || codigo.length !== 6) {
     return NextResponse.json(
       { erro: "Informe o código de 6 dígitos que enviamos no WhatsApp." },
-      { status: 400 }
+      { status: 400 },
     );
   }
   if (senha.length < 6) {
     return NextResponse.json(
       { erro: "A senha precisa ter pelo menos 6 caracteres." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 
   const erroGenerico = NextResponse.json(
     { erro: "Código inválido ou expirado. Peça um novo." },
-    { status: 400 }
+    { status: 400 },
   );
   if (lookup.tipo !== "achado") return erroGenerico;
   const perfil = lookup.perfil;
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       .eq("id", registro.id);
     return NextResponse.json(
       { erro: "Muitas tentativas. Peça um novo código." },
-      { status: 429 }
+      { status: 429 },
     );
   }
 
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
       .eq("id", registro.id);
     return NextResponse.json(
       { erro: "Código incorreto. Confira e tente de novo." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     console.error("recuperar-senha/confirmar: falha ao trocar senha", updErr);
     return NextResponse.json(
       { erro: "Não foi possível salvar a nova senha. Tente de novo." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

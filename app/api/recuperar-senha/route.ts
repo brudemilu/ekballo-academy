@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { randomInt } from "crypto";
+import { type NextRequest, NextResponse } from "next/server";
+import { chaveDoPedido, limitar, respostaExcedida } from "@/lib/rate-limit";
 import {
   acharPerfil,
   hashCodigo,
-  soDigitos,
   MSG_AMBIGUO,
+  soDigitos,
 } from "@/lib/recuperacao-senha";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
-import { limitar, chaveDoPedido, respostaExcedida } from "@/lib/rate-limit";
 
 // POST /api/recuperar-senha
 // Body: { identificador: string }  // e-mail OU telefone (WhatsApp) cadastrado
@@ -29,8 +29,7 @@ const EDGE_WHATSAPP_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-evolution`;
 
 const RESPOSTA_GENERICA = {
   ok: true,
-  mensagem:
-    "Se houver uma conta com WhatsApp cadastrado, enviamos um código por lá.",
+  mensagem: "Se houver uma conta com WhatsApp cadastrado, enviamos um código por lá.",
 };
 
 export async function POST(req: NextRequest) {
@@ -57,7 +56,7 @@ export async function POST(req: NextRequest) {
   if (!identificador) {
     return NextResponse.json(
       { erro: "Informe seu e-mail ou WhatsApp." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -123,7 +122,7 @@ export async function POST(req: NextRequest) {
     console.error("recuperar-senha: falha ao gravar código", insErr);
     return NextResponse.json(
       { erro: "Não foi possível gerar o código agora. Tente de novo." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -149,15 +148,19 @@ export async function POST(req: NextRequest) {
       const detalhe = await resp.json().catch(() => ({}));
       console.error("recuperar-senha: falha no envio WhatsApp", resp.status, detalhe);
       return NextResponse.json(
-        { erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes." },
-        { status: 502 }
+        {
+          erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes.",
+        },
+        { status: 502 },
       );
     }
   } catch (e) {
     console.error("recuperar-senha: erro ao chamar edge WhatsApp", e);
     return NextResponse.json(
-      { erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes." },
-      { status: 502 }
+      {
+        erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes.",
+      },
+      { status: 502 },
     );
   }
 
