@@ -1,5 +1,5 @@
+import { randomInt } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { randomInt } from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { chaveDoPedido, limitar, respostaExcedida } from "@/lib/rate-limit";
 import {

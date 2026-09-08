@@ -34,8 +34,7 @@ const VARIANTES: Record<Variante, string> = {
     "bg-laranja-500 text-white border border-transparent hover:bg-laranja-600 shadow-sm hover:shadow-md",
   secundario:
     "bg-white text-mesa-800 border border-mesa-300 hover:border-mesa-400 hover:bg-mesa-50",
-  fantasma:
-    "bg-transparent text-mesa-700 border border-transparent hover:bg-mesa-100",
+  fantasma: "bg-transparent text-mesa-700 border border-transparent hover:bg-mesa-100",
   perigo:
     "bg-white text-red-700 border border-red-200 hover:bg-red-50 hover:border-red-300",
 };
