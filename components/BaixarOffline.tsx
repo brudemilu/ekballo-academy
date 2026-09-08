@@ -49,7 +49,9 @@ export function BaixarOffline({ slug }: { slug: string }) {
   }, [slug]);
 
   if (estado === "verificando") {
-    return <div className="h-[52px] animate-pulse rounded-2xl bg-bege-100" />;
+    // Mesma linguagem de esqueleto do resto da plataforma, e a mesma
+    // altura do botão real (52px) — assim a caixa não pula ao trocar.
+    return <div className="esqueleto h-[52px] rounded-2xl" aria-hidden="true" />;
   }
 
   if (estado === "baixado") {
@@ -57,14 +59,14 @@ export function BaixarOffline({ slug }: { slug: string }) {
       <div className="flex items-center gap-2">
         <Link
           href={`/biblioteca/${slug}`}
-          className="lift flex flex-1 items-center justify-center gap-2 rounded-2xl bg-oliveira-600 px-5 py-3 font-medium text-white shadow-sm transition hover:bg-oliveira-700"
+          className="lift pressiona flex flex-1 items-center justify-center gap-2 rounded-2xl bg-oliveira-600 px-5 py-3 font-medium text-white shadow-sm hover:bg-oliveira-700"
         >
           <span aria-hidden>✓</span> Disponível offline · abrir
         </Link>
         <button
           onClick={remover}
           title="Remover download"
-          className="flex-none rounded-2xl border border-bege-200 px-4 py-3 text-sm text-bege-500 transition hover:border-red-300 hover:text-red-600"
+          className="pressiona flex-none rounded-2xl border border-bege-200 px-4 py-3 text-sm text-bege-500 hover:border-red-300 hover:text-red-600"
         >
           Remover
         </button>
@@ -104,7 +106,7 @@ export function BaixarOffline({ slug }: { slug: string }) {
     <div>
       <button
         onClick={baixar}
-        className="lift flex w-full items-center justify-center gap-2 rounded-2xl border border-bege-200 bg-white px-5 py-3 font-medium text-mesa-800 shadow-sm transition hover:border-laranja-300 hover:bg-laranja-50"
+        className="lift pressiona flex w-full items-center justify-center gap-2 rounded-2xl border border-bege-200 bg-white px-5 py-3 font-medium text-mesa-800 shadow-sm hover:border-laranja-300 hover:bg-laranja-50"
       >
         <span aria-hidden className="text-lg">↓</span>
         Baixar para ler e ouvir offline

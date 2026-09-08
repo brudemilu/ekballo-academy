@@ -543,6 +543,8 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
               {exercicio.imagem_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
+                  loading="lazy"
+                  decoding="async"
                   src={exercicio.imagem_url}
                   alt=""
                   aria-hidden
@@ -636,6 +638,8 @@ export function EnglishLicaoPlayer({ modulo, licao, exercicios, proximaSlug, rev
                       {alt.imagem ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
+                          loading="lazy"
+                          decoding="async"
                           src={alt.imagem}
                           alt=""
                           aria-hidden
