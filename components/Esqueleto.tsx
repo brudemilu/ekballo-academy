@@ -19,11 +19,6 @@
 
 import { Logo } from "@/components/Logo";
 
-/** Bloco retangular. Use para imagem, avatar, botão. */
-export function Bloco({ className = "" }: { className?: string }) {
-  return <div className={`esqueleto ${className}`} />;
-}
-
 /**
  * Parágrafo falso. A última linha nasce mais curta (regra no CSS),
  * como parágrafo de verdade — detalhe pequeno que evita o ar de

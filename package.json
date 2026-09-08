@@ -6,7 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tipos": "tsc --noEmit",
+    "teste": "vitest run",
+    "teste:watch": "vitest",
+    "teste:cobertura": "vitest run --coverage",
+    "e2e": "playwright test",
+    "formato": "biome check .",
+    "formato:corrigir": "biome check --write .",
+    "morto": "knip",
+    "fronteiras": "node scripts/verificar-fronteiras.mjs",
+    "verificar": "npm run tipos && npm run fronteiras && npm run teste:cobertura && npm run build && node scripts/orcamento-bundle.mjs && npm run auditar",
+    "auditar": "node scripts/auditar-dependencias.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -14,19 +25,24 @@
     "ffmpeg-static": "^5.3.0",
     "ical-expander": "^3.2.0",
     "msedge-tts": "^2.0.7",
-    "next": "15.5.18",
+    "next": "^15.5.25",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.12",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
+    "@vitest/coverage-v8": "^3.2.7",
     "autoprefixer": "^10.4.20",
+    "knip": "^5.88.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.7"
   }
 }

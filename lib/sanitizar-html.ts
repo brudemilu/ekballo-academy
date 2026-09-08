@@ -15,25 +15,67 @@
 
 // Tags que sobrevivem. Tudo que o editor produz está aqui.
 const TAGS_PERMITIDAS = new Set([
-  "p", "br", "hr",
-  "strong", "b", "em", "i", "u", "s", "strike", "del", "mark", "sub", "sup",
-  "h2", "h3", "h4",
-  "blockquote", "pre", "code",
-  "ul", "ol", "li",
-  "table", "thead", "tbody", "tr", "th", "td",
+  "p",
+  "br",
+  "hr",
+  "strong",
+  "b",
+  "em",
+  "i",
+  "u",
+  "s",
+  "strike",
+  "del",
+  "mark",
+  "sub",
+  "sup",
+  "h2",
+  "h3",
+  "h4",
+  "blockquote",
+  "pre",
+  "code",
+  "ul",
+  "ol",
+  "li",
+  "table",
+  "thead",
+  "tbody",
+  "tr",
+  "th",
+  "td",
   "span", // só sobrevive quando é marca-texto (vira <mark>); senão desembrulha
   "a",
-  "img",  // apenas anexos da própria pessoa — ver `srcDeAnexo` abaixo
+  "img", // apenas anexos da própria pessoa — ver `srcDeAnexo` abaixo
 ]);
 
 // Tags cujo CONTEÚDO também precisa morrer (não basta tirar a tag).
 const TAGS_LETAIS = new Set([
-  "script", "style", "iframe", "object", "embed", "noscript",
-  "template", "title", "textarea", "svg", "math", "link", "meta", "base",
+  "script",
+  "style",
+  "iframe",
+  "object",
+  "embed",
+  "noscript",
+  "template",
+  "title",
+  "textarea",
+  "svg",
+  "math",
+  "link",
+  "meta",
+  "base",
 ]);
 
 // Tags vazias (sem fechamento).
 const TAGS_VAZIAS = new Set(["br", "hr", "img"]);
+
+// Letais que TAMBÉM são vazias: nunca existe `</meta>`, `</link>`,
+// `</base>` nem `</embed>`. Precisam de tratamento próprio — procurar o
+// fechamento delas é procurar o que não existe, e quem faz isso acaba
+// engolindo o documento inteiro. Ver o bloco de tag letal em
+// `sanitizarHtml`.
+const TAGS_LETAIS_VAZIAS = new Set(["link", "meta", "base", "embed"]);
 
 // Imagem só é aceita quando aponta para o endereço interno do anexo
 // (/api/anotacoes/anexos/{id}/arquivo). Assim não entra imagem de fora —
@@ -48,7 +90,17 @@ function srcDeAnexo(src: string): string | null {
 
 // Blocos: usados pra saber onde quebrar linha ao converter em texto puro.
 const TAGS_BLOCO = new Set([
-  "p", "h2", "h3", "h4", "blockquote", "li", "tr", "pre", "hr", "div", "br",
+  "p",
+  "h2",
+  "h3",
+  "h4",
+  "blockquote",
+  "li",
+  "tr",
+  "pre",
+  "hr",
+  "div",
+  "br",
 ]);
 
 // Marca-texto: o editor usa `hiliteColor` (que o navegador materializa como
@@ -99,6 +151,10 @@ function escaparAtributo(valor: string): string {
 // data: e vbscript: — inclusive escritos com espaço/quebra no meio
 // ("java\nscript:"), truque clássico pra driblar filtro ingênuo.
 function hrefSeguro(bruto: string): string | null {
+  // O intervalo de caracteres de controle É a defesa aqui, não descuido:
+  // é o que derruba "java\nscript:" e companhia (ver comentário acima).
+  // Remover isto para agradar o lint abriria o buraco que ele fecha.
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: proposital, é a defesa
   const v = bruto.trim().replace(/[\u0000-\u0020]/g, "");
   if (!v) return null;
   if (/^(https?:|mailto:|tel:)/i.test(v)) return v;
@@ -114,6 +170,10 @@ function lerAtributos(bruto: string): Atributos {
   const attrs: Atributos = {};
   const re = /([a-zA-Z_:][-\w:.]*)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>`]+)))?/g;
   let m: RegExpExecArray | null;
+  // Laço clássico de varredura com regex /g. `matchAll` diria o mesmo, mas
+  // isto é a análise de atributos do sanitizador — código sensível — e
+  // reescrevê-la de carona num PR de esteira não se justifica.
+  // biome-ignore lint/suspicious/noAssignInExpressions: idioma de varredura com regex /g
   while ((m = re.exec(bruto))) {
     const nome = m[1].toLowerCase();
     attrs[nome] = m[2] ?? m[3] ?? m[4] ?? "";
@@ -252,12 +312,22 @@ export function sanitizarHtml(bruto: string, maxBytes = 400_000): string {
         i = fecha + 1;
         continue;
       }
+      // Vazia: não existe fechamento pra procurar. Pula só a tag e
+      // segue lendo — senão o resto da anotação ia embora junto.
+      if (TAGS_LETAIS_VAZIAS.has(tag)) {
+        i = fecha + 1;
+        continue;
+      }
       const reFim = new RegExp(`</\\s*${tag}\\b[^>]*>`, "i");
       const resto = entrada.slice(fecha + 1);
       const achou = resto.match(reFim);
-      i = achou?.index === undefined
-        ? entrada.length
-        : fecha + 1 + achou.index + achou[0].length;
+      // Sem fechamento numa tag que DEVERIA ter (ex.: <script> cortado no
+      // meio de uma colagem): aí descartar até o fim é o certo — é o lado
+      // seguro do erro. Perder texto é ruim; emitir script solto é pior.
+      i =
+        achou?.index === undefined
+          ? entrada.length
+          : fecha + 1 + achou.index + achou[0].length;
       continue;
     }
 
@@ -356,7 +426,9 @@ export function htmlParaTexto(html: string): string {
   );
   txt = txt.replace(/<[^>]*>/g, "");
   txt = txt.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
-  txt = txt.replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)));
+  txt = txt.replace(/&#x([0-9a-f]+);/gi, (_, n) =>
+    String.fromCodePoint(parseInt(n, 16)),
+  );
   for (const [ent, ch] of Object.entries(ENTIDADES)) {
     txt = txt.split(ent).join(ch);
   }

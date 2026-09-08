@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { randomInt } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { randomInt } from "crypto";
+import { type NextRequest, NextResponse } from "next/server";
+import { chaveDoPedido, limitar, respostaExcedida } from "@/lib/rate-limit";
 import {
   acharPerfil,
   hashCodigo,
-  soDigitos,
   MSG_AMBIGUO,
+  soDigitos,
 } from "@/lib/recuperacao-senha";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 
@@ -28,11 +29,22 @@ const EDGE_WHATSAPP_URL = `${FUNCTIONS_BASE}/enviar-whatsapp-evolution`;
 
 const RESPOSTA_GENERICA = {
   ok: true,
-  mensagem:
-    "Se houver uma conta com WhatsApp cadastrado, enviamos um código por lá.",
+  mensagem: "Se houver uma conta com WhatsApp cadastrado, enviamos um código por lá.",
 };
 
 export async function POST(req: NextRequest) {
+  // Cada chamada dispara uma mensagem no WhatsApp. Sem teto, alguém de
+  // fora queima a cota do gateway e enche o telefone de um aluno.
+  // 5 por 15min por IP: folgado para quem errou o próprio dado, apertado
+  // para quem está automatizando.
+  const limite = limitar(chaveDoPedido(req, "recuperar"), 5, 15 * 60_000);
+  if (!limite.permitido) {
+    return respostaExcedida(
+      limite,
+      "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
+    );
+  }
+
   let body: { identificador?: string };
   try {
     body = await req.json();
@@ -44,7 +56,7 @@ export async function POST(req: NextRequest) {
   if (!identificador) {
     return NextResponse.json(
       { erro: "Informe seu e-mail ou WhatsApp." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -110,7 +122,7 @@ export async function POST(req: NextRequest) {
     console.error("recuperar-senha: falha ao gravar código", insErr);
     return NextResponse.json(
       { erro: "Não foi possível gerar o código agora. Tente de novo." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -136,15 +148,19 @@ export async function POST(req: NextRequest) {
       const detalhe = await resp.json().catch(() => ({}));
       console.error("recuperar-senha: falha no envio WhatsApp", resp.status, detalhe);
       return NextResponse.json(
-        { erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes." },
-        { status: 502 }
+        {
+          erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes.",
+        },
+        { status: 502 },
       );
     }
   } catch (e) {
     console.error("recuperar-senha: erro ao chamar edge WhatsApp", e);
     return NextResponse.json(
-      { erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes." },
-      { status: 502 }
+      {
+        erro: "Não foi possível enviar o código no WhatsApp agora. Tente de novo em instantes.",
+      },
+      { status: 502 },
     );
   }
 
