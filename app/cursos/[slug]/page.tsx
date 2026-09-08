@@ -6,6 +6,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import { BaixarOffline } from "@/components/BaixarOffline";
 import { BarraProgresso } from "@/components/ContinuandoLeitura";
+import { StoryIndicacaoLivro } from "@/components/StoryIndicacaoLivro";
 import AudioLivroControle from "@/components/AudioLivroControle";
 import {
   getCurrentSession,
@@ -146,6 +147,14 @@ export default async function CursoPage({
               >
                 Continuar na mesa {rotuloNumeroAula(retomar)} →
               </Link>
+            )}
+            {lidas >= totalMesas && (
+              <StoryIndicacaoLivro
+                slug={curso.slug}
+                titulo={curso.titulo}
+                autor={curso.autor ?? null}
+                nome={session.profile?.nome ?? null}
+              />
             )}
           </div>
         )}

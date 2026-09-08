@@ -9,6 +9,7 @@ import { AulaConteudo } from "@/components/AulaConteudo";
 import { LeitorMesa } from "@/components/LeitorMesa";
 import { AvaliacaoParach } from "@/components/AvaliacaoParach";
 import { AnotacoesDaMesa } from "@/components/AnotacoesDaMesa";
+import { StoryIndicacaoLivro } from "@/components/StoryIndicacaoLivro";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
   getCurrentSession,
@@ -77,6 +78,13 @@ export default async function AulaPage({
     session.profile?.is_admin,
     session.profile?.email ?? session.email,
   );
+
+  // Terminou o livro? É aqui que o discípulo está quando fecha a última mesa,
+  // então é aqui que o card de conclusão tem que aparecer. A mesa atual usa o
+  // estado recém-lido (`concluida`), que é o que muda no clique do botão.
+  const livroConcluido =
+    aulasStatus.length > 0 &&
+    aulasStatus.every((a) => (a.id === aulaId ? concluida : a.completa));
 
   const respostasMap = new Map(respostas.map((r) => [r.atividade_id, r]));
   const indiceAtual = aulasStatus.findIndex((a) => a.id === aulaId);
@@ -282,6 +290,15 @@ export default async function AulaPage({
             )}
           </div>
         </div>
+
+        {livroConcluido && (
+          <StoryIndicacaoLivro
+            slug={curso.slug}
+            titulo={curso.titulo}
+            autor={curso.autor ?? null}
+            nome={session.profile?.nome ?? null}
+          />
+        )}
       </div>
     </main>
   );
