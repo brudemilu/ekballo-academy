@@ -91,6 +91,8 @@ export default function BibliotecaPage() {
                     {capas[l.slug] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
+                        loading="lazy"
+                        decoding="async"
                         src={capas[l.slug]}
                         alt={l.titulo}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"

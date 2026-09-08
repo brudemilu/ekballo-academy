@@ -80,6 +80,8 @@ function Figura({ bloco }: { bloco: string }) {
   return (
     <figure className="my-6">
       <img
+        loading="lazy"
+        decoding="async"
         src={src}
         alt={legenda || "Figura do livro"}
         className="mx-auto w-full max-w-2xl rounded-xl border border-mesa-300 bg-white p-3"

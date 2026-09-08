@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Botao } from "@/components/Botao";
 import { useRouter } from "next/navigation";
 
 type Status = "nenhum" | "pendente" | "gerando" | "pronto" | "erro";
@@ -104,11 +105,16 @@ export default function AudioLivroControle({
     return (
       <div className="w-full max-w-md">
         <div className="mb-1.5 flex items-center gap-2 text-sm font-medium text-laranja-700">
-          <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-laranja-500" />
+          <span className="inline-block h-3 w-3 animate-pulse-soft rounded-full bg-laranja-500" />
           {naFila ? "🎧 Na fila para gerar áudio…" : `🎧 Gerando áudio… ${progresso}/${total} capítulos`}
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-bege-200">
-          <div className="h-full rounded-full bg-laranja-500 transition-all" style={{ width: `${pct}%` }} />
+          {/* transition-[width], não transition-all: animar "tudo" faz o
+              navegador vigiar propriedades que nunca mudam. */}
+          <div
+            className="h-full rounded-full bg-laranja-500 transition-[width] ease-saida"
+            style={{ width: `${pct}%`, transitionDuration: "var(--dur-lento)" }}
+          />
         </div>
         <p className="mt-1.5 text-xs text-mesa-500">
           Pode fechar a página — a geração continua no servidor.
@@ -127,13 +133,18 @@ export default function AudioLivroControle({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <button
+      {/* Gerar áudio de um livro leva minutos. Antes o botão só
+          escurecia ao ser clicado, o que não distingue "recebi seu
+          clique" de "a página travou". Agora mostra o girador até a
+          fila responder — e a barra de progresso assume em seguida. */}
+      <Botao
         onClick={() => acionar("gerar")}
-        disabled={enviando}
-        className="inline-flex items-center gap-2 rounded-full bg-laranja-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-laranja-600 disabled:opacity-60"
+        ocupado={enviando}
+        rotuloOcupado="Enviando para a fila…"
+        className="font-semibold"
       >
         🎧 {status === "erro" ? "Tentar gerar de novo" : "Gerar áudio do livro"}
-      </button>
+      </Botao>
       {status === "erro" && <span className="text-xs text-red-600">A geração falhou — tente novamente.</span>}
       {erro && <span className="text-xs text-red-600">{erro}</span>}
     </div>

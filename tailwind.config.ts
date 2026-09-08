@@ -96,6 +96,23 @@ export default {
         display: ["var(--fonte-display)", "Georgia", "serif"],
         ui: ["var(--fonte-ui)", "-apple-system", "sans-serif"],
       },
+      transitionTimingFunction: {
+        // A curva assinatura do projeto (expo-out): sai rápido, assenta macio.
+        saida: "cubic-bezier(0.22, 1, 0.36, 1)",
+        // Saída de tela: acelera e some — o inverso da entrada.
+        entrada: "cubic-bezier(0.4, 0, 1, 1)",
+        // Mudança pequena de estado (cor, opacidade, borda).
+        suave: "cubic-bezier(0.4, 0, 0.2, 1)",
+      },
+      transitionDuration: {
+        // Escala nomeada. Elemento maior se move mais devagar — é hierarquia,
+        // não inconsistência. Ver o bloco MOVIMENTO em globals.css.
+        instantaneo: "120ms",
+        rapido: "200ms",
+        padrao: "320ms",
+        lento: "520ms",
+        cena: "900ms",
+      },
       animation: {
         "fade-up": "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards",
         "fade-in": "fade-in 0.8s ease-out forwards",
@@ -104,6 +121,23 @@ export default {
         "pulse-soft": "pulse-soft 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "float-slow": "float 6s ease-in-out infinite",
         "shimmer": "shimmer 3s linear infinite",
+        // ---- MOVIMENTO DE INTERFACE (ver globals.css para a escala) ----
+        // Entradas de conteúdo. Curva de saída: começa rápido e assenta.
+        "surgir": "surgir var(--dur-padrao) var(--ease-saida) forwards",
+        "surgir-baixo": "surgir-baixo var(--dur-padrao) var(--ease-saida) forwards",
+        // Modal/diálogo: o painel cresce de 96%, o véu só esmaece.
+        "modal-entra": "modal-entra var(--dur-padrao) var(--ease-saida) forwards",
+        "modal-sai": "modal-sai var(--dur-rapido) var(--ease-entrada) forwards",
+        "veu-entra": "fade-in var(--dur-rapido) ease-out forwards",
+        // Folha que sobe do rodapé — é como o celular espera abrir painel.
+        "folha-sobe": "folha-sobe var(--dur-padrao) var(--ease-saida) forwards",
+        // Aviso/toast entrando pelo canto.
+        "aviso-entra": "aviso-entra var(--dur-padrao) var(--ease-saida) forwards",
+        // Esqueleto de carregamento: respiração lenta, nunca pisca.
+        "esqueleto": "esqueleto 1.6s var(--ease-suave) infinite",
+        "esqueleto-brilho": "esqueleto-brilho 1.8s linear infinite",
+        // Indicador de progresso indeterminado (barra que percorre).
+        "percorre": "percorre 1.1s var(--ease-suave) infinite",
       },
       keyframes: {
         "fade-up": {
@@ -133,6 +167,45 @@ export default {
         "shimmer": {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        // ---- MOVIMENTO DE INTERFACE ----
+        // Deslocamentos curtos de propósito: 8-12px lê como "chegou",
+        // 30px lê como "voou", que cansa quando acontece a cada navegação.
+        "surgir": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "surgir-baixo": {
+          "0%": { opacity: "0", transform: "translateY(-8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "modal-entra": {
+          "0%": { opacity: "0", transform: "scale(0.96) translateY(8px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "modal-sai": {
+          "0%": { opacity: "1", transform: "scale(1)" },
+          "100%": { opacity: "0", transform: "scale(0.97)" },
+        },
+        "folha-sobe": {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        "aviso-entra": {
+          "0%": { opacity: "0", transform: "translateY(12px) scale(0.98)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "esqueleto": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.45" },
+        },
+        "esqueleto-brilho": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        "percorre": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(400%)" },
         },
       },
     },

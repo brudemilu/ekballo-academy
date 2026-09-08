@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkNav, Seta } from "@/components/LinkNav";
 import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
@@ -165,30 +166,34 @@ export default async function CursoPage({
               const concluida = concluidas.has(aula.id);
               return (
                 <li key={aula.id}>
-                  <Link href={`/cursos/${curso.slug}/aulas/${aula.id}`}>
-                    <div className="lift flex items-center gap-5 rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-laranja-300 hover:shadow-md">
-                      <div
-                        className={`flex h-12 w-12 flex-none items-center justify-center rounded-full font-serif text-lg font-semibold ${
-                          concluida
-                            ? "bg-oliveira-100 text-oliveira-700"
-                            : "bg-mesa-100 text-mesa-700"
-                        }`}
-                      >
-                        {concluida ? "✓" : rotuloNumeroAula(aula)}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-mesa-800">
-                          {aula.titulo}
-                        </h3>
-                        {concluida ? (
-                          <p className="text-xs text-oliveira-600">
-                            Concluído
-                          </p>
-                        ) : null}
-                      </div>
-                      <span className="text-mesa-400">→</span>
+                  {/* LinkNav: afunda ao toque, a seta avança no hover e vira
+                      girador enquanto a mesa carrega. Antes o toque não
+                      produzia sinal nenhum — e daqui até Paris são ~267ms. */}
+                  <LinkNav
+                    href={`/cursos/${curso.slug}/aulas/${aula.id}`}
+                    className="lift flex w-full items-center gap-5 rounded-2xl border border-mesa-200 bg-white p-5 hover:border-laranja-300 hover:shadow-md"
+                    indicador={<Seta className="text-mesa-400" />}
+                  >
+                    <div
+                      className={`flex h-12 w-12 flex-none items-center justify-center rounded-full font-serif text-lg font-semibold ${
+                        concluida
+                          ? "bg-oliveira-100 text-oliveira-700"
+                          : "bg-mesa-100 text-mesa-700"
+                      }`}
+                    >
+                      {concluida ? "✓" : rotuloNumeroAula(aula)}
                     </div>
-                  </Link>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-mesa-800">
+                        {aula.titulo}
+                      </h3>
+                      {concluida ? (
+                        <p className="text-xs text-oliveira-600">
+                          Concluído
+                        </p>
+                      ) : null}
+                    </div>
+                  </LinkNav>
                 </li>
               );
             })}

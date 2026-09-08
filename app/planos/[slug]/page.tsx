@@ -71,6 +71,8 @@ export default async function PlanoPage({
           <div className="mb-8 overflow-hidden rounded-2xl border border-mesa-200 bg-white shadow-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
+              loading="lazy"
+              decoding="async"
               src={bannerUrl}
               alt={plano.nome}
               className="aspect-square w-full max-w-md mx-auto object-cover sm:aspect-[3/2]"
