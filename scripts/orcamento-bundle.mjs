@@ -19,8 +19,8 @@
 // =============================================================
 
 import { readFileSync } from "node:fs";
-import { gzipSync } from "node:zlib";
 import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 
 // MEDIDO COMPRIMIDO (gzip), que é o que atravessa a rede — e é a
 // mesma unidade que o `next build` imprime, então os dois números
@@ -70,7 +70,8 @@ const fmt = (b) => `${kb(b).toFixed(1)} kB`;
 let comuns = null;
 for (const [, chunks] of paginas) {
   const conjunto = new Set(chunks.filter((c) => c.endsWith(".js")));
-  comuns = comuns === null ? conjunto : new Set([...comuns].filter((c) => conjunto.has(c)));
+  comuns =
+    comuns === null ? conjunto : new Set([...comuns].filter((c) => conjunto.has(c)));
 }
 const bytesCompartilhados = [...comuns].reduce((s, c) => s + bytesDe(c), 0);
 

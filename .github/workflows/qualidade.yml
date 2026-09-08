@@ -95,11 +95,11 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # Bloqueia em alta e crítica. Moderada e baixa entram no relatório
-      # sem travar a entrega — senão uma falha sem correção disponível
-      # numa dependência transitiva paralisa o projeto inteiro.
-      - name: npm audit (alta e crítica)
-        run: npm audit --audit-level=high
+      # Falha grave NOVA reprova. Falha conhecida passa, mas só se
+      # estiver na lista do script, com issue e motivo — a lista é a
+      # dívida declarada. Ver scripts/auditar-dependencias.mjs.
+      - name: Auditoria (bloqueia falha grave nova)
+        run: npm run auditar
 
       - name: Relatório completo (não bloqueia)
         if: always()

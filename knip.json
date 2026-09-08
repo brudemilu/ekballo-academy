@@ -12,12 +12,7 @@
     "scripts/**/*.mjs"
   ],
   "project": ["app/**/*.{ts,tsx}", "components/**/*.tsx", "lib/**/*.ts"],
-  "ignore": [
-    "supabase/functions/**",
-    "scripts/**/*.py",
-    ".next/**",
-    "coverage/**"
-  ],
+  "ignore": ["supabase/functions/**", "scripts/**/*.py", ".next/**", "coverage/**"],
   "ignoreDependencies": [
     "autoprefixer",
     "postcss",

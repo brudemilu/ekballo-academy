@@ -91,9 +91,7 @@ export function limitar(chave: string, limite: number, janelaMs: number): Veredi
 export function chaveDoPedido(req: Request, prefixo: string): string {
   const xff = req.headers.get("x-forwarded-for") ?? "";
   const ip =
-    xff.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip")?.trim() ||
-    "desconhecido";
+    xff.split(",")[0]?.trim() || req.headers.get("x-real-ip")?.trim() || "desconhecido";
   return `${prefixo}:${ip}`;
 }
 

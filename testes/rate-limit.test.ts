@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  limitar,
-  chaveDoPedido,
-  respostaExcedida,
   _limparTudo,
+  chaveDoPedido,
+  limitar,
+  respostaExcedida,
 } from "@/lib/rate-limit";
 
 beforeEach(() => _limparTudo());

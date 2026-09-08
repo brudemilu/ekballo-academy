@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 // =============================================================
 // Teste de fumaça: as telas principais do discípulo abrem, mostram
@@ -110,10 +110,9 @@ test.describe("acessibilidade mínima", () => {
     }
 
     expect(foco, "o Tab não chegou a nenhum elemento interativo").not.toBeNull();
-    expect(
-      foco?.temMarca,
-      "o elemento focado não mostra nenhuma marca de foco",
-    ).toBe(true);
+    expect(foco?.temMarca, "o elemento focado não mostra nenhuma marca de foco").toBe(
+      true,
+    );
   });
 
   test("a página declara o idioma, sem o que a hifenização não funciona", async ({

@@ -19,8 +19,7 @@
 // aprende a ignorar — e aí ele não protege mais nada.
 // =============================================================
 
-import { readFileSync } from "node:fs";
-import { globSync } from "node:fs";
+import { globSync, readFileSync } from "node:fs";
 
 const VERMELHO = "\x1b[31m";
 const VERDE = "\x1b[32m";
@@ -34,8 +33,9 @@ function importaValorDe(src, modulo) {
     `import\\s+(type\\s+)?([^;]*?)\\s+from\\s+["']${modulo.replace(/[/\\]/g, "\\$&")}["']`,
     "g",
   );
-  let m;
-  while ((m = re.exec(src))) {
+  // matchAll em vez de `while ((m = re.exec(...)))`: diz a mesma coisa
+  // sem atribuição dentro da condição.
+  for (const m of src.matchAll(re)) {
     // `import type { X } from` — apagado na compilação, não conta.
     if (m[1]) continue;
     const miolo = m[2];
@@ -48,7 +48,10 @@ function importaValorDe(src, modulo) {
         .filter(Boolean);
       const temValor = itens.some((i) => !i.startsWith("type "));
       // Se há também import default fora das chaves, é valor.
-      const fora = miolo.replace(/\{[^}]*\}/, "").replace(/,/g, "").trim();
+      const fora = miolo
+        .replace(/\{[^}]*\}/, "")
+        .replace(/,/g, "")
+        .trim();
       if (!temValor && !fora) continue;
     }
     return true;
@@ -88,9 +91,7 @@ let violacoes = 0;
 let arquivosLidos = 0;
 
 for (const regra of REGRAS) {
-  const arquivos = regra.arquivos.flatMap((p) =>
-    globSync(p, { cwd: process.cwd() }),
-  );
+  const arquivos = regra.arquivos.flatMap((p) => globSync(p, { cwd: process.cwd() }));
   for (const arq of arquivos) {
     let src;
     try {

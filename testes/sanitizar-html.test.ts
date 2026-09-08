@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  sanitizarHtml,
+  contarPalavras,
   htmlParaTexto,
   resumir,
-  contarPalavras,
+  sanitizarHtml,
 } from "@/lib/sanitizar-html";
 
 // =============================================================
@@ -68,7 +68,7 @@ describe("sanitizarHtml · execução de script", () => {
 
 describe("sanitizarHtml · tags que precisam morrer com o conteúdo", () => {
   it.each([
-    ["svg", '<svg><script>alert(1)</script></svg>'],
+    ["svg", "<svg><script>alert(1)</script></svg>"],
     ["iframe", '<iframe src="https://evil.example"></iframe>'],
     ["style", "<style>body{display:none}</style>"],
     ["object", '<object data="evil.swf"></object>'],
@@ -184,7 +184,7 @@ describe("htmlParaTexto · espelho de busca e prévia", () => {
   });
 
   it("não deixa tag vazar para o texto", () => {
-    const txt = htmlParaTexto('<p>oi <strong>mundo</strong></p>');
+    const txt = htmlParaTexto("<p>oi <strong>mundo</strong></p>");
     expect(txt).not.toContain("<");
     expect(txt).not.toContain(">");
   });

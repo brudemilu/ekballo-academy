@@ -16,7 +16,8 @@
     "formato:corrigir": "biome check --write .",
     "morto": "knip",
     "fronteiras": "node scripts/verificar-fronteiras.mjs",
-    "verificar": "npm run tipos && npm run fronteiras && npm run teste && npm run build"
+    "verificar": "npm run tipos && npm run fronteiras && npm run teste:cobertura && npm run build && node scripts/orcamento-bundle.mjs && npm run auditar",
+    "auditar": "node scripts/auditar-dependencias.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -24,7 +25,7 @@
     "ffmpeg-static": "^5.3.0",
     "ical-expander": "^3.2.0",
     "msedge-tts": "^2.0.7",
-    "next": "15.5.18",
+    "next": "^15.5.25",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "web-push": "^3.6.7"

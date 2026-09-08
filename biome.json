@@ -9,13 +9,13 @@
   "files": {
     "includes": [
       "**",
-      "!**/node_modules/**",
-      "!**/.next/**",
-      "!**/coverage/**",
-      "!**/public/**",
-      "!**/supabase/functions/**",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/coverage",
+      "!**/public",
+      "!**/supabase/functions",
       "!**/scripts/**/*.log",
-      "!**/testes-e2e/relatorio/**"
+      "!**/testes-e2e/relatorio"
     ]
   },
   "formatter": {

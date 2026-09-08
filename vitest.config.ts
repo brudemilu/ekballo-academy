@@ -1,5 +1,5 @@
-import { defineConfig } from "vitest/config";
 import { resolve } from "node:path";
+import { defineConfig } from "vitest/config";
 
 // =============================================================
 // EKBALLO ACADEMY · Testes unitários
@@ -28,14 +28,11 @@ export default defineConfig({
       provider: "v8",
       reportsDirectory: "coverage",
       reporter: ["text-summary", "lcov"],
-      // Só o que os testes se propõem a cobrir. Medir cobertura do
-      // repositório inteiro produziria um número baixo e sem
-      // significado, que todo mundo aprende a ignorar.
-      include: [
-        "lib/sanitizar-html.ts",
-        "lib/telefone.ts",
-        "lib/biblia-busca.ts",
-      ],
+      // Só o que os testes REALMENTE cobrem. Listar arquivo sem teste
+      // aqui derruba a cobertura e reprova a esteira por contabilidade,
+      // não por qualidade — foi o que aconteceu na primeira execução.
+      // Ao escrever teste novo, acrescente o arquivo aqui.
+      include: ["lib/sanitizar-html.ts", "lib/telefone.ts", "lib/rate-limit.ts"],
       thresholds: {
         // Piso, não meta. Serve para acusar remoção de teste, não
         // para incentivar teste decorativo atrás de porcentagem.
