@@ -2,6 +2,50 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working agreement — read this BEFORE implementing anything
+
+This section overrides habit. It applies to every agent, of every model, on every change — including one-line fixes.
+
+### 1. Every change starts as a GitHub issue
+
+Before writing code, open an issue (`gh issue create`) and give it exactly one of these three labels:
+
+| Label | When to use it |
+|---|---|
+| `correção` | Something is broken or behaving wrongly |
+| `melhoria` | Something already works, but can be better |
+| `nova função` | A capability the platform does not have yet |
+
+The issue says **what is wrong or missing and why it matters** — not how you plan to code it. If the work is already done before an issue exists (it happens), open the issue anyway and reference it; the backlog is worthless with holes in it.
+
+Large work gets **one issue and several PRs** — one per deliverable slice (a lesson, a module, a book). Ten modules in one PR cannot be reviewed.
+
+### 2. Every delivery goes through a Pull Request
+
+Never commit to `master` directly. Branch naming follows what the repo already uses: `feat/…`, `fix/…`, `docs/…`, `chore/…`.
+
+**Deploy is driven by the merge, not by a side channel.** If something is fixed straight on the server, it must come back into the repo as a PR — otherwise the next build silently undoes it. This has already happened here (see issue #52).
+
+### 3. Every PR description carries four things
+
+`.github/pull_request_template.md` pre-fills the structure. All four sections are required:
+
+1. **Issue relacionada** — `Resolve #N`. A PR with no issue is incomplete.
+2. **O que mudou** — the reasoning, not a file list. Git already shows the file list; it cannot show why.
+3. **Como foi validado** — what was actually run and what came back. Build passing is the floor, not the ceiling: say whether the feature was exercised, how, and with which data. **Never write that something was tested when it was not** — an unverified claim is worse than an honest gap.
+4. **Riscos, limitações e próximos passos** — what can break, what was deliberately left out, what comes next. "No risk" is almost never true; if it really is low, say why.
+
+### 4. Write in Brazilian Portuguese
+
+Issues, PR titles, PR descriptions and commit messages are in pt-BR, like the rest of the product. Commit messages here read as a sentence explaining the change, not as a code (`feat:` prefixes are fine in PR titles, which is the existing habit).
+
+### 5. Before opening the PR
+
+- `npm run build` must pass (this is the only type check — there is no test runner);
+- exercise the change for real when it is reachable through the UI (the browser-driven check under `webapp-testing` works, and mock mode is usually enough);
+- do not stage execution logs, `.env*` files, or generated audio.
+
+
 ## Project location
 
 The Next.js app lives at the **repo root** (`/Users/brunofernandes/Projects/ekballo-academy/`). `@/` in `tsconfig.json` is mapped to this root. There is no nested `Plataforma de Cursos/…` directory — earlier versions of this file mentioned one; ignore.
