@@ -17,13 +17,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro: "somente admin" }, { status: 403 });
   }
 
-  const { data: alunos } = await supabase.from("profiles").select("id").eq("is_admin", false);
+  // Só quem tem o English liberado — mandar push de um curso que a
+  // pessoa não enxerga é ruído puro.
+  const { data: alunos } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("is_admin", false)
+    .eq("english_liberado", true);
   const alunoIds = (alunos || []).map((a: { id: string }) => a.id);
 
   const resultado = await enviarPush(alunoIds, {
     title: body.titulo,
     body: body.mensagem,
-    url: "/dashboard",
+    url: "/english/jornada",
     tag: "ekballo-english-reminder",
   });
 

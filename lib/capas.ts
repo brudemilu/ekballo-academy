@@ -3,6 +3,7 @@
 // imagem OG 16:9. Mantém em sincronia com os `livroUrl` de
 // app/api/og/curso/[slug]/route.tsx.
 export const CAPA_LIVRO: Record<string, string> = {
+  "perspectivas": "/capas/perspectivas.png",
   "90-dias-galatas-juizes-efesios": "/capas/90-dias-galatas-juizes-efesios.jpg",
   "mundo-plural": "/capas/mundo-plural.jpg",
   "evangelho-segundo-os-apostolos": "/capas/evangelho-segundo-os-apostolos.jpg",

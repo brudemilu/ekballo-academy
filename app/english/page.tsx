@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { getCurrentSession } from "@/lib/db";
+import { podeUsarEnglish } from "@/lib/permissoes";
 import { listTrilha } from "@/lib/english";
 
 // A vitrine mostra a coisa em vez de descrevê-la. O herói é um espécime real
@@ -33,8 +34,21 @@ export default async function EkballoEnglishPage() {
   const modulos = trilha.filter((m) => m.publicado && m.licoes.length > 0);
   const totalLicoes = modulos.reduce((s, m) => s + m.licoes.length, 0);
 
-  const entrarHref = session ? "/english/jornada" : "/cadastro";
-  const entrarLabel = session ? "Ir para a minha trilha" : "Começar agora";
+  // O English é por convite: a vitrine continua pública (é a página que
+  // apresenta o curso), mas só quem o master liberou tem o botão que entra
+  // na trilha. Sem liberação, o convite é falar com o líder — melhor que
+  // um botão que devolve a pessoa pra cá.
+  const liberado = podeUsarEnglish(
+    session?.profile?.papel,
+    session?.profile?.is_admin,
+    session?.profile?.english_liberado,
+  );
+  const entrarHref = session ? (liberado ? "/english/jornada" : "/dashboard") : "/cadastro";
+  const entrarLabel = session
+    ? liberado
+      ? "Ir para a minha trilha"
+      : "Peça acesso ao seu líder"
+    : "Começar agora";
 
   return (
     <main className="min-h-screen bg-bege-50 text-mesa-800">

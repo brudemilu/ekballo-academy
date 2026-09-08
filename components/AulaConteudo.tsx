@@ -4,6 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Destaque } from "@/lib/types";
 import { selecaoConsultavel, type Verbete } from "@/lib/dicionario-comum";
+import {
+  acharReferencias,
+  ehFigura,
+  ehQuadro,
+  faixasDeTitulo,
+  lerParagrafos,
+  nivelDoParagrafo,
+  papeisDosParagrafos,
+  parseFigura,
+  parseQuadro,
+  type Faixa,
+} from "@/lib/estrutura-livro";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -16,58 +28,6 @@ const CORES: Record<Cor, { bg: string; swatch: string; nome: string }> = {
   azul: { bg: "#BAE6FD", swatch: "#38BDF8", nome: "Azul" },
 };
 const CORES_ORDEM: Cor[] = ["amarelo", "verde", "rosa", "azul"];
-
-// ---- Detecção de título (linha em CAIXA ALTA, curta, sem minúsculas) ----
-function ehTitulo(linha: string): boolean {
-  const t = linha.trim();
-  if (t.length < 2 || t.length > 70) return false;
-  if (t.startsWith("•")) return false;
-  if (/[a-zàáâãäçéêëíîïóôõöúûü]/.test(t)) return false; // tem minúscula → não é título
-  if (!/[A-ZÀÁÂÃÄÇÉÊËÍÎÏÓÔÕÖÚÛÜ]/.test(t)) return false; // precisa de ao menos 1 maiúscula
-  return true;
-}
-
-type Faixa = { start: number; end: number };
-
-function faixasDeTitulo(texto: string): Faixa[] {
-  const faixas: Faixa[] = [];
-  let offset = 0;
-  for (const linha of texto.split("\n")) {
-    if (ehTitulo(linha)) faixas.push({ start: offset, end: offset + linha.length });
-    offset += linha.length + 1; // +1 pelo \n
-  }
-  return faixas;
-}
-
-// ---- Quadros (tabelas/boxes fiéis ao PDF) ----
-// Bloco que começa com "[quadro] Título" e tem linhas com colunas separadas
-// por " | ". Uma linha só de traços (--- | ---) marca a linha anterior como
-// cabeçalho.
-function ehQuadro(paragrafo: string): boolean {
-  return /^\[quadro\]/i.test(paragrafo.trim());
-}
-
-function parseQuadro(paragrafo: string): {
-  titulo: string;
-  header: string[] | null;
-  linhas: string[][];
-} {
-  const linhasTxt = paragrafo.split("\n");
-  const titulo = linhasTxt[0].replace(/^\[quadro\]\s*/i, "").trim();
-  const corpo = linhasTxt.slice(1).filter((l) => l.trim() !== "");
-  let header: string[] | null = null;
-  const linhas: string[][] = [];
-  for (const linha of corpo) {
-    const cells = linha.split("|").map((c) => c.trim());
-    const ehSeparador = cells.every((c) => c === "" || /^-{2,}$/.test(c));
-    if (ehSeparador && linhas.length > 0) {
-      header = linhas.pop() ?? null;
-      continue;
-    }
-    linhas.push(cells);
-  }
-  return { titulo, header, linhas };
-}
 
 function Quadro({ bloco }: { bloco: string }) {
   const { titulo, header, linhas } = parseQuadro(bloco);
@@ -115,22 +75,12 @@ function Quadro({ bloco }: { bloco: string }) {
 }
 
 
-// ---- Figuras (gráficos e diagramas do livro original) ----
-// Bloco "[figura] /caminho/da/imagem.png | Legenda opcional". Existe porque
-// vários livros trazem diagrama que o texto referencia diretamente ("o diagrama
-// abaixo representa..."): sem a figura, o leitor cai numa remissão vazia.
-function ehFigura(paragrafo: string): boolean {
-  return /^\[figura\]/i.test(paragrafo.trim());
-}
-
 function Figura({ bloco }: { bloco: string }) {
-  const corpo = bloco.trim().replace(/^\[figura\]\s*/i, "");
-  const [src, ...resto] = corpo.split("|");
-  const legenda = resto.join("|").trim();
+  const { src, legenda } = parseFigura(bloco);
   return (
     <figure className="my-6">
       <img
-        src={src.trim()}
+        src={src}
         alt={legenda || "Figura do livro"}
         className="mx-auto w-full max-w-2xl rounded-xl border border-mesa-300 bg-white p-3"
       />
@@ -144,6 +94,8 @@ function Figura({ bloco }: { bloco: string }) {
 type Segmento = {
   texto: string;
   titulo: boolean;
+  /** trecho que é uma referência bíblica ("Rm 8.28") — só realce visual */
+  ref?: boolean;
   cor?: Cor;
   id?: string;
   comentario?: string | null;
@@ -167,10 +119,15 @@ function montarSegmentos(
   texto: string,
   titulos: Faixa[],
   grifos: { start: number; end: number; cor: Cor; id: string; comentario: string | null }[],
-  buscas: { start: number; end: number; idx: number }[] = []
+  buscas: { start: number; end: number; idx: number }[] = [],
+  refs: Faixa[] = []
 ): Segmento[] {
   const pontos = new Set<number>([0, texto.length]);
   for (const f of titulos) {
+    pontos.add(f.start);
+    pontos.add(f.end);
+  }
+  for (const f of refs) {
     pontos.add(f.start);
     pontos.add(f.end);
   }
@@ -189,11 +146,13 @@ function montarSegmentos(
     const e = ord[i + 1];
     if (e <= s) continue;
     const titulo = titulos.some((f) => f.start <= s && f.end >= e);
+    const ref = refs.some((f) => f.start <= s && f.end >= e);
     const g = grifos.find((x) => x.start <= s && x.end >= e);
     const b = buscas.find((x) => x.start <= s && x.end >= e);
     segs.push({
       texto: texto.slice(s, e),
       titulo,
+      ref,
       cor: g?.cor,
       id: g?.id,
       comentario: g?.comentario,
@@ -238,15 +197,9 @@ export function AulaConteudo({
   // bloco (textos bíblicos/citações que o livro destaca) — renderizam como
   // blockquote. O marcador é removido aqui pra não bagunçar os offsets de
   // grifo/busca.
-  const paragrafos = useMemo(
-    () =>
-      conteudo.split("\n\n").map((p) =>
-        p.startsWith("[cite] ")
-          ? { texto: p.slice(7), cite: true }
-          : { texto: p, cite: false },
-      ),
-    [conteudo],
-  );
+  const paragrafos = useMemo(() => lerParagrafos(conteudo), [conteudo]);
+  // Citações em bloco e as referências que as assinam (ver papeisDosParagrafos).
+  const papeis = useMemo(() => papeisDosParagrafos(paragrafos), [paragrafos]);
   const [destaques, setDestaques] = useState<Destaque[]>(destaquesIniciais);
   const [toolbar, setToolbar] = useState<ToolbarState>(null);
   const [salvando, setSalvando] = useState(false);
@@ -267,6 +220,9 @@ export function AulaConteudo({
   const [busca, setBusca] = useState("");
   const [buscaAtual, setBuscaAtual] = useState(0);
   const [paragrafoNarrado, setParagrafoNarrado] = useState<number | null>(null);
+  // Grifo que a lista "Meus grifos" mandou procurar — fica piscando por um
+  // instante pra a pessoa achar o trecho dentro do parágrafo.
+  const [grifoFocado, setGrifoFocado] = useState<string | null>(null);
   const [audioTocando, setAudioTocando] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -341,6 +297,22 @@ export function AulaConteudo({
     const el = document.getElementById("busca-ativa");
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [buscaAtual, matches]);
+
+  // Da lista de grifos de volta ao texto: rola até o trecho marcado e o destaca
+  // por 2 s. O <mark> pode estar partido em vários pedaços (quando cai em cima
+  // de uma ocorrência da busca), então procura-se pelo primeiro pedaço.
+  const irParaGrifo = useCallback((id: string, paragrafo: number) => {
+    const raiz = containerRef.current;
+    // Se o grifo caiu num quadro ou numa figura, não há <mark> pra achar —
+    // aí basta levar a pessoa ao parágrafo.
+    const alvo =
+      raiz?.querySelector<HTMLElement>(`[data-grifo="${id}"]`) ??
+      raiz?.querySelector<HTMLElement>(`[data-paragrafo="${paragrafo}"]`);
+    if (!alvo) return;
+    alvo.scrollIntoView({ behavior: "smooth", block: "center" });
+    setGrifoFocado(id);
+    window.setTimeout(() => setGrifoFocado((atual) => (atual === id ? null : atual)), 2000);
+  }, []);
 
   const irMatch = useCallback(
     (dir: 1 | -1) => {
@@ -651,7 +623,12 @@ export function AulaConteudo({
               </div>
             );
           }
-          const titulos = faixasDeTitulo(paragrafo.texto);
+          const papel = papeis[i];
+          const nivel = papel ? null : nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
+          const titulos = nivel ? [] : faixasDeTitulo(paragrafo.texto);
+          // Referência bíblica no corpo do texto: realce só visual, por faixa
+          // de caractere, pra não deslocar os grifos já salvos.
+          const refs = nivel ? [] : acharReferencias(paragrafo.texto);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
             .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
@@ -659,13 +636,18 @@ export function AulaConteudo({
           matches.forEach((m, gi) => {
             if (m.paragrafo === i) matchesP.push({ start: m.start, end: m.end, idx: gi });
           });
-          const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP);
+          const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP, refs);
+          const Tag = nivel === "titulo" ? "h3" : nivel === "subtitulo" ? "h4" : "p";
+          const classePapel =
+            papel === "cita" ? "cita-bloco" : papel === "cita-ref" ? "cita-ref" : "";
           const corpo = (
-            <p
+            <Tag
               key={i}
               data-paragrafo={i}
               aria-current={sendoNarrado ? "true" : undefined}
               className={`whitespace-pre-wrap rounded-md transition-[background-color,box-shadow] duration-500 ${
+                nivel === "titulo" ? "titulo-secao" : nivel === "subtitulo" ? "subtitulo-secao" : classePapel
+              } ${
                 sendoNarrado
                   ? "-mx-2 bg-laranja-50 px-2 shadow-[0_0_0_2px_rgba(251,146,60,0.35)]"
                   : ""
@@ -696,9 +678,11 @@ export function AulaConteudo({
                   );
                 }
                 if (seg.cor) {
+                  const focado = Boolean(seg.id) && seg.id === grifoFocado;
                   return (
                     <mark
                       key={j}
+                      data-grifo={seg.id}
                       title={seg.comentario || undefined}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -719,6 +703,8 @@ export function AulaConteudo({
                         cursor: "pointer",
                         fontWeight: seg.titulo ? 700 : undefined,
                         color: seg.titulo ? "#2A2724" : undefined,
+                        boxShadow: focado ? "0 0 0 3px #EA580C" : undefined,
+                        transition: "box-shadow 300ms",
                       }}
                     >
                       {seg.texto}
@@ -735,20 +721,17 @@ export function AulaConteudo({
                     </strong>
                   );
                 }
+                if (seg.ref) {
+                  return (
+                    <span key={j} className="ref-biblica">
+                      {seg.texto}
+                    </span>
+                  );
+                }
                 return <span key={j}>{seg.texto}</span>;
               })}
-            </p>
+            </Tag>
           );
-          if (paragrafo.cite) {
-            return (
-              <blockquote
-                key={i}
-                className="my-5 rounded-r-lg border-l-4 border-laranja-400 bg-mesa-100/70 py-3 pl-5 pr-3 italic text-mesa-700 [&>p]:m-0"
-              >
-                {corpo}
-              </blockquote>
-            );
-          }
           return corpo;
         })}
       </div>
@@ -770,7 +753,15 @@ export function AulaConteudo({
                   style={{ backgroundColor: CORES[d.cor as Cor]?.swatch }}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-mesa-700">{d.texto}</p>
+                  {/* Volta pro trecho no texto — grifo solto fora do contexto
+                      não diz muita coisa. */}
+                  <button
+                    onClick={() => irParaGrifo(d.id, d.paragrafo)}
+                    className="block w-full text-left text-sm text-mesa-700 underline decoration-mesa-300 decoration-dotted underline-offset-4 hover:decoration-laranja-500 hover:text-mesa-900"
+                    title="Ler no texto"
+                  >
+                    {d.texto}
+                  </button>
                   {d.comentario && (
                     <p className="mt-1 flex items-start gap-1 text-xs italic text-mesa-500">
                       <span aria-hidden>💬</span>

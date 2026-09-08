@@ -10,8 +10,12 @@ import { mkdir, readFile, writeFile, rm } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 
-const VOZ = process.env.AUDIO_VOZ || "pt-BR-AntonioNeural"; // masc. pastoral
-const RATE = process.env.AUDIO_RATE || "-6%"; // ritmo tranquilo de leitura
+// Thalita (nativa pt-BR, geração "multilingual") — escolhida em 03/09/2026 por
+// soar como conversa, e não como locutor lendo. A anterior era pt-BR-Antonio-
+// Neural. O padrão precisa ser a Thalita aqui também: este é o caminho que o
+// botão "🎧 Gerar áudio do livro" usa, e ele roda sem AUDIO_VOZ no ambiente.
+const VOZ = process.env.AUDIO_VOZ || "pt-BR-ThalitaMultilingualNeural";
+const RATE = process.env.AUDIO_RATE || "-4%"; // ritmo tranquilo de leitura
 // Pedaços menores = síntese mais curta e confiável (o Edge fecha o stream em
 // pedaços longos/sob carga com "Stream closed before the synthesis completed").
 const MAX_CHARS = 1200;

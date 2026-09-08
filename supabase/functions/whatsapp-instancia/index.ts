@@ -13,6 +13,7 @@
 //   qr       -> { qrcode, pairingCode }         GET  /instance/connect/{i}
 //   grupos   -> { grupos: [...] }               GET  /group/fetchAllGroups/{i}
 //   webhook  -> registra a URL de recebimento   POST /webhook/set/{i}
+//   sonda    -> { estado, vivo, socket_morto }  GET  /group/findGroupInfos/{i}
 //
 // DIFERENÇA QUE PEGA: na v2 NÃO existe /instance/qr. O QR (base64) e o código
 // de pareamento vêm juntos na resposta do connect — por isso "qr" e "conectar"
@@ -28,7 +29,7 @@ import {
   EVOLUTION_INSTANCE,
 } from "../_shared/evolution.ts";
 
-type Acao = "status" | "conectar" | "qr" | "grupos" | "webhook";
+type Acao = "status" | "conectar" | "qr" | "grupos" | "webhook" | "sonda";
 
 /** Na v2 o estado vem em `instance.state`: open | close | connecting. */
 function lerStatus(body: unknown) {
@@ -52,6 +53,7 @@ function lerConexao(body: unknown) {
     : null;
   return { qrcode: base64, pairingCode: pairing };
 }
+
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -139,6 +141,54 @@ Deno.serve(async (req) => {
       evolution_status: r.status,
       resposta: r.body,
       status: lerStatus(st.body),
+    });
+  }
+
+  // SONDA DE VIDA — quase tudo nesta API MENTE quando o socket morre.
+  // Medido em 07/set/2026, com o socket comprovadamente morto:
+  //   connectionState      -> "open"            (mentira)
+  //   chat/whatsappNumbers -> 200, exists:true  (mentira — vem do cache)
+  //   fetchProfilePictureUrl -> 200             (mentira — vem do cache)
+  //   group/findGroupInfos -> "Connection Closed"  ← a única verdade
+  //
+  // A diferença é que o findGroupInfos faz `groupMetadata`, uma consulta que
+  // atravessa o socket e que a Evolution não responde de cache. Não por acaso
+  // é exatamente onde os envios morrem: antes de mandar num grupo, a Evolution
+  // atualiza o cache de metadados do grupo, e é essa consulta que estoura.
+  //
+  // Por isso a sonda pede metadado de um grupo de referência (o `grupo` vem de
+  // quem chama). Sem ele não há sonda honesta — melhor dizer isso do que
+  // devolver um "vivo" que não vale nada.
+  if (acao === "sonda") {
+    const st = await evolutionFetch(rota("/instance/connectionState"), { method: "GET" });
+    const status = lerStatus(st.body);
+
+    const grupo = typeof reqBody.grupo === "string" ? reqBody.grupo.trim() : "";
+    if (!grupo) {
+      return jsonResponse({
+        ...status,
+        vivo: false,
+        socket_morto: false, // inconclusivo: não dá pra culpar o socket
+        detalhe: "sonda sem grupo de referência (passe `grupo` com um JID @g.us)",
+      });
+    }
+
+    const r = await evolutionFetch(
+      rota("/group/findGroupInfos") + `?groupJid=${encodeURIComponent(grupo)}`,
+      { method: "GET" },
+    );
+    const corpo = JSON.stringify(r.body ?? {});
+
+    // "Connection Closed" é a assinatura do socket caído. Qualquer outra falha
+    // (JID errado, grupo apagado) NÃO é morte de socket — e reiniciar por causa
+    // dela seria trocar um problema de configuração por um loop de restart.
+    const socketMorto = !r.ok && corpo.includes("Connection Closed");
+
+    return jsonResponse({
+      ...status,
+      vivo: r.ok,
+      socket_morto: socketMorto,
+      detalhe: r.ok ? null : `sonda falhou (${r.status}): ${corpo.slice(0, 200)}`,
     });
   }
 

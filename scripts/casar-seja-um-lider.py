@@ -44,18 +44,37 @@ CAPITULOS = [
 
 
 def paragrafos(texto: str) -> list[str]:
+    """Parágrafos do arquivo, com os cabeçalhos preservados.
+
+    O rascunho marca as seções com ## e ###; descartá-los (como se fazia antes)
+    apagava do livro os títulos "A AUTORIDADE INTERIOR", "Descobrir a Nós
+    Mesmos" e companhia — e eles nem voltavam pelo PDF, porque suas palavras
+    aparecem no corpo do capítulo e o _ja_existe os tomava por repetição. Aqui
+    o marcador cai e o texto do título vira um parágrafo como outro qualquer;
+    quem devolve o destaque na tela é o AulaConteudo.tsx, que reconhece a CAIXA
+    ALTA como seção e a Caixa de Título como subseção. O nível 1 (`# `) é o
+    título do capítulo, que já é o nome da aula.
+    """
     saida = []
     for p in re.split(r"\n\s*\n", texto):
         p = p.strip()
-        if not p or p.startswith("#"):
+        if not p or re.match(r"^#(?!#)", p):
             continue
+        p = re.sub(r"^#{2,6}\s*", "", p)
         saida.append(re.sub(r"\s+", " ", p.replace("**", "").replace("> ", "")))
     return saida
 
 
-def tokens(paras: list[str]) -> tuple[list[str], list[tuple[int, int]]]:
-    """Palavras normalizadas + de qual (parágrafo, palavra) cada uma veio."""
-    palavras, origem = [], []
+def tokens(paras: list[str]) -> tuple[list[str], list[tuple[int, int]], list[int]]:
+    """Palavras normalizadas + de qual parágrafo vieram + onde ficam no texto cru.
+
+    A terceira lista é o que impede o desalinhamento: nem toda palavra crua vira
+    token (o travessão do diálogo, "—", some ao normalizar), então o índice do
+    token NÃO é o índice da palavra no texto. Guardar a posição crua de cada
+    token é o que faz o corte do parágrafo cair na palavra certa.
+    """
+    palavras, origem, brutos = [], [], []
+    bruto = 0
     for pi, p in enumerate(paras):
         for wi, w in enumerate(p.split()):
             k = unicodedata.normalize("NFD", w.lower())
@@ -64,7 +83,9 @@ def tokens(paras: list[str]) -> tuple[list[str], list[tuple[int, int]]]:
             if k:
                 palavras.append(k)
                 origem.append((pi, wi))
-    return palavras, origem
+                brutos.append(bruto)
+            bruto += 1
+    return palavras, origem, brutos
 
 
 
@@ -104,8 +125,8 @@ def casar(limpo: list[str], pdf: list[str]) -> list[str]:
     que o rascunho perdeu, e entra com o texto do PDF, sem consumir palavra
     limpa nenhuma.
     """
-    tl, _ = tokens(limpo)
-    tp, op = tokens(pdf)
+    tl, _, bruto_limpo = tokens(limpo)
+    tp, op, _ = tokens(pdf)
     sm = difflib.SequenceMatcher(None, tp, tl, autojunk=False)
 
     correspondente: dict[int, int] = {}
@@ -118,6 +139,7 @@ def casar(limpo: list[str], pdf: list[str]) -> list[str]:
     palavras_base = _k(" ".join(limpo)).split()
     ancoras: list[tuple[int, str]] = []  # (índice limpo, texto do PDF se for novo)
     piso = 0
+    piso_bruto = 0
     for pi in range(len(pdf)):
         faixa = [i for i, (p_, _) in enumerate(op) if p_ == pi]
         if not faixa:
@@ -129,14 +151,25 @@ def casar(limpo: list[str], pdf: list[str]) -> list[str]:
         # e caía na regra de inserção, duplicando.
         if len(casadas) >= max(1, 0.5 * len(faixa)):
             piso = casadas[0]
-            ancoras.append((casadas[0], ""))
+            # o corte é feito no texto cru, então a âncora é convertida aqui —
+            # em índice de token ela andaria pra trás a cada travessão descartado
+            corte = bruto_limpo[casadas[0]]
+            # se as primeiras palavras do parágrafo do PDF não casaram (variação
+            # de OCR na abertura), a âncora cairia adiante do começo real e o
+            # parágrafo anterior levaria o pedaço. Recua o tanto que faltou.
+            token0 = next((i for i in faixa if correspondente.get(i) == casadas[0]), None)
+            if token0 is not None:
+                corte = max(corte - op[token0][1], piso_bruto)
+            piso_bruto = corte
+            ancoras.append((corte, ""))
         else:
             # Só é "trecho perdido" se de fato não estiver no rascunho. Sem esta
             # trava, parágrafo curto e título — que falham no alinhamento por
             # terem poucas palavras — entravam de novo pelo PDF e duplicavam
             # (eram 14 duplicações no cap. 13, 8 no cap. 11).
             if not _ja_existe(pdf[pi], palavras_base):
-                ancoras.append((piso, pdf[pi]))
+                ancoras.append((bruto_limpo[piso] if piso < len(bruto_limpo) else 0,
+                                pdf[pi]))
 
     palavras_limpo = [w for p_ in limpo for w in p_.split()]
     saida: list[str] = []
@@ -160,6 +193,62 @@ def casar(limpo: list[str], pdf: list[str]) -> list[str]:
     return [x for x in saida if x.strip()]
 
 
+FIM_DE_PARAGRAFO = '.!?…:"”»)]›’*'
+SO_MARCA = re.compile(r'^["“”\'‘’\-—–*]+$')
+
+
+def _primeira_letra(p: str) -> str:
+    return next((c for c in p if c.isalpha()), "")
+
+
+def _eh_titulo(p: str) -> bool:
+    letras = [c for c in p if c.isalpha()]
+    return len(p.split()) <= 16 and bool(letras) and sum(
+        c.isupper() for c in letras) / len(letras) > 0.8
+
+
+def costurar(paras: list[str]) -> list[str]:
+    """Fecha o que a virada de página do PDF deixou aberto.
+
+    O PDF quebra um parágrafo em dois quando ele atravessa a página, e o
+    casamento herda essa quebra: a frase termina no ar e a seguinte abre em
+    minúscula. Aqui isso volta a ser um parágrafo só. Também devolve ao item
+    seguinte o travessão/aspas que ficaram pendurados no fim do anterior, e
+    passa por cima do título de seção quando o fim da frase caiu do lado errado
+    dele. Nenhuma palavra entra, sai ou muda — só onde o parágrafo começa.
+    """
+    paras = list(paras)
+    mexeu = True
+    while mexeu:
+        mexeu = False
+        for i in range(len(paras) - 1):
+            ant, prox = paras[i], paras[i + 1]
+            if not ant or not prox:
+                continue
+            ultimo = ant.split()[-1]
+            if SO_MARCA.match(ultimo) and len(ant.split()) > 1:
+                paras[i] = " ".join(ant.split()[:-1]).strip()
+                paras[i + 1] = f"{ultimo} {prox}"
+                mexeu = True
+                break
+            if ant[-1] in FIM_DE_PARAGRAFO or _eh_titulo(ant):
+                continue
+            if (_eh_titulo(prox) and i + 2 < len(paras)
+                    and _primeira_letra(paras[i + 2]).islower()):
+                corte = max((ant.rfind(c) for c in ".!?"), default=-1)
+                if corte > 0 and ant[corte + 1:].strip():
+                    paras[i + 2] = f"{ant[corte + 1:].strip()} {paras[i + 2]}"
+                    paras[i] = ant[:corte + 1].strip()
+                    mexeu = True
+                    break
+            if _primeira_letra(prox).islower():
+                paras[i] = f"{ant} {prox}".strip()
+                del paras[i + 1]
+                mexeu = True
+                break
+    return paras
+
+
 def dollar(tag: str, valor: str) -> str:
     if f"${tag}$" in valor:
         raise SystemExit(f"conteúdo contém ${tag}$")
@@ -179,7 +268,7 @@ def main() -> None:
     for ordem, arquivo in CAPITULOS:
         limpo = paragrafos((LIMPO / arquivo).read_text(encoding="utf-8"))
         pdf = paragrafos((PDF_MD / f"cap{ordem:02d}.md").read_text(encoding="utf-8"))
-        saida = casar(limpo, pdf)
+        saida = costurar(casar(limpo, pdf))
         corpo = "\n\n".join(saida)
         resultado[ordem] = corpo
         do_pdf = sum(1 for s in saida if s in pdf)

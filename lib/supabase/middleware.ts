@@ -1,6 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { permissaoDaRota, rotaSoMaster, podeVerAgenda } from "@/lib/permissoes";
+import {
+  permissaoDaRota,
+  rotaSoMaster,
+  podeVerAgenda,
+  COOKIE_VISAO,
+  VISAO_ALUNO,
+} from "@/lib/permissoes";
 
 export async function updateSession(request: NextRequest) {
   // Em modo mock, libera tudo (sem bater no Supabase)
@@ -48,6 +54,10 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/cursos") ||
     path.startsWith("/perfil");
   const isProtectedAdmin = path.startsWith("/admin");
+  // Master olhando pelos olhos do discípulo: enquanto o modo está ligado, o
+  // painel administrativo simplesmente não existe pra ele. Pra resolver algo,
+  // volta ao modo administrador pelo menu (o botão apaga este cookie).
+  const visaoAluno = request.cookies.get(COOKIE_VISAO)?.value === VISAO_ALUNO;
   const isAuthPage = path === "/login" || path === "/cadastro";
 
   if (!user && (isProtectedAluno || isProtectedAdmin)) {
@@ -89,6 +99,12 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
+  }
+
+  if (user && isProtectedAdmin && visaoAluno) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
   }
 
   if (user && isProtectedAdmin) {
@@ -137,8 +153,9 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Admin entrando na home de aluno: redireciona pro painel admin (porta única).
-  if (user && path === "/dashboard") {
+  // Admin entrando na home de aluno: redireciona pro painel admin (porta única)
+  // — a não ser que ele tenha pedido pra ver a plataforma como discípulo.
+  if (user && path === "/dashboard" && !visaoAluno) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_admin")

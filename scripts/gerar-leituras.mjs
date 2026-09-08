@@ -77,15 +77,18 @@ const VOZ = process.env.VOZ_LEITURA || "Sulafat";
 // nunca completava no free tier do Gemini.
 const TTS_BACKEND = (process.env.TTS_BACKEND || "edge").toLowerCase();
 const EDGE_BIN = process.env.EDGE_TTS_BIN || join(here, ".venv-tts", "bin", "edge-tts");
-const EDGE_VOICE = process.env.EDGE_VOICE || "pt-BR-AntonioNeural"; // masc. pastoral
-const EDGE_RATE = process.env.EDGE_RATE || "-6%"; // ritmo tranquilo de leitura
+// Thalita desde 03/09/2026 (era pt-BR-AntonioNeural). O gerar-leituras-box.sh
+// já exporta as duas, mas o padrão aqui também precisa ser ela: rodar este
+// script direto, sem o wrapper, saía em voz masculina.
+const EDGE_VOICE = process.env.EDGE_VOICE || "pt-BR-ThalitaMultilingualNeural";
+const EDGE_RATE = process.env.EDGE_RATE || "-4%"; // ritmo tranquilo de leitura
 const VOZ_DISPLAY = TTS_BACKEND === "edge" ? EDGE_VOICE : VOZ;
 
 // Tamanho-alvo de cada pedaço enviado ao TTS. O modelo tem limite de duração
 // de áudio por requisição; ~1800 chars de texto narrado cabem com folga.
 const MAX_CHARS = Number(process.env.LEITURA_MAX_CHARS || 1800);
 const GEMINI_CONCURRENCY = Math.max(1, Number(process.env.GEMINI_TTS_CONCURRENCY || 1));
-const MIN_CONTEUDO = 200; // aulas com conteúdo menor que isso são puladas
+const MIN_CONTEUDO = Number(process.env.LEITURA_MIN_CONTEUDO || 200); // aulas com conteúdo menor que isso são puladas
 
 const args = process.argv.slice(2);
 const FORCE = args.includes("--force");

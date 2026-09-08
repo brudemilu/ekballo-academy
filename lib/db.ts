@@ -6,6 +6,7 @@
 
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { visaoAlunoAtiva } from "@/lib/visao";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 
 // Cliente service-role (ignora RLS). Usado só nas funções da AGENDA, cujo acesso
@@ -75,12 +76,17 @@ export const getCurrentSession = cache(async (): Promise<{
   userId: string;
   profile: Profile | null;
   email: string;
+  // true quando o master ligou o "ver como discípulo". O profile continua
+  // intacto (is_admin de verdade) — o acesso ao conteúdo não muda; quem muda
+  // é a INTERFACE, que esconde tudo que é de administração.
+  visaoAluno: boolean;
 } | null> => {
   if (isMockMode()) {
     return {
       userId: MOCK_PROFILE.id,
       profile: MOCK_PROFILE,
       email: MOCK_PROFILE.email,
+      visaoAluno: MOCK_PROFILE.is_admin ? await visaoAlunoAtiva() : false,
     };
   }
   const supabase = await createClient();
@@ -101,6 +107,7 @@ export const getCurrentSession = cache(async (): Promise<{
     userId,
     profile: profile as Profile | null,
     email: (claims.email as string) || "",
+    visaoAluno: (profile as Profile | null)?.is_admin ? await visaoAlunoAtiva() : false,
   };
 });
 

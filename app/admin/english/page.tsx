@@ -2,8 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { AdminEnglishActions } from "@/components/AdminEnglishActions";
+import { AdminEnglishAcesso } from "@/components/AdminEnglishAcesso";
 import { getCurrentSession } from "@/lib/db";
-import { getEnglishAdminStats, listEnglishAlunos, listModulosAdmin } from "@/lib/english";
+import { getEnglishAdminStats, listAcessoEnglish, listEnglishAlunos, listModulosAdmin } from "@/lib/english";
 
 const NIVEL_ROTULO: Record<string, string> = {
   iniciante: "Iniciante",
@@ -29,10 +30,11 @@ export default async function AdminEnglishPage() {
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const [stats, modulos, alunos] = await Promise.all([
+  const [stats, modulos, alunos, discipulos] = await Promise.all([
     getEnglishAdminStats(),
     listModulosAdmin(),
     listEnglishAlunos(),
+    listAcessoEnglish(),
   ]);
 
   return (
@@ -79,6 +81,8 @@ export default async function AdminEnglishPage() {
             </p>
           </div>
         </div>
+
+        <AdminEnglishAcesso discipulos={discipulos} />
 
         <AdminEnglishActions />
 

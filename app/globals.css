@@ -143,6 +143,83 @@ body {
   margin-bottom: 0.5em;
   font-weight: 600;
 }
+/* Cabeçalhos dentro da leitura: o texto do livro não traz marcação, então
+   AulaConteudo.tsx reconhece a linha pela forma (CAIXA ALTA = seção,
+   Caixa de Título = subseção) e emite h3/h4 com estas classes. */
+.prose-mesa h4 {
+  font-family: Georgia, serif;
+  font-size: 1.08rem;
+  color: #262320;
+  margin-top: 1.5em;
+  margin-bottom: 0.4em;
+  font-weight: 700;
+}
+.prose-mesa .titulo-secao {
+  text-align: left;
+  hyphens: manual;
+  letter-spacing: 0.06em;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #B4320C;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid rgba(180, 50, 12, 0.22);
+}
+.prose-mesa .subtitulo-secao {
+  text-align: left;
+  hyphens: manual;
+}
+.prose-mesa .titulo-secao:first-child,
+.prose-mesa .subtitulo-secao:first-child { margin-top: 0; }
+
+/* ---- Citação em bloco: versículo, epígrafe, trecho que o livro destaca ----
+   O acervo guarda a citação como o livro impresso a traz: o trecho num
+   parágrafo e a referência logo abaixo, sozinha. AulaConteudo.tsx reconhece
+   esse par e marca as duas classes; o CSS junta as duas num bloco só. */
+.prose-mesa .cita-bloco {
+  border-left: 3px solid rgba(255, 90, 44, 0.5);
+  background: rgba(180, 50, 12, 0.035);
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.8em 1.2em;
+  margin: 1.6em 0;
+  font-style: italic;
+  color: #3A3531;
+}
+.prose-mesa .cita-ref {
+  border-left: 3px solid rgba(255, 90, 44, 0.5);
+  background: rgba(180, 50, 12, 0.035);
+  border-radius: 0 0 0.5rem 0;
+  padding: 0 1.2em 0.8em;
+  margin: 0 0 1.6em;
+  text-align: right;
+  hyphens: manual;
+  font-size: 0.82em;
+  font-style: normal;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #B4320C;
+}
+/* Parágrafo de citação que continua (outro parágrafo citado, ou a
+   referência) não fecha a caixa: os dois viram um bloco contínuo. */
+.prose-mesa .cita-bloco:has(+ .cita-ref),
+.prose-mesa .cita-bloco:has(+ .cita-bloco) {
+  border-radius: 0 0.5rem 0 0;
+  padding-bottom: 0.35em;
+  margin-bottom: 0;
+}
+.prose-mesa .cita-bloco + .cita-bloco {
+  border-radius: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* Referência bíblica dentro da prosa ("Rm 8.28"): o olho acha o versículo
+   sem reler o parágrafo. Só cor — nada de negrito, que brigaria com o grifo. */
+.prose-mesa .ref-biblica {
+  color: #B4320C;
+}
+
 .prose-mesa blockquote {
   border-left: 3px solid #FF5A2C;  /* terracota */
   padding-left: 1.25rem;

@@ -40,13 +40,14 @@ export default async function DevocionalDiaPage({
     <main className="min-h-screen bg-mesa-50">
       <header className="border-b border-mesa-200 bg-white/80 backdrop-blur">
         <nav className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link href={session.profile?.is_admin ? "/admin" : "/dashboard"}>
+          <Link href={session.profile?.is_admin && !session.visaoAluno ? "/admin" : "/dashboard"}>
             <Logo />
           </Link>
           <UserMenu
             nome={session.profile?.nome || null}
             email={session.profile?.email || session.email}
             isAdmin={!!session.profile?.is_admin}
+            visaoAluno={session.visaoAluno}
           />
         </nav>
       </header>
@@ -172,9 +173,9 @@ export default async function DevocionalDiaPage({
                 <StoryDevocional
                   dia={diaAno}
                   tema={tema}
-                  isAdmin={Boolean(session.profile?.is_admin)}
+                  isAdmin={Boolean(session.profile?.is_admin) && !session.visaoAluno}
                 />
-                {session.profile?.is_admin && (
+                {session.profile?.is_admin && !session.visaoAluno && (
                   <PostarInstagram
                     imageUrl={`/api/og/devocional?dia=${diaAno}&f=feed&tema=${tema}`}
                     legendaInicial={`"${devocional.versiculo_texto}"\n\n${devocional.versiculo_ref} · ${devocional.versiculo_versao}\n\n${devocional.titulo}\n\n#devocional #ekballo`}

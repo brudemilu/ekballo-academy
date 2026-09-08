@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { temAcessoEnglish } from "@/lib/english-acesso";
 import { registrarPratica } from "@/lib/english-pratica";
 
 // =============================================================
@@ -16,6 +17,11 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ erro: "não autenticado" }, { status: 401 });
+
+  // Acesso por convite — ver lib/english-acesso.ts.
+  if (!(await temAcessoEnglish(supabase, user.id))) {
+    return NextResponse.json({ erro: "English não liberado" }, { status: 403 });
+  }
 
   const body = await req.json().catch(() => null);
   const licaoId = typeof body?.licaoId === "string" ? body.licaoId : null;

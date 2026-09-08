@@ -109,6 +109,7 @@ export default async function AulaPage({
             nome={session.profile?.nome || null}
             email={session.profile?.email || session.email}
             isAdmin={!!session.profile?.is_admin}
+            visaoAluno={session.visaoAluno}
           />
         </nav>
       </header>

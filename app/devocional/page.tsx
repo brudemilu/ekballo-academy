@@ -52,20 +52,21 @@ export default async function DevocionalPage() {
     <main className="min-h-screen bg-mesa-50">
       <header className="border-b border-mesa-200 bg-white/80 backdrop-blur">
         <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href={session.profile?.is_admin ? "/admin" : "/dashboard"}>
+          <Link href={session.profile?.is_admin && !session.visaoAluno ? "/admin" : "/dashboard"}>
             <Logo />
           </Link>
           <UserMenu
             nome={session.profile?.nome || null}
             email={session.profile?.email || session.email}
             isAdmin={!!session.profile?.is_admin}
+            visaoAluno={session.visaoAluno}
           />
         </nav>
       </header>
 
       <div className="mx-auto max-w-5xl px-6 py-12 pb-32">
         <Link
-          href={session.profile?.is_admin ? "/admin" : "/dashboard"}
+          href={session.profile?.is_admin && !session.visaoAluno ? "/admin" : "/dashboard"}
           className="mb-6 inline-flex items-center gap-2 text-sm text-mesa-600 hover:text-mesa-800"
         >
           ← Voltar

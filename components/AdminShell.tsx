@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { getPermissoesPapel } from "@/lib/db";
 import { TAB_PERMISSAO, podeVerAgenda } from "@/lib/permissoes";
+import { visaoAlunoAtiva } from "@/lib/visao";
 
 export type AdminTab =
   | "painel"
@@ -92,6 +94,11 @@ export async function AdminShell({
   };
   children: ReactNode;
 }) {
+  // Modo "ver como discípulo" ligado: o painel não abre. Quem quiser
+  // administrar volta pelo botão do menu (o middleware faz o mesmo em
+  // produção; aqui vale também em modo mock, onde ele é no-op).
+  if (await visaoAlunoAtiva()) redirect("/dashboard");
+
   // Registros antigos com is_admin e sem papel = master (legado).
   const papel =
     session.profile?.papel || (session.profile?.is_admin ? "master" : "discipulo");
