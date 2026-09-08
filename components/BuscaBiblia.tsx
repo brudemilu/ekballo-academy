@@ -35,6 +35,32 @@ type Resposta = {
 
 const ESPERA_BUSCA = 350; // ms parado antes de consultar o servidor
 
+type LivroOpt = {
+  id: number;
+  nome: string;
+  abrev: string;
+  testamento: "AT" | "NT";
+  capitulos: number;
+};
+
+// A lista dos 66 livros não muda: carrega uma vez por aba e é reaproveitada
+// por todos os campos de busca da página.
+let livrosCache: Promise<LivroOpt[]> | null = null;
+
+function carregarLivros(): Promise<LivroOpt[]> {
+  if (!livrosCache) {
+    livrosCache = fetch("/api/biblia/livros")
+      .then((r) => (r.ok ? r.json() : { livros: [] }))
+      .then((j) => (j.livros ?? []) as LivroOpt[])
+      .catch(() => {
+        // Uma falha de rede não pode deixar a lista vazia pra sempre.
+        livrosCache = null;
+        return [] as LivroOpt[];
+      });
+  }
+  return livrosCache;
+}
+
 export function BuscaBiblia({
   versoes,
   versaoInicial,
@@ -55,12 +81,38 @@ export function BuscaBiblia({
   const [resultado, setResultado] = useState<Resposta | null>(null);
   const [buscando, setBuscando] = useState(false);
   const [copiado, setCopiado] = useState<string | null>(null);
+  // Seletor de livro/capítulo: quem lembra onde está, mas não da frase.
+  const [livros, setLivros] = useState<LivroOpt[]>([]);
+  const [livroId, setLivroId] = useState<number | "">("");
+  const [capitulo, setCapitulo] = useState(1);
   // Confirmação visual de que o versículo foi parar no texto.
   const [inserido, setInserido] = useState<string | null>(null);
 
   // Cada busca cancela a anterior: digitar rápido não pode deixar a resposta
   // de um termo antigo sobrescrever a do termo atual.
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    carregarLivros().then((ls) => {
+      if (vivo) setLivros(ls);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  // Escolher livro/capítulo é só escrever a referência no mesmo campo — quem
+  // resolve "jo 3" continua sendo o servidor.
+  function irPara(id: number, cap: number) {
+    const livro = livros.find((l) => l.id === id);
+    if (!livro) return;
+    setLivroId(id);
+    setCapitulo(cap);
+    setTermo(`${livro.abrev} ${cap}`);
+  }
+
+  const livroSel = livros.find((l) => l.id === livroId);
 
   useEffect(() => {
     const limpo = termo.trim();
@@ -132,6 +184,55 @@ export function BuscaBiblia({
 
   return (
     <div>
+      {livros.length > 0 && (
+        <div className="mb-2 flex gap-1.5">
+          <select
+            value={livroId}
+            onChange={(e) =>
+              e.target.value ? irPara(Number(e.target.value), 1) : setLivroId("")
+            }
+            title="Escolher o livro"
+            className="min-w-0 flex-1 rounded-lg border border-mesa-200 bg-white px-2 py-1.5 text-xs text-mesa-700 outline-none focus:border-laranja-400"
+          >
+            <option value="">Escolher livro…</option>
+            <optgroup label="Antigo Testamento">
+              {livros
+                .filter((l) => l.testamento === "AT")
+                .map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.nome}
+                  </option>
+                ))}
+            </optgroup>
+            <optgroup label="Novo Testamento">
+              {livros
+                .filter((l) => l.testamento === "NT")
+                .map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.nome}
+                  </option>
+                ))}
+            </optgroup>
+          </select>
+          {livroSel && (
+            <select
+              value={capitulo}
+              onChange={(e) => irPara(livroSel.id, Number(e.target.value))}
+              title="Capítulo"
+              className="flex-none rounded-lg border border-mesa-200 bg-white px-1.5 py-1.5 text-xs text-mesa-700 outline-none focus:border-laranja-400"
+            >
+              {Array.from({ length: livroSel.capitulos || 1 }, (_, i) => i + 1).map(
+                (c) => (
+                  <option key={c} value={c}>
+                    cap. {c}
+                  </option>
+                ),
+              )}
+            </select>
+          )}
+        </div>
+      )}
+
       <div className="mb-2 flex gap-1.5">
         <div className="relative min-w-0 flex-1">
           <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-mesa-400">
@@ -139,7 +240,10 @@ export function BuscaBiblia({
           </span>
           <input
             value={termo}
-            onChange={(e) => setTermo(e.target.value)}
+            onChange={(e) => {
+              setTermo(e.target.value);
+              setLivroId("");
+            }}
             placeholder="palavra ou jo 3:16"
             className="w-full rounded-lg border border-mesa-200 bg-white py-1.5 pl-7 pr-2 text-xs outline-none transition focus:border-laranja-400"
           />
