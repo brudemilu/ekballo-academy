@@ -1,27 +1,27 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Logo } from "@/components/Logo";
-import { UserMenu } from "@/components/UserMenu";
 import { CompletarTelefoneBanner } from "@/components/CompletarTelefoneBanner";
 import {
+  BarraProgresso,
+  ContinuandoLeitura,
+  type ItemLeitura,
+} from "@/components/ContinuandoLeitura";
+import { Logo } from "@/components/Logo";
+import { SeloOffline } from "@/components/SeloOffline";
+import { UserMenu } from "@/components/UserMenu";
+import { contarAnotacoes } from "@/lib/anotacoes";
+import { CAPA_LIVRO } from "@/lib/capas";
+import { agruparPorCategoria } from "@/lib/categorias";
+import {
   getCurrentSession,
+  getMaterialUrl,
   listCursosPublicados,
   listMatriculasByAluno,
   listProgressoLeitura,
-  getMaterialUrl,
 } from "@/lib/db";
-import {
-  ContinuandoLeitura,
-  BarraProgresso,
-  type ItemLeitura,
-} from "@/components/ContinuandoLeitura";
 import { getDevocionalDoDia } from "@/lib/devocionais";
-import { contarAnotacoes } from "@/lib/anotacoes";
 import { getProximaLicao, getStreak } from "@/lib/english";
-import { podeVerAgenda, podeUsarCaderno, podeUsarEnglish } from "@/lib/permissoes";
-import { agruparPorCategoria } from "@/lib/categorias";
-import { SeloOffline } from "@/components/SeloOffline";
-import { CAPA_LIVRO } from "@/lib/capas";
+import { podeUsarCaderno, podeUsarEnglish, podeVerAgenda } from "@/lib/permissoes";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
 function greetingName(nome?: string | null): string {
@@ -66,19 +66,29 @@ export default async function DashboardPage() {
   );
 
   const [
-    todosCursos, matriculas, leituras, devocional, proximaLicao, englishStreak,
+    todosCursos,
+    matriculas,
+    leituras,
+    devocional,
+    proximaLicao,
+    englishStreak,
     totalAnotacoes,
   ] = await Promise.all([
-      listCursosPublicados(),
-      listMatriculasByAluno(session.userId),
-      listProgressoLeitura(session.userId),
-      getDevocionalDoDia(),
-      mostrarEnglish ? getProximaLicao(session.userId) : Promise.resolve(null),
-      mostrarEnglish
-        ? getStreak(session.userId)
-        : Promise.resolve({ dias_seguidos: 0, recorde: 0, ultimo_dia: null, total_licoes: 0 }),
-      contarAnotacoes(session.userId),
-    ]);
+    listCursosPublicados(),
+    listMatriculasByAluno(session.userId),
+    listProgressoLeitura(session.userId),
+    getDevocionalDoDia(),
+    mostrarEnglish ? getProximaLicao(session.userId) : Promise.resolve(null),
+    mostrarEnglish
+      ? getStreak(session.userId)
+      : Promise.resolve({
+          dias_seguidos: 0,
+          recorde: 0,
+          ultimo_dia: null,
+          total_licoes: 0,
+        }),
+    contarAnotacoes(session.userId),
+  ]);
 
   const mostrarCaderno = podeUsarCaderno(
     session.profile?.papel,
@@ -86,15 +96,16 @@ export default async function DashboardPage() {
     session.profile?.email ?? session.email,
   );
 
-  const mostrarAgenda = !session.visaoAluno && podeVerAgenda(
-    session.profile?.papel,
-    session.profile?.is_admin,
-    session.profile?.email ?? session.email,
-  );
+  const mostrarAgenda =
+    !session.visaoAluno &&
+    podeVerAgenda(
+      session.profile?.papel,
+      session.profile?.is_admin,
+      session.profile?.email ?? session.email,
+    );
 
   // Pede o WhatsApp pra quem está sem telefone no cadastro (recuperação de senha).
-  const semTelefone =
-    (session.profile?.telefone || "").replace(/\D+/g, "").length < 10;
+  const semTelefone = (session.profile?.telefone || "").replace(/\D+/g, "").length < 10;
 
   const matriculasMap = new Map(matriculas.map((m) => [m.curso_id, m]));
   // Admin vê todos os cursos publicados; aluno comum só os que foi matriculado.
@@ -106,11 +117,11 @@ export default async function DashboardPage() {
   // que já têm capa estática em CAPA_LIVRO — pra esses o card não usa o signed
   // URL, então assinar seria uma chamada de rede à toa (era o maior gargalo).
   const imagensResolvidas = await Promise.all(
-    cursos.map((c) => (CAPA_LIVRO[c.slug] ? Promise.resolve(null) : getMaterialUrl(c.imagem_url)))
+    cursos.map((c) =>
+      CAPA_LIVRO[c.slug] ? Promise.resolve(null) : getMaterialUrl(c.imagem_url),
+    ),
   );
-  const imagemMap = new Map(
-    cursos.map((c, i) => [c.id, imagensResolvidas[i]])
-  );
+  const imagemMap = new Map(cursos.map((c, i) => [c.id, imagensResolvidas[i]]));
 
   // Vitrine agrupada por seção (Liderança, Discipulado, …). Se só existe
   // uma seção, não vale mostrar título — cai no grid simples de antes.
@@ -122,7 +133,9 @@ export default async function DashboardPage() {
     const ogUrl = imagemMap.get(curso.id);
     return (
       CAPA_LIVRO[curso.slug] ??
-      (ogUrl?.startsWith("/api/og/curso/") ? `${ogUrl}?formato=retrato&v=4` : ogUrl ?? null)
+      (ogUrl?.startsWith("/api/og/curso/")
+        ? `${ogUrl}?formato=retrato&v=4`
+        : (ogUrl ?? null))
     );
   };
 
@@ -169,14 +182,26 @@ export default async function DashboardPage() {
       };
     });
 
-  // Livros lidos = matrículas concluídas (o trigger marca `concluido_em` quando
-  // todas as mesas do livro terminam). Vão pra uma estante própria, mais recente
-  // primeiro, com a data em que a leitura foi fechada.
-  const cursoPorId = new Map(cursos.map((c) => [c.id, c]));
-  const livrosLidos = matriculas
-    .filter((m) => m.concluido_em && cursoPorId.has(m.curso_id))
-    .map((m) => ({ curso: cursoPorId.get(m.curso_id)!, em: m.concluido_em as string }))
-    .sort((a, b) => b.em.localeCompare(a.em));
+  // Livro lido = todas as mesas marcadas. Sai do progresso, e não de
+  // `matriculas.concluido_em`, porque quem lê sem se matricular (o master, por
+  // exemplo) nunca teria a matrícula fechada: o gatilho só atualiza linha de
+  // matrícula que exista, e sem ela a leitura terminava sem registrar nada.
+  // Mesma fonte da estante de leitura em andamento, logo acima.
+  const livrosLidos = cursos
+    .filter((curso) => {
+      const l = leituraMap.get(curso.id);
+      return !!l && l.total_aulas > 0 && l.concluidas >= l.total_aulas;
+    })
+    .map((curso) => ({
+      curso,
+      // A data do gatilho é a mais precisa; sem matrícula, a última atividade
+      // no livro é o melhor que se sabe sobre quando ele foi fechado.
+      em:
+        matriculasMap.get(curso.id)?.concluido_em ??
+        leituraMap.get(curso.id)?.ultima_em ??
+        null,
+    }))
+    .sort((x, y) => instante(y.em) - instante(x.em));
 
   const renderCard = (curso: (typeof cursos)[number]) => {
     const matricula = matriculasMap.get(curso.id);
@@ -295,16 +320,16 @@ export default async function DashboardPage() {
             Olá, {greetingName(session.profile?.nome)}.
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-mesa-600">
-            Aqui está sua trilha. Escolha uma temática, faça no seu ritmo, deixe
-            sua reflexão. O líder vai ler e te responder.
+            Aqui está sua trilha. Escolha uma temática, faça no seu ritmo, deixe sua
+            reflexão. O líder vai ler e te responder.
           </p>
         </div>
 
         {/* Atalhos: caderno + agenda + devocional + english (accent bar + botão circular) */}
         <div className="mb-14 grid gap-5 lg:grid-cols-2">
-            {/* Meu caderno — espaço de escrita livre, privado de cada um.
+          {/* Meu caderno — espaço de escrita livre, privado de cada um.
                 Só aparece pra quem tem o caderno liberado. */}
-            {mostrarCaderno && (
+          {mostrarCaderno && (
             <Link
               href="/anotacoes"
               className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
@@ -327,90 +352,99 @@ export default async function DashboardPage() {
                 →
               </span>
             </Link>
-            )}
+          )}
 
-            {/* Minha agenda (só pra quem tem acesso, ex.: Débora) */}
-            {mostrarAgenda && (
-              <Link
-                href="/admin/agenda"
-                className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
-              >
-                <span className="absolute inset-y-0 left-0 w-1 bg-mesa-400" aria-hidden />
-                <div className="min-w-0 pl-2">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">
-                    Pessoal
-                  </p>
-                  <h2 className="font-serif text-xl font-semibold text-mesa-900">
-                    📅 Minha agenda
-                  </h2>
-                  <p className="mt-1.5 text-sm leading-relaxed text-mesa-600">
-                    Seus compromissos e os do Google Calendar, num lugar só.
-                  </p>
-                </div>
-                <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-mesa-100 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
-                  →
-                </span>
-              </Link>
-            )}
+          {/* Minha agenda (só pra quem tem acesso, ex.: Débora) */}
+          {mostrarAgenda && (
+            <Link
+              href="/admin/agenda"
+              className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
+            >
+              <span className="absolute inset-y-0 left-0 w-1 bg-mesa-400" aria-hidden />
+              <div className="min-w-0 pl-2">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">
+                  Pessoal
+                </p>
+                <h2 className="font-serif text-xl font-semibold text-mesa-900">
+                  📅 Minha agenda
+                </h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-mesa-600">
+                  Seus compromissos e os do Google Calendar, num lugar só.
+                </p>
+              </div>
+              <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-mesa-100 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
+                →
+              </span>
+            </Link>
+          )}
 
-            {/* Devocional de hoje (destaque no topo) */}
-            {devocional && (
-              <Link
-                href="/devocional"
-                className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-laranja-200 bg-gradient-to-br from-laranja-50 to-bege-100 p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
-              >
-                <span className="absolute inset-y-0 left-0 w-1 bg-laranja-500" aria-hidden />
-                <div className="min-w-0 pl-2">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-700">
-                    Devocional de hoje
-                  </p>
-                  <h2 className="font-serif text-xl font-semibold text-mesa-900">
-                    {devocional.titulo || devocional.versiculo_ref}
-                  </h2>
-                  <p className="mt-1.5 line-clamp-2 border-l-2 border-laranja-200 pl-3 text-sm italic leading-relaxed text-mesa-600">
-                    &ldquo;{devocional.versiculo_texto}&rdquo;{" "}
-                    <span className="not-italic text-mesa-500">
-                      — {devocional.versiculo_ref}
-                    </span>
-                  </p>
-                </div>
-                <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white/70 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
-                  →
-                </span>
-              </Link>
-            )}
+          {/* Devocional de hoje (destaque no topo) */}
+          {devocional && (
+            <Link
+              href="/devocional"
+              className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-laranja-200 bg-gradient-to-br from-laranja-50 to-bege-100 p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
+            >
+              <span
+                className="absolute inset-y-0 left-0 w-1 bg-laranja-500"
+                aria-hidden
+              />
+              <div className="min-w-0 pl-2">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-700">
+                  Devocional de hoje
+                </p>
+                <h2 className="font-serif text-xl font-semibold text-mesa-900">
+                  {devocional.titulo || devocional.versiculo_ref}
+                </h2>
+                <p className="mt-1.5 line-clamp-2 border-l-2 border-laranja-200 pl-3 text-sm italic leading-relaxed text-mesa-600">
+                  &ldquo;{devocional.versiculo_texto}&rdquo;{" "}
+                  <span className="not-italic text-mesa-500">
+                    — {devocional.versiculo_ref}
+                  </span>
+                </p>
+              </div>
+              <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white/70 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
+                →
+              </span>
+            </Link>
+          )}
 
-            {/* Ekballo English — lição do dia + sequência.
+          {/* Ekballo English — lição do dia + sequência.
                 Só para quem tem o curso liberado (acesso por convite). */}
-            {mostrarEnglish && proximaLicao && (
-              <Link
-                href={`/english/licao/${proximaLicao.slug}`}
-                className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
-              >
-                <span className="absolute inset-y-0 left-0 w-1 bg-laranja-500" aria-hidden />
-                <div className="min-w-0 pl-2">
-                  <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-700">
-                    Ekballo English
-                    {englishStreak.dias_seguidos > 0 && (
-                      <span className="rounded-full bg-laranja-50 px-2 py-0.5 tracking-normal text-laranja-700">
-                        🔥 {englishStreak.dias_seguidos}
-                      </span>
-                    )}
-                  </p>
-                  <h2 lang="en" className="font-serif text-xl font-semibold text-mesa-900">
-                    🗣️ {proximaLicao.titulo}
-                  </h2>
-                  <p className="mt-1.5 text-sm leading-relaxed text-mesa-600">
-                    {englishStreak.total_licoes === 0
-                      ? "Sua primeira lição de inglês está pronta."
-                      : `${proximaLicao.titulo_pt} — mantenha a sequência de hoje.`}
-                  </p>
-                </div>
-                <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-mesa-100 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
-                  →
-                </span>
-              </Link>
-            )}
+          {mostrarEnglish && proximaLicao && (
+            <Link
+              href={`/english/licao/${proximaLicao.slug}`}
+              className="lift group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-mesa-200 bg-white p-6 shadow-[0_4px_16px_-4px_rgba(38,35,32,0.08)]"
+            >
+              <span
+                className="absolute inset-y-0 left-0 w-1 bg-laranja-500"
+                aria-hidden
+              />
+              <div className="min-w-0 pl-2">
+                <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-700">
+                  Ekballo English
+                  {englishStreak.dias_seguidos > 0 && (
+                    <span className="rounded-full bg-laranja-50 px-2 py-0.5 tracking-normal text-laranja-700">
+                      🔥 {englishStreak.dias_seguidos}
+                    </span>
+                  )}
+                </p>
+                <h2
+                  lang="en"
+                  className="font-serif text-xl font-semibold text-mesa-900"
+                >
+                  🗣️ {proximaLicao.titulo}
+                </h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-mesa-600">
+                  {englishStreak.total_licoes === 0
+                    ? "Sua primeira lição de inglês está pronta."
+                    : `${proximaLicao.titulo_pt} — mantenha a sequência de hoje.`}
+                </p>
+              </div>
+              <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-mesa-100 text-xl text-laranja-600 transition-colors group-hover:bg-laranja-500 group-hover:text-white">
+                →
+              </span>
+            </Link>
+          )}
         </div>
 
         <ContinuandoLeitura itens={emLeitura} />
@@ -421,7 +455,8 @@ export default async function DashboardPage() {
               Sua matrícula ainda não foi liberada.
             </p>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-mesa-500">
-              Seu líder pastoral vai te matricular nas temáticas da sua trilha. Quando isso acontecer, elas aparecem aqui.
+              Seu líder pastoral vai te matricular nas temáticas da sua trilha. Quando
+              isso acontecer, elas aparecem aqui.
             </p>
           </div>
         ) : mostrarSecoes ? (
@@ -494,9 +529,11 @@ export default async function DashboardPage() {
                       <h3 className="line-clamp-2 font-serif text-[15px] font-semibold leading-snug text-mesa-800 transition-colors group-hover:text-laranja-600">
                         {curso.titulo}
                       </h3>
-                      <p className="text-[11px] font-medium text-oliveira-700">
-                        Concluído em {dataConclusao(em)}
-                      </p>
+                      {em && (
+                        <p className="text-[11px] font-medium text-oliveira-700">
+                          Concluído em {dataConclusao(em)}
+                        </p>
+                      )}
                     </div>
                   </Link>
                 );
