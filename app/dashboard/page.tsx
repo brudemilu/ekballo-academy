@@ -449,43 +449,11 @@ export default async function DashboardPage() {
 
         <ContinuandoLeitura itens={emLeitura} />
 
-        {cursos.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-mesa-300 bg-white/60 px-6 py-20 text-center">
-            <p className="font-serif text-2xl text-mesa-700">
-              Sua matrícula ainda não foi liberada.
-            </p>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-mesa-500">
-              Seu líder pastoral vai te matricular nas temáticas da sua trilha. Quando
-              isso acontecer, elas aparecem aqui.
-            </p>
-          </div>
-        ) : mostrarSecoes ? (
-          <div className="space-y-14">
-            {grupos.map((grupo) => (
-              <section key={grupo.label}>
-                <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
-                  {grupo.label}
-                </h2>
-                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
-                  {grupo.cursos.map((curso) => renderCard(curso))}
-                </div>
-              </section>
-            ))}
-          </div>
-        ) : (
-          <section>
-            <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
-              Temáticas
-            </h2>
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
-              {cursos.map((curso) => renderCard(curso))}
-            </div>
-          </section>
-        )}
-
-        {/* Estante de livros lidos — só aparece quando há leitura concluída */}
+        {/* Estante de livros lidos — logo abaixo do que está sendo lido, e ANTES
+            da vitrine: o dashboard fala primeiro do que a pessoa já fez.
+            No fim da página ela ficava atrás de 196 livros e ninguém chegava lá. */}
         {livrosLidos.length > 0 && (
-          <section className="mt-16 border-t border-mesa-200 pt-12">
+          <section className="mb-14 mt-12 border-t border-mesa-200 pt-10">
             <div className="mb-2 flex items-baseline gap-3">
               <h2 className="font-serif text-2xl font-semibold text-mesa-900">
                 Livros lidos
@@ -538,6 +506,40 @@ export default async function DashboardPage() {
                   </Link>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {cursos.length === 0 ? (
+          <div className="rounded-2xl border-2 border-dashed border-mesa-300 bg-white/60 px-6 py-20 text-center">
+            <p className="font-serif text-2xl text-mesa-700">
+              Sua matrícula ainda não foi liberada.
+            </p>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-mesa-500">
+              Seu líder pastoral vai te matricular nas temáticas da sua trilha. Quando
+              isso acontecer, elas aparecem aqui.
+            </p>
+          </div>
+        ) : mostrarSecoes ? (
+          <div className="space-y-14">
+            {grupos.map((grupo) => (
+              <section key={grupo.label}>
+                <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
+                  {grupo.label}
+                </h2>
+                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
+                  {grupo.cursos.map((curso) => renderCard(curso))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : (
+          <section>
+            <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
+              Temáticas
+            </h2>
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
+              {cursos.map((curso) => renderCard(curso))}
             </div>
           </section>
         )}
