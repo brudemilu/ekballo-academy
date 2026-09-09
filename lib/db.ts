@@ -29,7 +29,6 @@ import {
   MOCK_RESPOSTAS,
   MOCK_MATRICULAS,
   MOCK_PROGRESSO,
-  MOCK_ALTERNATIVAS,
   isMockMode,
   findCurso as mockFindCurso,
   aulasByCurso as mockAulasByCurso,
@@ -44,7 +43,6 @@ import {
   aulaCompleta as mockAulaCompleta,
   getMockMcAnswer,
   setMockMcAnswer,
-  setMockReflexao,
   addMockCarrossel,
   listMockCarrosseis,
   removeMockCarrossel,
@@ -141,9 +139,10 @@ export async function getMatrizPermissoes(): Promise<Record<string, Permissao[]>
   const supabase = await createClient();
   const { data } = await supabase.from("papel_permissoes").select("papel, permissao");
   const m: Record<string, Permissao[]> = {};
-  (data || []).forEach((r: { papel: string; permissao: string }) => {
-    (m[r.papel] ||= []).push(r.permissao as Permissao);
-  });
+  for (const r of (data || []) as { papel: string; permissao: string }[]) {
+    if (!m[r.papel]) m[r.papel] = [];
+    m[r.papel].push(r.permissao as Permissao);
+  }
   return m;
 }
 
@@ -729,7 +728,9 @@ export async function listAllAlunos(): Promise<{
     .select("id, nome, email, telefone, turma, is_admin, acesso_liberado, created_at");
   const { data: r } = await supabase.from("respostas").select("aluno_id");
   const map = new Map<string, number>();
-  (r || []).forEach((x: { aluno_id: string }) => map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1));
+  (r || []).forEach((x: { aluno_id: string }) => {
+    map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1);
+  });
   // Temáticas = cursos em que o discípulo está matriculado (matriculas → cursos)
   const { data: mats } = await supabase
     .from("matriculas")
@@ -1051,10 +1052,14 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
 
   const respMap = new Map<string, { alternativa_id: string | null; texto: string | null }>();
   ((respResp.data || []) as { atividade_id: string; alternativa_id: string | null; texto: string | null }[])
-    .forEach((r) => respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto }));
+    .forEach((r) => {
+      respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto });
+    });
   const corretaMap = new Map<string, string>();
   ((altsResp.data || []) as { atividade_id: string; id: string }[])
-    .forEach((a) => corretaMap.set(a.atividade_id, a.id));
+    .forEach((a) => {
+      corretaMap.set(a.atividade_id, a.id);
+    });
 
   return aulaCompletaEmMemoria(atividades, respMap, corretaMap);
 }
@@ -1062,9 +1067,10 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
 // Calcula status (desbloqueada / bloqueada) de cada aula do curso para o aluno
 export type AulaComStatus = Aula & { desbloqueada: boolean; completa: boolean };
 
-// aulasLivres = curso liberado (todas as aulas desbloqueadas, sem trava
-// sequencial). `completa` continua refletindo se o aluno respondeu, só o
-// `desbloqueada` é liberado.
+// Toda mesa é sempre acessível (Bruno, jun/2026): `desbloqueada` sai true
+// para todas, e `completa` só indica se o discípulo já respondeu — nunca trava
+// a próxima. Havia aqui um parâmetro `aulasLivres` para ligar essa liberação
+// caso a caso; com a trava sequencial extinta ele não fazia mais nada, e saiu.
 //
 // Antes: 1 query de aulas + (para cada aula) o N+1 inteiro do aulaCompleta, em
 // fila. Um curso de 4 aulas/10 questões custava ~24 round-trips sequenciais —
@@ -1073,20 +1079,17 @@ export type AulaComStatus = Aula & { desbloqueada: boolean; completa: boolean };
 export async function listAulasComStatus(
   cursoId: string,
   alunoId: string,
-  aulasLivres = false,
 ): Promise<AulaComStatus[]> {
   const aulas = await listAulasByCurso(cursoId);
   if (aulas.length === 0) return [];
   if (isMockMode()) {
     // Mock: aulaCompleta já é in-memory e barato, mantém o caminho simples.
     const result: AulaComStatus[] = [];
-    let previousCompleta = true;
     for (const aula of aulas) {
       const completa = await aulaCompleta(alunoId, aula.id);
       // Capítulos SEMPRE liberados: marcar como concluído é só indicador de
       // leitura, nunca trava o próximo. (Bruno, jun/2026 — vale p/ todo curso.)
       result.push({ ...aula, desbloqueada: true, completa });
-      previousCompleta = completa;
     }
     return result;
   }
@@ -1134,23 +1137,25 @@ export async function listAulasComStatus(
   });
   const respMap = new Map<string, { alternativa_id: string | null; texto: string | null }>();
   ((respResp.data || []) as { atividade_id: string; alternativa_id: string | null; texto: string | null }[])
-    .forEach((r) => respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto }));
+    .forEach((r) => {
+      respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto });
+    });
   const corretaMap = new Map<string, string>();
   ((altsResp.data || []) as { atividade_id: string; id: string }[])
-    .forEach((a) => corretaMap.set(a.atividade_id, a.id));
+    .forEach((a) => {
+      corretaMap.set(a.atividade_id, a.id);
+    });
   const progressoSet = new Set(
     ((progressoResp.data || []) as { aula_id: string }[]).map((p) => p.aula_id),
   );
 
   const result: AulaComStatus[] = [];
-  let previousCompleta = true;
   for (const aula of aulas) {
     const atvs = atvPorAula.get(aula.id) || [];
     const completa = atvs.length === 0
       ? progressoSet.has(aula.id)
       : aulaCompletaEmMemoria(atvs, respMap, corretaMap);
     result.push({ ...aula, desbloqueada: true, completa });
-    previousCompleta = completa;
   }
   return result;
 }
@@ -1788,8 +1793,7 @@ export async function getAlunoProgressoNoCurso(
       });
 
       const respondidas = detalheAtvs.filter(
-        (a) =>
-          a.alternativaSelecionada || (a.textoReflexao && a.textoReflexao.trim())
+        (a) => a.alternativaSelecionada || a.textoReflexao?.trim()
       ).length;
       const completa = mockAulaCompleta(alunoId, aula.id);
       const status: AlunoProgressoAula["status"] = completa
@@ -1907,7 +1911,9 @@ export async function getAlunoProgressoNoCurso(
     comentario_lider_em: string | null;
   };
   const respByAtv = new Map<string, RespInfo>();
-  (respData || []).forEach((r) => respByAtv.set((r as RespInfo).atividade_id, r as RespInfo));
+  (respData || []).forEach((r) => {
+    respByAtv.set((r as RespInfo).atividade_id, r as RespInfo);
+  });
 
   const altsByAtv = new Map<string, Alternativa[]>();
   alternativas.forEach((a) => {
@@ -1968,9 +1974,7 @@ export async function getAlunoProgressoNoCurso(
     if (atvs.length === 0) completa = progressoSet.has(aula.id);
 
     const respondidas = detalheAtvs.filter(
-      (a) =>
-        !!a.alternativaSelecionada ||
-        (a.textoReflexao && a.textoReflexao.trim())
+      (a) => !!a.alternativaSelecionada || a.textoReflexao?.trim()
     ).length;
 
     const status: AlunoProgressoAula["status"] = completa

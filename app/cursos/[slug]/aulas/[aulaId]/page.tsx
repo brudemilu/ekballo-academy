@@ -56,7 +56,7 @@ export default async function AulaPage({
 
   // Mesa de discipulado: toda mesa é acessível, sem desbloqueio linear.
   // aulasStatus é usado só para navegação (anterior/próxima) e progresso.
-  const aulasStatus = await listAulasComStatus(curso.id, session.userId, true);
+  const aulasStatus = await listAulasComStatus(curso.id, session.userId);
 
   const [
     atividades,
