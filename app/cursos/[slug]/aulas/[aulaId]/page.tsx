@@ -1,31 +1,31 @@
 import Link from "next/link";
-import { after } from "next/server";
 import { notFound, redirect } from "next/navigation";
-import { Logo } from "@/components/Logo";
-import { UserMenu } from "@/components/UserMenu";
-import { AtividadeForm } from "@/components/AtividadeForm";
-import { MarcarConcluida } from "@/components/MarcarConcluida";
-import { AulaConteudo } from "@/components/AulaConteudo";
-import { LeitorMesa } from "@/components/LeitorMesa";
-import { AvaliacaoParach } from "@/components/AvaliacaoParach";
+import { after } from "next/server";
 import { AnotacoesDaMesa } from "@/components/AnotacoesDaMesa";
+import { AtividadeForm } from "@/components/AtividadeForm";
+import { AulaConteudo } from "@/components/AulaConteudo";
+import { AvaliacaoParach } from "@/components/AvaliacaoParach";
+import { LeitorMesa } from "@/components/LeitorMesa";
+import { Logo } from "@/components/Logo";
+import { MarcarConcluida } from "@/components/MarcarConcluida";
 import { StoryIndicacaoLivro } from "@/components/StoryIndicacaoLivro";
+import { UserMenu } from "@/components/UserMenu";
+import { listAnotacoesDaAula } from "@/lib/anotacoes";
 import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
+  getAudioUrl,
+  getAula,
   getCurrentSession,
   getCursoBySlug,
-  getAula,
   getMaterialUrl,
-  getAudioUrl,
   isMatriculado,
+  jaConcluiu,
   listAtividadesByAula,
-  listRespostasByAluno,
   listAulasComStatus,
   listDestaquesByAula,
-  jaConcluiu,
+  listRespostasByAluno,
   registrarLeitura,
 } from "@/lib/db";
-import { listAnotacoesDaAula } from "@/lib/anotacoes";
 import { podeUsarCaderno } from "@/lib/permissoes";
 
 export default async function AulaPage({
@@ -59,7 +59,13 @@ export default async function AulaPage({
   const aulasStatus = await listAulasComStatus(curso.id, session.userId, true);
 
   const [
-    atividades, respostas, concluida, materialUrl, audioUrl, leituraUrl, destaques,
+    atividades,
+    respostas,
+    concluida,
+    materialUrl,
+    audioUrl,
+    leituraUrl,
+    destaques,
     anotacoes,
   ] = await Promise.all([
     listAtividadesByAula(aulaId),
@@ -94,17 +100,24 @@ export default async function AulaPage({
   // Mesa de discipulado: toda pergunta (reflexão ou MC herdada do modelo antigo)
   // é exibida como reflexão aberta — sem resposta certa nem pontos.
   // "anotacao" é o caderno da mesa (reflexão com razao='anotacao', não obrigatória).
-  const temPerguntas = atividades.some((a) => !(a.tipo === "reflexao" && a.razao === "anotacao"));
-  const temAnotacoes = atividades.some((a) => a.tipo === "reflexao" && a.razao === "anotacao");
+  const temPerguntas = atividades.some(
+    (a) => !(a.tipo === "reflexao" && a.razao === "anotacao"),
+  );
+  const temAnotacoes = atividades.some(
+    (a) => a.tipo === "reflexao" && a.razao === "anotacao",
+  );
   const temAtividades = atividades.length > 0;
 
   // Aula especial "Avaliação de Liderança Parach": conteúdo é um sentinel e a
   // página renderiza o componente interativo (não o texto). A 1ª atividade da
   // aula guarda o resultado/plano do aluno (o líder lê pela devolutiva normal).
   const ehAvaliacao =
-    typeof aula.conteudo === "string" && aula.conteudo.startsWith("[[AVALIACAO_PARACH]]");
-  const avaliacaoAtividadeId = ehAvaliacao ? atividades[0]?.id ?? null : null;
-  const avaliacaoResposta = avaliacaoAtividadeId ? respostasMap.get(avaliacaoAtividadeId) : undefined;
+    typeof aula.conteudo === "string" &&
+    aula.conteudo.startsWith("[[AVALIACAO_PARACH]]");
+  const avaliacaoAtividadeId = ehAvaliacao ? (atividades[0]?.id ?? null) : null;
+  const avaliacaoResposta = avaliacaoAtividadeId
+    ? respostasMap.get(avaliacaoAtividadeId)
+    : undefined;
 
   return (
     <main className="min-h-screen bg-mesa-50">
@@ -170,9 +183,7 @@ export default async function AulaPage({
                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-laranja-600">
                   Material complementar
                 </p>
-                <p className="mt-0.5 text-sm font-medium text-mesa-800">
-                  Baixar PDF →
-                </p>
+                <p className="mt-0.5 text-sm font-medium text-mesa-800">Baixar PDF →</p>
               </div>
             </a>
           )}
@@ -181,6 +192,7 @@ export default async function AulaPage({
             <div className="mb-8 aspect-video overflow-hidden rounded-xl bg-mesa-900">
               <iframe
                 src={aula.video_url}
+                title={`Vídeo da mesa: ${aula.titulo}`}
                 className="h-full w-full"
                 allowFullScreen
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -193,6 +205,9 @@ export default async function AulaPage({
               <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-oliveira-700">
                 🎧 Ouça esta mesa — conversa-resumo
               </p>
+              {/* biome-ignore lint/a11y/useMediaCaption: narração gerada por TTS,
+                  sem faixa de legenda sincronizada disponível. O conteúdo lido em
+                  voz alta está inteiro na própria página, logo abaixo, em texto. */}
               <audio controls preload="none" className="w-full">
                 <source src={audioUrl} />
                 Seu navegador não suporta áudio.
@@ -231,7 +246,8 @@ export default async function AulaPage({
             </div>
             {atividades.map((atividade, idx) => {
               const r = respostasMap.get(atividade.id);
-              const ehAnotacao = atividade.tipo === "reflexao" && atividade.razao === "anotacao";
+              const ehAnotacao =
+                atividade.tipo === "reflexao" && atividade.razao === "anotacao";
               return (
                 <AtividadeForm
                   key={atividade.id}
