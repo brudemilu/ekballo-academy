@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AdminShell } from "@/components/AdminShell";
-import { MatriculaToggle } from "@/components/MatriculaToggle";
 import { AdminAlunoForm } from "@/components/AdminAlunoForm";
 import { AdminRedefinirSenha } from "@/components/AdminRedefinirSenha";
+import { AdminShell } from "@/components/AdminShell";
+import { MatriculasDoAluno } from "@/components/MatriculasDoAluno";
 import {
-  getCurrentSession,
   getAlunoById,
+  getCurrentSession,
   listAllCursos,
   listMatriculasByAluno,
 } from "@/lib/db";
-import { displayTelefone } from "@/lib/telefone";
 import { nomePapel } from "@/lib/permissoes";
+import { displayTelefone } from "@/lib/telefone";
 
 export default async function AdminAlunoPage({
   params,
@@ -34,7 +34,6 @@ export default async function AdminAlunoPage({
     listAllCursos(),
     listMatriculasByAluno(alunoId),
   ]);
-  const matriculadosSet = new Set(matriculas.map((m) => m.curso_id));
 
   return (
     <AdminShell current="alunos" session={session}>
@@ -134,63 +133,25 @@ export default async function AdminAlunoPage({
         Matrículas
       </h2>
       <p className="mb-6 text-sm text-mesa-600">
-        Marque as temáticas em que este discípulo deve ter acesso.
+        Busque pelo título ou pelo autor e libere o acesso com um clique.
       </p>
 
-      {cursos.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-16 text-center">
-          <p className="text-mesa-500">Nenhum curso disponível ainda.</p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {cursos.map((c) => {
-            const matriculado = matriculadosSet.has(c.id);
-            return (
-              <li
-                key={c.id}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-mesa-200 bg-white p-5"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex flex-wrap items-center gap-2">
-                    <h3 className="font-serif text-lg font-semibold text-mesa-800">
-                      {c.titulo}
-                    </h3>
-                    {!c.publicado && (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                        Rascunho
-                      </span>
-                    )}
-                    {c.is_pago && (
-                      <span className="rounded-full bg-mesa-100 px-2 py-0.5 text-xs font-medium text-mesa-700">
-                        Pago
-                      </span>
-                    )}
-                  </div>
-                  <p className="line-clamp-2 text-sm text-mesa-600">
-                    {c.descricao}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {matriculado && (
-                    <Link
-                      href={`/admin/cursos/${c.slug}/alunos/${alunoId}`}
-                      className="rounded-full border border-mesa-200 bg-white px-4 py-2 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
-                    >
-                      Ver progresso
-                    </Link>
-                  )}
-                  <MatriculaToggle
-                    alunoId={alunoId}
-                    cursoId={c.id}
-                    cursoTitulo={c.titulo}
-                    matriculadoInicial={matriculado}
-                  />
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <MatriculasDoAluno
+        alunoId={alunoId}
+        cursos={cursos.map((c) => ({
+          id: c.id,
+          slug: c.slug,
+          titulo: c.titulo,
+          descricao: c.descricao,
+          autor: c.autor,
+          categoria: c.categoria,
+          ordem: c.ordem,
+          publicado: c.publicado,
+          is_pago: c.is_pago,
+          external_path: c.external_path,
+        }))}
+        matriculadosIniciais={matriculas.map((m) => m.curso_id)}
+      />
     </AdminShell>
   );
 }
