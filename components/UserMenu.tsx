@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 import { podeUsarCaderno } from "@/lib/permissoes";
+import { createClient } from "@/lib/supabase/client";
 
 export function UserMenu({
   nome,
@@ -51,17 +51,18 @@ export function UserMenu({
       {/* Caderno: atalho fixo — precisa ser alcançável de qualquer página
           (mesa, devocional, painel), não só do dashboard. */}
       {temCaderno && (
-      <Link
-        href="/anotacoes"
-        className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700"
-        title="Minhas anotações"
-      >
-        ✍️ <span className="hidden sm:inline">Caderno</span>
-      </Link>
+        <Link
+          href="/anotacoes"
+          className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700"
+          title="Minhas anotações"
+        >
+          ✍️ <span className="hidden sm:inline">Caderno</span>
+        </Link>
       )}
       {isAdmin && visaoAluno && (
         // No modo discípulo o único atalho administrativo é a porta de volta.
         <button
+          type="button"
           onClick={() => trocarVisao("admin")}
           disabled={trocando}
           className="rounded-full border border-laranja-300 bg-laranja-50 px-3 py-1.5 text-xs font-medium text-laranja-700 transition hover:bg-laranja-100 disabled:opacity-60"
@@ -79,13 +80,16 @@ export function UserMenu({
           >
             Painel admin
           </Link>
+          {/* Visível TAMBÉM no celular: é de onde o master mais usa a
+              plataforma. No estreito fica só o olho, como o atalho do caderno. */}
           <button
+            type="button"
             onClick={() => trocarVisao("aluno")}
             disabled={trocando}
-            className="hidden rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700 disabled:opacity-60 sm:inline-block"
+            className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:border-laranja-300 hover:bg-laranja-50 hover:text-laranja-700 disabled:opacity-60"
             title="Ver a plataforma como um discípulo vê"
           >
-            👁️ Ver como discípulo
+            👁️ <span className="hidden sm:inline">Ver como discípulo</span>
           </button>
         </>
       )}
@@ -104,6 +108,7 @@ export function UserMenu({
         Perfil
       </Link>
       <button
+        type="button"
         onClick={handleSair}
         className="rounded-full border border-mesa-200 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
       >

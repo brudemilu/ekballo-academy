@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { LinkNav, Seta } from "@/components/LinkNav";
 import { notFound, redirect } from "next/navigation";
-import { Logo } from "@/components/Logo";
-import { UserMenu } from "@/components/UserMenu";
-import { rotuloNumeroAula } from "@/lib/aula-numero";
+import AudioLivroControle from "@/components/AudioLivroControle";
 import { BaixarOffline } from "@/components/BaixarOffline";
 import { BarraProgresso } from "@/components/ContinuandoLeitura";
-import AudioLivroControle from "@/components/AudioLivroControle";
+import { LinkNav, Seta } from "@/components/LinkNav";
+import { Logo } from "@/components/Logo";
+import { StoryIndicacaoLivro } from "@/components/StoryIndicacaoLivro";
+import { UserMenu } from "@/components/UserMenu";
+import { rotuloNumeroAula } from "@/lib/aula-numero";
 import {
   getCurrentSession,
   getCursoBySlug,
@@ -56,9 +57,9 @@ export default async function CursoPage({
   );
   const retomar =
     lidas > 0 && lidas < totalMesas
-      ? aulas.slice(ultimoLidoIdx + 1).find((a) => !concluidas.has(a.id)) ??
+      ? (aulas.slice(ultimoLidoIdx + 1).find((a) => !concluidas.has(a.id)) ??
         aulas.find((a) => !concluidas.has(a.id)) ??
-        null
+        null)
       : null;
 
   return (
@@ -147,6 +148,14 @@ export default async function CursoPage({
                 Continuar na mesa {rotuloNumeroAula(retomar)} →
               </Link>
             )}
+            {lidas >= totalMesas && (
+              <StoryIndicacaoLivro
+                slug={curso.slug}
+                titulo={curso.titulo}
+                autor={curso.autor ?? null}
+                nome={session.profile?.nome ?? null}
+              />
+            )}
           </div>
         )}
 
@@ -184,13 +193,9 @@ export default async function CursoPage({
                       {concluida ? "✓" : rotuloNumeroAula(aula)}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-mesa-800">
-                        {aula.titulo}
-                      </h3>
+                      <h3 className="font-medium text-mesa-800">{aula.titulo}</h3>
                       {concluida ? (
-                        <p className="text-xs text-oliveira-600">
-                          Concluído
-                        </p>
+                        <p className="text-xs text-oliveira-600">Concluído</p>
                       ) : null}
                     </div>
                   </LinkNav>
