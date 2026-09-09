@@ -4,10 +4,10 @@
 // Em modo produção, consulta o Supabase.
 // =============================================================
 
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { visaoAlunoAtiva } from "@/lib/visao";
-import { createClient as createServiceClient } from "@supabase/supabase-js";
 
 // Cliente service-role (ignora RLS). Usado só nas funções da AGENDA, cujo acesso
 // já é controlado na página/API por podeVerAgenda (master + e-mails liberados,
@@ -20,103 +20,106 @@ function agendaSR() {
     { auth: { persistSession: false } },
   );
 }
+
+import type { AgendaEvento } from "@/lib/agenda";
 import {
-  MOCK_PROFILE,
-  MOCK_ALUNOS,
-  MOCK_CURSOS,
-  MOCK_AULAS,
-  MOCK_ATIVIDADES,
-  MOCK_RESPOSTAS,
-  MOCK_MATRICULAS,
-  MOCK_PROGRESSO,
-  MOCK_ALTERNATIVAS,
+  addMockCarrossel,
+  addMockCompromisso,
+  type CarrosselInstagramMock,
+  getMockMcAnswer,
   isMockMode,
-  findCurso as mockFindCurso,
+  listMockCarrosseis,
+  listMockCompromissos,
+  MOCK_ALUNOS,
+  MOCK_ATIVIDADES,
+  MOCK_AULAS,
+  MOCK_CURSOS,
+  MOCK_MATRICULAS,
+  MOCK_PROFILE,
+  MOCK_PROGRESSO,
+  MOCK_RESPOSTAS,
+  alternativasByAtividade as mockAltByAtv,
+  atividadesByAula as mockAtivByAula,
+  aulaCompleta as mockAulaCompleta,
   aulasByCurso as mockAulasByCurso,
   findAula as mockFindAula,
-  atividadesByAula as mockAtivByAula,
-  respostasByAluno as mockRespByAluno,
-  progressoByAluno as mockProgByAluno,
-  matriculasByAluno as mockMatByAluno,
+  findCurso as mockFindCurso,
   leiturasByAluno as mockLeiturasByAluno,
-  setMockLeitura,
-  alternativasByAtividade as mockAltByAtv,
-  aulaCompleta as mockAulaCompleta,
-  getMockMcAnswer,
-  setMockMcAnswer,
-  setMockReflexao,
-  addMockCarrossel,
-  listMockCarrosseis,
+  matriculasByAluno as mockMatByAluno,
+  progressoByAluno as mockProgByAluno,
+  respostasByAluno as mockRespByAluno,
   removeMockCarrossel,
-  type CarrosselInstagramMock,
-  listMockCompromissos,
-  addMockCompromisso,
-  updateMockCompromisso,
   removeMockCompromisso,
+  setMockLeitura,
+  setMockMcAnswer,
+  updateMockCompromisso,
 } from "@/lib/mock-data";
-import type { AgendaEvento } from "@/lib/agenda";
+import { PERMISSOES, type Permissao } from "@/lib/permissoes";
 import type {
-  Profile,
-  Curso,
-  Aula,
-  Atividade,
   Alternativa,
+  Atividade,
+  Aula,
+  Curso,
   Destaque,
   EmailTemplate,
   Mensagem,
   MensagemDestinatario,
+  Profile,
 } from "@/lib/types";
-import { PERMISSOES, type Permissao } from "@/lib/permissoes";
 
 // -------- AUTH / PROFILE --------
 
 // Memoizada por request (React cache): se layout + página + componentes
 // chamarem na mesma renderização, só faz 1 getUser()+profile, não N.
-export const getCurrentSession = cache(async (): Promise<{
-  userId: string;
-  profile: Profile | null;
-  email: string;
-  // true quando o master ligou o "ver como discípulo". O profile continua
-  // intacto (is_admin de verdade) — o acesso ao conteúdo não muda; quem muda
-  // é a INTERFACE, que esconde tudo que é de administração.
-  visaoAluno: boolean;
-} | null> => {
-  if (isMockMode()) {
+export const getCurrentSession = cache(
+  async (): Promise<{
+    userId: string;
+    profile: Profile | null;
+    email: string;
+    // true quando o master ligou o "ver como discípulo". O profile continua
+    // intacto (is_admin de verdade) — o acesso ao conteúdo não muda; quem muda
+    // é a INTERFACE, que esconde tudo que é de administração.
+    visaoAluno: boolean;
+  } | null> => {
+    if (isMockMode()) {
+      return {
+        userId: MOCK_PROFILE.id,
+        profile: MOCK_PROFILE,
+        email: MOCK_PROFILE.email,
+        visaoAluno: MOCK_PROFILE.is_admin ? await visaoAlunoAtiva() : false,
+      };
+    }
+    const supabase = await createClient();
+    // getClaims verifica o JWT localmente via JWKS (chaves ES256 deste projeto),
+    // sem round-trip ao servidor de auth. O middleware já validou e atualizou o
+    // token nesta mesma navegação, então aqui só precisamos ler quem é o usuário.
+    // (Fallback automático pro getUser se faltar chave/WebCrypto — ver auth-js.)
+    const { data: claimsData } = await supabase.auth.getClaims();
+    const claims = claimsData?.claims;
+    if (!claims?.sub) return null;
+    const userId = claims.sub as string;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
     return {
-      userId: MOCK_PROFILE.id,
-      profile: MOCK_PROFILE,
-      email: MOCK_PROFILE.email,
-      visaoAluno: MOCK_PROFILE.is_admin ? await visaoAlunoAtiva() : false,
+      userId,
+      profile: profile as Profile | null,
+      email: (claims.email as string) || "",
+      visaoAluno: (profile as Profile | null)?.is_admin
+        ? await visaoAlunoAtiva()
+        : false,
     };
-  }
-  const supabase = await createClient();
-  // getClaims verifica o JWT localmente via JWKS (chaves ES256 deste projeto),
-  // sem round-trip ao servidor de auth. O middleware já validou e atualizou o
-  // token nesta mesma navegação, então aqui só precisamos ler quem é o usuário.
-  // (Fallback automático pro getUser se faltar chave/WebCrypto — ver auth-js.)
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const claims = claimsData?.claims;
-  if (!claims?.sub) return null;
-  const userId = claims.sub as string;
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-  return {
-    userId,
-    profile: profile as Profile | null,
-    email: (claims.email as string) || "",
-    visaoAluno: (profile as Profile | null)?.is_admin ? await visaoAlunoAtiva() : false,
-  };
-});
+  },
+);
 
 // -------- PAPÉIS / PERMISSÕES --------
 
 // Conjunto de permissões de um papel. master = tudo; discipulo = nada;
 // coordenador/lider = conforme a matriz no banco.
 export async function getPermissoesPapel(
-  papel: string | null | undefined
+  papel: string | null | undefined,
 ): Promise<Set<Permissao>> {
   const todas = PERMISSOES.map((p) => p.chave);
   if (papel === "master") return new Set(todas);
@@ -127,7 +130,9 @@ export async function getPermissoesPapel(
     .from("papel_permissoes")
     .select("permissao")
     .eq("papel", papel);
-  return new Set((data || []).map((r: { permissao: string }) => r.permissao as Permissao));
+  return new Set(
+    (data || []).map((r: { permissao: string }) => r.permissao as Permissao),
+  );
 }
 
 // Matriz completa { coordenador: [...], lider: [...] } para a tela de admin.
@@ -141,9 +146,10 @@ export async function getMatrizPermissoes(): Promise<Record<string, Permissao[]>
   const supabase = await createClient();
   const { data } = await supabase.from("papel_permissoes").select("papel, permissao");
   const m: Record<string, Permissao[]> = {};
-  (data || []).forEach((r: { papel: string; permissao: string }) => {
-    (m[r.papel] ||= []).push(r.permissao as Permissao);
-  });
+  for (const r of (data || []) as { papel: string; permissao: string }[]) {
+    if (!m[r.papel]) m[r.papel] = [];
+    m[r.papel].push(r.permissao as Permissao);
+  }
   return m;
 }
 
@@ -220,7 +226,7 @@ export async function getAula(aulaId: string, cursoId: string): Promise<Aula | n
 
 export async function listDestaquesByAula(
   alunoId: string,
-  aulaId: string
+  aulaId: string,
 ): Promise<Destaque[]> {
   if (isMockMode()) return [];
   const supabase = await createClient();
@@ -238,15 +244,16 @@ export async function listDestaquesByAula(
 // - Se for http(s)://… → usa direto (URL externa).
 // - Caso contrário → trata como path no bucket privado `materiais-cursos`
 //   e devolve uma signed URL temporária (15 min).
-export async function getMaterialUrl(materialPathOrUrl: string | null): Promise<string | null> {
+export async function getMaterialUrl(
+  materialPathOrUrl: string | null,
+): Promise<string | null> {
   if (!materialPathOrUrl) return null;
   if (/^https?:\/\//i.test(materialPathOrUrl)) return materialPathOrUrl;
   // Rotas locais (ex.: /api/og/curso/...) — devolve como está.
   if (materialPathOrUrl.startsWith("/")) return materialPathOrUrl;
   if (isMockMode()) return materialPathOrUrl; // sem Storage no mock
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .storage
+  const { data, error } = await supabase.storage
     .from("materiais-cursos")
     .createSignedUrl(materialPathOrUrl, 60 * 15);
   if (error || !data?.signedUrl) return null;
@@ -257,14 +264,15 @@ export async function getMaterialUrl(materialPathOrUrl: string | null): Promise<
 // Mesmo esquema do material: path no bucket privado `materiais-cursos`
 // (pasta `audios/`) → signed URL. Validade de 6h para cobrir a audição
 // inteira sem expirar no meio. http(s):// e rotas locais passam direto.
-export async function getAudioUrl(audioPathOrUrl: string | null | undefined): Promise<string | null> {
+export async function getAudioUrl(
+  audioPathOrUrl: string | null | undefined,
+): Promise<string | null> {
   if (!audioPathOrUrl) return null;
   if (/^https?:\/\//i.test(audioPathOrUrl)) return audioPathOrUrl;
   if (audioPathOrUrl.startsWith("/")) return audioPathOrUrl;
   if (isMockMode()) return null; // sem Storage no mock
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .storage
+  const { data, error } = await supabase.storage
     .from("materiais-cursos")
     .createSignedUrl(audioPathOrUrl, 60 * 60 * 6);
   if (error || !data?.signedUrl) return null;
@@ -310,7 +318,9 @@ export async function listRespostasByAluno(alunoId: string): Promise<RespostaAlu
 
 // -------- PROGRESSO --------
 
-export async function listProgressoByAluno(alunoId: string): Promise<{ aula_id: string }[]> {
+export async function listProgressoByAluno(
+  alunoId: string,
+): Promise<{ aula_id: string }[]> {
   if (isMockMode()) {
     return mockProgByAluno(alunoId).map((p) => ({ aula_id: p.aula_id }));
   }
@@ -353,7 +363,9 @@ export type ProgressoLeitura = {
   dispensado_em: string | null;
 };
 
-export async function listProgressoLeitura(alunoId: string): Promise<ProgressoLeitura[]> {
+export async function listProgressoLeitura(
+  alunoId: string,
+): Promise<ProgressoLeitura[]> {
   if (isMockMode()) {
     const concluidas = new Set(mockProgByAluno(alunoId).map((p) => p.aula_id));
     const cursoIds = new Set<string>([
@@ -365,7 +377,9 @@ export async function listProgressoLeitura(alunoId: string): Promise<ProgressoLe
       const aulas = mockAulasByCurso(cursoId);
       const marcador = mockLeiturasByAluno(alunoId).find((l) => l.curso_id === cursoId);
       const marcadorValido =
-        marcador?.aula_id && !concluidas.has(marcador.aula_id) ? marcador.aula_id : null;
+        marcador?.aula_id && !concluidas.has(marcador.aula_id)
+          ? marcador.aula_id
+          : null;
       // Mesma regra do SQL: retoma na primeira pendente depois da última lida.
       const ultimoLidoIdx = aulas.reduce(
         (acc, a, i) => (concluidas.has(a.id) ? i : acc),
@@ -425,7 +439,10 @@ export async function registrarLeitura(
 // Tira o livro do destaque sem apagar progresso nenhum. Volta a aparecer
 // assim que ele abrir ou concluir outra mesa (a data aqui é comparada com a
 // última atividade do aluno no livro).
-export async function dispensarLeitura(alunoId: string, cursoId: string): Promise<void> {
+export async function dispensarLeitura(
+  alunoId: string,
+  cursoId: string,
+): Promise<void> {
   const agora = new Date().toISOString();
   if (isMockMode()) {
     setMockLeitura(alunoId, cursoId, null, agora);
@@ -435,14 +452,21 @@ export async function dispensarLeitura(alunoId: string, cursoId: string): Promis
   // `atualizado_em` vai junto pra as duas datas virem do mesmo relógio — o
   // painel esconde quando dispensado_em >= ultima_em.
   await supabase.from("leitura_marcador").upsert(
-    { aluno_id: alunoId, curso_id: cursoId, atualizado_em: agora, dispensado_em: agora },
+    {
+      aluno_id: alunoId,
+      curso_id: cursoId,
+      atualizado_em: agora,
+      dispensado_em: agora,
+    },
     { onConflict: "aluno_id,curso_id" },
   );
 }
 
 // -------- MATRICULAS --------
 
-export async function listMatriculasByAluno(alunoId: string): Promise<{ curso_id: string; concluido_em: string | null }[]> {
+export async function listMatriculasByAluno(
+  alunoId: string,
+): Promise<{ curso_id: string; concluido_em: string | null }[]> {
   if (isMockMode()) {
     return mockMatByAluno(alunoId).map((m) => ({
       curso_id: m.curso_id,
@@ -457,7 +481,10 @@ export async function listMatriculasByAluno(alunoId: string): Promise<{ curso_id
   return data || [];
 }
 
-export async function isMatriculado(alunoId: string, cursoId: string): Promise<boolean> {
+export async function isMatriculado(
+  alunoId: string,
+  cursoId: string,
+): Promise<boolean> {
   if (isMockMode()) {
     return mockMatByAluno(alunoId).some((m) => m.curso_id === cursoId);
   }
@@ -502,7 +529,10 @@ export async function getAdminStats() {
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("cursos").select("*", { count: "exact", head: true }),
     supabase.from("respostas").select("*", { count: "exact", head: true }),
-    supabase.from("respostas").select("*", { count: "exact", head: true }).is("comentario_lider", null),
+    supabase
+      .from("respostas")
+      .select("*", { count: "exact", head: true })
+      .is("comentario_lider", null),
   ]);
   return {
     totalAlunos: a.count || 0,
@@ -518,8 +548,18 @@ export type DashboardData = {
   cursos: { id: string; slug: string; titulo: string; categoria: string | null }[];
   turmas: string[];
   alunos: { id: string; turma: string | null; created_at: string }[];
-  matriculas: { aluno_id: string; curso_id: string; matriculado_em: string | null; concluido_em: string | null }[];
-  respostas: { aluno_id: string; curso_id: string | null; created_at: string; comentado: boolean }[];
+  matriculas: {
+    aluno_id: string;
+    curso_id: string;
+    matriculado_em: string | null;
+    concluido_em: string | null;
+  }[];
+  respostas: {
+    aluno_id: string;
+    curso_id: string | null;
+    created_at: string;
+    comentado: boolean;
+  }[];
   mesas: { aluno_id: string; curso_id: string | null; concluido_em: string }[];
 };
 
@@ -532,36 +572,95 @@ export async function getDashboardData(): Promise<DashboardData> {
     const cursoDaAtiv = (atividadeId: string) =>
       aulaCurso.get(ativAula.get(atividadeId) ?? "") ?? null;
     return {
-      cursos: MOCK_CURSOS.map((c) => ({ id: c.id, slug: c.slug, titulo: c.titulo, categoria: c.categoria ?? null })),
-      turmas: [...new Set(MOCK_ALUNOS.filter((a) => !a.is_admin && a.turma).map((a) => a.turma as string))].sort(),
-      alunos: MOCK_ALUNOS.filter((a) => !a.is_admin).map((a) => ({ id: a.id, turma: a.turma, created_at: a.created_at })),
-      matriculas: MOCK_MATRICULAS.map((m) => ({ aluno_id: m.aluno_id, curso_id: m.curso_id, matriculado_em: m.matriculado_em, concluido_em: m.concluido_em })),
-      respostas: MOCK_RESPOSTAS.map((r) => ({ aluno_id: r.aluno_id, curso_id: cursoDaAtiv(r.atividade_id), created_at: r.created_at, comentado: !!r.comentario_lider })),
-      mesas: MOCK_PROGRESSO.map((p) => ({ aluno_id: p.aluno_id, curso_id: aulaCurso.get(p.aula_id) ?? null, concluido_em: p.concluido_em })),
+      cursos: MOCK_CURSOS.map((c) => ({
+        id: c.id,
+        slug: c.slug,
+        titulo: c.titulo,
+        categoria: c.categoria ?? null,
+      })),
+      turmas: [
+        ...new Set(
+          MOCK_ALUNOS.filter((a) => !a.is_admin && a.turma).map(
+            (a) => a.turma as string,
+          ),
+        ),
+      ].sort(),
+      alunos: MOCK_ALUNOS.filter((a) => !a.is_admin).map((a) => ({
+        id: a.id,
+        turma: a.turma,
+        created_at: a.created_at,
+      })),
+      matriculas: MOCK_MATRICULAS.map((m) => ({
+        aluno_id: m.aluno_id,
+        curso_id: m.curso_id,
+        matriculado_em: m.matriculado_em,
+        concluido_em: m.concluido_em,
+      })),
+      respostas: MOCK_RESPOSTAS.map((r) => ({
+        aluno_id: r.aluno_id,
+        curso_id: cursoDaAtiv(r.atividade_id),
+        created_at: r.created_at,
+        comentado: !!r.comentario_lider,
+      })),
+      mesas: MOCK_PROGRESSO.map((p) => ({
+        aluno_id: p.aluno_id,
+        curso_id: aulaCurso.get(p.aula_id) ?? null,
+        concluido_em: p.concluido_em,
+      })),
     };
   }
   const supabase = await createClient();
   const [cursosR, alunosR, matsR, respR, progR] = await Promise.all([
     supabase.from("cursos").select("id, slug, titulo, categoria").order("ordem"),
     supabase.from("profiles").select("id, turma, created_at, is_admin"),
-    supabase.from("matriculas").select("aluno_id, curso_id, matriculado_em, concluido_em"),
-    supabase.from("respostas").select("aluno_id, created_at, comentario_lider, atividade:atividades!inner(aula:aulas!inner(curso_id))"),
-    supabase.from("progresso").select("aluno_id, concluido_em, aula:aulas!inner(curso_id)"),
+    supabase
+      .from("matriculas")
+      .select("aluno_id, curso_id, matriculado_em, concluido_em"),
+    supabase
+      .from("respostas")
+      .select(
+        "aluno_id, created_at, comentario_lider, atividade:atividades!inner(aula:aulas!inner(curso_id))",
+      ),
+    supabase
+      .from("progresso")
+      .select("aluno_id, concluido_em, aula:aulas!inner(curso_id)"),
   ]);
-  const alunos = ((alunosR.data || []) as { id: string; turma: string | null; created_at: string; is_admin: boolean }[])
-    .filter((a) => !a.is_admin);
-  type RespJoin = { aluno_id: string; created_at: string; comentario_lider: string | null; atividade: { aula: { curso_id: string } | null } | null };
-  type ProgJoin = { aluno_id: string; concluido_em: string; aula: { curso_id: string } | null };
+  const alunos = (
+    (alunosR.data || []) as {
+      id: string;
+      turma: string | null;
+      created_at: string;
+      is_admin: boolean;
+    }[]
+  ).filter((a) => !a.is_admin);
+  type RespJoin = {
+    aluno_id: string;
+    created_at: string;
+    comentario_lider: string | null;
+    atividade: { aula: { curso_id: string } | null } | null;
+  };
+  type ProgJoin = {
+    aluno_id: string;
+    concluido_em: string;
+    aula: { curso_id: string } | null;
+  };
   return {
     cursos: (cursosR.data || []) as DashboardData["cursos"],
-    turmas: [...new Set(alunos.filter((a) => a.turma).map((a) => a.turma as string))].sort(),
+    turmas: [
+      ...new Set(alunos.filter((a) => a.turma).map((a) => a.turma as string)),
+    ].sort(),
     alunos: alunos.map((a) => ({ id: a.id, turma: a.turma, created_at: a.created_at })),
     matriculas: (matsR.data || []) as DashboardData["matriculas"],
     respostas: ((respR.data || []) as unknown as RespJoin[]).map((r) => ({
-      aluno_id: r.aluno_id, curso_id: r.atividade?.aula?.curso_id ?? null, created_at: r.created_at, comentado: !!r.comentario_lider,
+      aluno_id: r.aluno_id,
+      curso_id: r.atividade?.aula?.curso_id ?? null,
+      created_at: r.created_at,
+      comentado: !!r.comentario_lider,
     })),
     mesas: ((progR.data || []) as unknown as ProgJoin[]).map((p) => ({
-      aluno_id: p.aluno_id, curso_id: p.aula?.curso_id ?? null, concluido_em: p.concluido_em,
+      aluno_id: p.aluno_id,
+      curso_id: p.aula?.curso_id ?? null,
+      concluido_em: p.concluido_em,
     })),
   };
 }
@@ -585,7 +684,7 @@ export type RespostaRich = {
   alunoTurma: string | null;
 };
 
-function enrichMock(r: typeof MOCK_RESPOSTAS[number]): RespostaRich {
+function enrichMock(r: (typeof MOCK_RESPOSTAS)[number]): RespostaRich {
   const at = MOCK_ATIVIDADES.find((x) => x.id === r.atividade_id);
   const au = at ? MOCK_AULAS.find((x) => x.id === at.aula_id) : undefined;
   const cu = au ? MOCK_CURSOS.find((x) => x.id === au.curso_id) : undefined;
@@ -608,43 +707,66 @@ function enrichMock(r: typeof MOCK_RESPOSTAS[number]): RespostaRich {
   };
 }
 
-export async function listAllRespostas(filtros: { status?: "pendentes" | "comentadas"; cursoSlug?: string } = {}): Promise<RespostaRich[]> {
+export async function listAllRespostas(
+  filtros: { status?: "pendentes" | "comentadas"; cursoSlug?: string } = {},
+): Promise<RespostaRich[]> {
   if (isMockMode()) {
     let lista = MOCK_RESPOSTAS.map(enrichMock);
-    if (filtros.status === "pendentes") lista = lista.filter((r) => !r.comentario_lider);
-    if (filtros.status === "comentadas") lista = lista.filter((r) => r.comentario_lider);
-    if (filtros.cursoSlug) lista = lista.filter((r) => r.cursoSlug === filtros.cursoSlug);
+    if (filtros.status === "pendentes")
+      lista = lista.filter((r) => !r.comentario_lider);
+    if (filtros.status === "comentadas")
+      lista = lista.filter((r) => r.comentario_lider);
+    if (filtros.cursoSlug)
+      lista = lista.filter((r) => r.cursoSlug === filtros.cursoSlug);
     return lista.sort((a, b) => b.created_at.localeCompare(a.created_at));
   }
   const supabase = await createClient();
   let q = supabase
     .from("respostas")
-    .select("id, texto, comentario_lider, comentario_lider_em, created_at, updated_at, atividade:atividades(pergunta, aula:aulas(titulo, curso:cursos(titulo, slug))), aluno:profiles(id, nome, email, turma)")
+    .select(
+      "id, texto, comentario_lider, comentario_lider_em, created_at, updated_at, atividade:atividades(pergunta, aula:aulas(titulo, curso:cursos(titulo, slug))), aluno:profiles(id, nome, email, turma)",
+    )
     .order("created_at", { ascending: false });
   if (filtros.status === "pendentes") q = q.is("comentario_lider", null);
   if (filtros.status === "comentadas") q = q.not("comentario_lider", "is", null);
   const { data } = await q.limit(200);
-  return ((data as unknown as Array<{
-    id: string; texto: string; comentario_lider: string | null; comentario_lider_em: string | null;
-    created_at: string; updated_at: string;
-    atividade?: { pergunta?: string; aula?: { titulo?: string; curso?: { titulo?: string; slug?: string } } };
-    aluno?: { id?: string; nome?: string | null; email?: string; turma?: string | null };
-  }>) || []).map((r) => ({
-    id: r.id,
-    texto: r.texto,
-    comentario_lider: r.comentario_lider,
-    comentario_lider_em: r.comentario_lider_em,
-    created_at: r.created_at,
-    updated_at: r.updated_at,
-    pergunta: r.atividade?.pergunta || "",
-    aulaTitulo: r.atividade?.aula?.titulo || "",
-    cursoTitulo: r.atividade?.aula?.curso?.titulo || "",
-    cursoSlug: r.atividade?.aula?.curso?.slug || "",
-    alunoId: r.aluno?.id || "",
-    alunoNome: r.aluno?.nome || null,
-    alunoEmail: r.aluno?.email || "",
-    alunoTurma: r.aluno?.turma || null,
-  })).filter((r) => filtros.cursoSlug ? r.cursoSlug === filtros.cursoSlug : true);
+  return (
+    (data as unknown as Array<{
+      id: string;
+      texto: string;
+      comentario_lider: string | null;
+      comentario_lider_em: string | null;
+      created_at: string;
+      updated_at: string;
+      atividade?: {
+        pergunta?: string;
+        aula?: { titulo?: string; curso?: { titulo?: string; slug?: string } };
+      };
+      aluno?: {
+        id?: string;
+        nome?: string | null;
+        email?: string;
+        turma?: string | null;
+      };
+    }>) || []
+  )
+    .map((r) => ({
+      id: r.id,
+      texto: r.texto,
+      comentario_lider: r.comentario_lider,
+      comentario_lider_em: r.comentario_lider_em,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+      pergunta: r.atividade?.pergunta || "",
+      aulaTitulo: r.atividade?.aula?.titulo || "",
+      cursoTitulo: r.atividade?.aula?.curso?.titulo || "",
+      cursoSlug: r.atividade?.aula?.curso?.slug || "",
+      alunoId: r.aluno?.id || "",
+      alunoNome: r.aluno?.nome || null,
+      alunoEmail: r.aluno?.email || "",
+      alunoTurma: r.aluno?.turma || null,
+    }))
+    .filter((r) => (filtros.cursoSlug ? r.cursoSlug === filtros.cursoSlug : true));
 }
 
 export async function getRespostaById(id: string): Promise<RespostaRich | null> {
@@ -656,10 +778,13 @@ export async function getRespostaById(id: string): Promise<RespostaRich | null> 
   return all.find((r) => r.id === id) || null;
 }
 
-export async function listOutrasRespostasDoAluno(alunoId: string, excludeId: string, limit = 5): Promise<{ id: string; pergunta: string; aulaTitulo: string; created_at: string }[]> {
+export async function listOutrasRespostasDoAluno(
+  alunoId: string,
+  excludeId: string,
+  limit = 5,
+): Promise<{ id: string; pergunta: string; aulaTitulo: string; created_at: string }[]> {
   if (isMockMode()) {
-    return MOCK_RESPOSTAS
-      .filter((r) => r.aluno_id === alunoId && r.id !== excludeId)
+    return MOCK_RESPOSTAS.filter((r) => r.aluno_id === alunoId && r.id !== excludeId)
       .map((r) => {
         const at = MOCK_ATIVIDADES.find((x) => x.id === r.atividade_id);
         const au = at ? MOCK_AULAS.find((x) => x.id === at.aula_id) : undefined;
@@ -681,10 +806,13 @@ export async function listOutrasRespostasDoAluno(alunoId: string, excludeId: str
     .neq("id", excludeId)
     .order("created_at", { ascending: false })
     .limit(limit);
-  return ((data as unknown as Array<{
-    id: string; created_at: string;
-    atividade?: { pergunta?: string; aula?: { titulo?: string } };
-  }>) || []).map((r) => ({
+  return (
+    (data as unknown as Array<{
+      id: string;
+      created_at: string;
+      atividade?: { pergunta?: string; aula?: { titulo?: string } };
+    }>) || []
+  ).map((r) => ({
     id: r.id,
     pergunta: r.atividade?.pergunta || "",
     aulaTitulo: r.atividade?.aula?.titulo || "",
@@ -699,7 +827,7 @@ export async function listOutrasRespostasDoAluno(alunoId: string, excludeId: str
 // desempatando pelo e-mail.
 function ordenarPorNome(
   a: { nome: string | null; email: string },
-  b: { nome: string | null; email: string }
+  b: { nome: string | null; email: string },
 ): number {
   const na = (a.nome || "").trim();
   const nb = (b.nome || "").trim();
@@ -709,16 +837,26 @@ function ordenarPorNome(
   return na.localeCompare(nb, "pt-BR", { sensitivity: "base" });
 }
 
-export async function listAllAlunos(): Promise<{
-  id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; acesso_liberado: boolean; created_at: string; respostasCount: number; tematicas: string[];
-}[]> {
+export async function listAllAlunos(): Promise<
+  {
+    id: string;
+    nome: string | null;
+    email: string;
+    telefone: string | null;
+    turma: string | null;
+    is_admin: boolean;
+    acesso_liberado: boolean;
+    created_at: string;
+    respostasCount: number;
+    tematicas: string[];
+  }[]
+> {
   if (isMockMode()) {
     return MOCK_ALUNOS.map((a) => ({
       ...a,
       acesso_liberado: true,
       respostasCount: MOCK_RESPOSTAS.filter((r) => r.aluno_id === a.id).length,
-      tematicas: MOCK_MATRICULAS
-        .filter((m) => m.aluno_id === a.id)
+      tematicas: MOCK_MATRICULAS.filter((m) => m.aluno_id === a.id)
         .map((m) => MOCK_CURSOS.find((c) => c.id === m.curso_id)?.titulo)
         .filter((t): t is string => !!t),
     })).sort(ordenarPorNome);
@@ -729,7 +867,9 @@ export async function listAllAlunos(): Promise<{
     .select("id, nome, email, telefone, turma, is_admin, acesso_liberado, created_at");
   const { data: r } = await supabase.from("respostas").select("aluno_id");
   const map = new Map<string, number>();
-  (r || []).forEach((x: { aluno_id: string }) => map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1));
+  (r || []).forEach((x: { aluno_id: string }) => {
+    map.set(x.aluno_id, (map.get(x.aluno_id) || 0) + 1);
+  });
   // Temáticas = cursos em que o discípulo está matriculado (matriculas → cursos)
   const { data: mats } = await supabase
     .from("matriculas")
@@ -744,20 +884,36 @@ export async function listAllAlunos(): Promise<{
     temaMap.set(m.aluno_id, arr);
   });
   return (alunos || [])
-    .map((a: { id: string; nome: string | null; email: string; telefone: string | null; turma: string | null; is_admin: boolean; acesso_liberado: boolean | null; created_at: string }) => ({
-      ...a,
-      acesso_liberado: !!a.acesso_liberado,
-      respostasCount: map.get(a.id) || 0,
-      tematicas: temaMap.get(a.id) || [],
-    }))
+    .map(
+      (a: {
+        id: string;
+        nome: string | null;
+        email: string;
+        telefone: string | null;
+        turma: string | null;
+        is_admin: boolean;
+        acesso_liberado: boolean | null;
+        created_at: string;
+      }) => ({
+        ...a,
+        acesso_liberado: !!a.acesso_liberado,
+        respostasCount: map.get(a.id) || 0,
+        tematicas: temaMap.get(a.id) || [],
+      }),
+    )
     .sort(ordenarPorNome);
 }
 
 // -------- ADMIN: CURSOS COM STATS --------
 
-export async function listCursosWithStats(): Promise<{
-  curso: Curso; matriculados: number; concluidos: number; alunosComTelefone: number;
-}[]> {
+export async function listCursosWithStats(): Promise<
+  {
+    curso: Curso;
+    matriculados: number;
+    concluidos: number;
+    alunosComTelefone: number;
+  }[]
+> {
   if (isMockMode()) {
     return MOCK_CURSOS.map((c) => {
       const ms = MOCK_MATRICULAS.filter((m) => m.curso_id === c.id);
@@ -802,7 +958,13 @@ export async function listCursosWithStats(): Promise<{
 // -------- AGENDA PESSOAL (compromissos manuais) --------
 
 type CompromissoRow = {
-  id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null;
+  id: string;
+  titulo: string;
+  inicio: string;
+  fim: string | null;
+  dia_todo: boolean;
+  local: string | null;
+  nota: string | null;
 };
 
 // autor = nome de quem criou, só quando NÃO é o master (ex.: Débora) — pra
@@ -835,16 +997,22 @@ export async function listCompromissosManuais(
   const supabase = agendaSR();
   const { data } = await supabase
     .from("compromissos")
-    .select("id, titulo, inicio, fim, dia_todo, local, nota, criador:profiles(nome, papel, is_admin)")
+    .select(
+      "id, titulo, inicio, fim, dia_todo, local, nota, criador:profiles(nome, papel, is_admin)",
+    )
     .gte("inicio", inicioISO)
     .lte("inicio", fimISO)
     .order("inicio", { ascending: true });
-  type Criador = { nome: string | null; papel: string | null; is_admin: boolean | null };
+  type Criador = {
+    nome: string | null;
+    papel: string | null;
+    is_admin: boolean | null;
+  };
   type RowCom = CompromissoRow & { criador: Criador | Criador[] | null };
   return ((data || []) as RowCom[]).map((r) => {
     const cr = Array.isArray(r.criador) ? r.criador[0] : r.criador;
     const ehMaster = cr?.papel === "master" || (!!cr?.is_admin && !cr?.papel);
-    return compToEvento(r, ehMaster ? null : cr?.nome ?? null);
+    return compToEvento(r, ehMaster ? null : (cr?.nome ?? null));
   });
 }
 
@@ -855,11 +1023,28 @@ export async function listGoogleSincronizados(
   fimISO: string,
 ): Promise<AgendaEvento[]> {
   if (isMockMode()) {
-    const mk = (dias: number, h: number, titulo: string, agenda: string, diaTodo = false): AgendaEvento => {
+    const mk = (
+      dias: number,
+      h: number,
+      titulo: string,
+      agenda: string,
+      diaTodo = false,
+    ): AgendaEvento => {
       const d = new Date();
       d.setDate(d.getDate() + dias);
       d.setHours(h, 0, 0, 0);
-      return { id: `gs:mock-${dias}-${titulo}`, titulo, inicio: d.toISOString(), fim: null, diaTodo, local: null, nota: null, agenda, autor: null, fonte: "google" };
+      return {
+        id: `gs:mock-${dias}-${titulo}`,
+        titulo,
+        inicio: d.toISOString(),
+        fim: null,
+        diaTodo,
+        local: null,
+        nota: null,
+        agenda,
+        autor: null,
+        fonte: "google",
+      };
     };
     return [
       mk(0, 20, "Reunião IMW", "IMW Industrial"),
@@ -876,7 +1061,15 @@ export async function listGoogleSincronizados(
     .gte("inicio", inicioISO)
     .lte("inicio", fimISO)
     .order("inicio", { ascending: true });
-  type Row = { id: string; titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; agenda: string | null };
+  type Row = {
+    id: string;
+    titulo: string;
+    inicio: string;
+    fim: string | null;
+    dia_todo: boolean;
+    local: string | null;
+    agenda: string | null;
+  };
   return ((data || []) as Row[]).map((r) => ({
     id: `gs:${r.id}`,
     titulo: r.titulo,
@@ -892,7 +1085,13 @@ export async function listGoogleSincronizados(
 }
 
 export async function addCompromisso(input: {
-  titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null; criado_por?: string | null;
+  titulo: string;
+  inicio: string;
+  fim: string | null;
+  dia_todo: boolean;
+  local: string | null;
+  nota: string | null;
+  criado_por?: string | null;
 }): Promise<void> {
   if (isMockMode()) {
     addMockCompromisso({
@@ -920,7 +1119,14 @@ export async function addCompromisso(input: {
 
 export async function updateCompromisso(
   id: string,
-  input: { titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null },
+  input: {
+    titulo: string;
+    inicio: string;
+    fim: string | null;
+    dia_todo: boolean;
+    local: string | null;
+    nota: string | null;
+  },
 ): Promise<void> {
   if (isMockMode()) {
     updateMockCompromisso(id, input);
@@ -951,7 +1157,9 @@ export async function deleteCompromisso(id: string): Promise<void> {
 
 // -------- ALTERNATIVAS (MC) --------
 
-export async function listAlternativasByAtividade(atividadeId: string): Promise<Alternativa[]> {
+export async function listAlternativasByAtividade(
+  atividadeId: string,
+): Promise<Alternativa[]> {
   if (isMockMode()) return mockAltByAtv(atividadeId);
   const supabase = await createClient();
   const { data } = await supabase
@@ -962,7 +1170,10 @@ export async function listAlternativasByAtividade(atividadeId: string): Promise<
   return (data || []) as Alternativa[];
 }
 
-export async function getRespostaAlternativa(alunoId: string, atividadeId: string): Promise<string | null> {
+export async function getRespostaAlternativa(
+  alunoId: string,
+  atividadeId: string,
+): Promise<string | null> {
   if (isMockMode()) {
     return getMockMcAnswer(alunoId, atividadeId) || null;
   }
@@ -976,7 +1187,11 @@ export async function getRespostaAlternativa(alunoId: string, atividadeId: strin
   return (data?.alternativa_id as string | null) || null;
 }
 
-export async function salvarRespostaAlternativa(alunoId: string, atividadeId: string, alternativaId: string): Promise<void> {
+export async function salvarRespostaAlternativa(
+  alunoId: string,
+  atividadeId: string,
+  alternativaId: string,
+): Promise<void> {
   if (isMockMode()) {
     setMockMcAnswer(alunoId, atividadeId, alternativaId);
     return;
@@ -990,7 +1205,7 @@ export async function salvarRespostaAlternativa(alunoId: string, atividadeId: st
       texto: null,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "atividade_id,aluno_id" }
+    { onConflict: "atividade_id,aluno_id" },
   );
 }
 
@@ -1002,7 +1217,10 @@ export async function salvarRespostaAlternativa(alunoId: string, atividadeId: st
 // cursos, a conclusão vem do botão manual que grava em `progresso`.
 function aulaCompletaEmMemoria(
   atividades: { id: string; tipo: string }[],
-  respostaPorAtividade: Map<string, { alternativa_id: string | null; texto: string | null }>,
+  respostaPorAtividade: Map<
+    string,
+    { alternativa_id: string | null; texto: string | null }
+  >,
   corretaPorAtividade: Map<string, string>,
 ): boolean {
   if (atividades.length === 0) return false;
@@ -1032,7 +1250,9 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
   const atividades = (ats || []) as { id: string; tipo: string }[];
   if (atividades.length === 0) return jaConcluiu(alunoId, aulaId);
   const atvIds = atividades.map((a) => a.id);
-  const mcIds = atividades.filter((a) => a.tipo === "multipla_escolha").map((a) => a.id);
+  const mcIds = atividades
+    .filter((a) => a.tipo === "multipla_escolha")
+    .map((a) => a.id);
 
   const [respResp, altsResp] = await Promise.all([
     supabase
@@ -1049,12 +1269,23 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
       : Promise.resolve({ data: [] as { atividade_id: string; id: string }[] }),
   ]);
 
-  const respMap = new Map<string, { alternativa_id: string | null; texto: string | null }>();
-  ((respResp.data || []) as { atividade_id: string; alternativa_id: string | null; texto: string | null }[])
-    .forEach((r) => respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto }));
+  const respMap = new Map<
+    string,
+    { alternativa_id: string | null; texto: string | null }
+  >();
+  (
+    (respResp.data || []) as {
+      atividade_id: string;
+      alternativa_id: string | null;
+      texto: string | null;
+    }[]
+  ).forEach((r) => {
+    respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto });
+  });
   const corretaMap = new Map<string, string>();
-  ((altsResp.data || []) as { atividade_id: string; id: string }[])
-    .forEach((a) => corretaMap.set(a.atividade_id, a.id));
+  ((altsResp.data || []) as { atividade_id: string; id: string }[]).forEach((a) => {
+    corretaMap.set(a.atividade_id, a.id);
+  });
 
   return aulaCompletaEmMemoria(atividades, respMap, corretaMap);
 }
@@ -1062,9 +1293,10 @@ export async function aulaCompleta(alunoId: string, aulaId: string): Promise<boo
 // Calcula status (desbloqueada / bloqueada) de cada aula do curso para o aluno
 export type AulaComStatus = Aula & { desbloqueada: boolean; completa: boolean };
 
-// aulasLivres = curso liberado (todas as aulas desbloqueadas, sem trava
-// sequencial). `completa` continua refletindo se o aluno respondeu, só o
-// `desbloqueada` é liberado.
+// Toda mesa é sempre acessível (Bruno, jun/2026): `desbloqueada` sai true
+// para todas, e `completa` só indica se o discípulo já respondeu — nunca trava
+// a próxima. Havia aqui um parâmetro `aulasLivres` para ligar essa liberação
+// caso a caso; com a trava sequencial extinta ele não fazia mais nada, e saiu.
 //
 // Antes: 1 query de aulas + (para cada aula) o N+1 inteiro do aulaCompleta, em
 // fila. Um curso de 4 aulas/10 questões custava ~24 round-trips sequenciais —
@@ -1073,20 +1305,17 @@ export type AulaComStatus = Aula & { desbloqueada: boolean; completa: boolean };
 export async function listAulasComStatus(
   cursoId: string,
   alunoId: string,
-  aulasLivres = false,
 ): Promise<AulaComStatus[]> {
   const aulas = await listAulasByCurso(cursoId);
   if (aulas.length === 0) return [];
   if (isMockMode()) {
     // Mock: aulaCompleta já é in-memory e barato, mantém o caminho simples.
     const result: AulaComStatus[] = [];
-    let previousCompleta = true;
     for (const aula of aulas) {
       const completa = await aulaCompleta(alunoId, aula.id);
       // Capítulos SEMPRE liberados: marcar como concluído é só indicador de
       // leitura, nunca trava o próximo. (Bruno, jun/2026 — vale p/ todo curso.)
       result.push({ ...aula, desbloqueada: true, completa });
-      previousCompleta = completa;
     }
     return result;
   }
@@ -1101,7 +1330,9 @@ export async function listAulasComStatus(
     .in("aula_id", aulaIds);
   const atividades = (atvData || []) as { id: string; aula_id: string; tipo: string }[];
   const atvIds = atividades.map((a) => a.id);
-  const mcIds = atividades.filter((a) => a.tipo === "multipla_escolha").map((a) => a.id);
+  const mcIds = atividades
+    .filter((a) => a.tipo === "multipla_escolha")
+    .map((a) => a.id);
 
   // Respostas do aluno + alternativas corretas + conclusão manual, em paralelo.
   const [respResp, altsResp, progressoResp] = await Promise.all([
@@ -1111,7 +1342,13 @@ export async function listAulasComStatus(
           .select("atividade_id, alternativa_id, texto")
           .eq("aluno_id", alunoId)
           .in("atividade_id", atvIds)
-      : Promise.resolve({ data: [] as { atividade_id: string; alternativa_id: string | null; texto: string | null }[] }),
+      : Promise.resolve({
+          data: [] as {
+            atividade_id: string;
+            alternativa_id: string | null;
+            texto: string | null;
+          }[],
+        }),
     mcIds.length
       ? supabase
           .from("alternativas")
@@ -1132,25 +1369,35 @@ export async function listAulasComStatus(
     arr.push({ id: a.id, tipo: a.tipo });
     atvPorAula.set(a.aula_id, arr);
   });
-  const respMap = new Map<string, { alternativa_id: string | null; texto: string | null }>();
-  ((respResp.data || []) as { atividade_id: string; alternativa_id: string | null; texto: string | null }[])
-    .forEach((r) => respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto }));
+  const respMap = new Map<
+    string,
+    { alternativa_id: string | null; texto: string | null }
+  >();
+  (
+    (respResp.data || []) as {
+      atividade_id: string;
+      alternativa_id: string | null;
+      texto: string | null;
+    }[]
+  ).forEach((r) => {
+    respMap.set(r.atividade_id, { alternativa_id: r.alternativa_id, texto: r.texto });
+  });
   const corretaMap = new Map<string, string>();
-  ((altsResp.data || []) as { atividade_id: string; id: string }[])
-    .forEach((a) => corretaMap.set(a.atividade_id, a.id));
+  ((altsResp.data || []) as { atividade_id: string; id: string }[]).forEach((a) => {
+    corretaMap.set(a.atividade_id, a.id);
+  });
   const progressoSet = new Set(
     ((progressoResp.data || []) as { aula_id: string }[]).map((p) => p.aula_id),
   );
 
   const result: AulaComStatus[] = [];
-  let previousCompleta = true;
   for (const aula of aulas) {
     const atvs = atvPorAula.get(aula.id) || [];
-    const completa = atvs.length === 0
-      ? progressoSet.has(aula.id)
-      : aulaCompletaEmMemoria(atvs, respMap, corretaMap);
+    const completa =
+      atvs.length === 0
+        ? progressoSet.has(aula.id)
+        : aulaCompletaEmMemoria(atvs, respMap, corretaMap);
     result.push({ ...aula, desbloqueada: true, completa });
-    previousCompleta = completa;
   }
   return result;
 }
@@ -1190,7 +1437,10 @@ export async function listLeiturasConcluidas(): Promise<LeituraConcluida[]> {
   const cursoIds = [...new Set(rows.map((m) => m.curso_id))];
   const [{ data: perfis }, { data: cursos }] = await Promise.all([
     supabase.from("profiles").select("id, nome").in("id", alunoIds),
-    supabase.from("cursos").select("id, titulo, slug, external_path").in("id", cursoIds),
+    supabase
+      .from("cursos")
+      .select("id, titulo, slug, external_path")
+      .in("id", cursoIds),
   ]);
   const nomeById = new Map((perfis || []).map((p) => [p.id, p.nome]));
   const cursoById = new Map((cursos || []).map((c) => [c.id, c]));
@@ -1248,7 +1498,12 @@ export async function listEmailTemplates(): Promise<EmailTemplate[]> {
         assunto: "Sentimos sua falta no curso {{nome_curso}}",
         corpo_html: "<p>Mock template.</p>",
         corpo_texto: "Mock template.",
-        variaveis_disponiveis: ["{{nome_aluno}}", "{{nome_curso}}", "{{link_curso}}", "{{dias_inatividade}}"],
+        variaveis_disponiveis: [
+          "{{nome_aluno}}",
+          "{{nome_curso}}",
+          "{{link_curso}}",
+          "{{dias_inatividade}}",
+        ],
         ativo: true,
         created_at: "2026-05-22T00:00:00Z",
         updated_at: "2026-05-22T00:00:00Z",
@@ -1279,7 +1534,12 @@ export async function getEmailTemplate(chave: string): Promise<EmailTemplate | n
 
 export async function updateEmailTemplate(
   chave: string,
-  patch: { assunto?: string; corpo_html?: string; corpo_texto?: string | null; ativo?: boolean }
+  patch: {
+    assunto?: string;
+    corpo_html?: string;
+    corpo_texto?: string | null;
+    ativo?: boolean;
+  },
 ): Promise<void> {
   if (isMockMode()) {
     // Mock mode: no-op (no persistence)
@@ -1359,14 +1619,14 @@ export async function listMensagens(limit = 50): Promise<MensagemRich[]> {
       : Promise.resolve({ data: [] as { id: string; titulo: string }[] }),
     alunoIds.length > 0
       ? supabase.from("profiles").select("id, nome, email").in("id", alunoIds)
-      : Promise.resolve({ data: [] as { id: string; nome: string | null; email: string }[] }),
+      : Promise.resolve({
+          data: [] as { id: string; nome: string | null; email: string }[],
+        }),
   ]);
 
-  const cursoMap = new Map(
-    (cursosResp.data || []).map((c) => [c.id, c.titulo])
-  );
+  const cursoMap = new Map((cursosResp.data || []).map((c) => [c.id, c.titulo]));
   const alunoMap = new Map(
-    (alunosResp.data || []).map((a) => [a.id, a.nome || a.email])
+    (alunosResp.data || []).map((a) => [a.id, a.nome || a.email]),
   );
 
   return mensagens.map((m) => ({
@@ -1380,9 +1640,7 @@ export async function listMensagens(limit = 50): Promise<MensagemRich[]> {
   }));
 }
 
-export async function getMensagemComDestinatarios(
-  id: string
-): Promise<{
+export async function getMensagemComDestinatarios(id: string): Promise<{
   mensagem: MensagemRich;
   destinatarios: (MensagemDestinatario & { aluno_nome: string; aluno_email: string })[];
 } | null> {
@@ -1469,7 +1727,9 @@ export type CursoProgressao = {
   alunos: CursoProgressaoAlunoRow[];
 };
 
-export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgressao | null> {
+export async function getCursoProgressao(
+  cursoSlug: string,
+): Promise<CursoProgressao | null> {
   if (isMockMode()) {
     const curso = mockFindCurso(cursoSlug);
     if (!curso) return null;
@@ -1478,7 +1738,7 @@ export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgre
     const alunoIds = matriculas.map((m) => m.aluno_id);
     const alunos = alunoIds
       .map((id) => MOCK_ALUNOS.find((a) => a.id === id))
-      .filter((a): a is typeof MOCK_ALUNOS[number] => !!a);
+      .filter((a): a is (typeof MOCK_ALUNOS)[number] => !!a);
 
     const aulasRows: CursoProgressaoAulaRow[] = aulas.map((aula) => {
       const totalAtividades = mockAtivByAula(aula.id).length;
@@ -1489,7 +1749,8 @@ export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgre
         ordem: aula.ordem,
         totalAtividades,
         alunosCompletos: completos,
-        taxaConclusao: alunoIds.length > 0 ? Math.round((completos / alunoIds.length) * 100) : 0,
+        taxaConclusao:
+          alunoIds.length > 0 ? Math.round((completos / alunoIds.length) * 100) : 0,
       };
     });
 
@@ -1512,7 +1773,8 @@ export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgre
         telefone: aluno.telefone,
         concluidoEm: matricula?.concluido_em ?? null,
         aulasCompletas,
-        progresso: aulas.length > 0 ? Math.round((aulasCompletas / aulas.length) * 100) : 0,
+        progresso:
+          aulas.length > 0 ? Math.round((aulasCompletas / aulas.length) * 100) : 0,
         aulaAtualOrdem: aulaAtual?.ordem ?? null,
         aulaAtualTitulo: aulaAtual?.titulo ?? null,
       };
@@ -1563,7 +1825,11 @@ export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgre
     .from("atividades")
     .select("id, aula_id, tipo")
     .in("aula_id", aulaIds);
-  const atividades = (atividadesData || []) as { id: string; aula_id: string; tipo: string }[];
+  const atividades = (atividadesData || []) as {
+    id: string;
+    aula_id: string;
+    tipo: string;
+  }[];
   const atvIds = atividades.map((a) => a.id);
   const atvByAula = new Map<string, typeof atividades>();
   atividades.forEach((a) => {
@@ -1581,14 +1847,18 @@ export async function getCursoProgressao(cursoSlug: string): Promise<CursoProgre
         .eq("correta", true)
     : { data: [] as { id: string; atividade_id: string; correta: boolean }[] };
   const corretaByAtv = new Map<string, string>();
-  (altsData || []).forEach((alt: { id: string; atividade_id: string; correta: boolean }) => {
-    corretaByAtv.set(alt.atividade_id, alt.id);
-  });
+  (altsData || []).forEach(
+    (alt: { id: string; atividade_id: string; correta: boolean }) => {
+      corretaByAtv.set(alt.atividade_id, alt.id);
+    },
+  );
 
   // Matrículas + alunos
   const { data: matriculasData } = await supabase
     .from("matriculas")
-    .select("aluno_id, concluido_em, created_at, aluno:profiles!inner(id, nome, email, telefone)")
+    .select(
+      "aluno_id, concluido_em, created_at, aluno:profiles!inner(id, nome, email, telefone)",
+    )
     .eq("curso_id", curso.id);
   type MatricRow = {
     aluno_id: string;
@@ -1739,7 +2009,7 @@ export type AlunoProgressoNoCurso = {
 
 export async function getAlunoProgressoNoCurso(
   cursoSlug: string,
-  alunoId: string
+  alunoId: string,
 ): Promise<AlunoProgressoNoCurso | null> {
   if (isMockMode()) {
     const curso = mockFindCurso(cursoSlug);
@@ -1747,7 +2017,7 @@ export async function getAlunoProgressoNoCurso(
     const aluno = MOCK_ALUNOS.find((a) => a.id === alunoId);
     if (!aluno) return null;
     const matricula = MOCK_MATRICULAS.find(
-      (m) => m.curso_id === curso.id && m.aluno_id === alunoId
+      (m) => m.curso_id === curso.id && m.aluno_id === alunoId,
     );
     const aulas = mockAulasByCurso(curso.id);
 
@@ -1773,7 +2043,7 @@ export async function getAlunoProgressoNoCurso(
         }
         // reflexao
         const r = MOCK_RESPOSTAS.find(
-          (x) => x.aluno_id === alunoId && x.atividade_id === atv.id
+          (x) => x.aluno_id === alunoId && x.atividade_id === atv.id,
         );
         return {
           atividade: atv,
@@ -1788,8 +2058,7 @@ export async function getAlunoProgressoNoCurso(
       });
 
       const respondidas = detalheAtvs.filter(
-        (a) =>
-          a.alternativaSelecionada || (a.textoReflexao && a.textoReflexao.trim())
+        (a) => a.alternativaSelecionada || a.textoReflexao?.trim(),
       ).length;
       const completa = mockAulaCompleta(alunoId, aula.id);
       const status: AlunoProgressoAula["status"] = completa
@@ -1810,8 +2079,9 @@ export async function getAlunoProgressoNoCurso(
       previousCompleta = completa;
     }
 
-    const aulasCompletasCount = aulasProgresso.filter((a) => a.status === "completa")
-      .length;
+    const aulasCompletasCount = aulasProgresso.filter(
+      (a) => a.status === "completa",
+    ).length;
 
     return {
       curso,
@@ -1876,18 +2146,20 @@ export async function getAlunoProgressoNoCurso(
     ? await supabase
         .from("respostas")
         .select(
-          "id, atividade_id, alternativa_id, texto, comentario_lider, comentario_lider_em"
+          "id, atividade_id, alternativa_id, texto, comentario_lider, comentario_lider_em",
         )
         .in("atividade_id", atvIds)
         .eq("aluno_id", alunoId)
-    : { data: [] as Array<{
-        id: string;
-        atividade_id: string;
-        alternativa_id: string | null;
-        texto: string | null;
-        comentario_lider: string | null;
-        comentario_lider_em: string | null;
-      }> };
+    : {
+        data: [] as Array<{
+          id: string;
+          atividade_id: string;
+          alternativa_id: string | null;
+          texto: string | null;
+          comentario_lider: string | null;
+          comentario_lider_em: string | null;
+        }>,
+      };
 
   const { data: progData } = aulaIds.length
     ? await supabase
@@ -1896,7 +2168,9 @@ export async function getAlunoProgressoNoCurso(
         .eq("aluno_id", alunoId)
         .in("aula_id", aulaIds)
     : { data: [] as { aula_id: string }[] };
-  const progressoSet = new Set(((progData || []) as { aula_id: string }[]).map((p) => p.aula_id));
+  const progressoSet = new Set(
+    ((progData || []) as { aula_id: string }[]).map((p) => p.aula_id),
+  );
 
   type RespInfo = {
     id: string;
@@ -1907,7 +2181,9 @@ export async function getAlunoProgressoNoCurso(
     comentario_lider_em: string | null;
   };
   const respByAtv = new Map<string, RespInfo>();
-  (respData || []).forEach((r) => respByAtv.set((r as RespInfo).atividade_id, r as RespInfo));
+  (respData || []).forEach((r) => {
+    respByAtv.set((r as RespInfo).atividade_id, r as RespInfo);
+  });
 
   const altsByAtv = new Map<string, Alternativa[]>();
   alternativas.forEach((a) => {
@@ -1929,9 +2205,7 @@ export async function getAlunoProgressoNoCurso(
           atividade: atv,
           alternativas: alts,
           alternativaSelecionada: r?.alternativa_id || null,
-          respondeuCorreto: r?.alternativa_id
-            ? r.alternativa_id === correta?.id
-            : null,
+          respondeuCorreto: r?.alternativa_id ? r.alternativa_id === correta?.id : null,
           textoReflexao: null,
           comentarioLider: r?.comentario_lider || null,
           comentarioLiderEm: r?.comentario_lider_em || null,
@@ -1968,9 +2242,7 @@ export async function getAlunoProgressoNoCurso(
     if (atvs.length === 0) completa = progressoSet.has(aula.id);
 
     const respondidas = detalheAtvs.filter(
-      (a) =>
-        !!a.alternativaSelecionada ||
-        (a.textoReflexao && a.textoReflexao.trim())
+      (a) => !!a.alternativaSelecionada || a.textoReflexao?.trim(),
     ).length;
 
     const status: AlunoProgressoAula["status"] = completa
@@ -1991,8 +2263,9 @@ export async function getAlunoProgressoNoCurso(
     previousCompleta = completa;
   }
 
-  const aulasCompletasCount = aulasProgresso.filter((a) => a.status === "completa")
-    .length;
+  const aulasCompletasCount = aulasProgresso.filter(
+    (a) => a.status === "completa",
+  ).length;
 
   return {
     curso,
@@ -2002,9 +2275,7 @@ export async function getAlunoProgressoNoCurso(
     totalAulas: aulas.length,
     aulasCompletas: aulasCompletasCount,
     progresso:
-      aulas.length > 0
-        ? Math.round((aulasCompletasCount / aulas.length) * 100)
-        : 0,
+      aulas.length > 0 ? Math.round((aulasCompletasCount / aulas.length) * 100) : 0,
     aulas: aulasProgresso,
   };
 }
@@ -2068,7 +2339,9 @@ export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("instagram_carrosseis")
-    .select("id, conteudo, slides, legenda, status, agendado_para, criado_em, tipo, video_url")
+    .select(
+      "id, conteudo, slides, legenda, status, agendado_para, criado_em, tipo, video_url",
+    )
     .order("criado_em", { ascending: false })
     .limit(50);
   if (error) throw new Error(error.message);
@@ -2086,7 +2359,10 @@ export async function deletarCarrosselInstagram(id: string): Promise<void> {
 }
 
 /** Reagenda um post pra uma nova data/hora (volta pra "agendado", limpa erro). */
-export async function reagendarCarrosselInstagram(id: string, agendadoPara: string): Promise<void> {
+export async function reagendarCarrosselInstagram(
+  id: string,
+  agendadoPara: string,
+): Promise<void> {
   if (isMockMode()) {
     const c = listMockCarrosseis().find((x) => x.id === id);
     if (c) {
@@ -2098,7 +2374,12 @@ export async function reagendarCarrosselInstagram(id: string, agendadoPara: stri
   const supabase = await createClient();
   const { error } = await supabase
     .from("instagram_carrosseis")
-    .update({ status: "agendado", agendado_para: agendadoPara, erro: null, publicado_em: null })
+    .update({
+      status: "agendado",
+      agendado_para: agendadoPara,
+      erro: null,
+      publicado_em: null,
+    })
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -2134,6 +2415,9 @@ export async function atualizarConteudoCarrosselInstagram(
   if (patch.videoUrl !== undefined) fields.video_url = patch.videoUrl;
   if (!Object.keys(fields).length) return;
   const supabase = await createClient();
-  const { error } = await supabase.from("instagram_carrosseis").update(fields).eq("id", id);
+  const { error } = await supabase
+    .from("instagram_carrosseis")
+    .update(fields)
+    .eq("id", id);
   if (error) throw new Error(error.message);
 }
