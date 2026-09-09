@@ -43,7 +43,10 @@ export function StoryIndicacaoLivro({
     return `/api/og/indicacao-livro?${params.toString()}`;
   }
 
-  const previaUrl = montarUrl(fraseDebounced);
+  // A prévia aparece com 135x240 px na tela: pedir a arte final (1080x1920)
+  // custava ~10 s por rascunho de frase. 0,25 dá 270x480 — o dobro do que a
+  // tela usa, nítido em retina, e a mesma composição do arquivo final.
+  const previaUrl = `${montarUrl(fraseDebounced)}&escala=0.25`;
   const arquivo = `${slug}-indicacao-story.png`;
 
   function baixar() {
