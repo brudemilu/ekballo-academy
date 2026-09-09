@@ -128,6 +128,15 @@ export async function GET(req: NextRequest) {
   const frase = (url.searchParams.get("frase") || "").trim().slice(0, 220);
   const formato = url.searchParams.get("f") === "feed" ? "feed" : "story";
   const download = url.searchParams.get("dl") === "1";
+  // A prévia na tela ocupa 135x240 px, mas pedia a arte inteira (1080x1920):
+  // 64x mais pixels do que ela usa, ~10 s de espera no celular. `escala` gera
+  // a MESMA composição num canvas menor — o que a pessoa vê continua sendo
+  // exatamente o que vai pro Story. Full size só no compartilhar/baixar.
+  const escalaBruta = Number.parseFloat(url.searchParams.get("escala") || "1");
+  const escala =
+    Number.isFinite(escalaBruta) && escalaBruta > 0 && escalaBruta <= 1
+      ? escalaBruta
+      : 1;
 
   if (!titulo) {
     return new Response("parâmetro 'titulo' obrigatório", { status: 400 });
@@ -398,9 +407,28 @@ export async function GET(req: NextRequest) {
     `${slug || titulo.slice(0, 40)}-indicacao-${formato}.png`,
   );
 
-  return new ImageResponse(jsx, {
-    width: w,
-    height: h,
+  // O desenho é montado sempre nas medidas finais e só então reduzido: assim
+  // não existe uma segunda versão do layout para manter em pé.
+  const jsxFinal =
+    escala === 1 ? (
+      jsx
+    ) : (
+      <div
+        style={{
+          display: "flex",
+          width: w,
+          height: h,
+          transform: `scale(${escala})`,
+          transformOrigin: "top left",
+        }}
+      >
+        {jsx}
+      </div>
+    );
+
+  return new ImageResponse(jsxFinal, {
+    width: Math.round(w * escala),
+    height: Math.round(h * escala),
     fonts: [
       { name: "Cormorant", data: fonts.cormorantBold, weight: 700, style: "normal" },
       { name: "Cormorant", data: fonts.cormorantItalic, weight: 400, style: "italic" },
