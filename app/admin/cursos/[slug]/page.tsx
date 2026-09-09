@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
-import { getCurrentSession, getCursoProgressao } from "@/lib/db";
+import { MatricularEmLote } from "@/components/MatricularEmLote";
+import { getCurrentSession, getCursoProgressao, listAllAlunos } from "@/lib/db";
 
 export default async function AdminCursoProgressaoPage({
   params,
@@ -16,11 +17,23 @@ export default async function AdminCursoProgressaoPage({
   const data = await getCursoProgressao(slug);
   if (!data) notFound();
 
-  const { curso, totalAulas, totalMatriculados, totalConcluidos, alunosComTelefone, aulas, alunos } = data;
+  const {
+    curso,
+    totalAulas,
+    totalMatriculados,
+    totalConcluidos,
+    alunosComTelefone,
+    aulas,
+    alunos,
+  } = data;
+
+  // Para a matrícula em lote: a lista de todo mundo cadastrado. Quem já está
+  // nesta temática são justamente as linhas de `alunos` — getCursoProgressao
+  // as monta a partir das matrículas, então não vale uma consulta a mais.
+  const todosOsAlunos = await listAllAlunos();
+  const matriculadosIds = alunos.map((a) => a.id);
   const taxaConclusaoCurso =
-    totalMatriculados > 0
-      ? Math.round((totalConcluidos / totalMatriculados) * 100)
-      : 0;
+    totalMatriculados > 0 ? Math.round((totalConcluidos / totalMatriculados) * 100) : 0;
 
   // Identifica aula gargalo: aula desbloqueada mas com menor taxa de conclusão
   const gargalo =
@@ -80,25 +93,16 @@ export default async function AdminCursoProgressaoPage({
             {aulas.map((a) => {
               const ehGargalo = gargalo?.id === a.id && a.taxaConclusao < 80;
               return (
-                <div
-                  key={a.id}
-                  className="flex flex-wrap items-center gap-3 sm:gap-4"
-                >
+                <div key={a.id} className="flex flex-wrap items-center gap-3 sm:gap-4">
                   <div className="w-7 flex-none text-right font-mono text-xs text-mesa-500">
                     {a.ordem}.
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <p className="truncate font-medium text-mesa-800">
-                        {a.titulo}
-                      </p>
+                      <p className="truncate font-medium text-mesa-800">{a.titulo}</p>
                       <p className="flex-none text-xs text-mesa-500">
                         {a.alunosCompletos}/{totalMatriculados} ·{" "}
-                        <span
-                          className={
-                            ehGargalo ? "font-medium text-amber-700" : ""
-                          }
-                        >
+                        <span className={ehGargalo ? "font-medium text-amber-700" : ""}>
                           {a.taxaConclusao}%
                         </span>
                       </p>
@@ -129,6 +133,30 @@ export default async function AdminCursoProgressaoPage({
         )}
       </section>
 
+      {/* Matrícula em lote */}
+      <section className="mb-10">
+        <h2 className="mb-2 font-serif text-2xl font-semibold text-mesa-800">
+          Matricular discípulos
+        </h2>
+        <p className="mb-4 text-sm text-mesa-600">
+          Marque quem deve ter acesso a esta temática e libere todos de uma vez.
+        </p>
+        <MatricularEmLote
+          cursoId={curso.id}
+          cursoTitulo={curso.titulo}
+          cursoAberto={!!curso.external_path}
+          alunos={todosOsAlunos.map((a) => ({
+            id: a.id,
+            nome: a.nome,
+            email: a.email,
+            telefone: a.telefone,
+            turma: a.turma,
+            is_admin: a.is_admin,
+          }))}
+          matriculadosIniciais={matriculadosIds}
+        />
+      </section>
+
       {/* Discípulos */}
       <section>
         <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
@@ -140,145 +168,149 @@ export default async function AdminCursoProgressaoPage({
           </div>
         ) : (
           <>
-          {/* Mobile: cards (tabela larga não cabe em 360px) */}
-          <ul className="space-y-3 md:hidden">
-            {alunos.map((a) => (
-              <li key={a.id} className="rounded-2xl border border-mesa-200 bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <Link
-                    href={`/admin/cursos/${slug}/alunos/${a.id}`}
-                    className="block min-w-0"
-                  >
-                    <p className="truncate font-medium text-mesa-800 hover:underline">
-                      {a.nome || a.email}
-                    </p>
-                    <p className="truncate text-xs text-mesa-500">{a.email}</p>
-                  </Link>
-                  {a.concluidoEm ? (
-                    <span className="flex-none rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
-                      Concluído
-                    </span>
-                  ) : null}
-                </div>
-                <div className="mt-3 flex items-center gap-3">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-mesa-100">
-                    <div
-                      className={`h-full ${
-                        a.concluidoEm
-                          ? "bg-oliveira-500"
-                          : a.progresso >= 50
-                            ? "bg-mesa-500"
-                            : "bg-amber-500"
-                      }`}
-                      style={{ width: `${a.progresso}%` }}
-                    />
+            {/* Mobile: cards (tabela larga não cabe em 360px) */}
+            <ul className="space-y-3 md:hidden">
+              {alunos.map((a) => (
+                <li
+                  key={a.id}
+                  className="rounded-2xl border border-mesa-200 bg-white p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      href={`/admin/cursos/${slug}/alunos/${a.id}`}
+                      className="block min-w-0"
+                    >
+                      <p className="truncate font-medium text-mesa-800 hover:underline">
+                        {a.nome || a.email}
+                      </p>
+                      <p className="truncate text-xs text-mesa-500">{a.email}</p>
+                    </Link>
+                    {a.concluidoEm ? (
+                      <span className="flex-none rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
+                        Concluído
+                      </span>
+                    ) : null}
                   </div>
-                  <span className="flex-none text-sm font-medium text-mesa-800">
-                    {a.progresso}%
-                  </span>
-                  <span className="flex-none text-xs text-mesa-500">
-                    ({a.aulasCompletas}/{totalAulas})
-                  </span>
-                </div>
-                {!a.concluidoEm && a.aulaAtualTitulo ? (
-                  <p className="mt-2 text-xs text-mesa-600">
-                    <span className="text-mesa-400">{a.aulaAtualOrdem}.</span>{" "}
-                    {a.aulaAtualTitulo}
-                  </p>
-                ) : null}
-                <div className="mt-3 text-right">
-                  <Link
-                    href={`/admin/cursos/${slug}/alunos/${a.id}`}
-                    className="inline-block rounded-full border border-mesa-200 bg-white px-4 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
-                  >
-                    Detalhes
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-          {/* Desktop: tabela */}
-          <div className="hidden overflow-hidden rounded-2xl border border-mesa-200 bg-white md:block">
-            <table className="w-full">
-              <thead className="border-b border-mesa-200 bg-mesa-100 text-left">
-                <tr>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
-                    Discípulo
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
-                    Progresso
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
-                    Em qual mesa está
-                  </th>
-                  <th className="px-6 py-3"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-mesa-100">
-                {alunos.map((a) => (
-                  <tr key={a.id} className="odd:bg-white even:bg-mesa-50/40 transition hover:bg-laranja-50/50">
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/admin/cursos/${slug}/alunos/${a.id}`}
-                        className="block"
-                      >
-                        <p className="font-medium text-mesa-800 hover:underline">
-                          {a.nome || a.email}
-                        </p>
-                        <p className="text-xs text-mesa-500">{a.email}</p>
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-1.5 w-28 overflow-hidden rounded-full bg-mesa-100">
-                          <div
-                            className={`h-full ${
-                              a.concluidoEm
-                                ? "bg-oliveira-500"
-                                : a.progresso >= 50
-                                  ? "bg-mesa-500"
-                                  : "bg-amber-500"
-                            }`}
-                            style={{ width: `${a.progresso}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium text-mesa-800">
-                          {a.progresso}%
-                        </span>
-                        <span className="text-xs text-mesa-500">
-                          ({a.aulasCompletas}/{totalAulas})
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-mesa-600">
-                      {a.concluidoEm ? (
-                        <span className="rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
-                          Concluído
-                        </span>
-                      ) : a.aulaAtualTitulo ? (
-                        <span className="text-mesa-700">
-                          <span className="text-mesa-400">
-                            {a.aulaAtualOrdem}.
-                          </span>{" "}
-                          {a.aulaAtualTitulo}
-                        </span>
-                      ) : (
-                        <span className="text-mesa-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/admin/cursos/${slug}/alunos/${a.id}`}
-                        className="rounded-full border border-mesa-200 bg-white px-4 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
-                      >
-                        Detalhes
-                      </Link>
-                    </td>
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-mesa-100">
+                      <div
+                        className={`h-full ${
+                          a.concluidoEm
+                            ? "bg-oliveira-500"
+                            : a.progresso >= 50
+                              ? "bg-mesa-500"
+                              : "bg-amber-500"
+                        }`}
+                        style={{ width: `${a.progresso}%` }}
+                      />
+                    </div>
+                    <span className="flex-none text-sm font-medium text-mesa-800">
+                      {a.progresso}%
+                    </span>
+                    <span className="flex-none text-xs text-mesa-500">
+                      ({a.aulasCompletas}/{totalAulas})
+                    </span>
+                  </div>
+                  {!a.concluidoEm && a.aulaAtualTitulo ? (
+                    <p className="mt-2 text-xs text-mesa-600">
+                      <span className="text-mesa-400">{a.aulaAtualOrdem}.</span>{" "}
+                      {a.aulaAtualTitulo}
+                    </p>
+                  ) : null}
+                  <div className="mt-3 text-right">
+                    <Link
+                      href={`/admin/cursos/${slug}/alunos/${a.id}`}
+                      className="inline-block rounded-full border border-mesa-200 bg-white px-4 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
+                    >
+                      Detalhes
+                    </Link>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {/* Desktop: tabela */}
+            <div className="hidden overflow-hidden rounded-2xl border border-mesa-200 bg-white md:block">
+              <table className="w-full">
+                <thead className="border-b border-mesa-200 bg-mesa-100 text-left">
+                  <tr>
+                    <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
+                      Discípulo
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
+                      Progresso
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider text-mesa-600">
+                      Em qual mesa está
+                    </th>
+                    <th className="px-6 py-3"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-mesa-100">
+                  {alunos.map((a) => (
+                    <tr
+                      key={a.id}
+                      className="odd:bg-white even:bg-mesa-50/40 transition hover:bg-laranja-50/50"
+                    >
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/admin/cursos/${slug}/alunos/${a.id}`}
+                          className="block"
+                        >
+                          <p className="font-medium text-mesa-800 hover:underline">
+                            {a.nome || a.email}
+                          </p>
+                          <p className="text-xs text-mesa-500">{a.email}</p>
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-1.5 w-28 overflow-hidden rounded-full bg-mesa-100">
+                            <div
+                              className={`h-full ${
+                                a.concluidoEm
+                                  ? "bg-oliveira-500"
+                                  : a.progresso >= 50
+                                    ? "bg-mesa-500"
+                                    : "bg-amber-500"
+                              }`}
+                              style={{ width: `${a.progresso}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-mesa-800">
+                            {a.progresso}%
+                          </span>
+                          <span className="text-xs text-mesa-500">
+                            ({a.aulasCompletas}/{totalAulas})
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-mesa-600">
+                        {a.concluidoEm ? (
+                          <span className="rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
+                            Concluído
+                          </span>
+                        ) : a.aulaAtualTitulo ? (
+                          <span className="text-mesa-700">
+                            <span className="text-mesa-400">{a.aulaAtualOrdem}.</span>{" "}
+                            {a.aulaAtualTitulo}
+                          </span>
+                        ) : (
+                          <span className="text-mesa-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          href={`/admin/cursos/${slug}/alunos/${a.id}`}
+                          className="rounded-full border border-mesa-200 bg-white px-4 py-1.5 text-xs font-medium text-mesa-700 hover:bg-mesa-50"
+                        >
+                          Detalhes
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </section>
@@ -297,16 +329,13 @@ function StatCard({
   hint?: string;
   accent?: "oliveira";
 }) {
-  const color =
-    accent === "oliveira" ? "text-oliveira-700" : "text-mesa-700";
+  const color = accent === "oliveira" ? "text-oliveira-700" : "text-mesa-700";
   return (
     <div className="rounded-2xl border border-mesa-200 bg-white p-6">
       <p className="text-xs font-medium uppercase tracking-wider text-mesa-500">
         {label}
       </p>
-      <p className={`mt-2 font-serif text-4xl font-semibold ${color}`}>
-        {value}
-      </p>
+      <p className={`mt-2 font-serif text-4xl font-semibold ${color}`}>{value}</p>
       {hint && <p className="mt-1 text-xs text-mesa-500">{hint}</p>}
     </div>
   );
