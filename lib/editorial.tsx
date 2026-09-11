@@ -40,8 +40,6 @@ export type EditorialFormato = "feed" | "story";
  */
 export type MolduraKey = "classica" | "deco";
 
-export const MOLDURAS: MolduraKey[] = ["classica", "deco"];
-
 export function isMolduraKey(v: string | null | undefined): v is MolduraKey {
   return v === "classica" || v === "deco";
 }
