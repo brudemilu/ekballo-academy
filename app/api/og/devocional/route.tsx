@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import type { ReactElement } from "react";
 import { renderCinematografico } from "@/lib/cinematografico";
 import { getDevocionalAnualByDia } from "@/lib/devocionais";
-import { molduraUrlPara, renderEditorial } from "@/lib/editorial";
+import { isMolduraKey, molduraUrlPara, renderEditorial } from "@/lib/editorial";
 
 // Gerador de imagem do devocional anual.
 //
@@ -67,6 +67,8 @@ export async function GET(req: NextRequest) {
   const diaAno = Number(url.searchParams.get("dia") || "0");
   const formato = (url.searchParams.get("f") || "feed") as Formato;
   const template = (url.searchParams.get("tema") || "pergaminho") as Template;
+  const molduraParam = url.searchParams.get("moldura");
+  const moldura = isMolduraKey(molduraParam) ? molduraParam : "classica";
   const download = url.searchParams.get("dl") === "1";
 
   if (!Number.isInteger(diaAno) || diaAno < 1 || diaAno > 365) {
@@ -90,7 +92,7 @@ export async function GET(req: NextRequest) {
   const bgUrl =
     bgOverride && /^https?:\/\//.test(bgOverride)
       ? bgOverride
-      : fotoFundoDoDevocional(dev, selfOrigin);
+      : fotoFundoDoDevocional(dev, selfOrigin, formato);
 
   let jsx: ReactElement;
   if (template === "bloco") {
@@ -105,7 +107,7 @@ export async function GET(req: NextRequest) {
         topLabel: dev.tema,
         subRef: `— ${dev.autor}`,
         bgUrl,
-        molduraUrl: molduraUrlPara(selfOrigin, formato),
+        molduraUrl: molduraUrlPara(selfOrigin, formato, moldura),
       },
       formato,
     );
@@ -174,9 +176,14 @@ const FOTO_POR_TEMA: Record<string, string> = {
 // Resolve a URL ABSOLUTA da foto de fundo a partir do tema mensal. Se o tema
 // não estiver no mapa, usa o fundo genérico (fallback.jpg). O Satori precisa de
 // URL absoluta, daí o origin (igual a capa dos cursos faz com livroUrl local).
-function fotoFundoDoDevocional(d: Dev, origin: string): string {
+//
+// No story existe uma versão EM RETRATO de cada tema (<slug>-story.jpg, 1080×1920).
+// Sem ela, a foto de paisagem (1600×1067) era esticada ~1,8× pra preencher o
+// 9:16 — era o que deixava o story borrado.
+function fotoFundoDoDevocional(d: Dev, origin: string, formato: Formato): string {
   const slug = FOTO_POR_TEMA[d.tema?.trim() || ""] || "fallback";
-  return `${origin}/fundos/${slug}.jpg`;
+  const arquivo = formato === "story" ? `${slug}-story.jpg` : `${slug}.jpg`;
+  return `${origin}/fundos/${arquivo}`;
 }
 
 // ============================================================================

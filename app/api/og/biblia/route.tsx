@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { getCapitulo, getLivro, VERSAO_PADRAO } from "@/lib/biblia";
 import { renderCinematografico } from "@/lib/cinematografico";
-import { molduraUrlPara, renderEditorial } from "@/lib/editorial";
+import { isMolduraKey, molduraUrlPara, renderEditorial } from "@/lib/editorial";
 
 // Tamanhos:
 //   feed  → 1080x1080 (Insta feed, WhatsApp)
@@ -58,6 +58,8 @@ export async function GET(req: NextRequest) {
   const formato = (url.searchParams.get("f") || "feed") as Formato;
   const tema = (url.searchParams.get("tema") || "classico") as Tema;
   const versao = (url.searchParams.get("versao") || VERSAO_PADRAO).toUpperCase();
+  const molduraParam = url.searchParams.get("moldura");
+  const moldura = isMolduraKey(molduraParam) ? molduraParam : "classica";
   const download = url.searchParams.get("dl") === "1";
 
   const versNums = versParam
@@ -119,7 +121,12 @@ export async function GET(req: NextRequest) {
     "emanuel",
   ];
   const bgSeed = livroId * 1000 + cap;
-  const bgUrl = `${selfOrigin}/fundos/${FUNDOS[bgSeed % FUNDOS.length]}.jpg`;
+  // No story usa a versão EM RETRATO (<slug>-story.jpg, 1080×1920). Sem ela, a
+  // foto de paisagem (1600×1067) era esticada ~1,8× pra preencher o 9:16 — era
+  // o que deixava o story borrado.
+  const bgSlug = FUNDOS[bgSeed % FUNDOS.length];
+  const bgArquivo = formato === "story" ? `${bgSlug}-story.jpg` : `${bgSlug}.jpg`;
+  const bgUrl = `${selfOrigin}/fundos/${bgArquivo}`;
 
   const jsx =
     tema === "editorial"
@@ -130,7 +137,7 @@ export async function GET(req: NextRequest) {
             subRef: versao,
             bgUrl,
             bgSeed,
-            molduraUrl: molduraUrlPara(selfOrigin, formato),
+            molduraUrl: molduraUrlPara(selfOrigin, formato, moldura),
           },
           formato,
         )

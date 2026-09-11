@@ -33,6 +33,19 @@ import { buscarFotoPexels } from "@/lib/pexels";
 
 export type EditorialFormato = "feed" | "story";
 
+/**
+ * Molduras disponíveis em public/molduras/, ambas desenhadas no Canva:
+ *   classica → filete duplo com cantos em arabesco (livro antigo)
+ *   deco     → filete triplo com cantos em esquadria (art déco, mais contido)
+ */
+export type MolduraKey = "classica" | "deco";
+
+export const MOLDURAS: MolduraKey[] = ["classica", "deco"];
+
+export function isMolduraKey(v: string | null | undefined): v is MolduraKey {
+  return v === "classica" || v === "deco";
+}
+
 export type EditorialPayload = {
   /** Texto principal (versículo, trecho). Será envolto em aspas curvas. */
   verseText: string;
@@ -69,6 +82,11 @@ const COR_INK = "#0B0F1A";
  * Geometria de cada formato. `molduraX`/`molduraY` são a margem REAL medida nos
  * PNGs de public/molduras (não chutada) — o conteúdo é posicionado a partir
  * delas, mais um respiro, pra nunca encostar no filete dourado.
+ *
+ * Os valores são os da moldura clássica; a déco fecha 3px mais alto (28/329 em
+ * vez de 31/332). A diferença é menor que o respiro, então uma geometria só
+ * serve as duas — se entrar uma terceira moldura com margem bem diferente, aí
+ * sim isto precisa virar tabela por moldura.
  */
 const GEO = {
   feed: { larg: 1080, alt: 1350, molduraX: 48, molduraY: 31, respiro: 62 },
@@ -427,6 +445,10 @@ export async function renderEditorial(
 }
 
 /** URL da moldura para um formato, a partir do origin da rota. */
-export function molduraUrlPara(origin: string, formato: EditorialFormato): string {
-  return `${origin}/molduras/classica-${formato}.png`;
+export function molduraUrlPara(
+  origin: string,
+  formato: EditorialFormato,
+  moldura: MolduraKey = "classica",
+): string {
+  return `${origin}/molduras/${moldura}-${formato}.png`;
 }

@@ -4,9 +4,11 @@ import { useMemo, useState } from "react";
 
 type Formato = "feed" | "story";
 type Tema = "editorial" | "cinematografico";
+type Moldura = "classica" | "deco";
 
 export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
   const [tema, setTema] = useState<Tema>("editorial");
+  const [moldura, setMoldura] = useState<Moldura>("classica");
   const [verso, setVerso] = useState("O Senhor é o meu pastor e nada me faltará.");
   const [ref, setRef] = useState("Salmos 23:1");
   const [top, setTop] = useState("");
@@ -28,8 +30,9 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
     if (bg && iaAtiva) params.set("bg", bg);
     params.set("f", formato);
     params.set("tema", tema);
+    if (tema === "editorial") params.set("moldura", moldura);
     return `/api/og/livre?${params.toString()}`;
-  }, [verso, ref, top, sub, brand, bg, formato, tema, iaAtiva]);
+  }, [verso, ref, top, sub, brand, bg, formato, tema, moldura, iaAtiva]);
 
   const downloadUrl = `${url}&dl=1`;
 
@@ -122,6 +125,25 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             />
           </div>
         </Field>
+
+        {tema === "editorial" && (
+          <Field label="Moldura">
+            <div className="flex gap-2">
+              <FormatoBtn
+                ativo={moldura === "classica"}
+                onClick={() => setMoldura("classica")}
+                label="Clássica"
+                sub="Cantos em arabesco · livro antigo"
+              />
+              <FormatoBtn
+                ativo={moldura === "deco"}
+                onClick={() => setMoldura("deco")}
+                label="Déco"
+                sub="Cantos em esquadria · mais contida"
+              />
+            </div>
+          </Field>
+        )}
 
         <Field label="Formato">
           <div className="flex gap-2">

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { type CinemaFormato, renderCinematografico } from "@/lib/cinematografico";
-import { molduraUrlPara, renderEditorial } from "@/lib/editorial";
+import { isMolduraKey, molduraUrlPara, renderEditorial } from "@/lib/editorial";
 
 // Gerador livre — usado pelo painel admin (/admin/imagens) e pelo botão de
 // compartilhar trecho dentro das mesas (components/AulaConteudo.tsx).
@@ -73,6 +73,8 @@ export async function GET(req: NextRequest) {
   const brand = url.searchParams.get("brand")?.trim();
   const formato = (url.searchParams.get("f") || "feed") as CinemaFormato;
   const tema = (url.searchParams.get("tema") || "editorial") as Tema;
+  const molduraParam = url.searchParams.get("moldura");
+  const moldura = isMolduraKey(molduraParam) ? molduraParam : "classica";
   const download = url.searchParams.get("dl") === "1";
 
   // `bg` ausente → cena padrão (o caso dos trechos de livro).
@@ -117,7 +119,7 @@ export async function GET(req: NextRequest) {
             brand,
             bgTema: bg,
             bgSeed: seed,
-            molduraUrl: molduraUrlPara(selfOrigin, formato),
+            molduraUrl: molduraUrlPara(selfOrigin, formato, moldura),
           },
           formato,
         );
