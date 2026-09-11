@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
-import { NextRequest } from "next/server";
-import { getLivro, getCapitulo, VERSAO_PADRAO } from "@/lib/biblia";
+import type { NextRequest } from "next/server";
+import { getCapitulo, getLivro, VERSAO_PADRAO } from "@/lib/biblia";
 import { renderCinematografico } from "@/lib/cinematografico";
+import { molduraUrlPara, renderEditorial } from "@/lib/editorial";
 
 // Tamanhos:
 //   feed  → 1080x1080 (Insta feed, WhatsApp)
@@ -13,7 +14,7 @@ import { renderCinematografico } from "@/lib/cinematografico";
 //   cinematografico → fundo gerado por IA (Imagen), overlay sacro navy/gold,
 //                     Cormorant Italic. Fallback de gradiente se GEMINI_API_KEY ausente.
 
-type Tema = "classico" | "moderno" | "cinematografico";
+type Tema = "classico" | "moderno" | "cinematografico" | "editorial";
 type Formato = "feed" | "story";
 
 // Cache simples de fontes (fetch só na primeira chamada de cada runtime)
@@ -27,19 +28,19 @@ async function loadFonts(origin: string): Promise<{
   interItalic: ArrayBuffer;
 }> {
   if (!cachedCormorantItalic) {
-    cachedCormorantItalic = await fetch(
-      `${origin}/fonts/cormorant-italic.ttf`
-    ).then((r) => r.arrayBuffer());
+    cachedCormorantItalic = await fetch(`${origin}/fonts/cormorant-italic.ttf`).then(
+      (r) => r.arrayBuffer(),
+    );
   }
   if (!cachedCormorantBold) {
-    cachedCormorantBold = await fetch(
-      `${origin}/fonts/cormorant-bold.ttf`
-    ).then((r) => r.arrayBuffer());
+    cachedCormorantBold = await fetch(`${origin}/fonts/cormorant-bold.ttf`).then((r) =>
+      r.arrayBuffer(),
+    );
   }
   if (!cachedInterItalic) {
-    cachedInterItalic = await fetch(
-      `${origin}/fonts/inter-italic.ttf`
-    ).then((r) => r.arrayBuffer());
+    cachedInterItalic = await fetch(`${origin}/fonts/inter-italic.ttf`).then((r) =>
+      r.arrayBuffer(),
+    );
   }
   return {
     cormorantItalic: cachedCormorantItalic!,
@@ -97,32 +98,56 @@ export async function GET(req: NextRequest) {
     .join("");
 
   const w = 1080;
-  const h = formato === "story" ? 1920 : 1080;
+  // O editorial usa 4:5 no feed (1080×1350), formato que o Instagram favorece.
+  // Os temas antigos seguem no 1:1 de sempre.
+  const h = formato === "story" ? 1920 : tema === "editorial" ? 1350 : 1080;
 
   // Fundo do cinematográfico: foto real auto-hospedada (public/fundos), variando
   // por livro/capítulo. Confiável — sem IA (o backend antigo morreu e dava 500).
   const FUNDOS = [
-    "recomeco", "coracao", "familia", "cruz-vida-nova", "honra", "espirito-santo",
-    "proposito", "mordomia", "arrependimento", "igreja", "perseveranca", "emanuel",
+    "recomeco",
+    "coracao",
+    "familia",
+    "cruz-vida-nova",
+    "honra",
+    "espirito-santo",
+    "proposito",
+    "mordomia",
+    "arrependimento",
+    "igreja",
+    "perseveranca",
+    "emanuel",
   ];
   const bgSeed = livroId * 1000 + cap;
   const bgUrl = `${selfOrigin}/fundos/${FUNDOS[bgSeed % FUNDOS.length]}.jpg`;
 
   const jsx =
-    tema === "cinematografico"
-      ? await renderCinematografico(
+    tema === "editorial"
+      ? await renderEditorial(
           {
             verseText: texto,
             ref: refLabel,
             subRef: versao,
             bgUrl,
             bgSeed,
+            molduraUrl: molduraUrlPara(selfOrigin, formato),
           },
           formato,
         )
-      : tema === "moderno"
-        ? renderModerno(texto, refLabel, versao, formato)
-        : renderClassico(texto, refLabel, versao, formato);
+      : tema === "cinematografico"
+        ? await renderCinematografico(
+            {
+              verseText: texto,
+              ref: refLabel,
+              subRef: versao,
+              bgUrl,
+              bgSeed,
+            },
+            formato,
+          )
+        : tema === "moderno"
+          ? renderModerno(texto, refLabel, versao, formato)
+          : renderClassico(texto, refLabel, versao, formato);
 
   return new ImageResponse(jsx, {
     width: w,
@@ -150,7 +175,7 @@ export async function GET(req: NextRequest) {
     headers: download
       ? {
           "Content-Disposition": `attachment; filename="${sanitizeFilename(
-            `${refLabel}-${versao}-${tema}-${formato}.png`
+            `${refLabel}-${versao}-${tema}-${formato}.png`,
           )}"`,
         }
       : undefined,
@@ -165,7 +190,7 @@ function renderClassico(
   texto: string,
   refLabel: string,
   versao: string,
-  formato: Formato
+  formato: Formato,
 ) {
   const charCount = texto.length;
   // Fontes maiores que o Moderno — clássico precisa "respirar" mais
@@ -402,7 +427,7 @@ function renderModerno(
   texto: string,
   refLabel: string,
   versao: string,
-  formato: Formato
+  formato: Formato,
 ) {
   const charCount = texto.length;
   const fontSize =
@@ -612,4 +637,3 @@ function sanitizeFilename(name: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 }
-

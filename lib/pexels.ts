@@ -33,21 +33,40 @@ export function querify(prompt: string): string {
     .split(/\s+/)
     .filter((w) => w.length > 2 && !STOP.has(w));
   const q = words.slice(0, 5).join(" ").trim();
-  return q || prompt.replace(/[^a-zA-Z\s]/g, " ").trim().split(/\s+/).slice(0, 4).join(" ");
+  return (
+    q ||
+    prompt
+      .replace(/[^a-zA-Z\s]/g, " ")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 4)
+      .join(" ")
+  );
 }
 
 // cache em memória: query|seed → URL (evita repetir a busca a cada tweak de texto).
 const fotoCache = new Map<string, string>();
 
 /**
- * Devolve a URL de uma foto do Pexels recortada em 1080×1350 (4:5), ou null.
+ * Devolve a URL de uma foto do Pexels já recortada no tamanho pedido, ou null.
+ *
+ * O padrão é 1080×1350 (4:5, o carrossel). O template editorial passa o tamanho
+ * final de cada formato — 1080×1350 no feed, 1080×1920 no story — pra que o
+ * recorte venha pronto do CDN do Pexels, no tamanho exato em que a imagem vai
+ * ser desenhada. Isso é o que mantém a foto nítida: sem pedir o tamanho certo, a
+ * foto chega menor que a tela e o `objectFit: cover` estica.
  */
-export async function buscarFotoPexels(prompt: string, seed: number): Promise<string | null> {
+export async function buscarFotoPexels(
+  prompt: string,
+  seed: number,
+  larg = 1080,
+  alt = 1350,
+): Promise<string | null> {
   const key = process.env.PEXELS_API_KEY;
   if (!key || !prompt.trim()) return null;
 
   const q = querify(prompt);
-  const cacheKey = `${q}|${seed}`;
+  const cacheKey = `${q}|${seed}|${larg}x${alt}`;
   const cached = fotoCache.get(cacheKey);
   if (cached) return cached;
 
@@ -63,8 +82,8 @@ export async function buscarFotoPexels(prompt: string, seed: number): Promise<st
     const original = photos[idx]?.src?.original;
     if (!original) return null;
 
-    // recorta exatamente 4:5 via params do CDN do Pexels.
-    const finalUrl = `${original}?auto=compress&cs=tinysrgb&w=1080&h=1350&fit=crop`;
+    // recorta no tamanho pedido via params do CDN do Pexels.
+    const finalUrl = `${original}?auto=compress&cs=tinysrgb&w=${larg}&h=${alt}&fit=crop`;
     fotoCache.set(cacheKey, finalUrl);
     if (fotoCache.size > 200) fotoCache.delete(fotoCache.keys().next().value!);
     return finalUrl;
@@ -82,7 +101,10 @@ const PEXELS_VIDEO_API = "https://api.pexels.com/videos/search";
  * Devolve a URL de um arquivo de VÍDEO vertical (≤1080 de largura, melhor
  * qualidade) que combina com a cena, ou null. Determinístico por seed.
  */
-export async function buscarVideoPexels(prompt: string, seed: number): Promise<string | null> {
+export async function buscarVideoPexels(
+  prompt: string,
+  seed: number,
+): Promise<string | null> {
   const key = process.env.PEXELS_API_KEY;
   if (!key || !prompt.trim()) return null;
   const q = querify(prompt);
@@ -91,7 +113,14 @@ export async function buscarVideoPexels(prompt: string, seed: number): Promise<s
     const res = await fetch(url, { headers: { Authorization: key } });
     if (!res.ok) return null;
     const json = (await res.json()) as {
-      videos?: { video_files?: { link?: string; width?: number; height?: number; fps?: number }[] }[];
+      videos?: {
+        video_files?: {
+          link?: string;
+          width?: number;
+          height?: number;
+          fps?: number;
+        }[];
+      }[];
     };
     const videos = (Array.isArray(json.videos) ? json.videos : []).filter((v) =>
       (v.video_files || []).some((f) => f.link),
