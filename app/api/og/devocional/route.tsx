@@ -1,7 +1,9 @@
 import { ImageResponse } from "next/og";
-import { NextRequest } from "next/server";
-import { getDevocionalAnualByDia } from "@/lib/devocionais";
+import type { NextRequest } from "next/server";
+import type { ReactElement } from "react";
 import { renderCinematografico } from "@/lib/cinematografico";
+import { getDevocionalAnualByDia } from "@/lib/devocionais";
+import { isMolduraKey, molduraUrlPara, renderEditorial } from "@/lib/editorial";
 
 // Gerador de imagem do devocional anual.
 //
@@ -18,7 +20,7 @@ import { renderCinematografico } from "@/lib/cinematografico";
 //                     paleta navy/cream/dourado. Fallback de gradiente se
 //                     GEMINI_API_KEY não estiver definido.
 
-type Template = "pergaminho" | "bloco" | "reflexao" | "cinematografico";
+type Template = "pergaminho" | "bloco" | "reflexao" | "cinematografico" | "editorial";
 type Formato = "feed" | "story";
 
 let cachedCormorantItalic: ArrayBuffer | undefined;
@@ -28,8 +30,8 @@ let cachedInterBold: ArrayBuffer | undefined;
 
 async function loadFonts(origin: string) {
   if (!cachedCormorantItalic) {
-    cachedCormorantItalic = await fetch(`${origin}/fonts/cormorant-italic.ttf`).then((r) =>
-      r.arrayBuffer(),
+    cachedCormorantItalic = await fetch(`${origin}/fonts/cormorant-italic.ttf`).then(
+      (r) => r.arrayBuffer(),
     );
   }
   if (!cachedCormorantBold) {
@@ -65,6 +67,8 @@ export async function GET(req: NextRequest) {
   const diaAno = Number(url.searchParams.get("dia") || "0");
   const formato = (url.searchParams.get("f") || "feed") as Formato;
   const template = (url.searchParams.get("tema") || "pergaminho") as Template;
+  const molduraParam = url.searchParams.get("moldura");
+  const moldura = isMolduraKey(molduraParam) ? molduraParam : "classica";
   const download = url.searchParams.get("dl") === "1";
 
   if (!Number.isInteger(diaAno) || diaAno < 1 || diaAno > 365) {
@@ -78,7 +82,9 @@ export async function GET(req: NextRequest) {
   if (!dev) return new Response("devocional não encontrado", { status: 404 });
 
   const w = 1080;
-  const h = formato === "story" ? 1920 : 1080;
+  // O editorial usa 4:5 no feed (1080×1350), formato que o Instagram favorece.
+  // Os templates antigos seguem no 1:1 de sempre.
+  const h = formato === "story" ? 1920 : template === "editorial" ? 1350 : 1080;
 
   // Tema do fundo IA: usa ?bg=... se passado, senão deriva do tema do devocional.
   // Foto de fundo: ?bg=<url> permite sobrescrever; senão usa a foto do tema.
@@ -86,13 +92,25 @@ export async function GET(req: NextRequest) {
   const bgUrl =
     bgOverride && /^https?:\/\//.test(bgOverride)
       ? bgOverride
-      : fotoFundoDoDevocional(dev, selfOrigin);
+      : fotoFundoDoDevocional(dev, selfOrigin, formato);
 
-  let jsx;
+  let jsx: ReactElement;
   if (template === "bloco") {
     jsx = renderBloco(dev, formato);
   } else if (template === "reflexao") {
     jsx = renderReflexao(dev, formato);
+  } else if (template === "editorial") {
+    jsx = await renderEditorial(
+      {
+        verseText: dev.versiculo_texto,
+        ref: dev.versiculo_ref,
+        topLabel: dev.tema,
+        subRef: `— ${dev.autor}`,
+        bgUrl,
+        molduraUrl: molduraUrlPara(selfOrigin, formato, moldura),
+      },
+      formato,
+    );
   } else if (template === "cinematografico") {
     jsx = await renderCinematografico(
       {
@@ -158,9 +176,14 @@ const FOTO_POR_TEMA: Record<string, string> = {
 // Resolve a URL ABSOLUTA da foto de fundo a partir do tema mensal. Se o tema
 // não estiver no mapa, usa o fundo genérico (fallback.jpg). O Satori precisa de
 // URL absoluta, daí o origin (igual a capa dos cursos faz com livroUrl local).
-function fotoFundoDoDevocional(d: Dev, origin: string): string {
+//
+// No story existe uma versão EM RETRATO de cada tema (<slug>-story.jpg, 1080×1920).
+// Sem ela, a foto de paisagem (1600×1067) era esticada ~1,8× pra preencher o
+// 9:16 — era o que deixava o story borrado.
+function fotoFundoDoDevocional(d: Dev, origin: string, formato: Formato): string {
   const slug = FOTO_POR_TEMA[d.tema?.trim() || ""] || "fallback";
-  return `${origin}/fundos/${slug}.jpg`;
+  const arquivo = formato === "story" ? `${slug}-story.jpg` : `${slug}.jpg`;
+  return `${origin}/fundos/${arquivo}`;
 }
 
 // ============================================================================
@@ -187,7 +210,15 @@ function renderPergaminho(d: Dev, formato: Formato) {
     >
       {/* Topo: tema mensal + ornamento */}
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ display: "flex", flex: 1, height: 1, background: "#B57E2F", opacity: 0.4 }} />
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            height: 1,
+            background: "#B57E2F",
+            opacity: 0.4,
+          }}
+        />
         <div
           style={{
             display: "flex",
@@ -201,7 +232,15 @@ function renderPergaminho(d: Dev, formato: Formato) {
         >
           {d.tema}
         </div>
-        <div style={{ display: "flex", flex: 1, height: 1, background: "#B57E2F", opacity: 0.4 }} />
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            height: 1,
+            background: "#B57E2F",
+            opacity: 0.4,
+          }}
+        />
       </div>
 
       {/* Título */}
@@ -269,7 +308,15 @@ function renderPergaminho(d: Dev, formato: Formato) {
           gap: 12,
         }}
       >
-        <div style={{ display: "flex", width: 80, height: 1, background: "#B57E2F", opacity: 0.5 }} />
+        <div
+          style={{
+            display: "flex",
+            width: 80,
+            height: 1,
+            background: "#B57E2F",
+            opacity: 0.5,
+          }}
+        />
         <div
           style={{
             display: "flex",
@@ -426,7 +473,14 @@ function renderBloco(d: Dev, formato: Formato) {
             opacity: 0.7,
           }}
         >
-          <div style={{ display: "flex", fontStyle: "italic", fontSize: 24, color: "#FBDDC0" }}>
+          <div
+            style={{
+              display: "flex",
+              fontStyle: "italic",
+              fontSize: 24,
+              color: "#FBDDC0",
+            }}
+          >
             — {d.autor}
           </div>
           <div
@@ -462,8 +516,7 @@ function renderReflexao(d: Dev, formato: Formato) {
         width: "100%",
         height: "100%",
         padding: formato === "story" ? "100px 80px" : "80px 70px",
-        background:
-          "linear-gradient(160deg, #FBDDC0 0%, #DEAA6D 45%, #7A8B5C 100%)",
+        background: "linear-gradient(160deg, #FBDDC0 0%, #DEAA6D 45%, #7A8B5C 100%)",
         color: "#2A1810",
         fontFamily: "Cormorant",
       }}
@@ -564,4 +617,3 @@ function renderReflexao(d: Dev, formato: Formato) {
     </div>
   );
 }
-

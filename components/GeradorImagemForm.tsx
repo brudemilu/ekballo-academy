@@ -3,11 +3,13 @@
 import { useMemo, useState } from "react";
 
 type Formato = "feed" | "story";
+type Tema = "editorial" | "cinematografico";
+type Moldura = "classica" | "deco";
 
 export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
-  const [verso, setVerso] = useState(
-    "O Senhor é o meu pastor e nada me faltará.",
-  );
+  const [tema, setTema] = useState<Tema>("editorial");
+  const [moldura, setMoldura] = useState<Moldura>("classica");
+  const [verso, setVerso] = useState("O Senhor é o meu pastor e nada me faltará.");
   const [ref, setRef] = useState("Salmos 23:1");
   const [top, setTop] = useState("");
   const [sub, setSub] = useState("");
@@ -27,10 +29,12 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
     if (brand) params.set("brand", brand);
     if (bg && iaAtiva) params.set("bg", bg);
     params.set("f", formato);
+    params.set("tema", tema);
+    if (tema === "editorial") params.set("moldura", moldura);
     return `/api/og/livre?${params.toString()}`;
-  }, [verso, ref, top, sub, brand, bg, formato, iaAtiva]);
+  }, [verso, ref, top, sub, brand, bg, formato, tema, moldura, iaAtiva]);
 
-  const downloadUrl = url + "&dl=1";
+  const downloadUrl = `${url}&dl=1`;
 
   const previewSrc = `${url}&_k=${previewKey}`;
 
@@ -105,13 +109,53 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
           </p>
         </Field>
 
+        <Field label="Template">
+          <div className="flex gap-2">
+            <FormatoBtn
+              ativo={tema === "editorial"}
+              onClick={() => setTema("editorial")}
+              label="Editorial"
+              sub="Moldura dourada · foto real"
+            />
+            <FormatoBtn
+              ativo={tema === "cinematografico"}
+              onClick={() => setTema("cinematografico")}
+              label="Cinematográfico"
+              sub="Template antigo, sem moldura"
+            />
+          </div>
+        </Field>
+
+        {tema === "editorial" && (
+          <Field label="Moldura">
+            <div className="flex gap-2">
+              <FormatoBtn
+                ativo={moldura === "classica"}
+                onClick={() => setMoldura("classica")}
+                label="Clássica"
+                sub="Cantos em arabesco · livro antigo"
+              />
+              <FormatoBtn
+                ativo={moldura === "deco"}
+                onClick={() => setMoldura("deco")}
+                label="Déco"
+                sub="Cantos em esquadria · mais contida"
+              />
+            </div>
+          </Field>
+        )}
+
         <Field label="Formato">
           <div className="flex gap-2">
             <FormatoBtn
               ativo={formato === "feed"}
               onClick={() => setFormato("feed")}
-              label="Feed 1080×1080"
-              sub="Quadrado · Insta feed, WhatsApp"
+              label={tema === "editorial" ? "Feed 1080×1350" : "Feed 1080×1080"}
+              sub={
+                tema === "editorial"
+                  ? "Retrato 4:5 · ocupa mais tela"
+                  : "Quadrado · Insta feed, WhatsApp"
+              }
             />
             <FormatoBtn
               ativo={formato === "story"}
@@ -155,17 +199,25 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
         </p>
         <div className="overflow-hidden rounded-2xl border border-mesa-200 bg-mesa-900 shadow-xl shadow-mesa-700/10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* biome-ignore lint/performance/noImgElement: a prévia aponta pra uma rota que devolve PNG gerado na hora; o next/image otimizaria uma URL que muda a cada tecla digitada. */}
           <img
             src={previewSrc}
             alt="Preview"
             className="block w-full"
-            style={{ aspectRatio: formato === "story" ? "9 / 16" : "1 / 1" }}
+            style={{
+              aspectRatio:
+                formato === "story"
+                  ? "9 / 16"
+                  : tema === "editorial"
+                    ? "4 / 5"
+                    : "1 / 1",
+            }}
           />
         </div>
         {iaAtiva && (
           <p className="mt-2 text-xs text-mesa-500">
-            ⏱ Primeira render pode levar 5-15s (chamada à IA). Recargas
-            subsequentes usam o cache.
+            ⏱ Primeira render pode levar 5-15s (chamada à IA). Recargas subsequentes
+            usam o cache.
           </p>
         )}
       </div>
@@ -183,6 +235,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: o controle chega por `children` (todo uso de <Field> passa input, textarea ou grupo de botões); a regra não enxerga isso estaticamente.
     <label className="block">
       <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-mesa-600">
         {label}

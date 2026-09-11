@@ -1,16 +1,26 @@
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
-import { getCurrentSession } from "@/lib/db";
 import { GeradorImagemForm } from "@/components/GeradorImagemForm";
+import { getCurrentSession } from "@/lib/db";
 
 export default async function AdminImagensPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const backend = (process.env.IMAGE_BACKEND || "pollinations").toLowerCase();
-  const backendLabel =
-    backend === "gemini" ? "Google Imagen" : "Pollinations.ai (Flux Schnell · grátis)";
+  // O editorial busca fotografia real no Pexels e só cai na IA se o Pexels não
+  // devolver nada. O rótulo mostra quem é a reserva nesse caso.
+  const temPexels = Boolean(process.env.PEXELS_API_KEY);
+  const backend = (process.env.IMAGE_BACKEND || "cloudflare").toLowerCase();
+  const reserva =
+    backend === "gemini"
+      ? "Google Imagen"
+      : backend === "pollinations"
+        ? "Pollinations.ai"
+        : "Cloudflare Flux";
+  const backendLabel = temPexels
+    ? `Pexels (fotografia real) · reserva: ${reserva}`
+    : `${reserva} — Pexels sem chave (defina PEXELS_API_KEY)`;
 
   return (
     <AdminShell current="imagens" session={session}>
@@ -21,10 +31,12 @@ export default async function AdminImagensPage() {
         Gerador de imagens
       </h1>
       <p className="mb-3 max-w-2xl text-sm text-mesa-600 text-justify hyphens-auto">
-        Template <strong>Cinematográfico Sacro</strong>: foto de fundo gerada por
-        IA, tipografia editorial (Cormorant Garamond Italic), overlay com vinheta
-        e divisor dourado. Saída em PNG pronto pra Instagram (feed/story) ou
-        WhatsApp.
+        Template <strong>Editorial</strong>: fotografia real pedida já no tamanho final
+        (sem esticar), moldura dourada com cantos ornamentados desenhada no Canva,
+        tipografia Cormorant Garamond Italic e escurecimento repartido — a foto continua
+        visível em vez de virar fundo preto. Saída em PNG pronto pra Instagram (feed 4:5
+        ou story) e WhatsApp. O template <strong>Cinematográfico</strong> antigo segue
+        disponível.
       </p>
       <p className="mb-8 text-xs text-mesa-500">
         Backend ativo: <strong className="text-mesa-700">{backendLabel}</strong>
