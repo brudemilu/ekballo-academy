@@ -15,6 +15,7 @@ ESPACOS_PERDIDOS = {
     "filhodeDavi": "filho de Davi",
     "filhodeAbraão": "filho de Abraão",
     "ProclamarSeu": "Proclamar Seu",
+    "séculoXX": "século XX",
 }
 
 def consertar_espacos(t):
