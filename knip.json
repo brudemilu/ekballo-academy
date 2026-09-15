@@ -14,6 +14,7 @@
   "project": ["app/**/*.{ts,tsx}", "components/**/*.tsx", "lib/**/*.ts"],
   "ignore": ["supabase/functions/**", "scripts/**/*.py", ".next/**", "coverage/**"],
   "ignoreDependencies": [
+    "playwright-core",
     "autoprefixer",
     "postcss",
     "tailwindcss",

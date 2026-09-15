@@ -33,6 +33,27 @@ def linhas(itens, tol=2.6):
                     "texto": re.sub(r"\s+", " ", "".join(r["t"] for r in runs)).strip()})
     return [l for l in out if l["texto"]]
 
+def calha(itens, inicio, fim, largura_minima=6.0):
+    """Acha a CALHA entre duas colunas: a faixa vertical de x que nenhum trecho
+    de texto atravessa. Substitui o corte fixo, que era medido num capítulo e
+    não valia nos outros — a coletânea muda a posição da coluna de um capítulo
+    pro outro, e um corte errado por 8 pontos parte o texto no meio da palavra.
+    Devolve None quando não há calha (página de coluna única)."""
+    coberto = []
+    for i in itens:
+        x0, x1 = i["r"][0], i["r"][0] + i["r"][2]
+        if x1 > inicio and x0 < fim:
+            coberto.append((max(x0, inicio), min(x1, fim)))
+    if not coberto:
+        return None
+    coberto.sort()
+    vaos, ponta = [], coberto[0][1]
+    for a, b in coberto[1:]:
+        if a - ponta >= largura_minima:
+            vaos.append((a - ponta, ponta + (a - ponta) / 2))
+        ponta = max(ponta, b)
+    return max(vaos)[1] if vaos else None
+
 def paragrafos(ls, negrito):
     """agrupa linhas em parágrafos: recuo de primeira linha, salto vertical
     ou mudança de fonte (o cabeçalho vem em negrito) abrem parágrafo novo"""
@@ -60,7 +81,10 @@ def paragrafos(ls, negrito):
             if not txt:
                 txt = t
             elif txt.endswith("-") and re.search(r"[a-zà-ÿ]-$", txt):
-                txt = txt[:-1] + t
+                # o hífen de fim de linha some ao religar a palavra; mas se a
+                # continuação começa com MAIÚSCULA ele pertence ao NOME
+                # ("Lo-Ruama", "nação-Estado") e tem de ficar
+                txt = (txt + t) if re.match(r"[A-ZÀ-Ý]", t) else (txt[:-1] + t)
             else:
                 txt += " " + t
         if txt.strip():
@@ -77,38 +101,41 @@ def montar(caminho, abertura=True):
     t = d["text"]
     negrito = {i for i, f in enumerate(t["fonts"]) if "Bold" in f["n"]}
 
+    # Corpo miúdo = nota de rodapé, MAS a classificação é por LINHA, nunca por
+    # trecho. O versalete (o sobrenome nas bibliografias) é um trecho pequeno
+    # DENTRO de uma linha de tamanho normal: arrancá-lo dali decapitava o nome
+    # — "KEENER, Craig S." virava "K, Craig S." em toda bibliografia.
+    miuda = lambda ls: [l for l in ls if l["h"] < ALTURA_NOTA]
+    grauda = lambda ls: [l for l in ls if l["h"] >= ALTURA_NOTA]
+
     corpo, bio, caixa, notas = [], [], [], []
     for pno in sorted(t["pages"], key=int):
         itens = [i for i in t["pages"][pno] if RODAPE < i["r"][1] < TOPO]
         primeira = int(pno) == 0 and abertura
 
-        # corpo menor = nota de rodapé; na abertura é a caixa de bio do autor,
-        # que fica na coluna lateral abaixo do cabeçalho
-        miudo = [i for i in itens if i["h"] < ALTURA_NOTA]
-        itens = [i for i in itens if i["h"] >= ALTURA_NOTA]
-        if primeira:
-            bio += linhas([i for i in miudo if i["r"][0] < CORTE_ABERTURA
-                           and i["r"][1] < ZONA_CABECALHO])
-            notas += linhas([i for i in miudo if not (i["r"][0] < CORTE_ABERTURA
-                             and i["r"][1] < ZONA_CABECALHO)])
-        else:
-            notas += linhas(miudo)
+        # O corte entre colunas vem da CALHA da própria página. Era fixo, e a
+        # coletânea muda a posição da coluna de um capítulo pro outro: um corte
+        # errado por poucos pontos partia o texto no meio da palavra.
+        corte_lado = (calha([i for i in itens if i["r"][1] < ZONA_CABECALHO], 90, 260)
+                      or CORTE_ABERTURA)
+        # Sem calha, a página é de COLUNA ÚNICA (bibliografia, fim de capítulo)
+        # e não pode ser dividida — um corte fixo rasga cada linha ao meio.
+        corte_col = calha(itens, 150, 330)
 
-        # a caixa "Perguntas para estudo" atravessa as duas colunas: o título
-        # vem centralizado, e tudo abaixo dele pertence à caixa
+        # a caixa "Perguntas para estudo" atravessa a página: o título vem
+        # centralizado, e tudo abaixo dele pertence à caixa
         cab_caixa = next((i for i in itens if i["h"] > 11
-                          and i["r"][0] > CORTE_ABERTURA and "Perguntas" in i["t"]), None)
+                          and i["r"][0] > corte_lado and "Perguntas" in i["t"]), None)
         if cab_caixa:
             limite = cab_caixa["r"][1] + 3
-            caixa += paragrafos(linhas([i for i in itens if i["r"][1] <= limite]), negrito)
+            caixa += paragrafos(grauda(linhas([i for i in itens if i["r"][1] <= limite])), negrito)
             itens = [i for i in itens if i["r"][1] > limite]
 
         if primeira:
-            # A abertura tem três zonas. Em cima, atravessando a página: o
-            # título, a assinatura do autor e o número do capítulo — a
-            # assinatura fica à esquerda e o número à direita, na MESMA linha,
-            # então não dá pra separá-las pela coluna. Embaixo, a caixa de bio
-            # na lateral e o corpo à direita.
+            # A abertura tem três zonas. Em cima, atravessando a página: título,
+            # assinatura e número do capítulo — assinatura à esquerda e número à
+            # direita, na MESMA linha, então a coluna não as separa. Embaixo, a
+            # caixa de bio na lateral e o corpo do capítulo ao lado.
             cabeca = [i for i in itens if i["r"][1] >= ZONA_CABECALHO
                       and not (i["h"] > 40 and i["t"].strip().isdigit())]
             resto = [i for i in itens if i["r"][1] < ZONA_CABECALHO]
@@ -116,8 +143,9 @@ def montar(caminho, abertura=True):
                 corpo.append({"texto": l["texto"], "titulo": True,
                               "altura": round(l["h"], 1)})
 
-            bio += linhas([i for i in resto if i["r"][0] < CORTE_ABERTURA])
-            principal = [i for i in resto if i["r"][0] >= CORTE_ABERTURA]
+            lado = linhas([i for i in resto if i["r"][0] < corte_lado])
+            bio += lado                       # a bio é miúda por natureza
+            principal = [i for i in resto if i["r"][0] >= corte_lado]
             # capitular: LETRA solta e grande que abre o capítulo (o número do
             # capítulo também é grande e solto, por isso exigimos letra)
             capital = next((i for i in principal
@@ -125,14 +153,23 @@ def montar(caminho, abertura=True):
                             and i["t"].strip().isalpha()), None)
             if capital:
                 principal = [i for i in principal if i is not capital]
-            ps = paragrafos(linhas(principal), negrito)
+            ls = linhas(principal)
+            notas += miuda(ls)
+            ps = paragrafos(grauda(ls), negrito)
             if capital and ps:
                 # o espaço do capitular importa: "A " abre palavra própria
                 # ("A Bíblia"), "S" continua a palavra ("S" + "em" = "Sem")
                 ps[0]["texto"] = capital["t"] + ps[0]["texto"].lstrip()
             corpo += ps
+        elif corte_col is None:
+            ls = linhas(itens)
+            notas += miuda(ls)
+            corpo += paragrafos(grauda(ls), negrito)
         else:
-            corpo += paragrafos(linhas([i for i in itens if i["r"][0] < CORTE_COLUNA]), negrito)
-            corpo += paragrafos(linhas([i for i in itens if i["r"][0] >= CORTE_COLUNA]), negrito)
+            for faixa in ([i for i in itens if i["r"][0] < corte_col],
+                          [i for i in itens if i["r"][0] >= corte_col]):
+                ls = linhas(faixa)
+                notas += miuda(ls)
+                corpo += paragrafos(grauda(ls), negrito)
 
     return corpo, bio, caixa, notas

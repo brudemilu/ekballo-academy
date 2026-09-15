@@ -81,8 +81,18 @@ jobs:
       # PR desde o primeiro dia, e corrigir em massa criaria um diff de
       # centenas de arquivos que enterra o histórico. Código novo nasce
       # no padrão; o antigo é convertido aos poucos.
+      # `biome ci` termina em ERRO quando nenhum arquivo casa com os paths.
+      # Um PR que só mexe em Python, SQL ou migration não tem o que lintar e
+      # deve passar trivialmente — reprovar ali é falso negativo, não rigor.
       - name: Biome nos arquivos alterados
-        run: npx biome ci --changed --since=origin/master .
+        run: |
+          alterados=$(git diff --name-only origin/master...HEAD \
+            | grep -E '\.(js|jsx|ts|tsx|json|jsonc|css)$' || true)
+          if [ -z "$alterados" ]; then
+            echo "Nenhum arquivo que o Biome cheque foi alterado."
+            exit 0
+          fi
+          npx biome ci --changed --since=origin/master .
 
   seguranca:
     name: Segurança das dependências
