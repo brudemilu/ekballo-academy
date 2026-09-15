@@ -37,6 +37,7 @@ for (const slug of slugs) {
   let { data: curso } = await db.from("cursos").select("id").eq("slug", slug).maybeSingle();
   const campos = {
     titulo: d.titulo,
+    autor: d.autor,
     descricao: descricao(d),
     imagem_url: d.capa,
     categoria: d.categoria,
