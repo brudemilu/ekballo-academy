@@ -60,10 +60,18 @@ const cursos = [
       ["Introdução", 13, 16],
       ["Capítulo 1 - Como ser um cristão secular", 17, 36],
       ["Capítulo 2 - Esfera de soberania: cuidar dos nossos próprios afazeres", 37, 53],
-      ["Capítulo 3 - \"Vã filosofia\": uma desculpa para o anti-intelectualismo?", 54, 71],
+      [
+        'Capítulo 3 - "Vã filosofia": uma desculpa para o anti-intelectualismo?',
+        54,
+        71,
+      ],
       ["Capítulo 4 - O cristianismo e as artes", 72, 93],
       ["Capítulo 5 - A arte na vida do cristão", 94, 110],
-      ["Capítulo 6 - O cristianismo e a ciência moderna: não podemos ser amigos?", 111, 131],
+      [
+        "Capítulo 6 - O cristianismo e a ciência moderna: não podemos ser amigos?",
+        111,
+        131,
+      ],
       ["Capítulo 7 - Trabalhar para o final de semana", 132, 154],
       ["Capítulo 8 - Um mundo enlouquecido", 155, 167],
       ["Conclusão - No mundo, mas não do mundo", 168, 195],
@@ -99,7 +107,10 @@ function cleanRange(pages, start, end, title) {
     if (!current.length) return;
     let joined;
     if (pullQuote) {
-      joined = current.map((l) => l.replace(/[ \t]+/g, " ").trim()).join("\n").trim();
+      joined = current
+        .map((l) => l.replace(/[ \t]+/g, " ").trim())
+        .join("\n")
+        .trim();
     } else {
       joined = current
         .join(" ")
@@ -123,7 +134,8 @@ function cleanRange(pages, start, end, title) {
     if (line.toLowerCase() === title.toLowerCase()) continue;
     if (/^(Document Outline|Table of Contents)$/i.test(line)) continue;
 
-    const newParagraph = /^\s{2,}\S/.test(rawLine) || isLikelyPullQuote(line) !== pullQuote;
+    const newParagraph =
+      /^\s{2,}\S/.test(rawLine) || isLikelyPullQuote(line) !== pullQuote;
     if (newParagraph) flush();
 
     pullQuote = isLikelyPullQuote(line);
@@ -131,7 +143,10 @@ function cleanRange(pages, start, end, title) {
   }
   flush();
 
-  return paragraphs.join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
+  return paragraphs
+    .join("\n\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 // Remove do começo do capítulo as linhas de rótulo ("Capítulo 4", "1.") e a
@@ -158,7 +173,8 @@ function stripTituloDeAbertura(conteudo, titulo) {
   let i = 0;
 
   // 1) rótulos de abertura ("Capítulo 4", "1.", "Conclusão")
-  while (i < partes.length && descartaveis.some((re) => re.test(partes[i].trim()))) i += 1;
+  while (i < partes.length && descartaveis.some((re) => re.test(partes[i].trim())))
+    i += 1;
 
   // 2) o título impresso na abertura — que a diagramação pode ter partido em
   //    vários parágrafos ("Esfera de soberania: cuidar dos nossos próprios" +
@@ -178,7 +194,8 @@ function stripTituloDeAbertura(conteudo, titulo) {
 }
 
 function dollar(tag, value) {
-  if (value.includes(`$${tag}$`)) throw new Error(`Conteúdo contém delimitador $${tag}$`);
+  if (value.includes(`$${tag}$`))
+    throw new Error(`Conteúdo contém delimitador $${tag}$`);
   return `$${tag}$${value}$${tag}$`;
 }
 
@@ -187,7 +204,10 @@ function migrationName(curso) {
 }
 
 function buildMigration(curso) {
-  const pages = readFileSync(new URL(`../tmp/pdfs/${curso.source}`, import.meta.url), "utf8").split("\f");
+  const pages = readFileSync(
+    new URL(`../tmp/pdfs/${curso.source}`, import.meta.url),
+    "utf8",
+  ).split("\f");
   const aulas = curso.aulas.map(([titulo, start, end], index) => ({
     ordem: index + 1,
     titulo,
@@ -250,6 +270,8 @@ for (const curso of cursos) {
   const name = migrationName(curso);
   const sql = buildMigration(curso);
   writeFileSync(new URL(`../supabase/migrations/${name}`, import.meta.url), sql);
-  console.log(`✓ ${name}  (${curso.aulas.length} aulas, ${(sql.length / 1024).toFixed(0)} kB)`);
+  console.log(
+    `✓ ${name}  (${curso.aulas.length} aulas, ${(sql.length / 1024).toFixed(0)} kB)`,
+  );
 }
 console.log("\nMigrations geradas. Confira o conteúdo antes de aplicar.");
