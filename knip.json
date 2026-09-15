@@ -14,7 +14,6 @@
   "project": ["app/**/*.{ts,tsx}", "components/**/*.tsx", "lib/**/*.ts"],
   "ignore": ["supabase/functions/**", "scripts/**/*.py", ".next/**", "coverage/**"],
   "ignoreDependencies": [
-    "_nota: playwright-core é instalado à parte por quem roda scripts/perspectivas/pegar-dropbox.mjs (ver o LEIAME de lá) — é ferramenta de carga, não dependência do app",
     "playwright-core",
     "autoprefixer",
     "postcss",
