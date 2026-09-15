@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BuscaLivros } from "@/components/BuscaLivros";
 import { CompletarTelefoneBanner } from "@/components/CompletarTelefoneBanner";
 import {
   BarraProgresso,
@@ -51,6 +52,17 @@ function dataConclusao(iso: string): string {
   } catch {
     return "";
   }
+}
+
+// O que o filtro da vitrine enxerga de cada livro: título, autor e a seção em
+// que ele está. A descrição fica de fora de propósito — são ~200 livros, e
+// mandar o texto inteiro de cada um pro navegador só pra buscar custaria mais
+// do que ajuda.
+function textoBuscavel(
+  curso: { titulo: string; autor?: string | null },
+  secao: string,
+): string {
+  return [curso.titulo, curso.autor, secao].filter(Boolean).join(" ");
 }
 
 export default async function DashboardPage() {
@@ -126,7 +138,9 @@ export default async function DashboardPage() {
   // Vitrine agrupada por seção (Liderança, Discipulado, …). Se só existe
   // uma seção, não vale mostrar título — cai no grid simples de antes.
   const grupos = agruparPorCategoria(cursos);
-  const mostrarSecoes = grupos.length > 1;
+  // Com uma seção só, o título dela não informa nada — vira "Temáticas", como
+  // sempre foi. O componente de busca recebe os dois casos no mesmo formato.
+  const secoes = grupos.length > 1 ? grupos : [{ label: "Temáticas", cursos }];
 
   // Capa do card: estática quando existe, senão a OG tipográfica (em retrato).
   const capaDe = (curso: (typeof cursos)[number]) => {
@@ -520,28 +534,17 @@ export default async function DashboardPage() {
               isso acontecer, elas aparecem aqui.
             </p>
           </div>
-        ) : mostrarSecoes ? (
-          <div className="space-y-14">
-            {grupos.map((grupo) => (
-              <section key={grupo.label}>
-                <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
-                  {grupo.label}
-                </h2>
-                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
-                  {grupo.cursos.map((curso) => renderCard(curso))}
-                </div>
-              </section>
-            ))}
-          </div>
         ) : (
-          <section>
-            <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
-              Temáticas
-            </h2>
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
-              {cursos.map((curso) => renderCard(curso))}
-            </div>
-          </section>
+          <BuscaLivros
+            grupos={secoes.map((secao) => ({
+              label: secao.label,
+              itens: secao.cursos.map((curso) => ({
+                id: curso.id,
+                busca: textoBuscavel(curso, secao.label),
+                node: renderCard(curso),
+              })),
+            }))}
+          />
         )}
       </div>
     </main>
