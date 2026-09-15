@@ -53,16 +53,30 @@ def _montar_texto(runs, limiar):
         fim = x + w
     return txt
 
+# letras que SÃO palavra em português — as demais, soltas, são pedaço de palavra
+LETRAS_PALAVRA = set("aeoáàéóúAEOÁÀÉÓÚ")
+
 def _defeitos(txt):
-    """quantos defeitos esse corte deixou, nos dois sentidos: 'palavra'
-    comprida demais pra existir (corte alto demais gruda palavras) e letra
-    solta (corte baixo demais estilhaça a palavra). Devolve (grudadas,
-    estilhaçadas) pra dar pra ordenar do menos pior."""
-    grudadas = len(re.findall(r"[A-Za-zÀ-ÿ]{15,}", txt))
+    """Nota do corte, em defeitos ordenados por gravidade — menor é melhor.
+
+    1. COLAGEM: minúscula grudada em maiúscula dentro da mesma "palavra"
+       ("PauloeaTarefa"). Sinal forte e quase sem falso positivo em português.
+    2. FRAGMENTO: letra sozinha que não é palavra ("M issionária"). Em português
+       'a', 'e' e 'o' são palavras e aparecem o tempo todo; 'M' solto, sem
+       ponto de abreviatura, é metade de uma palavra partida.
+    3. EXCESSO: quanto as palavras passam de 15 letras, SOMADO. Graduado de
+       propósito: "contraproducente" (16) é palavra de verdade e
+       "sercontraproducente" (19) é colagem — contar sim/não empataria as duas.
+    4. ESTILHAÇO: letra solta dominando a linha, o caso da palavra única
+       partida letra a letra.
+    """
     fichas = [p for p in txt.split() if p]
+    colagem = sum(1 for p in fichas if re.search(r"[a-zà-ÿ][A-ZÀ-Ý]", p))
+    fragmento = sum(1 for p in fichas if len(p) == 1 and p not in LETRAS_PALAVRA)
+    excesso = sum(max(0, len(re.sub(r"[^A-Za-zÀ-ÿ]", "", p)) - 15) for p in fichas)
     soltas = sum(1 for p in fichas if len(p) == 1)
-    excesso = max(0, soltas - max(2, int(0.30 * len(fichas))))
-    return grudadas, excesso
+    estilhaco = 1 if (soltas >= 4 and fichas and soltas / len(fichas) > 0.5) else 0
+    return colagem, fragmento, excesso, estilhaco
 
 def juntar_runs(runs):
     """concatena os trechos de uma linha. Alguns PDFs mandam cada letra como um
