@@ -18,7 +18,11 @@ def limpar(t):
     for glifo, letras in LIGADURAS.items():
         t = re.sub(glifo + r" (?=[a-zà-ÿ])", letras, t)
         t = t.replace(glifo, letras)
-    for errado, certo in COLADAS.items():
+    # a ligadura "ti"/"fi" vem partida com um espaço ("Palesti na", "genti os").
+    # Exigir letra ANTES protege os casos em que "ti" é palavra de verdade
+    # ("a ti farei"), que sempre vêm precedidos de espaço.
+    t = re.sub(r"(?<=[A-Za-zÀ-ÿ])(ti|fi) (?=[a-zà-ÿ])", r"\1", t)
+    for errado, certo in COLADAS.items():   # "tt" e afins, que a regra não cobre
         t = t.replace(errado, certo)
     return re.sub(r"\s+", " ", t).strip()
 
@@ -31,7 +35,9 @@ def juntar_partidos(ps):
                 and not re.search(r'[.!?:;"]$', anterior["texto"])
                 and re.match(r'^[a-zà-ÿ("]', p["texto"])):
             if re.search(r"[a-zà-ÿ]-$", anterior["texto"]):
-                anterior["texto"] = anterior["texto"][:-1] + p["texto"]
+                junta = re.match(r"[A-ZÀ-Ý]", p["texto"])
+                anterior["texto"] = (anterior["texto"] if junta
+                                     else anterior["texto"][:-1]) + p["texto"]
             else:
                 anterior["texto"] += " " + p["texto"]
         else:

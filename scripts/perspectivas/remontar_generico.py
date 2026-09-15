@@ -175,7 +175,10 @@ def paragrafos(ls, negrito, espaco):
             if not txt:
                 txt = t
             elif re.search(r"[a-zà-ÿ]-$", txt):
-                txt = txt[:-1] + t
+                # o hífen de fim de linha some ao religar a palavra; mas se a
+                # continuação começa com MAIÚSCULA ele pertence ao NOME
+                # ("Lo-Ruama", "nação-Estado") e tem de ficar
+                txt = (txt + t) if re.match(r"[A-ZÀ-Ý]", t) else (txt[:-1] + t)
             else:
                 txt += " " + t
         if txt.strip():
@@ -222,7 +225,8 @@ def juntar_partidos(ps):
                 and not re.search(r'[.!?:;"]$', ant["texto"])
                 and re.match(r'^[a-zà-ÿ("]', p["texto"])):
             if re.search(r"[a-zà-ÿ]-$", ant["texto"]):
-                ant["texto"] = ant["texto"][:-1] + p["texto"]
+                junta = re.match(r"[A-ZÀ-Ý]", p["texto"])
+                ant["texto"] = (ant["texto"] if junta else ant["texto"][:-1]) + p["texto"]
             else:
                 ant["texto"] += " " + p["texto"]
         else:
