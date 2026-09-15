@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
-import { getCurrentSession, listCursosWithStats } from "@/lib/db";
+import { BuscaLivros } from "@/components/BuscaLivros";
 import { CategoriaSelect } from "@/components/CategoriaSelect";
+import { getCurrentSession, listCursosWithStats } from "@/lib/db";
 
 export default async function AdminCursosPage() {
   const session = await getCurrentSession();
@@ -20,9 +21,8 @@ export default async function AdminCursosPage() {
         Temáticas
       </h1>
       <p className="mb-8 text-sm text-mesa-600">
-        Clique em uma temática pra ver progresso por aula, por discípulo e onde estão
-        os gargalos. Para criar ou editar conteúdo (aulas, atividades), use o
-        Supabase.
+        Clique em uma temática pra ver progresso por aula, por discípulo e onde estão os
+        gargalos. Para criar ou editar conteúdo (aulas, atividades), use o Supabase.
       </p>
 
       {cursos.length === 0 ? (
@@ -32,82 +32,103 @@ export default async function AdminCursosPage() {
           </p>
         </div>
       ) : (
-        <ul className="space-y-3">
-          {cursos.map(({ curso: c, matriculados, concluidos, alunosComTelefone }) => {
-            const taxa =
-              matriculados > 0
-                ? Math.round((concluidos / matriculados) * 100)
-                : 0;
-            return (
-              <li
-                key={c.id}
-                className="relative rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-laranja-300 hover:shadow-md"
-              >
-                {/* Link em overlay: cobre o card por baixo. O conteúdo deixa o
-                    clique passar (pointer-events-none), menos o seletor de seção. */}
-                <Link
-                  href={c.external_path ?? `/admin/cursos/${c.slug}`}
-                  aria-label={`Abrir ${c.titulo}`}
-                  className="absolute inset-0 z-0 rounded-2xl"
-                />
-                <div className="pointer-events-none relative flex flex-wrap items-center justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <h3 className="font-serif text-lg font-semibold text-mesa-800">
-                          {c.titulo}
-                        </h3>
-                        <span className="pointer-events-auto">
-                          <CategoriaSelect cursoId={c.id} categoriaAtual={c.categoria} />
-                        </span>
-                        {!c.publicado && (
-                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                            Rascunho
+        <BuscaLivros
+          layout="lista"
+          substantivo={{ singular: "temática", plural: "temáticas" }}
+          placeholder="Buscar temática por título, autor ou slug…"
+          grupos={[
+            {
+              // Sem rótulo: o <h1> "Temáticas" logo acima já nomeia a lista.
+              label: "",
+              itens: cursos.map(
+                ({ curso: c, matriculados, concluidos, alunosComTelefone }) => {
+                  const taxa =
+                    matriculados > 0
+                      ? Math.round((concluidos / matriculados) * 100)
+                      : 0;
+                  const linha = (
+                    <li
+                      key={c.id}
+                      className="relative rounded-2xl border border-mesa-200 bg-white p-5 transition hover:border-laranja-300 hover:shadow-md"
+                    >
+                      {/* Link em overlay: cobre o card por baixo. O conteúdo deixa o
+                          clique passar (pointer-events-none), menos o seletor de seção. */}
+                      <Link
+                        href={c.external_path ?? `/admin/cursos/${c.slug}`}
+                        aria-label={`Abrir ${c.titulo}`}
+                        className="absolute inset-0 z-0 rounded-2xl"
+                      />
+                      <div className="pointer-events-none relative flex flex-wrap items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex flex-wrap items-center gap-2">
+                            <h3 className="font-serif text-lg font-semibold text-mesa-800">
+                              {c.titulo}
+                            </h3>
+                            <span className="pointer-events-auto">
+                              <CategoriaSelect
+                                cursoId={c.id}
+                                categoriaAtual={c.categoria}
+                              />
+                            </span>
+                            {!c.publicado && (
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                                Rascunho
+                              </span>
+                            )}
+                            {c.is_pago ? (
+                              <span className="rounded-full bg-mesa-100 px-2 py-0.5 text-xs font-medium text-mesa-700">
+                                Pago
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
+                                Gratuito
+                              </span>
+                            )}
+                          </div>
+                          <p className="line-clamp-2 text-sm text-mesa-600">
+                            {c.descricao}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="text-right">
+                            <p className="font-serif text-2xl font-semibold text-mesa-700">
+                              {matriculados}
+                            </p>
+                            <p className="text-xs text-mesa-500">matriculados</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-serif text-2xl font-semibold text-oliveira-700">
+                              {concluidos}
+                            </p>
+                            <p className="text-xs text-mesa-500">
+                              concluíram{matriculados > 0 ? ` · ${taxa}%` : ""}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-serif text-2xl font-semibold text-mesa-700">
+                              {alunosComTelefone}
+                            </p>
+                            <p className="text-xs text-mesa-500">com WhatsApp</p>
+                          </div>
+                          <span className="rounded-full border border-mesa-200 bg-white px-4 py-2 text-xs font-medium text-mesa-700">
+                            Abrir →
                           </span>
-                        )}
-                        {c.is_pago ? (
-                          <span className="rounded-full bg-mesa-100 px-2 py-0.5 text-xs font-medium text-mesa-700">
-                            Pago
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-oliveira-100 px-2 py-0.5 text-xs font-medium text-oliveira-700">
-                            Gratuito
-                          </span>
-                        )}
+                        </div>
                       </div>
-                      <p className="line-clamp-2 text-sm text-mesa-600">
-                        {c.descricao}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-6 text-sm">
-                      <div className="text-right">
-                        <p className="font-serif text-2xl font-semibold text-mesa-700">
-                          {matriculados}
-                        </p>
-                        <p className="text-xs text-mesa-500">matriculados</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-serif text-2xl font-semibold text-oliveira-700">
-                          {concluidos}
-                        </p>
-                        <p className="text-xs text-mesa-500">
-                          concluíram{matriculados > 0 ? ` · ${taxa}%` : ""}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-serif text-2xl font-semibold text-mesa-700">
-                          {alunosComTelefone}
-                        </p>
-                        <p className="text-xs text-mesa-500">com WhatsApp</p>
-                      </div>
-                      <span className="rounded-full border border-mesa-200 bg-white px-4 py-2 text-xs font-medium text-mesa-700">
-                        Abrir →
-                      </span>
-                    </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                    </li>
+                  );
+                  return {
+                    id: c.id,
+                    // O slug entra na busca do painel (e só dele): é por ele que o
+                    // master se refere ao livro em URL, migration e script.
+                    busca: [c.titulo, c.autor, c.slug].filter(Boolean).join(" "),
+                    node: linha,
+                  };
+                },
+              ),
+            },
+          ]}
+        />
       )}
     </AdminShell>
   );
