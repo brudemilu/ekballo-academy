@@ -49,6 +49,8 @@ export default async function CursoPage({
   // Progresso do livro + retomada. A mesa pra retomar é a primeira pendente
   // depois da última lida — quem pulou o prefácio não é jogado de volta pra ele.
   const totalMesas = aulas.length;
+  // Curso de dois níveis (guia de estudo + as leituras que ele indica)?
+  const temLeituras = aulas.some((a) => a.titulo.includes("· Leitura —"));
   const lidas = aulas.filter((a) => concluidas.has(a.id)).length;
   const pctLidas = totalMesas > 0 ? Math.round((lidas / totalMesas) * 100) : 0;
   const ultimoLidoIdx = aulas.reduce(
@@ -173,27 +175,49 @@ export default async function CursoPage({
           <ol className="space-y-3">
             {aulas.map((aula) => {
               const concluida = concluidas.has(aula.id);
+              // Cursos como o Perspectivas têm dois níveis: o guia de estudo da
+              // lição e, abaixo, as leituras que ele manda ler. Só quando o
+              // curso de fato tem leituras é que vale destacar o guia — nos
+              // demais, toda mesa é do mesmo nível e nada muda.
+              const ehLeitura = aula.titulo.includes("· Leitura —");
+              const ehGuia = temLeituras && !ehLeitura;
               return (
-                <li key={aula.id}>
+                <li key={aula.id} className={ehLeitura ? "sm:ml-8" : undefined}>
                   {/* LinkNav: afunda ao toque, a seta avança no hover e vira
                       girador enquanto a mesa carrega. Antes o toque não
                       produzia sinal nenhum — e daqui até Paris são ~267ms. */}
                   <LinkNav
                     href={`/cursos/${curso.slug}/aulas/${aula.id}`}
-                    className="lift flex w-full items-center gap-5 rounded-2xl border border-mesa-200 bg-white p-5 hover:border-laranja-300 hover:shadow-md"
+                    className={`lift flex w-full items-center gap-5 rounded-2xl border bg-white p-5 hover:shadow-md ${
+                      ehGuia
+                        ? "border-laranja-200 hover:border-laranja-400"
+                        : "border-mesa-200 hover:border-laranja-300"
+                    }`}
                     indicador={<Seta className="text-mesa-400" />}
                   >
                     <div
-                      className={`flex h-12 w-12 flex-none items-center justify-center rounded-full font-serif text-lg font-semibold ${
+                      className={`flex flex-none items-center justify-center rounded-full font-serif font-semibold ${
+                        ehGuia ? "h-12 w-12 text-lg" : "h-10 w-10 text-base"
+                      } ${
                         concluida
                           ? "bg-oliveira-100 text-oliveira-700"
-                          : "bg-mesa-100 text-mesa-700"
+                          : ehGuia
+                            ? "bg-laranja-100 text-laranja-700"
+                            : "bg-mesa-100 text-mesa-700"
                       }`}
                     >
                       {concluida ? "✓" : rotuloNumeroAula(aula)}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-mesa-800">{aula.titulo}</h3>
+                      <h3
+                        className={
+                          ehGuia
+                            ? "font-serif text-lg font-semibold text-laranja-800"
+                            : "font-medium text-mesa-800"
+                        }
+                      >
+                        {aula.titulo}
+                      </h3>
                       {concluida ? (
                         <p className="text-xs text-oliveira-600">Concluído</p>
                       ) : null}
