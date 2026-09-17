@@ -1,25 +1,27 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
-import { Logo } from "@/components/Logo";
-import UltimasRespostasLista from "@/components/UltimasRespostasLista";
+import { BuscaLivros } from "@/components/BuscaLivros";
 import {
-  getCurrentSession,
+  BarraProgresso,
+  ContinuandoLeitura,
+  type ItemLeitura,
+} from "@/components/ContinuandoLeitura";
+import { Logo } from "@/components/Logo";
+import { SeloOffline } from "@/components/SeloOffline";
+import UltimasRespostasLista from "@/components/UltimasRespostasLista";
+import { textoBuscavelDoLivro } from "@/lib/busca";
+import { CAPA_LIVRO } from "@/lib/capas";
+import { agruparPorCategoria } from "@/lib/categorias";
+import {
   getAdminStats,
-  listRecentRespostas,
+  getCurrentSession,
+  getMaterialUrl,
   listCursosPublicados,
   listLeiturasConcluidas,
   listProgressoLeitura,
-  getMaterialUrl,
+  listRecentRespostas,
 } from "@/lib/db";
-import {
-  ContinuandoLeitura,
-  BarraProgresso,
-  type ItemLeitura,
-} from "@/components/ContinuandoLeitura";
-import { agruparPorCategoria } from "@/lib/categorias";
-import { SeloOffline } from "@/components/SeloOffline";
-import { CAPA_LIVRO } from "@/lib/capas";
 
 // "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena".
 function greetingName(nome?: string | null): string {
@@ -77,15 +79,17 @@ export default async function AdminPage() {
   // Pula o signed URL dos livros com capa estática (CAPA_LIVRO) — não é usado
   // no card e era o maior gargalo (uma chamada de rede por curso, ~193).
   const imagensResolvidas = await Promise.all(
-    cursos.map((c) => (CAPA_LIVRO[c.slug] ? Promise.resolve(null) : getMaterialUrl(c.imagem_url)))
+    cursos.map((c) =>
+      CAPA_LIVRO[c.slug] ? Promise.resolve(null) : getMaterialUrl(c.imagem_url),
+    ),
   );
-  const imagemMap = new Map(
-    cursos.map((c, i) => [c.id, imagensResolvidas[i]])
-  );
+  const imagemMap = new Map(cursos.map((c, i) => [c.id, imagensResolvidas[i]]));
 
   // Agrupa por seção igual à vitrine do dashboard. Só 1 seção → grid simples.
   const gruposCursos = agruparPorCategoria(cursos);
-  const mostrarSecoes = gruposCursos.length > 1;
+  // Uma seção só não merece rótulo: a própria seção da página já se chama
+  // "Temáticas". Rótulo vazio faz o componente de busca omitir o título.
+  const secoesCursos = gruposCursos.length > 1 ? gruposCursos : [{ label: "", cursos }];
 
   // Minha leitura em andamento. Vale aqui e não só no /dashboard porque o
   // middleware manda todo admin de /dashboard pra cá — o painel do aluno o
@@ -121,7 +125,7 @@ export default async function AdminPage() {
           CAPA_LIVRO[curso.slug] ??
           (ogUrl?.startsWith("/api/og/curso/")
             ? `${ogUrl}?formato=retrato&v=4`
-            : ogUrl ?? null),
+            : (ogUrl ?? null)),
         concluidas: l.concluidas,
         total: l.total_aulas,
         proxima: l.proxima_aula_titulo
@@ -132,11 +136,11 @@ export default async function AdminPage() {
 
   const renderCardCurso = (curso: (typeof cursos)[number]) => {
     const ogUrl = imagemMap.get(curso.id);
-    const capa = CAPA_LIVRO[curso.slug] ?? (
-      ogUrl?.startsWith("/api/og/curso/")
+    const capa =
+      CAPA_LIVRO[curso.slug] ??
+      (ogUrl?.startsWith("/api/og/curso/")
         ? `${ogUrl}?formato=retrato&v=4`
-        : ogUrl ?? null
-    );
+        : (ogUrl ?? null));
     // Mesmo destaque da vitrine do aluno: livro em andamento salta aos olhos.
     const leitura = leituraMap.get(curso.id);
     const emAndamento =
@@ -208,27 +212,43 @@ export default async function AdminPage() {
   };
 
   const cards = [
-    { label: "Discípulos", value: stats.totalAlunos, icon: "👥", href: "/admin/alunos", color: "text-mesa-800" },
-    { label: "Temáticas", value: stats.totalCursos, icon: "📚", href: "/admin/cursos", color: "text-mesa-800" },
-    { label: "Respostas", value: stats.totalRespostas, icon: "✍️", href: "/admin/respostas", color: "text-oliveira-700" },
-    { label: "Aguardando devolutiva", value: stats.respostasSemComentario, icon: "⏳", href: "/admin/respostas?status=pendentes", color: "text-amber-700", alerta: true },
+    {
+      label: "Discípulos",
+      value: stats.totalAlunos,
+      icon: "👥",
+      href: "/admin/alunos",
+      color: "text-mesa-800",
+    },
+    {
+      label: "Temáticas",
+      value: stats.totalCursos,
+      icon: "📚",
+      href: "/admin/cursos",
+      color: "text-mesa-800",
+    },
+    {
+      label: "Respostas",
+      value: stats.totalRespostas,
+      icon: "✍️",
+      href: "/admin/respostas",
+      color: "text-oliveira-700",
+    },
+    {
+      label: "Aguardando devolutiva",
+      value: stats.respostasSemComentario,
+      icon: "⏳",
+      href: "/admin/respostas?status=pendentes",
+      color: "text-amber-700",
+      alerta: true,
+    },
   ];
 
-  return (
-    <AdminShell current="painel" session={session}>
-      <div className="mb-10">
-        <span className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-600">
-          <span className="h-px w-8 bg-laranja-400" aria-hidden />
-          A mesa por dentro
-        </span>
-        <h1 className="mt-3 font-serif text-4xl font-semibold text-mesa-900 sm:text-5xl">
-          Olá, {greetingName(session.profile?.nome)}.
-        </h1>
-        <p className="mt-3 max-w-xl text-lg leading-relaxed text-mesa-600">
-          Quem chegou, quem respondeu e o que espera por você — a vida da mesa num relance.
-        </p>
-      </div>
-
+  // Tudo que fica entre o campo de busca e a vitrine: o alerta de devolutivas,
+  // a leitura em andamento, os atalhos, os indicadores e o cabeçalho da seção.
+  // O campo subiu pro topo (issue #154, mesma lição da #149) e esconde isto
+  // enquanto há algo digitado, pra o resultado não cair três telas abaixo.
+  const blocosAcimaDaVitrine = (
+    <>
       {/* Foco do dia: devolutivas pendentes (o trabalho pastoral que só você faz) */}
       {stats.respostasSemComentario > 0 && (
         <Link
@@ -283,8 +303,12 @@ export default async function AdminPage() {
             href={card.href}
             className={`lift rounded-2xl border p-5 shadow-sm transition hover:shadow-md ${card.accent}`}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">{card.title}</p>
-            <p className="mt-2 text-sm leading-relaxed text-mesa-700">{card.description}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mesa-500">
+              {card.title}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-mesa-700">
+              {card.description}
+            </p>
           </Link>
         ))}
       </div>
@@ -304,13 +328,17 @@ export default async function AdminPage() {
             >
               <span
                 className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl shadow-sm transition ${
-                  destaque ? "animate-pulse bg-amber-100" : "bg-mesa-100 group-hover:bg-laranja-100"
+                  destaque
+                    ? "animate-pulse bg-amber-100"
+                    : "bg-mesa-100 group-hover:bg-laranja-100"
                 }`}
               >
                 {s.icon}
               </span>
               <div className="min-w-0">
-                <p className={`font-serif text-4xl font-semibold leading-none ${s.color}`}>
+                <p
+                  className={`font-serif text-4xl font-semibold leading-none ${s.color}`}
+                >
                   {s.value}
                 </p>
                 <p className="mt-2 truncate text-sm font-medium text-mesa-500">
@@ -338,9 +366,8 @@ export default async function AdminPage() {
         </Link>
       </div>
 
-      {/* Meus cursos — vista de discípulo pra revisar conteúdo */}
       {cursos.length > 0 && (
-        <section className="mb-10">
+        <>
           <div className="mb-4 flex items-baseline justify-between">
             <h2 className="font-serif text-2xl font-semibold text-mesa-800">
               Temáticas
@@ -354,29 +381,53 @@ export default async function AdminPage() {
           </div>
           <p className="mb-5 text-sm text-mesa-600">
             Clique em uma temática pra abrir como discípulo e revisar o conteúdo, ou
-            entre em <Link href="/admin/cursos" className="underline decoration-mesa-300 hover:text-mesa-800">Temáticas</Link> pra
-            ver matrículas, progresso e gargalos.
+            entre em{" "}
+            <Link
+              href="/admin/cursos"
+              className="underline decoration-mesa-300 hover:text-mesa-800"
+            >
+              Temáticas
+            </Link>{" "}
+            pra ver matrículas, progresso e gargalos.
           </p>
-          {mostrarSecoes ? (
-            <div className="space-y-8">
-              {gruposCursos.map((grupo) => (
-                <div key={grupo.label}>
-                  <h3 className="mb-3 font-serif text-lg font-semibold text-mesa-700">
-                    {grupo.label}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                    {grupo.cursos.map((curso) => renderCardCurso(curso))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {cursos.map((curso) => renderCardCurso(curso))}
-            </div>
-          )}
-        </section>
+        </>
       )}
+    </>
+  );
+
+  return (
+    <AdminShell current="painel" session={session}>
+      <div className="mb-10">
+        <span className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-laranja-600">
+          <span className="h-px w-8 bg-laranja-400" aria-hidden />A mesa por dentro
+        </span>
+        <h1 className="mt-3 font-serif text-4xl font-semibold text-mesa-900 sm:text-5xl">
+          Olá, {greetingName(session.profile?.nome)}.
+        </h1>
+        <p className="mt-3 max-w-xl text-lg leading-relaxed text-mesa-600">
+          Quem chegou, quem respondeu e o que espera por você — a vida da mesa num
+          relance.
+        </p>
+      </div>
+
+      <div className="mb-10">
+        {cursos.length === 0 ? (
+          blocosAcimaDaVitrine
+        ) : (
+          <BuscaLivros
+            estilo="compacto"
+            antes={blocosAcimaDaVitrine}
+            grupos={secoesCursos.map((secao) => ({
+              label: secao.label,
+              itens: secao.cursos.map((curso) => ({
+                id: curso.id,
+                busca: textoBuscavelDoLivro(curso, secao.label),
+                node: renderCardCurso(curso),
+              })),
+            }))}
+          />
+        )}
+      </div>
 
       {/* Livros lidos — panorama pastoral: quem terminou o quê e quando */}
       {isMaster && leituras.length > 0 && (

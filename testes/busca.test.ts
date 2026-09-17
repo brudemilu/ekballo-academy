@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { combinaBusca, normalizarBusca, termosDaBusca } from "@/lib/busca";
+import {
+  combinaBusca,
+  normalizarBusca,
+  termosDaBusca,
+  textoBuscavelDoLivro,
+} from "@/lib/busca";
 
 // =============================================================
 // O acervo passou de 200 livros e o único jeito de achar um era
@@ -76,5 +81,33 @@ describe("combinaBusca · o que a pessoa digita achando o livro", () => {
 
   it("não casa o que não está lá", () => {
     expect(combinaBusca(titulo, "perspectivas")).toBe(false);
+  });
+});
+
+describe("textoBuscavelDoLivro · o que as três vitrines deixam o filtro ver", () => {
+  it("junta título, autor e seção", () => {
+    expect(
+      textoBuscavelDoLivro(
+        { titulo: "Ego Transformado", autor: "Timothy Keller" },
+        "Espiritual",
+      ),
+    ).toBe("Ego Transformado Timothy Keller Espiritual");
+  });
+
+  it("aguenta livro sem autor e sem seção", () => {
+    expect(textoBuscavelDoLivro({ titulo: "Bíblia" })).toBe("Bíblia");
+    expect(textoBuscavelDoLivro({ titulo: "Bíblia", autor: null }, "")).toBe("Bíblia");
+  });
+
+  it("o texto que ele devolve realmente casa na busca", () => {
+    // O contrato entre os dois: o que este helper monta é o que combinaBusca lê.
+    const texto = textoBuscavelDoLivro(
+      { titulo: "O Pastor Imperfeito", autor: "Zack Eswine" },
+      "Pastoral & Cuidado",
+    );
+    expect(combinaBusca(texto, "eswine")).toBe(true);
+    expect(combinaBusca(texto, "imperfeito pastor")).toBe(true);
+    expect(combinaBusca(texto, "pastoral")).toBe(true);
+    expect(combinaBusca(texto, "keller")).toBe(false);
   });
 });

@@ -41,10 +41,31 @@ type Props = {
    * adiante. Fora da busca, a página fica na ordem de sempre.
    */
   antes?: ReactNode;
+  /**
+   * Densidade da grade. "amplo" é a vitrine do discípulo; "compacto" é a do
+   * painel pastoral, que tem card e rótulo menores. Existe pra busca entrar
+   * no /admin sem restilizar a vitrine que já estava lá (issue #154).
+   */
+  estilo?: "amplo" | "compacto";
 };
 
-const CLASSES_GRADE =
-  "grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5";
+// Cada tela tem a sua densidade; o componente não impõe uma.
+const ESTILOS = {
+  amplo: {
+    grade:
+      "grid grid-cols-2 gap-5 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5",
+    entreSecoes: "space-y-14",
+    rotulo: "mb-6 font-serif text-2xl font-semibold text-mesa-900",
+    tag: "h2",
+  },
+  compacto: {
+    grade: "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+    entreSecoes: "space-y-8",
+    rotulo: "mb-3 font-serif text-lg font-semibold text-mesa-700",
+    tag: "h3",
+  },
+} as const;
+
 const CLASSES_LISTA = "space-y-3";
 
 export function BuscaLivros({
@@ -53,6 +74,7 @@ export function BuscaLivros({
   placeholder = "Buscar livro por título ou autor…",
   substantivo = { singular: "livro", plural: "livros" },
   antes,
+  estilo = "amplo",
 }: Props) {
   const [consulta, setConsulta] = useState("");
   const campo = useRef<HTMLInputElement>(null);
@@ -85,8 +107,11 @@ export function BuscaLivros({
     return () => window.removeEventListener("keydown", atalho);
   }, []);
 
-  const classesContainer = layout === "grade" ? CLASSES_GRADE : CLASSES_LISTA;
+  const aparencia = ESTILOS[estilo];
+  const classesContainer = layout === "lista" ? CLASSES_LISTA : aparencia.grade;
   const Container = layout === "lista" ? "ul" : "div";
+  const Rotulo = aparencia.tag;
+  const classesEntreSecoes = layout === "lista" ? "space-y-10" : aparencia.entreSecoes;
 
   const contagem = buscando
     ? `${encontrados.length} ${
@@ -159,15 +184,13 @@ export function BuscaLivros({
       ) : (
         <>
           {antes}
-          <div className={layout === "grade" ? "space-y-14" : "space-y-10"}>
+          <div className={classesEntreSecoes}>
             {grupos.map((grupo) => (
               <section key={grupo.label}>
                 {/* Rótulo vazio = lista sem seção (o painel do master já tem o
                   título da página logo acima; repetir viraria eco). */}
                 {grupo.label && (
-                  <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
-                    {grupo.label}
-                  </h2>
+                  <Rotulo className={aparencia.rotulo}>{grupo.label}</Rotulo>
                 )}
                 <Container className={classesContainer}>
                   {grupo.itens.map((item) => item.node)}

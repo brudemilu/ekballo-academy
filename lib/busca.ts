@@ -34,3 +34,14 @@ export function combinaBusca(texto: string, consulta: string): boolean {
   const alvo = normalizarBusca(texto);
   return termos.every((termo) => alvo.includes(termo));
 }
+
+// O que o filtro enxerga de cada livro: título, autor e a seção da vitrine em
+// que ele está. A descrição fica de fora de propósito — são ~200 livros, e
+// mandar o texto inteiro de cada um pro navegador só pra buscar custaria mais
+// do que ajuda. Usado pelas três vitrines (discípulo, painel pastoral e gestão).
+export function textoBuscavelDoLivro(
+  livro: { titulo: string; autor?: string | null },
+  secao?: string,
+): string {
+  return [livro.titulo, livro.autor, secao].filter(Boolean).join(" ");
+}

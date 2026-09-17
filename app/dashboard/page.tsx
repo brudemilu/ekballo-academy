@@ -11,6 +11,7 @@ import { Logo } from "@/components/Logo";
 import { SeloOffline } from "@/components/SeloOffline";
 import { UserMenu } from "@/components/UserMenu";
 import { contarAnotacoes } from "@/lib/anotacoes";
+import { textoBuscavelDoLivro } from "@/lib/busca";
 import { CAPA_LIVRO } from "@/lib/capas";
 import { agruparPorCategoria } from "@/lib/categorias";
 import {
@@ -52,17 +53,6 @@ function dataConclusao(iso: string): string {
   } catch {
     return "";
   }
-}
-
-// O que o filtro da vitrine enxerga de cada livro: título, autor e a seção em
-// que ele está. A descrição fica de fora de propósito — são ~200 livros, e
-// mandar o texto inteiro de cada um pro navegador só pra buscar custaria mais
-// do que ajuda.
-function textoBuscavel(
-  curso: { titulo: string; autor?: string | null },
-  secao: string,
-): string {
-  return [curso.titulo, curso.autor, secao].filter(Boolean).join(" ");
 }
 
 export default async function DashboardPage() {
@@ -549,7 +539,7 @@ export default async function DashboardPage() {
               label: secao.label,
               itens: secao.cursos.map((curso) => ({
                 id: curso.id,
-                busca: textoBuscavel(curso, secao.label),
+                busca: textoBuscavelDoLivro(curso, secao.label),
                 node: renderCard(curso),
               })),
             }))}
