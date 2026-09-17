@@ -95,30 +95,76 @@ function acharCabecalhos(aulas) {
   // Conta em quantas AULAS DISTINTAS o bloco aparece, não quantas vezes ao todo.
   // Cabeçalho corrido atravessa o livro inteiro; título de seção repete dentro
   // de um capítulo só ("A PERSPECTIVA DO NOIVO" repetia 4x e era do autor).
+  // Duas condições, e as duas importam. Cabeçalho corrido repete MUITO dentro de
+  // uma mesma aula (uma vez por página) E atravessa várias aulas. Rótulo
+  // estrutural de obra de referência ("DIVISÃO", "EXPOSIÇÃO", no Spurgeon)
+  // também atravessa várias aulas, mas aparece uma ou duas vezes em cada — e é
+  // do autor, não da diagramação. Só a primeira condição apagava 148 deles.
   const emAulas = new Map();
+  const maxNaAula = new Map();
   for (const a of aulas) {
-    for (const p of new Set(a.conteudo.split(/\n{2,}/).map((x) => x.trim()))) {
+    const cont = new Map();
+    for (const p of a.conteudo.split(/\n{2,}/).map((x) => x.trim())) {
       // Sem letra nenhuma = separador do autor (***, ———), nunca cabeçalho,
       // por mais que repita ao longo do livro.
       if (!p || p.length > 60 || p.includes("•")) continue;
       if (!/[A-Za-zÀ-ÿ]/.test(p)) continue;
+      cont.set(p, (cont.get(p) || 0) + 1);
+    }
+    for (const [p, n] of cont) {
       emAulas.set(p, (emAulas.get(p) || 0) + 1);
+      maxNaAula.set(p, Math.max(maxNaAula.get(p) || 0, n));
     }
   }
-  return new Set([...emAulas].filter(([, n]) => n >= 4).map(([s]) => s));
+  return new Set(
+    [...emAulas]
+      .filter(([p, n]) => n >= 4 && (maxNaAula.get(p) || 0) >= 3)
+      .map(([p]) => p)
+  );
 }
 
 // Número de página solto. NÃO casa separador do autor (***, ———): esses são
 // dele e precisam sobreviver, então exige pelo menos um dígito.
+// Mobiliário de página: o bloco em caixa alta é repetição do título do livro
+// ou da mesa, geralmente com o número da página grudado ("14 BATALHAESPIRITUAL").
+// Casamento por conteúdo (substring), não por semelhança difusa — difuso a 0,62
+// começou a marcar título de seção legítimo do autor.
+function soLetras(s) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+}
+function ehMobiliario(bloco, tituloLivro, tituloAula) {
+  const b = soLetras(bloco);
+  if (b.length < 3) return false;
+  for (const ref of [soLetras(tituloLivro || ""), soLetras(tituloAula || "")]) {
+    if (ref.length < 6) continue;
+    if (b.includes(ref) || ref.includes(b)) return true;
+  }
+  return false;
+}
+
 const SO_NUMERO = /^(?=[^0-9]*[0-9])[\s\d.·—–\-_“”"']*$/;
 
-function faxina(conteudo, cabecalhos) {
+// Bloco curto, em caixa alta, sem minúscula — é como o leitor detecta título.
+function ehTituloCaixaAlta(p) {
+  const t = p.trim();
+  if (t.length < 2 || t.length > 70 || t.startsWith("•")) return false;
+  if (/[a-zàáâãäçéêëíîïóôõöúûü]/.test(t)) return false;
+  return /[A-ZÀÁÂÃÄÇÉÊËÍÎÏÓÔÕÖÚÛÜ]/.test(t);
+}
+
+function faxina(conteudo, cabecalhos, tituloLivro, tituloAula) {
   let t = corrigirIMaiusculo(normalizarChars(conteudo));
   t = rejuntarHifen(t);
   let paragrafos = t
     .split(/\n{2,}/)
     .map((p) => limparEspacos(p.replace(/\n/g, " ")))
-    .filter((p) => p && !SO_NUMERO.test(p) && !cabecalhos.has(p));
+    .filter(
+      (p) =>
+        p &&
+        !SO_NUMERO.test(p) &&
+        !cabecalhos.has(p) &&
+        !(ehTituloCaixaAlta(p) && ehMobiliario(p, tituloLivro, tituloAula))
+    );
   paragrafos = juntarParagrafosFalsos(paragrafos);
   return paragrafos.join("\n\n");
 }
@@ -140,7 +186,7 @@ for (const [slug, lista] of [...porLivro].sort()) {
   const cabecalhos = acharCabecalhos(lista);
   let dChars = 0, dParag = 0, n = 0;
   for (const a of lista) {
-    const limpo = faxina(a.conteudo, cabecalhos);
+    const limpo = faxina(a.conteudo, cabecalhos, a.curso_titulo || "", a.titulo || "");
     if (limpo === a.conteudo) continue;
     n++; mudadas++;
     dChars += limpo.length - a.conteudo.length;
