@@ -34,6 +34,13 @@ type Props = {
   placeholder?: string;
   /** Singular/plural do que está sendo contado. */
   substantivo?: { singular: string; plural: string };
+  /**
+   * Conteúdo que fica ENTRE o campo e a vitrine (atalhos, leitura em
+   * andamento, estante de lidos). Some enquanto a busca está ativa: quem
+   * digitou precisa ver o resultado logo abaixo do campo, não três telas
+   * adiante. Fora da busca, a página fica na ordem de sempre.
+   */
+  antes?: ReactNode;
 };
 
 const CLASSES_GRADE =
@@ -45,6 +52,7 @@ export function BuscaLivros({
   layout = "grade",
   placeholder = "Buscar livro por título ou autor…",
   substantivo = { singular: "livro", plural: "livros" },
+  antes,
 }: Props) {
   const [consulta, setConsulta] = useState("");
   const campo = useRef<HTMLInputElement>(null);
@@ -149,22 +157,25 @@ export function BuscaLivros({
           </Container>
         )
       ) : (
-        <div className={layout === "grade" ? "space-y-14" : "space-y-10"}>
-          {grupos.map((grupo) => (
-            <section key={grupo.label}>
-              {/* Rótulo vazio = lista sem seção (o painel do master já tem o
+        <>
+          {antes}
+          <div className={layout === "grade" ? "space-y-14" : "space-y-10"}>
+            {grupos.map((grupo) => (
+              <section key={grupo.label}>
+                {/* Rótulo vazio = lista sem seção (o painel do master já tem o
                   título da página logo acima; repetir viraria eco). */}
-              {grupo.label && (
-                <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
-                  {grupo.label}
-                </h2>
-              )}
-              <Container className={classesContainer}>
-                {grupo.itens.map((item) => item.node)}
-              </Container>
-            </section>
-          ))}
-        </div>
+                {grupo.label && (
+                  <h2 className="mb-6 font-serif text-2xl font-semibold text-mesa-900">
+                    {grupo.label}
+                  </h2>
+                )}
+                <Container className={classesContainer}>
+                  {grupo.itens.map((item) => item.node)}
+                </Container>
+              </section>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
