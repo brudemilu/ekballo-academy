@@ -4,10 +4,14 @@
 // Idempotente: cria o curso se não existir, senão atualiza; pula aulas já existentes por ordem.
 
 import { readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
+const envFile = process.env.IMPORT_ENV_FILE
+  ? resolve(process.cwd(), process.env.IMPORT_ENV_FILE)
+  : new URL("../.env.local", import.meta.url);
 const env = Object.fromEntries(
-  readFileSync(new URL("../.env.local", import.meta.url), "utf8")
+  readFileSync(envFile, "utf8")
     .split("\n")
     .filter((l) => l.includes("=") && !l.trim().startsWith("#"))
     .map((l) => {
