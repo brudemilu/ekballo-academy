@@ -8,6 +8,7 @@ import {
   type ItemLeitura,
 } from "@/components/ContinuandoLeitura";
 import { Logo } from "@/components/Logo";
+import { NovidadesEstante } from "@/components/NovidadesEstante";
 import { SeloOffline } from "@/components/SeloOffline";
 import UltimasRespostasLista from "@/components/UltimasRespostasLista";
 import { textoBuscavelDoLivro } from "@/lib/busca";
@@ -22,6 +23,7 @@ import {
   listProgressoLeitura,
   listRecentRespostas,
 } from "@/lib/db";
+import { livrosRecentes, rotuloDeChegada } from "@/lib/novidades";
 
 // "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena".
 function greetingName(nome?: string | null): string {
@@ -276,6 +278,18 @@ export default async function AdminPage() {
       )}
 
       <ContinuandoLeitura itens={emLeitura} />
+
+      {/* Recém-chegados: o master vê aqui o resultado das levas que subiu.
+          Fica depois do alerta de devolutivas — trabalho pastoral pendente
+          vem antes de novidade — e some sozinho quando não houve entrada. */}
+      <NovidadesEstante
+        estilo="compacto"
+        itens={livrosRecentes(cursos).map((curso) => ({
+          id: curso.id,
+          node: renderCardCurso(curso),
+          rotulo: rotuloDeChegada(curso.created_at),
+        }))}
+      />
 
       <div className="mb-8 grid gap-3 lg:grid-cols-3">
         {[
