@@ -3,6 +3,19 @@
 // imagem OG 16:9. Mantém em sincronia com os `livroUrl` de
 // app/api/og/curso/[slug]/route.tsx.
 export const CAPA_LIVRO: Record<string, string> = {
+  "oito-maneiras-de-manter-o-diabo-debaixo-dos-seus-pes":
+    "/capas/oito-maneiras-de-manter-o-diabo-debaixo-dos-seus-pes.jpg",
+  "a-criacao-de-filhos-no-poder-do-evangelho":
+    "/capas/a-criacao-de-filhos-no-poder-do-evangelho.jpg",
+  "ideologia-de-genero": "/capas/ideologia-de-genero.jpg",
+  "jesus-a-vida-completa": "/capas/jesus-a-vida-completa.jpg",
+  "que-bom-se-meu-marido-orasse-comigo":
+    "/capas/que-bom-se-meu-marido-orasse-comigo.jpg",
+  "o-que-voce-precisa-saber-sobre-batalha-espiritual":
+    "/capas/o-que-voce-precisa-saber-sobre-batalha-espiritual.jpg",
+  "servir-ou-ser-visto": "/capas/servir-ou-ser-visto.jpg",
+  "sexualidade-sem-censura": "/capas/sexualidade-sem-censura.jpg",
+  "tempestade-a-vista": "/capas/tempestade-a-vista.jpg",
   "a-busca-da-santidade": "/capas/a-busca-da-santidade.jpg",
   "o-cristao-e-a-cultura": "/capas/o-cristao-e-a-cultura.jpg",
   "imitacao-de-cristo": "/capas/imitacao-de-cristo.jpg",

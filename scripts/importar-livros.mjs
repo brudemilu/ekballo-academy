@@ -3,7 +3,7 @@
 // Sem args, importa todos os JSONs da pasta.
 // Idempotente: cria o curso se não existir, senão atualiza; pula aulas já existentes por ordem.
 
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
 const env = Object.fromEntries(
@@ -12,8 +12,14 @@ const env = Object.fromEntries(
     .filter((l) => l.includes("=") && !l.trim().startsWith("#"))
     .map((l) => {
       const i = l.indexOf("=");
-      return [l.slice(0, i).trim(), l.slice(i + 1).trim()];
-    })
+      return [
+        l.slice(0, i).trim(),
+        l
+          .slice(i + 1)
+          .trim()
+          .replace(/^['"]|['"]$/g, ""),
+      ];
+    }),
 );
 const url = env.NEXT_PUBLIC_SUPABASE_URL;
 const key = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -24,7 +30,9 @@ const dir = new URL("../tmp/livros/", import.meta.url);
 const args = process.argv.slice(2);
 const slugs = args.length
   ? args
-  : readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => f.replace(/\.json$/, ""));
+  : readdirSync(dir)
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => f.replace(/\.json$/, ""));
 
 function descricao(d) {
   const n = d.aulas.length;
@@ -34,7 +42,11 @@ function descricao(d) {
 
 for (const slug of slugs) {
   const d = JSON.parse(readFileSync(new URL(`${slug}.json`, dir), "utf8"));
-  let { data: curso } = await db.from("cursos").select("id").eq("slug", slug).maybeSingle();
+  let { data: curso } = await db
+    .from("cursos")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
   const campos = {
     titulo: d.titulo,
     descricao: descricao(d),
@@ -43,7 +55,12 @@ for (const slug of slugs) {
     publicado: true,
   };
   if (!curso) {
-    const { data: max } = await db.from("cursos").select("ordem").order("ordem", { ascending: false }).limit(1).maybeSingle();
+    const { data: max } = await db
+      .from("cursos")
+      .select("ordem")
+      .order("ordem", { ascending: false })
+      .limit(1)
+      .maybeSingle();
     const nextOrdem = (max?.ordem ?? 0) + 1;
     const { data, error } = await db
       .from("cursos")
@@ -59,10 +76,20 @@ for (const slug of slugs) {
     console.log(`• atualizado: ${slug}  ${d.aulas.length} aulas`);
   }
   for (const a of d.aulas) {
-    const { data: aula } = await db.from("aulas").select("id").eq("curso_id", curso.id).eq("ordem", a.ordem).maybeSingle();
+    const { data: aula } = await db
+      .from("aulas")
+      .select("id")
+      .eq("curso_id", curso.id)
+      .eq("ordem", a.ordem)
+      .maybeSingle();
     if (aula) continue;
     // Postgres não aceita byte NULL nem caracteres de controle em text; limpa antes.
-    const conteudo = a.conteudo.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "");
+    const conteudo = Array.from(a.conteudo)
+      .filter((char) => {
+        const code = char.charCodeAt(0);
+        return code === 9 || code === 10 || code === 13 || code >= 32;
+      })
+      .join("");
     const { error } = await db
       .from("aulas")
       .insert({ curso_id: curso.id, titulo: a.titulo, ordem: a.ordem, conteudo });
