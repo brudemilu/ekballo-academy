@@ -3,6 +3,35 @@
 // imagem OG 16:9. Mantém em sincronia com os `livroUrl` de
 // app/api/og/curso/[slug]/route.tsx.
 export const CAPA_LIVRO: Record<string, string> = {
+  "a-experiencia-da-mesa": "/capas/a-experiencia-da-mesa.jpg",
+  "mais-forte-e-corajosa": "/capas/mais-forte-e-corajosa.jpg",
+  "cartas-de-c-s-lewis": "/capas/cartas-de-c-s-lewis.jpg",
+  "mulheres-improvaveis": "/capas/mulheres-improvaveis.jpg",
+  "mulheres-enraizadas": "/capas/mulheres-enraizadas.jpg",
+  "a-escolha-do-verao": "/capas/a-escolha-do-verao.jpg",
+  "o-poder-das-palavras": "/capas/o-poder-das-palavras.jpg",
+  "o-deus-que-se-revela": "/capas/o-deus-que-se-revela.jpg",
+  "o-coracao-e-a-mente-do-lider": "/capas/o-coracao-e-a-mente-do-lider.jpg",
+  "marido-assuma-sua-culpa": "/capas/marido-assuma-sua-culpa.jpg",
+  "quero-casar-certo": "/capas/quero-casar-certo.jpg",
+  "o-poder-do-evangelho-e-sua-mensagem":
+    "/capas/o-poder-do-evangelho-e-sua-mensagem.jpg",
+  "prepare-se-para-a-guerra": "/capas/prepare-se-para-a-guerra.jpg",
+  louvor: "/capas/louvor.jpg",
+  "uma-mulher-sabia": "/capas/uma-mulher-sabia.jpg",
+  "nao-tenho-fe-suficiente-para-ser-ateu":
+    "/capas/nao-tenho-fe-suficiente-para-ser-ateu.jpg",
+  "o-sentido-ultimo-da-verdadeira-feminilidade":
+    "/capas/o-sentido-ultimo-da-verdadeira-feminilidade.jpg",
+  "oracao-e-batalha-espiritual": "/capas/oracao-e-batalha-espiritual.jpg",
+  "um-jovem-segundo-o-coracao-de-deus": "/capas/um-jovem-segundo-o-coracao-de-deus.jpg",
+  "senhor-ensina-nos-a-orar": "/capas/senhor-ensina-nos-a-orar.jpg",
+  "lideranca-inspiracao-cada-dia": "/capas/lideranca-inspiracao-cada-dia.jpg",
+  "o-poder-da-esposa-que-ora": "/capas/o-poder-da-esposa-que-ora.jpg",
+  "os-tesouros-de-davi-volume-2": "/capas/os-tesouros-de-davi-volume-2.jpg",
+  "sete-necessidades-basicas-da-crianca":
+    "/capas/sete-necessidades-basicas-da-crianca.jpg",
+  "a-visao-de-ossos-secos": "/capas/a-visao-de-ossos-secos.jpg",
   "oito-maneiras-de-manter-o-diabo-debaixo-dos-seus-pes":
     "/capas/oito-maneiras-de-manter-o-diabo-debaixo-dos-seus-pes.jpg",
   "a-criacao-de-filhos-no-poder-do-evangelho":
