@@ -79,6 +79,7 @@ function juntarParagrafosFalsos(paragrafos) {
     const ant = out[out.length - 1];
     if (!ant) { out.push(p); continue; }
     const comecaMinuscula = /^[a-zà-ÿ]/.test(p);
+    if (p.startsWith("•") || ant.includes("•")) { out.push(p); continue; }
     const terminaAberto = !FIM_DE_FRASE.test(ant);
     if (comecaMinuscula && terminaAberto && !pareceTitulo(ant)) {
       out[out.length - 1] = ant.endsWith("-") ? ant.slice(0, -1) + p : `${ant} ${p}`;
@@ -91,18 +92,25 @@ function juntarParagrafosFalsos(paragrafos) {
 
 // Cabeçalho corrido: parágrafo curto que se repete ao longo do livro inteiro.
 function acharCabecalhos(aulas) {
-  const freq = new Map();
+  // Conta em quantas AULAS DISTINTAS o bloco aparece, não quantas vezes ao todo.
+  // Cabeçalho corrido atravessa o livro inteiro; título de seção repete dentro
+  // de um capítulo só ("A PERSPECTIVA DO NOIVO" repetia 4x e era do autor).
+  const emAulas = new Map();
   for (const a of aulas) {
-    for (const p of a.conteudo.split(/\n{2,}/)) {
-      const s = p.trim();
-      if (!s || s.length > 60) continue;
-      freq.set(s, (freq.get(s) || 0) + 1);
+    for (const p of new Set(a.conteudo.split(/\n{2,}/).map((x) => x.trim()))) {
+      // Sem letra nenhuma = separador do autor (***, ———), nunca cabeçalho,
+      // por mais que repita ao longo do livro.
+      if (!p || p.length > 60 || p.includes("•")) continue;
+      if (!/[A-Za-zÀ-ÿ]/.test(p)) continue;
+      emAulas.set(p, (emAulas.get(p) || 0) + 1);
     }
   }
-  return new Set([...freq].filter(([, n]) => n >= 4).map(([s]) => s));
+  return new Set([...emAulas].filter(([, n]) => n >= 4).map(([s]) => s));
 }
 
-const SO_NUMERO = /^[\s\d.·—–\-_“”"'*]*$/;
+// Número de página solto. NÃO casa separador do autor (***, ———): esses são
+// dele e precisam sobreviver, então exige pelo menos um dígito.
+const SO_NUMERO = /^(?=[^0-9]*[0-9])[\s\d.·—–\-_“”"']*$/;
 
 function faxina(conteudo, cabecalhos) {
   let t = corrigirIMaiusculo(normalizarChars(conteudo));
