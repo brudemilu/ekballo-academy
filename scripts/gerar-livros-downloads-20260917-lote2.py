@@ -113,11 +113,19 @@ def page_heading(page: str) -> str | None:
         # titulos. Nos PDFs desta leva os marcadores reais começam em maiuscula.
         if re.match(r"(?i)^(?:cap[ií]tulo|parte)\b", candidate) and not candidate[:1].isupper():
             continue
+        if re.match(r"(?i)^cap[ií]tulo\s+\d+[.:]", candidate) and len(candidate) > 30:
+            continue
         if len(candidate) <= 120 and HEADING.match(candidate):
             # Cabecalhos genericos ganham o subtitulo logo abaixo, quando houver.
             if re.match(r"(?i)^(?:cap[ií]tulo|parte|dia|princ[ií]pio)\b", candidate):
                 for next_line in lines[index + 1 : index + 5]:
-                    if 3 <= len(next_line) <= 95 and not re.fullmatch(r"\d+", next_line):
+                    if (
+                        6 <= len(simplify(next_line))
+                        and len(next_line) <= 70
+                        and len(next_line.split()) <= 8
+                        and not next_line.endswith((".", ";"))
+                        and not re.fullmatch(r"\d+", next_line)
+                    ):
                         if simplify(next_line) != simplify(candidate):
                             return f"{candidate} — {next_line}"
             return candidate
@@ -180,14 +188,14 @@ def make_groups(pages: list[str], start: int, end: int | None, max_pages: int, m
         found = page_heading(page)
         if len(text) < 80:
             if found:
-                if current and len(current) >= 2:
+                if current and chars >= 800:
                     flush()
                 heading = found
                 if text:
                     current.append(text)
                     chars += len(text)
             continue
-        if current and found and len(current) >= 2:
+        if current and found and chars >= 800:
             flush()
         elif current and (len(current) >= max_pages or chars + len(text) > max_chars):
             flush()
@@ -197,12 +205,23 @@ def make_groups(pages: list[str], start: int, end: int | None, max_pages: int, m
         chars += len(text)
     flush()
 
-    # Fragmentos curtos no final pertencem a aula anterior.
-    if len(groups) > 1 and sum(len(p) for p in groups[-1][1]) < 1500:
-        last_heading, last_pages = groups.pop()
-        previous_heading, previous_pages = groups[-1]
-        groups[-1] = (previous_heading or last_heading, previous_pages + last_pages)
-    return groups
+    # Paginas divisorias e aberturas de capitulo podem ter apenas um titulo.
+    # Une qualquer fragmento curto a aula seguinte (ou a anterior, se for o
+    # ultimo), preservando o marcador estrutural sem criar aula vazia.
+    merged: list[tuple[str | None, list[str]]] = []
+    pending = list(groups)
+    while pending:
+        group_heading, group_pages = pending.pop(0)
+        if sum(len(part) for part in group_pages) < 1500 and pending:
+            next_heading, next_pages = pending[0]
+            pending[0] = (group_heading or next_heading, group_pages + next_pages)
+            continue
+        if sum(len(part) for part in group_pages) < 1500 and merged:
+            previous_heading, previous_pages = merged[-1]
+            merged[-1] = (previous_heading or group_heading, previous_pages + group_pages)
+            continue
+        merged.append((group_heading, group_pages))
+    return merged
 
 
 def render_cover(pdf: Path, slug: str) -> None:
