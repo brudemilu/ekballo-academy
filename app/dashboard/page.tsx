@@ -8,6 +8,7 @@ import {
   type ItemLeitura,
 } from "@/components/ContinuandoLeitura";
 import { Logo } from "@/components/Logo";
+import { NovidadesEstante } from "@/components/NovidadesEstante";
 import { SeloOffline } from "@/components/SeloOffline";
 import { UserMenu } from "@/components/UserMenu";
 import { contarAnotacoes } from "@/lib/anotacoes";
@@ -23,6 +24,7 @@ import {
 } from "@/lib/db";
 import { getDevocionalDoDia } from "@/lib/devocionais";
 import { getProximaLicao, getStreak } from "@/lib/english";
+import { livrosRecentes, rotuloDeChegada } from "@/lib/novidades";
 import { podeUsarCaderno, podeUsarEnglish, podeVerAgenda } from "@/lib/permissoes";
 
 // Mostra "Pr. Bruno" para "Pr. Bruno Fernandes" / "Maria" para "Maria Helena Andrade"
@@ -292,6 +294,19 @@ export default async function DashboardPage() {
   // sem busca, a ordem da página continua a mesma de sempre (#88).
   const blocosAcimaDaVitrine = (
     <>
+      {/* Recém-chegados, logo abaixo do campo de busca: é destaque, e some
+          sozinho quando não houve entrada na semana — por isso pode ficar
+          acima dos atalhos sem tomar espaço permanente de ninguém.
+          `cursos` já vem filtrado pela matrícula, então a faixa não mostra
+          livro que a pessoa não veria na vitrine. */}
+      <NovidadesEstante
+        itens={livrosRecentes(cursos).map((curso) => ({
+          id: curso.id,
+          node: renderCard(curso),
+          rotulo: rotuloDeChegada(curso.created_at),
+        }))}
+      />
+
       {/* Atalhos: caderno + agenda + devocional + english (accent bar + botão circular) */}
       <div className="mb-14 grid gap-5 lg:grid-cols-2">
         {/* Meu caderno — espaço de escrita livre, privado de cada um.

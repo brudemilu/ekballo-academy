@@ -171,22 +171,32 @@ export default async function AulaPage({
             />
           )}
 
-          {materialUrl && (
-            <a
-              href={materialUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mb-8 flex items-start gap-3 rounded-xl border border-laranja-200 bg-laranja-50 p-4 transition hover:border-laranja-300 hover:bg-laranja-100"
-            >
-              <span className="text-2xl leading-none">📖</span>
-              <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-[0.2em] text-laranja-600">
-                  Material complementar
-                </p>
-                <p className="mt-0.5 text-sm font-medium text-mesa-800">Baixar PDF →</p>
-              </div>
-            </a>
-          )}
+          {/* Anexo da mesa. Fica em AZUL, fora da paleta quente do site, porque
+              no laranja ele se confundia com o resto e o Bruno não o achava.
+              O rótulo diz o que o arquivo é: slide de aula não é "material
+              complementar", é o que se projeta no encontro. */}
+          {materialUrl &&
+            (() => {
+              const ehSlide = (aula.material_url ?? "").includes("slides");
+              return (
+                <a
+                  href={materialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mb-8 flex items-center gap-4 rounded-xl border-2 border-sky-300 bg-sky-50 p-5 shadow-sm transition hover:border-sky-400 hover:bg-sky-100 hover:shadow"
+                >
+                  <span className="text-3xl leading-none">{ehSlide ? "🖥️" : "📖"}</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
+                      {ehSlide ? "Slides da aula" : "Material complementar"}
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-sky-900">
+                      {ehSlide ? "Abrir a apresentação em PDF →" : "Baixar PDF →"}
+                    </p>
+                  </div>
+                </a>
+              );
+            })()}
 
           {aula.video_url && (
             <div className="mb-8 aspect-video overflow-hidden rounded-xl bg-mesa-900">

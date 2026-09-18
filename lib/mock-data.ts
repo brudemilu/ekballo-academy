@@ -3,9 +3,13 @@
 // Ativado quando NEXT_PUBLIC_MOCK_MODE=true (padrão em .env.local)
 // =============================================================
 
-import type { Profile, Curso, Aula, Atividade, Alternativa } from "@/lib/types";
+import {
+  EGO_ALTERNATIVAS,
+  EGO_MCS,
+  EGO_REFLEXOES,
+} from "@/lib/ego-transformado-atividades";
 import { EGO_K1, EGO_K2, EGO_K3, EGO_K4 } from "@/lib/ego-transformado-content";
-import { EGO_REFLEXOES, EGO_MCS, EGO_ALTERNATIVAS } from "@/lib/ego-transformado-atividades";
+import type { Alternativa, Atividade, Aula, Curso, Profile } from "@/lib/types";
 
 export const MOCK_USER_ID = "mock-lucas";
 
@@ -22,15 +26,84 @@ export const MOCK_PROFILE: Profile = {
 
 export const MOCK_ALUNOS: Profile[] = [
   MOCK_PROFILE,
-  { id: "aluno-1b", nome: "Lucas Fernandes (Cowork)", email: "iabolsa@bmbr.com.br", telefone: "5511999990002", is_admin: false, turma: "Mesa 01", created_at: "2026-04-02T08:00:00Z" },
-  { id: "aluno-2", nome: "Maria Helena Andrade", email: "maria.helena@email.com", telefone: "5511999990003", is_admin: false, turma: "Mesa 01", created_at: "2026-04-08T14:21:00Z" },
-  { id: "aluno-3", nome: "João Pedro Costa", email: "joao.pedro@email.com", telefone: "5511999990004", is_admin: false, turma: "Mesa 01", created_at: "2026-04-10T09:05:00Z" },
-  { id: "aluno-4", nome: "Beatriz Souza", email: "beatriz.souza@email.com", telefone: "5511999990005", is_admin: false, turma: "Mesa 02", created_at: "2026-04-15T20:30:00Z" },
-  { id: "aluno-5", nome: "Pedro Henrique", email: "pedro.h@email.com", telefone: null, is_admin: false, turma: "Mesa 02", created_at: "2026-04-18T07:14:00Z" },
-  { id: "aluno-6", nome: "Camila Ribeiro", email: "camila.ribeiro@email.com", telefone: "5511999990007", is_admin: false, turma: "Mesa 02", created_at: "2026-04-20T16:42:00Z" },
-  { id: "aluno-7", nome: "Lucas Fernandes (cadastro)", email: "lucas.f@email.com", telefone: "5511999990008", is_admin: false, turma: "Mesa 03", created_at: "2026-05-02T11:30:00Z" },
-  { id: "aluno-8", nome: "Ana Caroline", email: "ana.c@email.com", telefone: null, is_admin: false, turma: "Mesa 03", created_at: "2026-05-09T08:00:00Z" },
+  {
+    id: "aluno-1b",
+    nome: "Lucas Fernandes (Cowork)",
+    email: "iabolsa@bmbr.com.br",
+    telefone: "5511999990002",
+    is_admin: false,
+    turma: "Mesa 01",
+    created_at: "2026-04-02T08:00:00Z",
+  },
+  {
+    id: "aluno-2",
+    nome: "Maria Helena Andrade",
+    email: "maria.helena@email.com",
+    telefone: "5511999990003",
+    is_admin: false,
+    turma: "Mesa 01",
+    created_at: "2026-04-08T14:21:00Z",
+  },
+  {
+    id: "aluno-3",
+    nome: "João Pedro Costa",
+    email: "joao.pedro@email.com",
+    telefone: "5511999990004",
+    is_admin: false,
+    turma: "Mesa 01",
+    created_at: "2026-04-10T09:05:00Z",
+  },
+  {
+    id: "aluno-4",
+    nome: "Beatriz Souza",
+    email: "beatriz.souza@email.com",
+    telefone: "5511999990005",
+    is_admin: false,
+    turma: "Mesa 02",
+    created_at: "2026-04-15T20:30:00Z",
+  },
+  {
+    id: "aluno-5",
+    nome: "Pedro Henrique",
+    email: "pedro.h@email.com",
+    telefone: null,
+    is_admin: false,
+    turma: "Mesa 02",
+    created_at: "2026-04-18T07:14:00Z",
+  },
+  {
+    id: "aluno-6",
+    nome: "Camila Ribeiro",
+    email: "camila.ribeiro@email.com",
+    telefone: "5511999990007",
+    is_admin: false,
+    turma: "Mesa 02",
+    created_at: "2026-04-20T16:42:00Z",
+  },
+  {
+    id: "aluno-7",
+    nome: "Lucas Fernandes (cadastro)",
+    email: "lucas.f@email.com",
+    telefone: "5511999990008",
+    is_admin: false,
+    turma: "Mesa 03",
+    created_at: "2026-05-02T11:30:00Z",
+  },
+  {
+    id: "aluno-8",
+    nome: "Ana Caroline",
+    email: "ana.c@email.com",
+    telefone: null,
+    is_admin: false,
+    turma: "Mesa 03",
+    created_at: "2026-05-09T08:00:00Z",
+  },
 ];
+
+// Datas de entrada relativas ao "hoje" de quem abre a demonstração: a faixa de
+// recém-chegados (issue #157) precisa ter o que mostrar. Com data fixa, o modo
+// demonstração deixaria de exibir a faixa uma semana depois de escrita.
+const diasAtras = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 
 export const MOCK_CURSOS: Curso[] = [
   {
@@ -76,7 +149,7 @@ export const MOCK_CURSOS: Curso[] = [
     publicado: true,
     categoria: "lideranca",
     external_path: null,
-    created_at: "2026-04-20T00:00:00Z",
+    created_at: diasAtras(4),
   },
   {
     id: "curso-4",
@@ -91,28 +164,118 @@ export const MOCK_CURSOS: Curso[] = [
     publicado: true,
     categoria: "discipulado",
     external_path: null,
-    created_at: "2026-05-14T00:00:00Z",
+    created_at: diasAtras(1),
   },
 ];
 
 export const MOCK_AULAS: Aula[] = [
   // Fundamentos do Discipulado (12 aulas) — só os títulos para o índice
-  { id: "aula-8", curso_id: "curso-2", titulo: "Identidade em Cristo: filho antes de servo", ordem: 1, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção. Em breve.", created_at: "2026-04-05T00:00:00Z" },
-  { id: "aula-9", curso_id: "curso-2", titulo: "Vida no Espírito: dependência diária", ordem: 2, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
-  { id: "aula-10", curso_id: "curso-2", titulo: "Comunidade comprometida: para além do grupo", ordem: 3, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
-  { id: "aula-11", curso_id: "curso-2", titulo: "Missão integral: a fé que age", ordem: 4, video_url: null, material_url: null, conteudo: "Conteúdo desta aula em construção.", created_at: "2026-04-05T00:00:00Z" },
+  {
+    id: "aula-8",
+    curso_id: "curso-2",
+    titulo: "Identidade em Cristo: filho antes de servo",
+    ordem: 1,
+    video_url: null,
+    material_url: null,
+    conteudo: "Conteúdo desta aula em construção. Em breve.",
+    created_at: "2026-04-05T00:00:00Z",
+  },
+  {
+    id: "aula-9",
+    curso_id: "curso-2",
+    titulo: "Vida no Espírito: dependência diária",
+    ordem: 2,
+    video_url: null,
+    material_url: null,
+    conteudo: "Conteúdo desta aula em construção.",
+    created_at: "2026-04-05T00:00:00Z",
+  },
+  {
+    id: "aula-10",
+    curso_id: "curso-2",
+    titulo: "Comunidade comprometida: para além do grupo",
+    ordem: 3,
+    video_url: null,
+    material_url: null,
+    conteudo: "Conteúdo desta aula em construção.",
+    created_at: "2026-04-05T00:00:00Z",
+  },
+  {
+    id: "aula-11",
+    curso_id: "curso-2",
+    titulo: "Missão integral: a fé que age",
+    ordem: 4,
+    video_url: null,
+    material_url: null,
+    conteudo: "Conteúdo desta aula em construção.",
+    created_at: "2026-04-05T00:00:00Z",
+  },
   // Envio (4 módulos)
-  { id: "aula-12", curso_id: "curso-3", titulo: "Liderança pastoral: cuidar antes de gerenciar", ordem: 1, video_url: null, material_url: null, conteudo: "Conteúdo do curso pago em construção.", created_at: "2026-04-20T00:00:00Z" },
+  {
+    id: "aula-12",
+    curso_id: "curso-3",
+    titulo: "Liderança pastoral: cuidar antes de gerenciar",
+    ordem: 1,
+    video_url: null,
+    material_url: null,
+    conteudo: "Conteúdo do curso pago em construção.",
+    created_at: "2026-04-20T00:00:00Z",
+  },
   // ===== Ego Transformado (Keller) — 4 aulas =====
-  { id: "k-aula-1", curso_id: "curso-4", titulo: "Introdução: A liberdade resultante do autoesquecimento", ordem: 1, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K1, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-2", curso_id: "curso-4", titulo: "A condição natural do ego humano", ordem: 2, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K2, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-3", curso_id: "curso-4", titulo: "A visão transformada do eu", ordem: 3, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K3, created_at: "2026-05-14T00:00:00Z" },
-  { id: "k-aula-4", curso_id: "curso-4", titulo: "Como alcançar uma visão transformada do eu", ordem: 4, video_url: null, material_url: "ego-transformado-keller/livro-completo.pdf", conteudo: EGO_K4, created_at: "2026-05-14T00:00:00Z" },
+  {
+    id: "k-aula-1",
+    curso_id: "curso-4",
+    titulo: "Introdução: A liberdade resultante do autoesquecimento",
+    ordem: 1,
+    video_url: null,
+    material_url: "ego-transformado-keller/livro-completo.pdf",
+    conteudo: EGO_K1,
+    created_at: "2026-05-14T00:00:00Z",
+  },
+  {
+    id: "k-aula-2",
+    curso_id: "curso-4",
+    titulo: "A condição natural do ego humano",
+    ordem: 2,
+    video_url: null,
+    material_url: "ego-transformado-keller/livro-completo.pdf",
+    conteudo: EGO_K2,
+    created_at: "2026-05-14T00:00:00Z",
+  },
+  {
+    id: "k-aula-3",
+    curso_id: "curso-4",
+    titulo: "A visão transformada do eu",
+    ordem: 3,
+    video_url: null,
+    material_url: "ego-transformado-keller/livro-completo.pdf",
+    conteudo: EGO_K3,
+    created_at: "2026-05-14T00:00:00Z",
+  },
+  {
+    id: "k-aula-4",
+    curso_id: "curso-4",
+    titulo: "Como alcançar uma visão transformada do eu",
+    ordem: 4,
+    video_url: null,
+    material_url: "ego-transformado-keller/livro-completo.pdf",
+    conteudo: EGO_K4,
+    created_at: "2026-05-14T00:00:00Z",
+  },
 ];
 
 export const MOCK_ATIVIDADES: Atividade[] = [
   // Aula 8 - Fundamentos (placeholder do mock — atv-8 sobrevive porque tem resposta r-12)
-  { id: "atv-8", aula_id: "aula-8", pergunta: "O que muda quando você se entende primeiro filho, depois servo? Onde isso ainda não desceu na sua vida prática?", ordem: 1, tipo: "reflexao", razao: null, created_at: "2026-04-05T00:00:00Z" },
+  {
+    id: "atv-8",
+    aula_id: "aula-8",
+    pergunta:
+      "O que muda quando você se entende primeiro filho, depois servo? Onde isso ainda não desceu na sua vida prática?",
+    ordem: 1,
+    tipo: "reflexao",
+    razao: null,
+    created_at: "2026-04-05T00:00:00Z",
+  },
 
   // ====== EGO TRANSFORMADO — 2 reflexões + 10 MCs por capítulo (de lib/ego-transformado-atividades.ts) ======
   ...EGO_REFLEXOES,
@@ -134,33 +297,67 @@ export type MockResposta = {
 
 export const MOCK_RESPOSTAS: MockResposta[] = [
   {
-    id: "r-12", atividade_id: "atv-8", aluno_id: "aluno-4",
-    texto: "Quando entendo que sou filha primeiro, paro de tentar 'merecer' aprovação. O lugar onde isso ainda não desceu é no trabalho — continuo me esforçando demais para provar que sou competente. A insegurança da identidade aparece ali.",
-    comentario_lider: "Beatriz, esse é um dos discernimentos mais importantes da vida cristã. Quando o trabalho deixa de ser palco de aprovação e vira lugar de serviço, muita coisa muda. Sugestão: ore essa semana especificamente sobre o trabalho. Veja o que muda.",
+    id: "r-12",
+    atividade_id: "atv-8",
+    aluno_id: "aluno-4",
+    texto:
+      "Quando entendo que sou filha primeiro, paro de tentar 'merecer' aprovação. O lugar onde isso ainda não desceu é no trabalho — continuo me esforçando demais para provar que sou competente. A insegurança da identidade aparece ali.",
+    comentario_lider:
+      "Beatriz, esse é um dos discernimentos mais importantes da vida cristã. Quando o trabalho deixa de ser palco de aprovação e vira lugar de serviço, muita coisa muda. Sugestão: ore essa semana especificamente sobre o trabalho. Veja o que muda.",
     comentario_lider_em: "2026-05-13T11:00:00Z",
-    created_at: "2026-05-12T22:00:00Z", updated_at: "2026-05-12T22:00:00Z",
+    created_at: "2026-05-12T22:00:00Z",
+    updated_at: "2026-05-12T22:00:00Z",
   },
 ];
 
 export type MockMatricula = {
-  aluno_id: string; curso_id: string;
-  matriculado_em: string; concluido_em: string | null;
+  aluno_id: string;
+  curso_id: string;
+  matriculado_em: string;
+  concluido_em: string | null;
 };
 
 // Mutable array — server actions de matrícula/desmatrícula adicionam/removem entradas em mock mode.
 export const MOCK_MATRICULAS: MockMatricula[] = [
   // Curso de partida — mock user já matriculado para o dashboard local não abrir vazio.
-  { aluno_id: MOCK_USER_ID, curso_id: "curso-4", matriculado_em: "2026-05-21T10:00:00Z", concluido_em: null },
+  {
+    aluno_id: MOCK_USER_ID,
+    curso_id: "curso-4",
+    matriculado_em: "2026-05-21T10:00:00Z",
+    concluido_em: null,
+  },
   // Demos legadas (cursos placeholder)
-  { aluno_id: "aluno-2", curso_id: "curso-2", matriculado_em: "2026-05-13T20:00:00Z", concluido_em: null },
-  { aluno_id: "aluno-4", curso_id: "curso-2", matriculado_em: "2026-05-12T22:00:00Z", concluido_em: null },
-  { aluno_id: "aluno-6", curso_id: "curso-2", matriculado_em: "2026-05-08T15:35:00Z", concluido_em: null },
+  {
+    aluno_id: "aluno-2",
+    curso_id: "curso-2",
+    matriculado_em: "2026-05-13T20:00:00Z",
+    concluido_em: null,
+  },
+  {
+    aluno_id: "aluno-4",
+    curso_id: "curso-2",
+    matriculado_em: "2026-05-12T22:00:00Z",
+    concluido_em: null,
+  },
+  {
+    aluno_id: "aluno-6",
+    curso_id: "curso-2",
+    matriculado_em: "2026-05-08T15:35:00Z",
+    concluido_em: null,
+  },
   // Envio (curso pago)
-  { aluno_id: "aluno-6", curso_id: "curso-3", matriculado_em: "2026-04-25T10:00:00Z", concluido_em: null },
+  {
+    aluno_id: "aluno-6",
+    curso_id: "curso-3",
+    matriculado_em: "2026-04-25T10:00:00Z",
+    concluido_em: null,
+  },
 ];
 
 export function addMockMatricula(alunoId: string, cursoId: string) {
-  const existe = MOCK_MATRICULAS.some((m) => m.aluno_id === alunoId && m.curso_id === cursoId);
+  const existe = MOCK_MATRICULAS.some(
+    (m) => m.aluno_id === alunoId && m.curso_id === cursoId,
+  );
   if (existe) return;
   MOCK_MATRICULAS.push({
     aluno_id: alunoId,
@@ -171,11 +368,17 @@ export function addMockMatricula(alunoId: string, cursoId: string) {
 }
 
 export function removeMockMatricula(alunoId: string, cursoId: string) {
-  const idx = MOCK_MATRICULAS.findIndex((m) => m.aluno_id === alunoId && m.curso_id === cursoId);
+  const idx = MOCK_MATRICULAS.findIndex(
+    (m) => m.aluno_id === alunoId && m.curso_id === cursoId,
+  );
   if (idx >= 0) MOCK_MATRICULAS.splice(idx, 1);
 }
 
-export const MOCK_PROGRESSO: { aluno_id: string; aula_id: string; concluido_em: string }[] = [];
+export const MOCK_PROGRESSO: {
+  aluno_id: string;
+  aula_id: string;
+  concluido_em: string;
+}[] = [];
 
 // ============== Helpers ==============
 
@@ -188,9 +391,9 @@ export function findCurso(slug: string) {
 }
 
 export function aulasByCurso(cursoId: string) {
-  return MOCK_AULAS
-    .filter((a) => a.curso_id === cursoId)
-    .sort((a, b) => a.ordem - b.ordem);
+  return MOCK_AULAS.filter((a) => a.curso_id === cursoId).sort(
+    (a, b) => a.ordem - b.ordem,
+  );
 }
 
 export function findAula(aulaId: string) {
@@ -198,9 +401,9 @@ export function findAula(aulaId: string) {
 }
 
 export function atividadesByAula(aulaId: string) {
-  return MOCK_ATIVIDADES
-    .filter((a) => a.aula_id === aulaId)
-    .sort((a, b) => a.ordem - b.ordem);
+  return MOCK_ATIVIDADES.filter((a) => a.aula_id === aulaId).sort(
+    (a, b) => a.ordem - b.ordem,
+  );
 }
 
 export function respostasByAluno(alunoId: string) {
@@ -262,23 +465,32 @@ export function setMockLeitura(
 // Map: `${alunoId}::${atividadeId}` → alternativaId
 const MOCK_MC_ANSWERS = new Map<string, string>();
 
-export function setMockMcAnswer(alunoId: string, atividadeId: string, alternativaId: string) {
+export function setMockMcAnswer(
+  alunoId: string,
+  atividadeId: string,
+  alternativaId: string,
+) {
   MOCK_MC_ANSWERS.set(`${alunoId}::${atividadeId}`, alternativaId);
 }
 
-export function getMockMcAnswer(alunoId: string, atividadeId: string): string | undefined {
+export function getMockMcAnswer(
+  alunoId: string,
+  atividadeId: string,
+): string | undefined {
   return MOCK_MC_ANSWERS.get(`${alunoId}::${atividadeId}`);
 }
 
 export function alternativasByAtividade(atividadeId: string): Alternativa[] {
-  return MOCK_ALTERNATIVAS.filter((a) => a.atividade_id === atividadeId).sort((a, b) => a.ordem - b.ordem);
+  return MOCK_ALTERNATIVAS.filter((a) => a.atividade_id === atividadeId).sort(
+    (a, b) => a.ordem - b.ordem,
+  );
 }
 
 // Persiste resposta de reflexão no mock: faz upsert em MOCK_RESPOSTAS
 // para que listRespostasByAluno enxergue e aulaCompleta reconheça como respondida.
 export function setMockReflexao(alunoId: string, atividadeId: string, texto: string) {
   const idx = MOCK_RESPOSTAS.findIndex(
-    (r) => r.aluno_id === alunoId && r.atividade_id === atividadeId
+    (r) => r.aluno_id === alunoId && r.atividade_id === atividadeId,
   );
   const agora = new Date().toISOString();
   if (idx >= 0) {
@@ -313,7 +525,7 @@ export function aulaCompleta(alunoId: string, aulaId: string): boolean {
     } else {
       // reflexao
       const r = MOCK_RESPOSTAS.find(
-        (x) => x.aluno_id === alunoId && x.atividade_id === atv.id
+        (x) => x.aluno_id === alunoId && x.atividade_id === atv.id,
       );
       if (!r?.texto?.trim()) return false;
     }
@@ -430,7 +642,14 @@ export function addMockCompromisso(c: CompromissoMock) {
 }
 export function updateMockCompromisso(
   id: string,
-  patch: { titulo: string; inicio: string; fim: string | null; dia_todo: boolean; local: string | null; nota: string | null },
+  patch: {
+    titulo: string;
+    inicio: string;
+    fim: string | null;
+    dia_todo: boolean;
+    local: string | null;
+    nota: string | null;
+  },
 ) {
   const c = MOCK_COMPROMISSOS.find((x) => x.id === id);
   if (c) Object.assign(c, patch);
