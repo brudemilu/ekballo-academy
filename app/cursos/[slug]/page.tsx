@@ -179,10 +179,13 @@ export default async function CursoPage({
               // lição e, abaixo, as leituras que ele manda ler. Só quando o
               // curso de fato tem leituras é que vale destacar o guia — nos
               // demais, toda mesa é do mesmo nível e nada muda.
-              const ehLeitura = aula.titulo.includes("· Leitura —");
-              const ehGuia = temLeituras && !ehLeitura;
+              // Slides da aula também são subitem da lição: não são leitura do
+              // livro, mas pendem do guia como as leituras pendem.
+              const ehSlide = aula.titulo.includes("· Slides —");
+              const ehSubitem = aula.titulo.includes("· Leitura —") || ehSlide;
+              const ehGuia = temLeituras && !ehSubitem;
               return (
-                <li key={aula.id} className={ehLeitura ? "sm:ml-8" : undefined}>
+                <li key={aula.id} className={ehSubitem ? "sm:ml-8" : undefined}>
                   {/* LinkNav: afunda ao toque, a seta avança no hover e vira
                       girador enquanto a mesa carrega. Antes o toque não
                       produzia sinal nenhum — e daqui até Paris são ~267ms. */}
@@ -203,10 +206,12 @@ export default async function CursoPage({
                           ? "bg-oliveira-100 text-oliveira-700"
                           : ehGuia
                             ? "bg-laranja-100 text-laranja-700"
-                            : "bg-mesa-100 text-mesa-700"
+                            : ehSlide
+                              ? "bg-sky-100 text-sky-700"
+                              : "bg-mesa-100 text-mesa-700"
                       }`}
                     >
-                      {concluida ? "✓" : rotuloNumeroAula(aula)}
+                      {concluida ? "✓" : ehSlide ? "🖥️" : rotuloNumeroAula(aula)}
                     </div>
                     <div className="flex-1">
                       <h3
