@@ -191,9 +191,7 @@ export default async function AulaPage({
                       {ehSlide ? "Slides da aula" : "Material complementar"}
                     </p>
                     <p className="mt-1 text-base font-semibold text-sky-900">
-                      {ehSlide
-                        ? "Abrir a apresentação em PDF →"
-                        : "Baixar PDF →"}
+                      {ehSlide ? "Abrir a apresentação em PDF →" : "Baixar PDF →"}
                     </p>
                   </div>
                 </a>
