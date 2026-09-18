@@ -151,28 +151,9 @@ export default async function AulaPage({
             {aula.titulo}
           </h1>
 
-          {ehAvaliacao && (
-            <AvaliacaoParach
-              aulaId={aula.id}
-              alunoId={session.userId}
-              atividadeId={avaliacaoAtividadeId}
-              respostaInicial={avaliacaoResposta?.texto}
-              comentarioLider={avaliacaoResposta?.comentario_lider}
-            />
-          )}
-
-          {!ehAvaliacao && aula.conteudo && (
-            <LeitorMesa
-              conteudo={aula.conteudo as string}
-              titulo={aula.titulo}
-              mesaLabel={`Mesa ${rotuloNumeroAula(aula)}`}
-              autor={curso.autor ?? null}
-              aulaId={aula.id}
-            />
-          )}
-
-          {/* Anexo da mesa. Fica em AZUL, fora da paleta quente do site, porque
-              no laranja ele se confundia com o resto e o Bruno não o achava.
+          {/* Anexo da mesa, ANTES do texto. Ele ficava depois do conteúdo, e num
+              guia de 27 mil caracteres isso o punha no fim da rolagem — o Bruno
+              não o encontrava mesmo depois de eu destacá-lo em azul.
               O rótulo diz o que o arquivo é: slide de aula não é "material
               complementar", é o que se projeta no encontro. */}
           {materialUrl &&
@@ -197,6 +178,26 @@ export default async function AulaPage({
                 </a>
               );
             })()}
+
+          {ehAvaliacao && (
+            <AvaliacaoParach
+              aulaId={aula.id}
+              alunoId={session.userId}
+              atividadeId={avaliacaoAtividadeId}
+              respostaInicial={avaliacaoResposta?.texto}
+              comentarioLider={avaliacaoResposta?.comentario_lider}
+            />
+          )}
+
+          {!ehAvaliacao && aula.conteudo && (
+            <LeitorMesa
+              conteudo={aula.conteudo as string}
+              titulo={aula.titulo}
+              mesaLabel={`Mesa ${rotuloNumeroAula(aula)}`}
+              autor={curso.autor ?? null}
+              aulaId={aula.id}
+            />
+          )}
 
           {aula.video_url && (
             <div className="mb-8 aspect-video overflow-hidden rounded-xl bg-mesa-900">
