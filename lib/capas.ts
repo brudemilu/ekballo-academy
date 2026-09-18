@@ -3,6 +3,30 @@
 // imagem OG 16:9. Mantém em sincronia com os `livroUrl` de
 // app/api/og/curso/[slug]/route.tsx.
 export const CAPA_LIVRO: Record<string, string> = {
+  "quebrando-a-ignorancia": "/capas/quebrando-a-ignorancia.jpg",
+  "mulheres-do-secreto": "/capas/mulheres-do-secreto.jpg",
+  "viva-uma-jornada-de-fe-esperanca-e-milagres":
+    "/capas/viva-uma-jornada-de-fe-esperanca-e-milagres.jpg",
+  "lendo-a-biblia-de-modo-sobrenatural":
+    "/capas/lendo-a-biblia-de-modo-sobrenatural.jpg",
+  "como-ter-um-coracao-de-maria-no-mundo-de-marta":
+    "/capas/como-ter-um-coracao-de-maria-no-mundo-de-marta.jpg",
+  "mulher-unica": "/capas/mulher-unica.jpg",
+  "a-coragem-de-ser-imperfeito": "/capas/a-coragem-de-ser-imperfeito.jpg",
+  "o-reino-de-ponta-cabeca": "/capas/o-reino-de-ponta-cabeca.jpg",
+  "as-cinco-linguagens-do-perdao": "/capas/as-cinco-linguagens-do-perdao.jpg",
+  "eu-e-minha-boca-grande": "/capas/eu-e-minha-boca-grande.jpg",
+  "desmascarando-o-espirito-de-jezabel":
+    "/capas/desmascarando-o-espirito-de-jezabel.jpg",
+  "as-cinco-linguagens-do-amor-das-criancas":
+    "/capas/as-cinco-linguagens-do-amor-das-criancas.jpg",
+  "quem-mexeu-no-meu-queijo": "/capas/quem-mexeu-no-meu-queijo.jpg",
+  "os-cacadores-de-deus": "/capas/os-cacadores-de-deus.jpg",
+  "dons-espirituais": "/capas/dons-espirituais.jpg",
+  "descubra-o-seu-destino": "/capas/descubra-o-seu-destino.jpg",
+  "o-amor-mais-louco-da-historia": "/capas/o-amor-mais-louco-da-historia.jpg",
+  "o-salmo-23-sob-o-olhar-de-um-pastor":
+    "/capas/o-salmo-23-sob-o-olhar-de-um-pastor.jpg",
   "a-experiencia-da-mesa": "/capas/a-experiencia-da-mesa.jpg",
   "mais-forte-e-corajosa": "/capas/mais-forte-e-corajosa.jpg",
   "cartas-de-c-s-lewis": "/capas/cartas-de-c-s-lewis.jpg",
