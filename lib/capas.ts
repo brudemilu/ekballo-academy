@@ -256,4 +256,10 @@ export const CAPA_LIVRO: Record<string, string> = {
   "cinco-votos-poder-espiritual": "/capas/cinco-votos-poder-espiritual.jpg",
   "pregacao-pura-e-simples": "/capas/pregacao-pura-e-simples.jpg",
   "palestras-vida-da-igreja": "/capas/palestras-vida-da-igreja.jpg",
+  "perdao-total-na-igreja": "/capas/perdao-total-na-igreja.jpg",
+  "de-todo-o-coracao": "/capas/de-todo-o-coracao.jpg",
+  "maes-de-joelhos-filhos-de-pe": "/capas/maes-de-joelhos-filhos-de-pe.jpg",
+  "as-obras-da-carne-e-o-fruto-do-espirito":
+    "/capas/as-obras-da-carne-e-o-fruto-do-espirito.jpg",
+  "loucos-por-jesus": "/capas/loucos-por-jesus.jpg",
 };
