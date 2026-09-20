@@ -53,6 +53,9 @@ export type Aula = {
   // Leitura literal (audiolivro, voz única) do conteudo — distinta do audio_url
   // (overview em podcast). Gerada por scripts/gerar-leituras.mjs.
   audio_leitura_url?: string | null;
+  // Resumo em 2-3 frases (IA, palavras próprias) usado no aviso de WhatsApp
+  // quando o discípulo responde — ver app/api/cron/avisar-respostas.
+  resumo_curto?: string | null;
   ordem: number;
   created_at: string;
 };
