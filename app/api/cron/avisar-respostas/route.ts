@@ -195,9 +195,26 @@ export async function GET(req: NextRequest) {
   const ids = alunos.map((a) => a.id);
 
   // Já avisado: chave → referência (updated_at) do último aviso.
-  const { data: jaAvisados } = await db
+  //
+  // ESTA LEITURA NÃO PODE FALHAR EM SILÊNCIO. Ela é a única coisa que separa
+  // "avisar o que chegou agora" de "despejar duzentas respostas antigas no
+  // WhatsApp". Se ela voltar vazia por erro — e não porque nada foi avisado —
+  // a rodada inteira acha que tudo é novo. Aconteceu no primeiro deploy: a
+  // tabela tinha acabado de ser criada e o PostgREST ainda não a via no cache
+  // de schema (PGRST205), então a leitura deu 404 e a rota tratou o histórico
+  // como notícia. Agora, na dúvida, ela não avisa ninguém.
+  const { data: jaAvisados, error: erroAvisados } = await db
     .from("avisos_resposta")
     .select("origem, chave, referencia");
+  if (erroAvisados) {
+    return NextResponse.json(
+      {
+        ok: false,
+        erro: `não deu para ler o que já foi avisado: ${erroAvisados.message}`,
+      },
+      { status: 500 },
+    );
+  }
   const avisado = new Map<string, string>(
     ((jaAvisados || []) as { origem: string; chave: string; referencia: string }[]).map(
       (r) => [`${r.origem}:${r.chave}`, r.referencia],
