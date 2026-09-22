@@ -74,3 +74,12 @@ __pycache__/
 /testes-e2e/relatorio
 /test-results
 /playwright-report
+
+# logs e estado das refeituras de áudio na voz da Thalita
+scripts/pastor-imperfeito-thalita.log
+scripts/refazer-thalita.log
+scripts/refazer-thalita-retry.log
+scripts/.refazer-thalita-feitas.txt
+
+# capas baixadas para conferência pontual
+tmp/capas/
