@@ -22,130 +22,219 @@ type CapaConfig = {
 
 const CAPAS: Record<string, CapaConfig> = {
   "a-igreja-gloriosa": {
-    livroUrl: "/capas/a-igreja-gloriosa.jpg", preLabel: "WATCHMAN NEE",
-    titulo: "A Igreja\nGloriosa", subtitulo: "O propósito eterno de Deus com a igreja",
+    livroUrl: "/capas/a-igreja-gloriosa.jpg",
+    preLabel: "WATCHMAN NEE",
+    titulo: "A Igreja\nGloriosa",
+    subtitulo: "O propósito eterno de Deus com a igreja",
     rodape: "Leitura guiada — Watchman Nee",
     bg: "linear-gradient(135deg, #10193A 0%, #26356E 52%, #4257B0 100%)",
-    textoCor: "#EAEDFB", acentoCor: "#E6C84A", preLabelCor: "#AAB4E0", rodapeCor: "#AAB4E0",
+    textoCor: "#EAEDFB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#AAB4E0",
+    rodapeCor: "#AAB4E0",
   },
   "a-quem-enviarei": {
     preLabel: "WATCHMAN NEE",
-    titulo: "A Quem\nEnviarei?", subtitulo: "Mensagens sobre servir a Deus em espírito",
+    titulo: "A Quem\nEnviarei?",
+    subtitulo: "Mensagens sobre servir a Deus em espírito",
     rodape: "Leitura guiada — Watchman Nee",
     bg: "linear-gradient(135deg, #1A2A22 0%, #2E4A38 52%, #4E7A56 100%)",
-    textoCor: "#EAF4EE", acentoCor: "#E6C84A", preLabelCor: "#A9D0B8", rodapeCor: "#A9D0B8",
+    textoCor: "#EAF4EE",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9D0B8",
+    rodapeCor: "#A9D0B8",
   },
   "casamento-blindado": {
-    livroUrl: "/capas/casamento-blindado.jpg", preLabel: "RENATO E CRISTIANE CARDOSO",
-    titulo: "Casamento\nBlindado 2.0", subtitulo: "O seu casamento à prova de divórcio",
+    livroUrl: "/capas/casamento-blindado.jpg",
+    preLabel: "RENATO E CRISTIANE CARDOSO",
+    titulo: "Casamento\nBlindado 2.0",
+    subtitulo: "O seu casamento à prova de divórcio",
     rodape: "Leitura guiada — Renato e Cristiane Cardoso",
     bg: "linear-gradient(135deg, #14261F 0%, #285040 52%, #3E8A66 100%)",
-    textoCor: "#EAF7EF", acentoCor: "#E6C84A", preLabelCor: "#A9D8BE", rodapeCor: "#A9D8BE",
+    textoCor: "#EAF7EF",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9D8BE",
+    rodapeCor: "#A9D8BE",
   },
   "90-dias-galatas-juizes-efesios": {
-    livroUrl: "/capas/90-dias-galatas-juizes-efesios.jpg", preLabel: "DEVOCIONAL · 90 DIAS",
-    titulo: "90 Dias em\nGálatas, Juízes e Efésios", subtitulo: "Explore as Escrituras dia a dia",
+    livroUrl: "/capas/90-dias-galatas-juizes-efesios.jpg",
+    preLabel: "DEVOCIONAL · 90 DIAS",
+    titulo: "90 Dias em\nGálatas, Juízes e Efésios",
+    subtitulo: "Explore as Escrituras dia a dia",
     rodape: "A partir do livro de Timothy Keller e Richard Coekin",
     bg: "linear-gradient(135deg, #12303A 0%, #245A66 52%, #4E9AA6 100%)",
-    textoCor: "#EAF6F8", acentoCor: "#E6C84A", preLabelCor: "#A9CFD6", rodapeCor: "#A9CFD6",
+    textoCor: "#EAF6F8",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9CFD6",
+    rodapeCor: "#A9CFD6",
   },
   "mundo-plural": {
-    livroUrl: "/capas/mundo-plural.jpg", preLabel: "VIDA CRISTÃ · MUNDO PLURAL",
-    titulo: "Mundo\nPlural", subtitulo: "Como viver fielmente em um mundo plural",
+    livroUrl: "/capas/mundo-plural.jpg",
+    preLabel: "VIDA CRISTÃ · MUNDO PLURAL",
+    titulo: "Mundo\nPlural",
+    subtitulo: "Como viver fielmente em um mundo plural",
     rodape: "Estudo de fé e cultura",
     bg: "linear-gradient(135deg, #14202E 0%, #28455E 52%, #4E88A8 100%)",
-    textoCor: "#EAF3FB", acentoCor: "#E6C84A", preLabelCor: "#A9C6DC", rodapeCor: "#A9C6DC",
+    textoCor: "#EAF3FB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9C6DC",
+    rodapeCor: "#A9C6DC",
   },
   "evangelho-segundo-os-apostolos": {
-    livroUrl: "/capas/evangelho-segundo-os-apostolos.jpg", preLabel: "JOHN MACARTHUR",
-    titulo: "O Evangelho\nSegundo os Apóstolos", subtitulo: "A fé que salva e o senhorio de Cristo",
+    livroUrl: "/capas/evangelho-segundo-os-apostolos.jpg",
+    preLabel: "JOHN MACARTHUR",
+    titulo: "O Evangelho\nSegundo os Apóstolos",
+    subtitulo: "A fé que salva e o senhorio de Cristo",
     rodape: "Estudo sobre a graça que transforma",
     bg: "linear-gradient(135deg, #2A1E10 0%, #5E441C 52%, #B8903A 100%)",
-    textoCor: "#FBF4E6", acentoCor: "#E6C84A", preLabelCor: "#D8C088", rodapeCor: "#D8C088",
+    textoCor: "#FBF4E6",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#D8C088",
+    rodapeCor: "#D8C088",
   },
-  "depressao": {
-    livroUrl: "/capas/depressao.jpg", preLabel: "ISMAEL SOBRINHO",
-    titulo: "Depressão", subtitulo: "Cuidado, esperança e o evangelho na dor",
+  depressao: {
+    livroUrl: "/capas/depressao.jpg",
+    preLabel: "ISMAEL SOBRINHO",
+    titulo: "Depressão",
+    subtitulo: "Cuidado, esperança e o evangelho na dor",
     rodape: "A partir do livro de Ismael Sobrinho",
     bg: "linear-gradient(135deg, #161B24 0%, #2E3A4E 52%, #5E7088 100%)",
-    textoCor: "#EAEEF4", acentoCor: "#E6C84A", preLabelCor: "#AEBACA", rodapeCor: "#AEBACA",
+    textoCor: "#EAEEF4",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#AEBACA",
+    rodapeCor: "#AEBACA",
   },
   "igreja-centrada": {
-    livroUrl: "/capas/igreja-centrada.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "Igreja\nCentrada", subtitulo: "Ministério equilibrado e centrado no evangelho na cidade",
+    livroUrl: "/capas/igreja-centrada.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "Igreja\nCentrada",
+    subtitulo: "Ministério equilibrado e centrado no evangelho na cidade",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #0E2226 0%, #1C4A50 52%, #3E8C92 100%)",
-    textoCor: "#EAF6F7", acentoCor: "#E6C84A", preLabelCor: "#A9CFD2", rodapeCor: "#A9CFD2",
+    textoCor: "#EAF6F7",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9CFD2",
+    rodapeCor: "#A9CFD2",
   },
   "o-significado-do-casamento": {
-    livroUrl: "/capas/o-significado-do-casamento.jpg", preLabel: "TIMOTHY E KATHY KELLER",
-    titulo: "O Significado\ndo Casamento", subtitulo: "Enfrentando as complexidades do compromisso com a sabedoria de Deus",
+    livroUrl: "/capas/o-significado-do-casamento.jpg",
+    preLabel: "TIMOTHY E KATHY KELLER",
+    titulo: "O Significado\ndo Casamento",
+    subtitulo: "Enfrentando as complexidades do compromisso com a sabedoria de Deus",
     rodape: "A partir do livro de Timothy e Kathy Keller",
     bg: "linear-gradient(135deg, #2A1418 0%, #5E2C34 52%, #B85462 100%)",
-    textoCor: "#FBEAEE", acentoCor: "#E6C84A", preLabelCor: "#E0A9B2", rodapeCor: "#E0A9B2",
+    textoCor: "#FBEAEE",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#E0A9B2",
+    rodapeCor: "#E0A9B2",
   },
   "galatas-para-voce": {
-    livroUrl: "/capas/galatas-para-voce.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "Gálatas\npara Você", subtitulo: "A liberdade do evangelho da graça",
+    livroUrl: "/capas/galatas-para-voce.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "Gálatas\npara Você",
+    subtitulo: "A liberdade do evangelho da graça",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #0E2A24 0%, #1C5446 52%, #3E967E 100%)",
-    textoCor: "#EAFBF4", acentoCor: "#E6C84A", preLabelCor: "#A9E0CE", rodapeCor: "#A9E0CE",
+    textoCor: "#EAFBF4",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9E0CE",
+    rodapeCor: "#A9E0CE",
   },
   "o-evangelho-no-centro": {
-    livroUrl: "/capas/o-evangelho-no-centro.jpg", preLabel: "CARSON E KELLER",
-    titulo: "O Evangelho\nno Centro", subtitulo: "Renovando o coração, a igreja e o mundo",
+    livroUrl: "/capas/o-evangelho-no-centro.jpg",
+    preLabel: "CARSON E KELLER",
+    titulo: "O Evangelho\nno Centro",
+    subtitulo: "Renovando o coração, a igreja e o mundo",
     rodape: "A partir do livro de D. A. Carson e Timothy Keller",
     bg: "linear-gradient(135deg, #1A1A2E 0%, #34345A 52%, #6464A0 100%)",
-    textoCor: "#EAEAFB", acentoCor: "#E6C84A", preLabelCor: "#AEAEDC", rodapeCor: "#AEAEDC",
+    textoCor: "#EAEAFB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#AEAEDC",
+    rodapeCor: "#AEAEDC",
   },
   "fe-e-trabalho": {
-    livroUrl: "/capas/fe-e-trabalho.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "Como Integrar\nFé e Trabalho", subtitulo: "Conectando seu trabalho ao trabalho de Deus",
+    livroUrl: "/capas/fe-e-trabalho.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "Como Integrar\nFé e Trabalho",
+    subtitulo: "Conectando seu trabalho ao trabalho de Deus",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #2A2010 0%, #5E471C 52%, #B8903A 100%)",
-    textoCor: "#FBF5E6", acentoCor: "#E6C84A", preLabelCor: "#D8C088", rodapeCor: "#D8C088",
+    textoCor: "#FBF5E6",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#D8C088",
+    rodapeCor: "#D8C088",
   },
   "peregrinos-da-eternidade": {
-    livroUrl: "/capas/peregrinos-da-eternidade.jpg", preLabel: "A. W. TOZER",
-    titulo: "Peregrinos\nda Eternidade", subtitulo: "A busca incansável de Deus pelo homem",
+    livroUrl: "/capas/peregrinos-da-eternidade.jpg",
+    preLabel: "A. W. TOZER",
+    titulo: "Peregrinos\nda Eternidade",
+    subtitulo: "A busca incansável de Deus pelo homem",
     rodape: "A partir do livro de A. W. Tozer",
     bg: "linear-gradient(135deg, #1A2230 0%, #34465E 52%, #6488A0 100%)",
-    textoCor: "#EAF2FB", acentoCor: "#E6C84A", preLabelCor: "#A9C2DC", rodapeCor: "#A9C2DC",
+    textoCor: "#EAF2FB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9C2DC",
+    rodapeCor: "#A9C2DC",
   },
   "o-deus-prodigo": {
-    livroUrl: "/capas/o-deus-prodigo.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "O Deus\nPródigo", subtitulo: "Recuperando a essência da fé cristã",
+    livroUrl: "/capas/o-deus-prodigo.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "O Deus\nPródigo",
+    subtitulo: "Recuperando a essência da fé cristã",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #0C2A3E 0%, #1C5470 52%, #3E96B8 100%)",
-    textoCor: "#EAF6FB", acentoCor: "#E6C84A", preLabelCor: "#A9CFE0", rodapeCor: "#A9CFE0",
+    textoCor: "#EAF6FB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9CFE0",
+    rodapeCor: "#A9CFE0",
   },
   "o-profeta-prodigo": {
-    livroUrl: "/capas/o-profeta-prodigo.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "O Profeta\nPródigo", subtitulo: "Jonas e o mistério da misericórdia de Deus",
+    livroUrl: "/capas/o-profeta-prodigo.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "O Profeta\nPródigo",
+    subtitulo: "Jonas e o mistério da misericórdia de Deus",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #11283E 0%, #234E70 52%, #4A88B0 100%)",
-    textoCor: "#EAF3FB", acentoCor: "#E6B84A", preLabelCor: "#A9C6E0", rodapeCor: "#A9C6E0",
+    textoCor: "#EAF3FB",
+    acentoCor: "#E6B84A",
+    preLabelCor: "#A9C6E0",
+    rodapeCor: "#A9C6E0",
   },
   "encontros-com-jesus": {
-    livroUrl: "/capas/encontros-com-jesus.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "Encontros\ncom Jesus", subtitulo: "Respostas inesperadas às grandes perguntas da vida",
+    livroUrl: "/capas/encontros-com-jesus.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "Encontros\ncom Jesus",
+    subtitulo: "Respostas inesperadas às grandes perguntas da vida",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #2A1A0E 0%, #5E3A1C 52%, #B8823A 100%)",
-    textoCor: "#FBF2E6", acentoCor: "#E6C84A", preLabelCor: "#CDB088", rodapeCor: "#CDB088",
+    textoCor: "#FBF2E6",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#CDB088",
+    rodapeCor: "#CDB088",
   },
   "o-natal-escondido": {
-    livroUrl: "/capas/o-natal-escondido.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "O Natal\nEscondido", subtitulo: "O surpreendente significado de Jesus",
+    livroUrl: "/capas/o-natal-escondido.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "O Natal\nEscondido",
+    subtitulo: "O surpreendente significado de Jesus",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #1A1024 0%, #3A2456 52%, #6E54A0 100%)",
-    textoCor: "#F1EAFB", acentoCor: "#E6C84A", preLabelCor: "#BCA9E0", rodapeCor: "#BCA9E0",
+    textoCor: "#F1EAFB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#BCA9E0",
+    rodapeCor: "#BCA9E0",
   },
   "a-cruz-do-rei": {
-    livroUrl: "/capas/a-cruz-do-rei.jpg", preLabel: "TIMOTHY KELLER",
-    titulo: "A Cruz\ndo Rei", subtitulo: "O Evangelho de Marcos — a vida de Jesus",
+    livroUrl: "/capas/a-cruz-do-rei.jpg",
+    preLabel: "TIMOTHY KELLER",
+    titulo: "A Cruz\ndo Rei",
+    subtitulo: "O Evangelho de Marcos — a vida de Jesus",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #2A0E10 0%, #5E1C22 52%, #B83A44 100%)",
-    textoCor: "#FBEAEC", acentoCor: "#E6C84A", preLabelCor: "#E0A9AE", rodapeCor: "#E0A9AE",
+    textoCor: "#FBEAEC",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#E0A9AE",
+    rodapeCor: "#E0A9AE",
   },
   "presenca-relacional-de-deus": {
     livroUrl: "/capas/presenca-relacional-de-deus.jpg",
@@ -178,7 +267,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Como a razão explica Deus",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #0A1020 0%, #1A2A4A 52%, #3A5278 100%)",
-    textoCor: "#EAF0FA", acentoCor: "#E6C84A", preLabelCor: "#9FB4D6", rodapeCor: "#9FB4D6",
+    textoCor: "#EAF0FA",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#9FB4D6",
+    rodapeCor: "#9FB4D6",
   },
   "cristao-inutil": {
     livroUrl: "/capas/cristao-inutil.jpg",
@@ -187,16 +279,22 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Serviço, vocação e missão sem protagonismo",
     rodape: "A partir do livro de Rodrigo Bibo",
     bg: "linear-gradient(135deg, #122A2C 0%, #28575A 52%, #D78A2E 100%)",
-    textoCor: "#F2FAF7", acentoCor: "#E6C84A", preLabelCor: "#B6D7D2", rodapeCor: "#F0C998",
+    textoCor: "#F2FAF7",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#B6D7D2",
+    rodapeCor: "#F0C998",
   },
-  "milagres": {
+  milagres: {
     livroUrl: "/capas/milagres.jpg",
     preLabel: "APOLOGÉTICA · 19 AULAS",
     titulo: "Milagres",
     subtitulo: "Natureza, sobrenatureza e o Grande Milagre",
     rodape: "A partir do livro de C. S. Lewis",
     bg: "linear-gradient(135deg, #07192A 0%, #123E58 52%, #4EA1B8 100%)",
-    textoCor: "#EAF7FB", acentoCor: "#E6C84A", preLabelCor: "#A6D4E0", rodapeCor: "#A6D4E0",
+    textoCor: "#EAF7FB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A6D4E0",
+    rodapeCor: "#A6D4E0",
   },
   "o-deus-que-destroi-sonhos": {
     livroUrl: "/capas/o-deus-que-destroi-sonhos.jpg",
@@ -205,7 +303,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Da teologia dos desejos à vontade de Deus",
     rodape: "A partir do livro de Rodrigo Bibo",
     bg: "linear-gradient(135deg, #1F1B12 0%, #524223 52%, #C59A3A 100%)",
-    textoCor: "#FBF4E2", acentoCor: "#7ED6C5", preLabelCor: "#D6C18F", rodapeCor: "#E8D39B",
+    textoCor: "#FBF4E2",
+    acentoCor: "#7ED6C5",
+    preLabelCor: "#D6C18F",
+    rodapeCor: "#E8D39B",
   },
   "deuses-falsos": {
     livroUrl: "/capas/deuses-falsos.jpg",
@@ -214,7 +315,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "As promessas vazias dos ídolos do coração",
     rodape: "A partir do livro de Timothy Keller",
     bg: "linear-gradient(135deg, #161331 0%, #343070 52%, #D1A11E 100%)",
-    textoCor: "#F0EEFB", acentoCor: "#F0C43A", preLabelCor: "#BDB8E4", rodapeCor: "#F3D37A",
+    textoCor: "#F0EEFB",
+    acentoCor: "#F0C43A",
+    preLabelCor: "#BDB8E4",
+    rodapeCor: "#F3D37A",
   },
   "peso-da-gloria": {
     livroUrl: "/capas/peso-da-gloria.jpg",
@@ -223,7 +327,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Sermões e ensaios de C. S. Lewis",
     rodape: "A partir do livro de C. S. Lewis",
     bg: "linear-gradient(135deg, #1B1826 0%, #463A64 52%, #8A6FC0 100%)",
-    textoCor: "#F4EFFB", acentoCor: "#E6C84A", preLabelCor: "#CDBBEA", rodapeCor: "#D9C8F0",
+    textoCor: "#F4EFFB",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#CDBBEA",
+    rodapeCor: "#D9C8F0",
   },
   "grande-divorcio": {
     livroUrl: "/capas/grande-divorcio.jpg",
@@ -232,16 +339,22 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Uma viagem imaginativa entre inferno e céu",
     rodape: "A partir do livro de C. S. Lewis",
     bg: "linear-gradient(135deg, #132018 0%, #2D5538 52%, #83A85A 100%)",
-    textoCor: "#EEF8EA", acentoCor: "#E6C84A", preLabelCor: "#B9D7B0", rodapeCor: "#C9E0B8",
+    textoCor: "#EEF8EA",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#B9D7B0",
+    rodapeCor: "#C9E0B8",
   },
-  "maturidade": {
+  maturidade: {
     livroUrl: "/capas/maturidade.jpg",
     preLabel: "CRESCIMENTO · 11 CAPÍTULOS",
     titulo: "Maturidade",
     subtitulo: "O acesso à herança plena",
     rodape: "A partir do livro de Luciano Subirá",
     bg: "linear-gradient(135deg, #2A1C10 0%, #5A3C22 52%, #9A6A3E 100%)",
-    textoCor: "#F6EEE2", acentoCor: "#E6C84A", preLabelCor: "#C8AC8A", rodapeCor: "#C8AC8A",
+    textoCor: "#F6EEE2",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#C8AC8A",
+    rodapeCor: "#C8AC8A",
   },
   "quebrando-intimidacao": {
     livroUrl: "/capas/quebrando-intimidacao.jpg",
@@ -250,7 +363,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Viva seguro, sem a aprovação dos homens",
     rodape: "A partir do livro de John Bevere",
     bg: "linear-gradient(135deg, #2A0A0A 0%, #7A1212 52%, #C83030 100%)",
-    textoCor: "#FBE8E2", acentoCor: "#E6C84A", preLabelCor: "#E0A090", rodapeCor: "#E0A090",
+    textoCor: "#FBE8E2",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#E0A090",
+    rodapeCor: "#E0A090",
   },
   "redescobrindo-ministerio": {
     livroUrl: "/capas/redescobrindo-ministerio.jpg",
@@ -259,7 +375,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Moldando o ministério aos preceitos das Escrituras",
     rodape: "Organizado por John MacArthur, Jr.",
     bg: "linear-gradient(135deg, #2A140E 0%, #5A2A1A 52%, #9A5234 100%)",
-    textoCor: "#F6ECE2", acentoCor: "#E6C84A", preLabelCor: "#C8A088", rodapeCor: "#C8A088",
+    textoCor: "#F6ECE2",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#C8A088",
+    rodapeCor: "#C8A088",
   },
   "questao-de-honra": {
     livroUrl: "/capas/questao-de-honra.jpg",
@@ -268,7 +387,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "O valor do dinheiro na adoração",
     rodape: "A partir do livro de Luciano Subirá",
     bg: "linear-gradient(135deg, #1F1A12 0%, #463A26 52%, #7C6A44 100%)",
-    textoCor: "#F6F0E2", acentoCor: "#E6C84A", preLabelCor: "#C8B894", rodapeCor: "#C8B894",
+    textoCor: "#F6F0E2",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#C8B894",
+    rodapeCor: "#C8B894",
   },
   "graca-livre": {
     preLabel: "SERMÃO CLÁSSICO",
@@ -276,7 +398,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "A graça gratuita de Deus, oferecida a todos",
     rodape: "A partir do sermão de John Wesley",
     bg: "linear-gradient(135deg, #3A0A0A 0%, #6E1414 52%, #C03030 100%)",
-    textoCor: "#FBE8E8", acentoCor: "#F2D14A", preLabelCor: "#E0A0A0", rodapeCor: "#E0A0A0",
+    textoCor: "#FBE8E8",
+    acentoCor: "#F2D14A",
+    preLabelCor: "#E0A0A0",
+    rodapeCor: "#E0A0A0",
   },
   "medita-estas-coisas": {
     preLabel: "MEDITAÇÃO · 3 CAPÍTULOS",
@@ -284,16 +409,22 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Conselhos para uma conversão segura",
     rodape: "A partir do livro de Richard Baxter",
     bg: "linear-gradient(135deg, #0E2624 0%, #1F524C 52%, #3E8C82 100%)",
-    textoCor: "#E6F4F0", acentoCor: "#E6C84A", preLabelCor: "#9FC8C0", rodapeCor: "#9FC8C0",
+    textoCor: "#E6F4F0",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#9FC8C0",
+    rodapeCor: "#9FC8C0",
   },
-  "santificacao": {
+  santificacao: {
     livroUrl: "/capas/santificacao.jpg",
     preLabel: "VIDA CRISTÃ · 7 CAPÍTULOS",
     titulo: "Santificação",
     subtitulo: "O amor zeloso de Deus por seu povo",
     rodape: "A partir do livro de John MacArthur",
     bg: "linear-gradient(135deg, #2A2A24 0%, #54544A 52%, #8C8C7C 100%)",
-    textoCor: "#F4F4EE", acentoCor: "#C8B86A", preLabelCor: "#BCBCAA", rodapeCor: "#BCBCAA",
+    textoCor: "#F4F4EE",
+    acentoCor: "#C8B86A",
+    preLabelCor: "#BCBCAA",
+    rodapeCor: "#BCBCAA",
   },
   "pastor-aprovado": {
     livroUrl: "/capas/pastor-aprovado.jpg",
@@ -302,7 +433,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Procura apresentar-te a Deus aprovado (2Tm 2.15)",
     rodape: "A partir do livro de Richard Baxter",
     bg: "linear-gradient(135deg, #3A0E10 0%, #6E1C1F 52%, #B0403A 100%)",
-    textoCor: "#FBEAE6", acentoCor: "#E6A85A", preLabelCor: "#D6A09A", rodapeCor: "#D6A09A",
+    textoCor: "#FBEAE6",
+    acentoCor: "#E6A85A",
+    preLabelCor: "#D6A09A",
+    rodapeCor: "#D6A09A",
   },
   "lugar-mais-seguro": {
     preLabel: "COMUNIDADE · 19 CAPÍTULOS",
@@ -310,7 +444,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Onde as pessoas se conectam e são transformadas",
     rodape: "A partir do livro de Larry Crabb",
     bg: "linear-gradient(135deg, #2A0A1E 0%, #6E1240 52%, #B83A6E 100%)",
-    textoCor: "#FBE6F0", acentoCor: "#E6C84A", preLabelCor: "#D6A0BC", rodapeCor: "#D6A0BC",
+    textoCor: "#FBE6F0",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#D6A0BC",
+    rodapeCor: "#D6A0BC",
   },
   "quatro-amores": {
     livroUrl: "/capas/quatro-amores.jpg",
@@ -319,7 +456,10 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Afeição, amizade, eros e caridade",
     rodape: "A partir do livro de C. S. Lewis",
     bg: "linear-gradient(135deg, #6B2410 0%, #B0481F 52%, #E0814A 100%)",
-    textoCor: "#FBEEE2", acentoCor: "#F2D14A", preLabelCor: "#E6B08A", rodapeCor: "#E6B08A",
+    textoCor: "#FBEEE2",
+    acentoCor: "#F2D14A",
+    preLabelCor: "#E6B08A",
+    rodapeCor: "#E6B08A",
   },
   "comentario-biblico-moody": {
     livroUrl: "/capas/comentario-biblico-moody.jpg",
@@ -328,52 +468,70 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "Gênesis a Apocalipse, comentado verso a verso",
     rodape: "Material de referência e consulta",
     bg: "linear-gradient(135deg, #2A2410 0%, #5A4E20 52%, #9A8838 100%)",
-    textoCor: "#F6F0E0", acentoCor: "#E6C84A", preLabelCor: "#C8BC88", rodapeCor: "#C8BC88",
+    textoCor: "#F6F0E0",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#C8BC88",
+    rodapeCor: "#C8BC88",
   },
-  "moises": {
+  moises: {
     livroUrl: "/capas/moises.jpg",
     preLabel: "HERÓIS DA FÉ · 15 AULAS",
     titulo: "Moisés",
     subtitulo: "Um homem dedicado e generoso",
     rodape: "A partir do livro de Charles R. Swindoll",
     bg: "linear-gradient(135deg, #2A2A12 0%, #5A5A2A 52%, #9A9A52 100%)",
-    textoCor: "#F6F4E6", acentoCor: "#E6C84A", preLabelCor: "#C8C89A", rodapeCor: "#C8C89A",
+    textoCor: "#F6F4E6",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#C8C89A",
+    rodapeCor: "#C8C89A",
   },
-  "davi": {
+  davi: {
     livroUrl: "/capas/davi.jpg",
     preLabel: "HERÓIS DA FÉ · 25 AULAS",
     titulo: "Davi",
     subtitulo: "Um homem segundo o coração de Deus",
     rodape: "A partir do livro de Charles R. Swindoll",
     bg: "linear-gradient(135deg, #2A1810 0%, #5A3420 52%, #9A6040 100%)",
-    textoCor: "#F6ECE0", acentoCor: "#E0A85A", preLabelCor: "#C8A888", rodapeCor: "#C8A888",
+    textoCor: "#F6ECE0",
+    acentoCor: "#E0A85A",
+    preLabelCor: "#C8A888",
+    rodapeCor: "#C8A888",
   },
-  "elias": {
+  elias: {
     livroUrl: "/capas/elias.jpg",
     preLabel: "HERÓIS DA FÉ · 17 AULAS",
     titulo: "Elias",
     subtitulo: "Um homem de heroísmo e humildade",
     rodape: "A partir do livro de Charles R. Swindoll",
     bg: "linear-gradient(135deg, #2A1C10 0%, #5A3C20 52%, #9A6838 100%)",
-    textoCor: "#F6EEE2", acentoCor: "#E6B85A", preLabelCor: "#C8AC88", rodapeCor: "#C8AC88",
+    textoCor: "#F6EEE2",
+    acentoCor: "#E6B85A",
+    preLabelCor: "#C8AC88",
+    rodapeCor: "#C8AC88",
   },
-  "ester": {
+  ester: {
     livroUrl: "/capas/ester.jpg",
     preLabel: "HERÓIS DA FÉ · 14 AULAS",
     titulo: "Ester",
     subtitulo: "Uma mulher de sensibilidade e coragem",
     rodape: "A partir do livro de Charles R. Swindoll",
     bg: "linear-gradient(135deg, #2A1024 0%, #5A2048 52%, #9A4080 100%)",
-    textoCor: "#F6E6F0", acentoCor: "#E6A8D0", preLabelCor: "#C888B0", rodapeCor: "#C888B0",
+    textoCor: "#F6E6F0",
+    acentoCor: "#E6A8D0",
+    preLabelCor: "#C888B0",
+    rodapeCor: "#C888B0",
   },
-  "jo": {
+  jo: {
     livroUrl: "/capas/jo.jpg",
     preLabel: "HERÓIS DA FÉ · 29 AULAS",
     titulo: "Jó",
     subtitulo: "Um homem de tolerância heróica",
     rodape: "A partir do livro de Charles R. Swindoll",
     bg: "linear-gradient(135deg, #10242A 0%, #20485A 52%, #40809A 100%)",
-    textoCor: "#E6F2F6", acentoCor: "#5AC8E6", preLabelCor: "#88B8C8", rodapeCor: "#88B8C8",
+    textoCor: "#E6F2F6",
+    acentoCor: "#5AC8E6",
+    preLabelCor: "#88B8C8",
+    rodapeCor: "#88B8C8",
   },
   "vida-de-jesus": {
     livroUrl: "/capas/vida-de-jesus.jpg",
@@ -382,16 +540,22 @@ const CAPAS: Record<string, CapaConfig> = {
     subtitulo: "A maior pessoa que já viveu",
     rodape: "A partir do livro de Charles R. Swindoll",
     bg: "linear-gradient(135deg, #2A2410 0%, #5A4C20 52%, #9A8440 100%)",
-    textoCor: "#F6F2E0", acentoCor: "#E6C84A", preLabelCor: "#C8BC88", rodapeCor: "#C8BC88",
+    textoCor: "#F6F2E0",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#C8BC88",
+    rodapeCor: "#C8BC88",
   },
-  "paulo": {
+  paulo: {
     livroUrl: "/capas/paulo.jpg",
     preLabel: "HERÓIS DA FÉ · 23 AULAS",
     titulo: "Paulo",
     subtitulo: "Um homem de coragem e graça",
     rodape: "A partir do livro de Charles R. Swindoll",
     bg: "linear-gradient(135deg, #10242A 0%, #1F4A44 52%, #3E8278 100%)",
-    textoCor: "#E6F4F0", acentoCor: "#E6C84A", preLabelCor: "#88C8B8", rodapeCor: "#88C8B8",
+    textoCor: "#E6F4F0",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#88C8B8",
+    rodapeCor: "#88C8B8",
   },
   "o-custo-do-discipulado": {
     livroUrl: "/capas/o-custo-do-discipulado.jpg",
@@ -926,7 +1090,7 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#DCC79A",
     rodapeCor: "#DCC79A",
   },
-  "jesuscopy": {
+  jesuscopy: {
     preLabel: "ESTUDO · 8 CAPÍTULOS",
     titulo: "JesusCopy",
     subtitulo: "Tornar-se uma cópia de Jesus",
@@ -998,7 +1162,7 @@ const CAPAS: Record<string, CapaConfig> = {
     rodapeCor: "#AEC6E0",
     livroUrl: "/capas/campo-batalha-mente.jpg",
   },
-  "perspectivas": {
+  perspectivas: {
     preLabel: "MOVIMENTO CRISTÃO MUNDIAL",
     titulo: "Perspectivas",
     subtitulo: "O propósito de Deus entre todos os povos",
@@ -1017,18 +1181,18 @@ let cachedInterItalic: ArrayBuffer | undefined;
 
 async function loadFonts(origin: string) {
   if (!cachedCormorantBold) {
-    cachedCormorantBold = await fetch(`${origin}/fonts/cormorant-bold.ttf`).then(
-      (r) => r.arrayBuffer(),
+    cachedCormorantBold = await fetch(`${origin}/fonts/cormorant-bold.ttf`).then((r) =>
+      r.arrayBuffer(),
     );
   }
   if (!cachedCormorantItalic) {
-    cachedCormorantItalic = await fetch(
-      `${origin}/fonts/cormorant-italic.ttf`,
-    ).then((r) => r.arrayBuffer());
+    cachedCormorantItalic = await fetch(`${origin}/fonts/cormorant-italic.ttf`).then(
+      (r) => r.arrayBuffer(),
+    );
   }
   if (!cachedInterItalic) {
-    cachedInterItalic = await fetch(`${origin}/fonts/inter-italic.ttf`).then(
-      (r) => r.arrayBuffer(),
+    cachedInterItalic = await fetch(`${origin}/fonts/inter-italic.ttf`).then((r) =>
+      r.arrayBuffer(),
     );
   }
   return {
@@ -1047,9 +1211,33 @@ async function loadFonts(origin: string) {
 
 // Palavras que não recebem maiúscula no meio do título.
 const MINUSCULAS = new Set([
-  "a", "as", "o", "os", "e", "ou", "de", "da", "das", "do", "dos", "em",
-  "na", "nas", "no", "nos", "para", "por", "com", "sem", "sob", "ao", "aos",
-  "que", "se", "um", "uma",
+  "a",
+  "as",
+  "o",
+  "os",
+  "e",
+  "ou",
+  "de",
+  "da",
+  "das",
+  "do",
+  "dos",
+  "em",
+  "na",
+  "nas",
+  "no",
+  "nos",
+  "para",
+  "por",
+  "com",
+  "sem",
+  "sob",
+  "ao",
+  "aos",
+  "que",
+  "se",
+  "um",
+  "uma",
 ]);
 
 function tituloDoSlug(slug: string): string {
@@ -1068,27 +1256,45 @@ const PALETA_FALLBACK: ReadonlyArray<
 > = [
   {
     bg: "linear-gradient(135deg, #101E33 0%, #1E3D63 52%, #35719E 100%)",
-    textoCor: "#EDF3FA", acentoCor: "#E6C84A", preLabelCor: "#A9C4DE", rodapeCor: "#A9C4DE",
+    textoCor: "#EDF3FA",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9C4DE",
+    rodapeCor: "#A9C4DE",
   },
   {
     bg: "linear-gradient(135deg, #1A2A22 0%, #2E4A38 52%, #4E7A56 100%)",
-    textoCor: "#EAF4EE", acentoCor: "#E6C84A", preLabelCor: "#A9D0B8", rodapeCor: "#A9D0B8",
+    textoCor: "#EAF4EE",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9D0B8",
+    rodapeCor: "#A9D0B8",
   },
   {
     bg: "linear-gradient(135deg, #2A1E10 0%, #5E441C 52%, #B8903A 100%)",
-    textoCor: "#FBF4E6", acentoCor: "#E6C84A", preLabelCor: "#D8C088", rodapeCor: "#D8C088",
+    textoCor: "#FBF4E6",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#D8C088",
+    rodapeCor: "#D8C088",
   },
   {
     bg: "linear-gradient(135deg, #2B1616 0%, #5A2A26 52%, #A85042 100%)",
-    textoCor: "#FBEEEA", acentoCor: "#E6C84A", preLabelCor: "#D9AA9E", rodapeCor: "#D9AA9E",
+    textoCor: "#FBEEEA",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#D9AA9E",
+    rodapeCor: "#D9AA9E",
   },
   {
     bg: "linear-gradient(135deg, #161B24 0%, #2E3A4E 52%, #5E7088 100%)",
-    textoCor: "#EAEEF4", acentoCor: "#E6C84A", preLabelCor: "#AEBACA", rodapeCor: "#AEBACA",
+    textoCor: "#EAEEF4",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#AEBACA",
+    rodapeCor: "#AEBACA",
   },
   {
     bg: "linear-gradient(135deg, #0E2226 0%, #1C4A50 52%, #3E8C92 100%)",
-    textoCor: "#EAF6F7", acentoCor: "#E6C84A", preLabelCor: "#A9CFD2", rodapeCor: "#A9CFD2",
+    textoCor: "#EAF6F7",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#A9CFD2",
+    rodapeCor: "#A9CFD2",
   },
 ];
 
@@ -1150,9 +1356,24 @@ export async function GET(
   const fonts = await loadFonts(origin);
 
   const fontList = [
-    { name: "Cormorant", data: fonts.cormorantBold, weight: 700 as const, style: "normal" as const },
-    { name: "Cormorant", data: fonts.cormorantItalic, weight: 400 as const, style: "italic" as const },
-    { name: "Inter", data: fonts.interItalic, weight: 400 as const, style: "italic" as const },
+    {
+      name: "Cormorant",
+      data: fonts.cormorantBold,
+      weight: 700 as const,
+      style: "normal" as const,
+    },
+    {
+      name: "Cormorant",
+      data: fonts.cormorantItalic,
+      weight: 400 as const,
+      style: "italic" as const,
+    },
+    {
+      name: "Inter",
+      data: fonts.interItalic,
+      weight: 400 as const,
+      style: "italic" as const,
+    },
   ];
 
   const temLivro = !!config.livroUrl;
@@ -1175,58 +1396,56 @@ export async function GET(
       // sem texto sobreposto — a própria arte já traz título e autor. Uma
       // borda interna sutil e um leve escurecimento nas pontas dão acabamento.
       return new ImageResponse(
-        (
+        <div
+          style={{
+            width: pw,
+            height: ph,
+            display: "flex",
+            background: config.bg,
+            position: "relative",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={capaSrc!}
+            alt=""
+            width={pw}
+            height={ph}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: pw,
+              height: ph,
+              objectFit: "cover",
+            }}
+          />
+          {/* vinheta sutil pra dar profundidade e fechar as bordas */}
           <div
             style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
               width: pw,
               height: ph,
               display: "flex",
-              background: config.bg,
-              position: "relative",
+              background:
+                "radial-gradient(130% 100% at 50% 38%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.34) 100%)",
             }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={capaSrc!}
-              alt=""
-              width={pw}
-              height={ph}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: pw,
-                height: ph,
-                objectFit: "cover",
-              }}
-            />
-            {/* vinheta sutil pra dar profundidade e fechar as bordas */}
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: pw,
-                height: ph,
-                display: "flex",
-                background:
-                  "radial-gradient(130% 100% at 50% 38%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.34) 100%)",
-              }}
-            />
-            {/* moldura interna discreta */}
-            <div
-              style={{
-                position: "absolute",
-                top: 26,
-                left: 26,
-                right: 26,
-                bottom: 26,
-                border: "1px solid rgba(255,255,255,0.16)",
-                display: "flex",
-              }}
-            />
-          </div>
-        ),
+          />
+          {/* moldura interna discreta */}
+          <div
+            style={{
+              position: "absolute",
+              top: 26,
+              left: 26,
+              right: 26,
+              bottom: 26,
+              border: "1px solid rgba(255,255,255,0.16)",
+              display: "flex",
+            }}
+          />
+        </div>,
         {
           width: pw,
           height: ph,
@@ -1241,164 +1460,160 @@ export async function GET(
       "A",
     ])[0].toUpperCase();
     return new ImageResponse(
-      (
+      <div
+        style={{
+          width: pw,
+          height: ph,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          background: config.bg,
+          fontFamily: "Cormorant",
+          position: "relative",
+          padding: "94px 78px",
+        }}
+      >
+        {/* brilho suave no topo (profundidade) */}
         <div
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
             width: pw,
             height: ph,
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            background: config.bg,
+            background:
+              "radial-gradient(115% 80% at 22% 10%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 46%)",
+          }}
+        />
+        {/* escurecimento inferior */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: pw,
+            height: ph,
+            display: "flex",
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.34) 0%, rgba(0,0,0,0) 42%)",
+          }}
+        />
+        {/* inicial em marca-d'água */}
+        <div
+          style={{
+            position: "absolute",
+            right: -56,
+            bottom: -210,
             fontFamily: "Cormorant",
-            position: "relative",
-            padding: "94px 78px",
+            fontStyle: "italic",
+            fontSize: 760,
+            lineHeight: 1,
+            color: config.acentoCor,
+            opacity: 0.09,
+            display: "flex",
           }}
         >
-          {/* brilho suave no topo (profundidade) */}
+          {inicial}
+        </div>
+        {/* moldura dupla */}
+        <div
+          style={{
+            position: "absolute",
+            top: 30,
+            left: 30,
+            right: 30,
+            bottom: 30,
+            border: `1px solid ${config.acentoCor}`,
+            opacity: 0.3,
+            display: "flex",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: 38,
+            left: 38,
+            right: 38,
+            bottom: 38,
+            border: `1px solid ${config.acentoCor}`,
+            opacity: 0.14,
+            display: "flex",
+          }}
+        />
+
+        {/* topo: pré-label */}
+        <div
+          style={{
+            position: "relative",
+            fontFamily: "Inter",
+            fontStyle: "italic",
+            fontSize: 22,
+            letterSpacing: "0.32em",
+            color: config.preLabelCor,
+            textTransform: "uppercase",
+            display: "flex",
+          }}
+        >
+          {config.preLabel}
+        </div>
+
+        {/* meio: título + régua + subtítulo */}
+        <div style={{ position: "relative", display: "flex", flexDirection: "column" }}>
           <div
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: pw,
-              height: ph,
+              fontFamily: "Cormorant",
+              fontWeight: 700,
+              fontSize: 140,
+              lineHeight: 0.95,
+              color: config.textoCor,
+              letterSpacing: "-0.02em",
+              whiteSpace: "pre-wrap",
               display: "flex",
-              background:
-                "radial-gradient(115% 80% at 22% 10%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 46%)",
+            }}
+          >
+            {config.titulo}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              width: 88,
+              height: 4,
+              background: config.acentoCor,
+              marginTop: 32,
+              marginBottom: 26,
             }}
           />
-          {/* escurecimento inferior */}
           <div
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: pw,
-              height: ph,
-              display: "flex",
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.34) 0%, rgba(0,0,0,0) 42%)",
-            }}
-          />
-          {/* inicial em marca-d'água */}
-          <div
-            style={{
-              position: "absolute",
-              right: -56,
-              bottom: -210,
               fontFamily: "Cormorant",
               fontStyle: "italic",
-              fontSize: 760,
-              lineHeight: 1,
+              fontSize: 42,
+              lineHeight: 1.15,
               color: config.acentoCor,
-              opacity: 0.09,
+              maxWidth: 660,
               display: "flex",
             }}
           >
-            {inicial}
-          </div>
-          {/* moldura dupla */}
-          <div
-            style={{
-              position: "absolute",
-              top: 30,
-              left: 30,
-              right: 30,
-              bottom: 30,
-              border: `1px solid ${config.acentoCor}`,
-              opacity: 0.3,
-              display: "flex",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: 38,
-              left: 38,
-              right: 38,
-              bottom: 38,
-              border: `1px solid ${config.acentoCor}`,
-              opacity: 0.14,
-              display: "flex",
-            }}
-          />
-
-          {/* topo: pré-label */}
-          <div
-            style={{
-              position: "relative",
-              fontFamily: "Inter",
-              fontStyle: "italic",
-              fontSize: 22,
-              letterSpacing: "0.32em",
-              color: config.preLabelCor,
-              textTransform: "uppercase",
-              display: "flex",
-            }}
-          >
-            {config.preLabel}
-          </div>
-
-          {/* meio: título + régua + subtítulo */}
-          <div
-            style={{ position: "relative", display: "flex", flexDirection: "column" }}
-          >
-            <div
-              style={{
-                fontFamily: "Cormorant",
-                fontWeight: 700,
-                fontSize: 140,
-                lineHeight: 0.95,
-                color: config.textoCor,
-                letterSpacing: "-0.02em",
-                whiteSpace: "pre-wrap",
-                display: "flex",
-              }}
-            >
-              {config.titulo}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                width: 88,
-                height: 4,
-                background: config.acentoCor,
-                marginTop: 32,
-                marginBottom: 26,
-              }}
-            />
-            <div
-              style={{
-                fontFamily: "Cormorant",
-                fontStyle: "italic",
-                fontSize: 42,
-                lineHeight: 1.15,
-                color: config.acentoCor,
-                maxWidth: 660,
-                display: "flex",
-              }}
-            >
-              {config.subtitulo}
-            </div>
-          </div>
-
-          {/* rodapé */}
-          <div
-            style={{
-              position: "relative",
-              fontFamily: "Inter",
-              fontStyle: "italic",
-              fontSize: 23,
-              letterSpacing: "0.06em",
-              color: config.rodapeCor,
-              display: "flex",
-            }}
-          >
-            {config.rodape}
+            {config.subtitulo}
           </div>
         </div>
-      ),
+
+        {/* rodapé */}
+        <div
+          style={{
+            position: "relative",
+            fontFamily: "Inter",
+            fontStyle: "italic",
+            fontSize: 23,
+            letterSpacing: "0.06em",
+            color: config.rodapeCor,
+            display: "flex",
+          }}
+        >
+          {config.rodape}
+        </div>
+      </div>,
       {
         width: pw,
         height: ph,
@@ -1420,172 +1635,170 @@ export async function GET(
     : undefined;
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: w,
+        height: h,
+        display: "flex",
+        flexDirection: "row",
+        background: config.bg,
+        fontFamily: "Cormorant",
+        position: "relative",
+      }}
+    >
+      {/* Moldura sutil */}
       <div
         style={{
-          width: w,
-          height: h,
+          position: "absolute",
+          top: 36,
+          left: 36,
+          right: 36,
+          bottom: 36,
+          border: `1px solid ${config.acentoCor}`,
+          opacity: 0.25,
           display: "flex",
-          flexDirection: "row",
-          background: config.bg,
-          fontFamily: "Cormorant",
-          position: "relative",
         }}
-      >
-        {/* Moldura sutil */}
+      />
+
+      {/* Badge "365" se houver */}
+      {config.badge && (
         <div
           style={{
             position: "absolute",
-            top: 36,
-            left: 36,
-            right: 36,
-            bottom: 36,
-            border: `1px solid ${config.acentoCor}`,
-            opacity: 0.25,
+            top: 90,
+            right: 130,
+            fontFamily: "Cormorant",
+            fontStyle: "italic",
+            fontSize: 280,
+            color: config.acentoCor,
+            opacity: 0.18,
+            lineHeight: 1,
             display: "flex",
-          }}
-        />
-
-        {/* Badge "365" se houver */}
-        {config.badge && (
-          <div
-            style={{
-              position: "absolute",
-              top: 90,
-              right: 130,
-              fontFamily: "Cormorant",
-              fontStyle: "italic",
-              fontSize: 280,
-              color: config.acentoCor,
-              opacity: 0.18,
-              lineHeight: 1,
-              display: "flex",
-            }}
-          >
-            {config.badge}
-          </div>
-        )}
-
-        {/* Coluna da capa do livro (só quando livroUrl) */}
-        {layoutLivro && (
-          <div
-            style={{
-              width: 560,
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "90px 20px 90px 90px",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={livroSrc!}
-              alt=""
-              width={460}
-              height={690}
-              style={{
-                maxWidth: 460,
-                maxHeight: 690,
-                objectFit: "contain",
-                boxShadow: "0 30px 60px rgba(0,0,0,0.45)",
-                borderRadius: 6,
-              }}
-            />
-          </div>
-        )}
-
-        {/* Coluna de texto */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            padding: layoutLivro ? "90px 90px 90px 40px" : "90px",
           }}
         >
-          {/* Pré-label */}
+          {config.badge}
+        </div>
+      )}
+
+      {/* Coluna da capa do livro (só quando livroUrl) */}
+      {layoutLivro && (
+        <div
+          style={{
+            width: 560,
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "90px 20px 90px 90px",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={livroSrc!}
+            alt=""
+            width={460}
+            height={690}
+            style={{
+              maxWidth: 460,
+              maxHeight: 690,
+              objectFit: "contain",
+              boxShadow: "0 30px 60px rgba(0,0,0,0.45)",
+              borderRadius: 6,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Coluna de texto */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          padding: layoutLivro ? "90px 90px 90px 40px" : "90px",
+        }}
+      >
+        {/* Pré-label */}
+        <div
+          style={{
+            fontFamily: "Inter",
+            fontStyle: "italic",
+            fontSize: 24,
+            letterSpacing: "0.32em",
+            color: config.preLabelCor,
+            textTransform: "uppercase",
+            display: "flex",
+          }}
+        >
+          {config.preLabel}
+        </div>
+
+        {/* Espaçador flex */}
+        <div style={{ display: "flex", flex: 1 }} />
+
+        {/* Título */}
+        <div
+          style={{
+            fontFamily: "Cormorant",
+            fontWeight: 700,
+            fontSize: layoutLivro ? 132 : 168,
+            lineHeight: 0.94,
+            color: config.textoCor,
+            letterSpacing: "-0.02em",
+            display: "flex",
+            whiteSpace: "pre-wrap",
+            marginBottom: 32,
+          }}
+        >
+          {config.titulo}
+        </div>
+
+        {/* Divisor + subtítulo */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 24,
+            marginBottom: 16,
+          }}
+        >
           <div
             style={{
-              fontFamily: "Inter",
-              fontStyle: "italic",
-              fontSize: 24,
-              letterSpacing: "0.32em",
-              color: config.preLabelCor,
-              textTransform: "uppercase",
+              width: 80,
+              height: 3,
+              background: config.acentoCor,
               display: "flex",
             }}
-          >
-            {config.preLabel}
-          </div>
-
-          {/* Espaçador flex */}
-          <div style={{ display: "flex", flex: 1 }} />
-
-          {/* Título */}
+          />
           <div
             style={{
               fontFamily: "Cormorant",
-              fontWeight: 700,
-              fontSize: layoutLivro ? 132 : 168,
-              lineHeight: 0.94,
-              color: config.textoCor,
-              letterSpacing: "-0.02em",
-              display: "flex",
-              whiteSpace: "pre-wrap",
-              marginBottom: 32,
-            }}
-          >
-            {config.titulo}
-          </div>
-
-          {/* Divisor + subtítulo */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 24,
-              marginBottom: 16,
-            }}
-          >
-            <div
-              style={{
-                width: 80,
-                height: 3,
-                background: config.acentoCor,
-                display: "flex",
-              }}
-            />
-            <div
-              style={{
-                fontFamily: "Cormorant",
-                fontStyle: "italic",
-                fontSize: layoutLivro ? 34 : 40,
-                color: config.acentoCor,
-                display: "flex",
-              }}
-            >
-              {config.subtitulo}
-            </div>
-          </div>
-
-          {/* Rodapé */}
-          <div
-            style={{
-              fontFamily: "Inter",
               fontStyle: "italic",
-              fontSize: 22,
-              letterSpacing: "0.06em",
-              color: config.rodapeCor,
+              fontSize: layoutLivro ? 34 : 40,
+              color: config.acentoCor,
               display: "flex",
-              marginTop: 12,
             }}
           >
-            {config.rodape}
+            {config.subtitulo}
           </div>
         </div>
+
+        {/* Rodapé */}
+        <div
+          style={{
+            fontFamily: "Inter",
+            fontStyle: "italic",
+            fontSize: 22,
+            letterSpacing: "0.06em",
+            color: config.rodapeCor,
+            display: "flex",
+            marginTop: 12,
+          }}
+        >
+          {config.rodape}
+        </div>
       </div>
-    ),
+    </div>,
     {
       width: w,
       height: h,
