@@ -1038,23 +1038,115 @@ async function loadFonts(origin: string) {
   };
 }
 
+// ---- Fallback: slug fora do mapa CAPAS ----------------------------------
+// A rota devolvia 404 quando o slug não estava cadastrado acima, e 404 numa
+// tag <img> é um buraco silencioso no card — ninguém descobre até abrir a
+// página. Como todo curso tem título derivável do slug, e a maioria já tem a
+// capa real do livro em /public/capas, dá pra sempre devolver alguma imagem.
+// Ver issue #176: 38 livros ficaram sem capa exatamente por essa porta.
+
+// Palavras que não recebem maiúscula no meio do título.
+const MINUSCULAS = new Set([
+  "a", "as", "o", "os", "e", "ou", "de", "da", "das", "do", "dos", "em",
+  "na", "nas", "no", "nos", "para", "por", "com", "sem", "sob", "ao", "aos",
+  "que", "se", "um", "uma",
+]);
+
+function tituloDoSlug(slug: string): string {
+  const palavras = slug.split("-").filter(Boolean);
+  return palavras
+    .map((p, i) =>
+      i > 0 && MINUSCULAS.has(p) ? p : p.charAt(0).toUpperCase() + p.slice(1),
+    )
+    .join(" ");
+}
+
+// Paleta do fallback, dentro da identidade da plataforma. A escolha é
+// determinística pelo slug: o mesmo curso mantém sempre a mesma cor.
+const PALETA_FALLBACK: ReadonlyArray<
+  Pick<CapaConfig, "bg" | "textoCor" | "acentoCor" | "preLabelCor" | "rodapeCor">
+> = [
+  {
+    bg: "linear-gradient(135deg, #101E33 0%, #1E3D63 52%, #35719E 100%)",
+    textoCor: "#EDF3FA", acentoCor: "#E6C84A", preLabelCor: "#A9C4DE", rodapeCor: "#A9C4DE",
+  },
+  {
+    bg: "linear-gradient(135deg, #1A2A22 0%, #2E4A38 52%, #4E7A56 100%)",
+    textoCor: "#EAF4EE", acentoCor: "#E6C84A", preLabelCor: "#A9D0B8", rodapeCor: "#A9D0B8",
+  },
+  {
+    bg: "linear-gradient(135deg, #2A1E10 0%, #5E441C 52%, #B8903A 100%)",
+    textoCor: "#FBF4E6", acentoCor: "#E6C84A", preLabelCor: "#D8C088", rodapeCor: "#D8C088",
+  },
+  {
+    bg: "linear-gradient(135deg, #2B1616 0%, #5A2A26 52%, #A85042 100%)",
+    textoCor: "#FBEEEA", acentoCor: "#E6C84A", preLabelCor: "#D9AA9E", rodapeCor: "#D9AA9E",
+  },
+  {
+    bg: "linear-gradient(135deg, #161B24 0%, #2E3A4E 52%, #5E7088 100%)",
+    textoCor: "#EAEEF4", acentoCor: "#E6C84A", preLabelCor: "#AEBACA", rodapeCor: "#AEBACA",
+  },
+  {
+    bg: "linear-gradient(135deg, #0E2226 0%, #1C4A50 52%, #3E8C92 100%)",
+    textoCor: "#EAF6F7", acentoCor: "#E6C84A", preLabelCor: "#A9CFD2", rodapeCor: "#A9CFD2",
+  },
+];
+
+function corDoSlug(slug: string) {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  return PALETA_FALLBACK[h % PALETA_FALLBACK.length];
+}
+
+// Procura a capa real do livro em /public/capas. Se achar, o layout vira o de
+// capa; se não, fica a versão tipográfica. Erro de rede aqui não pode derrubar
+// a imagem inteira — na dúvida, segue sem capa.
+async function achaCapaLocal(
+  slug: string,
+  origin: string,
+): Promise<string | undefined> {
+  for (const ext of ["jpg", "png", "jpeg", "webp"]) {
+    const caminho = `/capas/${slug}.${ext}`;
+    try {
+      const r = await fetch(`${origin}${caminho}`, { method: "HEAD" });
+      if (r.ok) return caminho;
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+}
+
+async function capaFallback(slug: string, origin: string): Promise<CapaConfig> {
+  const titulo = tituloDoSlug(slug);
+  return {
+    ...corDoSlug(slug),
+    preLabel: "ESCOLA DO DISCÍPULO",
+    titulo,
+    // Nada de string vazia aqui: o layout tipográfico desenha o divisor e um
+    // nó de texto acima do subtítulo, e vazio deixaria um traço solto no card.
+    subtitulo: "Leitura guiada",
+    rodape: "Mesa de discipulado e leitura",
+    livroUrl: await achaCapaLocal(slug, origin),
+  };
+}
+
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await context.params;
-  const config = CAPAS[slug];
-  if (!config) {
-    return new Response(`capa não definida para slug "${slug}"`, {
-      status: 404,
-    });
-  }
 
   // Self-fetch de fontes e capas locais (/public): usar o origin INTERNO do
   // próprio server, não o da requisição. Atrás de proxy (Traefik) o
   // `new URL(req.url).origin` vira https na porta interna (3000, que fala HTTP)
   // e o fetch quebra com "TLS wrong version number". 127.0.0.1:PORT é estável.
   const origin = `http://127.0.0.1:${process.env.PORT ?? 3000}`;
+
+  // Slug sem entrada no mapa não é mais 404: cai num card derivado do slug,
+  // com a capa real do livro quando ela existe em /public/capas.
+  const config = CAPAS[slug] ?? (await capaFallback(slug, origin));
+
   const fonts = await loadFonts(origin);
 
   const fontList = [
