@@ -5,8 +5,7 @@ import type { NextConfig } from "next";
 // o UpdatePrompt compara os dois pra detectar um deploy novo e oferecer atualizar.
 // APP_BUILD_ID: id de build injetado no Docker/self-hosted (Contabo). Vercel usa
 // o SHA do commit. Sem nenhum dos dois (local), fica "dev".
-const buildId =
-  process.env.APP_BUILD_ID ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "dev";
+const buildId = process.env.APP_BUILD_ID ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "dev";
 
 const nextConfig: NextConfig = {
   typedRoutes: false,
