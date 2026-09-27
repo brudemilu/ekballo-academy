@@ -12,6 +12,7 @@
 // =============================================================
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { enviarPush } from "./push";
+import { siteBase } from "./site-url";
 
 export type ResumoMatricula = {
   /** Quem entrou agora (não estava matriculado antes). */
@@ -29,9 +30,36 @@ type Opcoes = {
   alunoIds: string[];
   /** Falso faz a carga em silêncio: sem push, sem WhatsApp. */
   notificar: boolean;
-  /** Origem da requisição, para montar link absoluto no WhatsApp. */
+  /**
+   * Origem da requisição, só como último recurso para o link do WhatsApp.
+   * O endereço que vale é o de `siteBase()` — ver `baseParaLink()`.
+   */
   origin: string;
 };
+
+/**
+ * Endereço público para o link que o discípulo abre no celular.
+ *
+ * Atrás do Traefik, o `origin` da requisição é o bind interno do container
+ * (`https://0.0.0.0:3000`) — e o convite saía com esse endereço, que não abre
+ * em lugar nenhum, desde a migração pro Contabo (issue #183). Quem manda é
+ * `NEXT_PUBLIC_SITE_URL`, via `siteBase()`; o origin só entra quando dá para
+ * alcançá-lo de fora, o que em dev local (`http://localhost:3000`) é verdade.
+ */
+export function baseParaLink(origin: string): string {
+  const configurada = siteBase();
+  if (configurada) return configurada;
+  const host = (() => {
+    try {
+      return new URL(origin).hostname;
+    } catch {
+      return "";
+    }
+  })();
+  // Bind interno não é endereço: melhor mensagem sem link do que link morto.
+  if (!host || host === "0.0.0.0" || host === "::" || host === "[::]") return "";
+  return origin.replace(/\/+$/, "");
+}
 
 export async function matricularAlunos(
   admin: SupabaseClient,
@@ -92,13 +120,28 @@ export async function matricularAlunos(
     tag: `matricula-${cursoId}`,
   });
 
+  // Sem endereço público não há convite possível: mandar o link interno é pior
+  // que não mandar nada — o discípulo recebe algo que não abre e ninguém vê.
+  const base = baseParaLink(origin);
+  const link = url.startsWith("http") ? url : `${base}${url}`;
+  if (!base && !url.startsWith("http")) {
+    console.error(
+      "matrícula: sem NEXT_PUBLIC_SITE_URL e origin interno — WhatsApp não enfileirado",
+      { origin, cursoId },
+    );
+    return {
+      ...resumo,
+      push,
+      whatsapp: { enfileirados: 0, semTelefone: 0, erros: entraram.length },
+    };
+  }
+
   // WhatsApp entra na fila (sai ~1/min via pg_cron). Só quem tem telefone.
   const { data: alunos } = await admin
     .from("profiles")
     .select("id, nome, telefone")
     .in("id", entraram);
   type Perfil = { id: string; nome: string | null; telefone: string | null };
-  const link = url.startsWith("http") ? url : `${origin}${url}`;
   const fila: { aluno_id: string; telefone: string; corpo: string }[] = [];
   let semTelefone = 0;
   for (const aluno of (alunos || []) as Perfil[]) {
