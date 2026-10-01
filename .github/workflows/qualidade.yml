@@ -84,6 +84,13 @@ jobs:
       # `biome ci` termina em ERRO quando nenhum arquivo casa com os paths.
       # Um PR que só mexe em Python, SQL ou migration não tem o que lintar e
       # deve passar trivialmente — reprovar ali é falso negativo, não rigor.
+      #
+      # A guarda abaixo não basta: o filtro aceita qualquer `.json`, mas o
+      # Biome ignora alguns deles na própria config — package-lock.json à
+      # frente. Um PR que só atualiza o lockfile passava a guarda e então
+      # reprovava sem nada para checar. `--no-errors-on-unmatched` fecha esse
+      # caso sem afrouxar o portão: havendo arquivo no escopo, o Biome segue
+      # checando e segue reprovando por achado.
       - name: Biome nos arquivos alterados
         run: |
           alterados=$(git diff --name-only origin/master...HEAD \
@@ -92,7 +99,7 @@ jobs:
             echo "Nenhum arquivo que o Biome cheque foi alterado."
             exit 0
           fi
-          npx biome ci --changed --since=origin/master .
+          npx biome ci --changed --since=origin/master --no-errors-on-unmatched .
 
   seguranca:
     name: Segurança das dependências
