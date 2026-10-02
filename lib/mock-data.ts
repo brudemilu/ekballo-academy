@@ -553,6 +553,7 @@ export type CarrosselInstagramMock = {
   legenda: string;
   status: string;
   agendado_para?: string;
+  publicado_em?: string | null;
   criado_em: string;
   tipo?: "carrossel" | "reel";
   video_url?: string;
@@ -567,6 +568,62 @@ export function listMockCarrosseis(): CarrosselInstagramMock[] {
 export function removeMockCarrossel(id: string) {
   const i = MOCK_CARROSSEIS.findIndex((c) => c.id === id);
   if (i >= 0) MOCK_CARROSSEIS.splice(i, 1);
+}
+
+// ---- Ideias de conteúdo (copiloto, mock mutável) ----
+export type IdeiaConteudoMock = {
+  id: string;
+  titulo: string;
+  nota: string;
+  formato: "carrossel" | "reel" | "story" | "roteiro";
+  /** "YYYY-MM-DD" (dia planejado, sem hora) ou null = ainda sem data. */
+  data_planejada: string | null;
+  carrossel_id: string | null;
+  criado_em: string;
+};
+function _diaSP(offset: number): string {
+  const x = new Date();
+  x.setDate(x.getDate() + offset);
+  return x.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+}
+const MOCK_IDEIAS: IdeiaConteudoMock[] = [
+  {
+    id: "ideia-1",
+    titulo: "Por que discipulado acontece à mesa",
+    nota: "Puxar da Mesa 01 do Ego Transformado. Gancho: \"Jesus não abriu uma escola.\"",
+    formato: "reel",
+    data_planejada: _diaSP(1),
+    carrossel_id: null,
+    criado_em: new Date().toISOString(),
+  },
+  {
+    id: "ideia-2",
+    titulo: "3 perguntas para fazer ao seu discipulador",
+    nota: "",
+    formato: "carrossel",
+    data_planejada: _diaSP(3),
+    carrossel_id: null,
+    criado_em: new Date().toISOString(),
+  },
+  {
+    id: "ideia-3",
+    titulo: "Convite para a próxima turma",
+    nota: "Story com link de cadastro.",
+    formato: "story",
+    data_planejada: null,
+    carrossel_id: null,
+    criado_em: new Date().toISOString(),
+  },
+];
+export function listMockIdeias(): IdeiaConteudoMock[] {
+  return MOCK_IDEIAS;
+}
+export function addMockIdeia(i: IdeiaConteudoMock) {
+  MOCK_IDEIAS.unshift(i);
+}
+export function removeMockIdeia(id: string) {
+  const i = MOCK_IDEIAS.findIndex((x) => x.id === id);
+  if (i >= 0) MOCK_IDEIAS.splice(i, 1);
 }
 
 // ---- Compromissos da agenda pessoal (mock mutável) ----

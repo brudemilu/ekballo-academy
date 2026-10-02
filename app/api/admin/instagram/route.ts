@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram, reagendarCarrosselInstagram, atualizarConteudoCarrosselInstagram } from "@/lib/db";
+import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram, reagendarCarrosselInstagram, atualizarConteudoCarrosselInstagram, vincularIdeiaAoPost } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
 
-  let body: { conteudo?: string; slides?: unknown[]; legenda?: string; agendadoPara?: string; tipo?: string; videoUrl?: string };
+  let body: { conteudo?: string; slides?: unknown[]; legenda?: string; agendadoPara?: string; tipo?: string; videoUrl?: string; ideiaId?: string };
   try {
     body = await req.json();
   } catch {
@@ -53,6 +53,11 @@ export async function POST(req: NextRequest) {
       tipo: isReel ? "reel" : "carrossel",
       videoUrl: isReel ? body.videoUrl : null,
     });
+    // Veio de uma ideia do calendário: o post passa a representá-la. Falhar
+    // aqui não desfaz o post já salvo — no pior caso a ideia segue solta.
+    if (typeof body.ideiaId === "string" && body.ideiaId) {
+      await vincularIdeiaAoPost(body.ideiaId, id).catch(() => {});
+    }
     return NextResponse.json({ ok: true, id, agendado: Boolean(agendadoPara) });
   } catch (e) {
     return NextResponse.json(

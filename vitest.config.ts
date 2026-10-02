@@ -32,7 +32,12 @@ export default defineConfig({
       // aqui derruba a cobertura e reprova a esteira por contabilidade,
       // não por qualidade — foi o que aconteceu na primeira execução.
       // Ao escrever teste novo, acrescente o arquivo aqui.
-      include: ["lib/sanitizar-html.ts", "lib/telefone.ts", "lib/rate-limit.ts"],
+      include: [
+        "lib/sanitizar-html.ts",
+        "lib/telefone.ts",
+        "lib/rate-limit.ts",
+        "lib/conteudo-calendario.ts",
+      ],
       thresholds: {
         // Piso, não meta. Serve para acusar remoção de teste, não
         // para incentivar teste decorativo atrás de porcentagem.

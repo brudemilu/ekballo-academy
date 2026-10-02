@@ -38,6 +38,8 @@ export type RoteiroInicial = {
   conteudo: string;
   legenda: string;
   slides: { texto: string; prompt: string; modo: Modo; cor: string }[];
+  /** Ideia do calendário (aba Calendário do Instagram) que originou o post: ao salvar, as duas ficam ligadas. */
+  ideiaId?: string;
 };
 
 const MODOS: { v: Modo; label: string }[] = [
@@ -133,6 +135,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
   const [uploads, setUploads] = useState<Upload[]>([]);
   const uploadsRef = useRef<Upload[]>([]);
   const [tema, setTema] = useState<TemaKey>(TEMA_PADRAO); // cor do post (opção)
+  const [ideiaId, setIdeiaId] = useState<string | undefined>(undefined);
 
   // Pré-preenche o editor quando chega um roteiro de fora (sugestão da IA).
   useEffect(() => {
@@ -151,6 +154,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     setSlides(novos);
     setLegenda(roteiroInicial.legenda || "");
     setConteudo(roteiroInicial.conteudo || "");
+    setIdeiaId(roteiroInicial.ideiaId);
     setSalvo(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roteiroInicial?.nonce]);
@@ -297,10 +301,11 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
       const res = await fetch("/api/admin/instagram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, tipo }),
+        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, tipo, ideiaId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao salvar.");
+      setIdeiaId(undefined); // a ideia já ficou ligada a ESTE post; o próximo nasce solto
       setSalvo(true);
       router.refresh();
     } catch (e) {
@@ -361,10 +366,11 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
       const res = await fetch("/api/admin/instagram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, agendadoPara: quando.toISOString() }),
+        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, agendadoPara: quando.toISOString(), ideiaId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao agendar.");
+      setIdeiaId(undefined);
       setAgendadoOk(true);
       router.refresh();
     } catch (e) {
