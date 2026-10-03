@@ -32,6 +32,11 @@ async function banco(servico = false) {
 }
 
 import type { AgendaEvento } from "@/lib/agenda";
+import type {
+  ComentarioRespondido,
+  RegraComentario,
+  RegraValidada,
+} from "@/lib/comentarios-auto";
 import {
   adicionarPreferencia,
   limparPreferencias,
@@ -47,8 +52,10 @@ import {
   addMockExecucao,
   addMockIdeia,
   addMockReferencia,
+  addMockRegraComentario,
   addMockRoteiro,
   type CarrosselInstagramMock,
+  getMockComentariosAtivo,
   getMockMcAnswer,
   getMockPendenteWhatsApp,
   getMockPerfilConteudo,
@@ -61,6 +68,7 @@ import {
   listMockExecucoes,
   listMockIdeias,
   listMockReferencias,
+  listMockRegrasComentario,
   listMockRoteiros,
   MOCK_ALUNOS,
   MOCK_ATIVIDADES,
@@ -85,7 +93,9 @@ import {
   removeMockCorte,
   removeMockIdeia,
   removeMockReferencia,
+  removeMockRegraComentario,
   removeMockRoteiro,
+  setMockComentariosAtivo,
   setMockLeitura,
   setMockMcAnswer,
   setMockPendenteWhatsApp,
@@ -3051,5 +3061,140 @@ export async function atualizarConteudoCarrosselInstagram(
     .from("instagram_carrosseis")
     .update(fields)
     .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Resposta automática a comentários do Instagram (copiloto)
+// =============================================================
+const COLUNAS_REGRA_COMENTARIO =
+  "id, palavra, resposta_publica, mensagem_privada, ativo, criado_em";
+const COLUNAS_COMENTARIO_RESPONDIDO =
+  "comentario_id, regra_id, media_id, usuario, texto, palavra, publico_ok, privado_ok, erro, criado_em";
+
+export async function getComentariosAtivo(servico = false): Promise<boolean> {
+  if (isMockMode()) return getMockComentariosAtivo();
+  const supabase = await banco(servico);
+  const { data, error } = await supabase
+    .from("conteudo_comentarios_config")
+    .select("ativo")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.ativo);
+}
+
+export async function salvarComentariosAtivo(ativo: boolean): Promise<void> {
+  if (isMockMode()) {
+    setMockComentariosAtivo(ativo);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_comentarios_config")
+    .upsert({ id: 1, ativo, atualizado_em: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
+export async function listRegrasComentario(
+  servico = false,
+): Promise<RegraComentario[]> {
+  if (isMockMode()) return [...listMockRegrasComentario()];
+  const supabase = await banco(servico);
+  const { data, error } = await supabase
+    .from("conteudo_comentarios_regras")
+    .select(COLUNAS_REGRA_COMENTARIO)
+    .order("criado_em", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data || []) as RegraComentario[];
+}
+
+export async function criarRegraComentario(v: RegraValidada): Promise<RegraComentario> {
+  if (isMockMode()) {
+    const r: RegraComentario = {
+      id: crypto.randomUUID(),
+      ...v,
+      ativo: true,
+      criado_em: new Date().toISOString(),
+    };
+    addMockRegraComentario(r);
+    return r;
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_comentarios_regras")
+    .insert(v)
+    .select(COLUNAS_REGRA_COMENTARIO)
+    .single();
+  if (error) throw new Error(error.message);
+  return data as RegraComentario;
+}
+
+export async function excluirRegraComentario(id: string): Promise<void> {
+  if (isMockMode()) {
+    removeMockRegraComentario(id);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_comentarios_regras")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Os comentários respondidos mais recentes (o histórico da tela). */
+export async function listComentariosRespondidos(
+  limite = 20,
+): Promise<ComentarioRespondido[]> {
+  if (isMockMode()) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_comentarios_respondidos")
+    .select(COLUNAS_COMENTARIO_RESPONDIDO)
+    .order("criado_em", { ascending: false })
+    .limit(limite);
+  if (error) throw new Error(error.message);
+  return (data || []) as ComentarioRespondido[];
+}
+
+/** Entre os ids dados, os que já foram tratados. Modo serviço: quem chama é o cron. */
+export async function comentariosJaTratados(ids: string[]): Promise<Set<string>> {
+  if (isMockMode() || !ids.length) return new Set();
+  const { data, error } = await agendaSR()
+    .from("conteudo_comentarios_respondidos")
+    .select("comentario_id")
+    .in("comentario_id", ids);
+  if (error) throw new Error(error.message);
+  return new Set((data || []).map((r) => r.comentario_id as string));
+}
+
+/**
+ * Reserva o comentário ANTES de responder. Devolve false se outro já o
+ * reservou (duas rodadas do cron ao mesmo tempo): a chave primária é o id do
+ * comentário, então só um dos dois consegue inserir.
+ */
+export async function reservarComentario(
+  r: Pick<
+    ComentarioRespondido,
+    "comentario_id" | "regra_id" | "media_id" | "usuario" | "texto" | "palavra"
+  >,
+): Promise<boolean> {
+  if (isMockMode()) return true;
+  const { error } = await agendaSR().from("conteudo_comentarios_respondidos").insert(r);
+  if (!error) return true;
+  if (error.code === "23505") return false; // já reservado
+  throw new Error(error.message);
+}
+
+export async function concluirComentario(
+  comentarioId: string,
+  patch: Pick<ComentarioRespondido, "publico_ok" | "privado_ok" | "erro">,
+): Promise<void> {
+  if (isMockMode()) return;
+  const { error } = await agendaSR()
+    .from("conteudo_comentarios_respondidos")
+    .update(patch)
+    .eq("comentario_id", comentarioId);
   if (error) throw new Error(error.message);
 }

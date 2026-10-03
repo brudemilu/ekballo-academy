@@ -49,6 +49,7 @@ export default defineConfig({
         "lib/whatsapp-instagram.ts",
         "lib/instagram-modelos.ts",
         "lib/calendario-cristao.ts",
+        "lib/comentarios-auto.ts",
         "lib/painel.ts",
       ],
       thresholds: {

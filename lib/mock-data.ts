@@ -3,6 +3,7 @@
 // Ativado quando NEXT_PUBLIC_MOCK_MODE=true (padrão em .env.local)
 // =============================================================
 
+import type { RegraComentario } from "@/lib/comentarios-auto";
 import type { PerfilConteudo, ReferenciaConteudo } from "@/lib/conteudo-perfil";
 import type { CorteSalvo } from "@/lib/cortes";
 import {
@@ -810,4 +811,24 @@ export function updateMockCompromisso(
 export function removeMockCompromisso(id: string) {
   const i = MOCK_COMPROMISSOS.findIndex((c) => c.id === id);
   if (i >= 0) MOCK_COMPROMISSOS.splice(i, 1);
+}
+
+// ---- Resposta automática a comentários do Instagram (mock mutável) ----
+const MOCK_COMENTARIOS_CONFIG = { ativo: false };
+export function getMockComentariosAtivo(): boolean {
+  return MOCK_COMENTARIOS_CONFIG.ativo;
+}
+export function setMockComentariosAtivo(ativo: boolean) {
+  MOCK_COMENTARIOS_CONFIG.ativo = ativo;
+}
+const MOCK_REGRAS_COMENTARIO: RegraComentario[] = [];
+export function listMockRegrasComentario(): RegraComentario[] {
+  return MOCK_REGRAS_COMENTARIO;
+}
+export function addMockRegraComentario(r: RegraComentario) {
+  MOCK_REGRAS_COMENTARIO.push(r);
+}
+export function removeMockRegraComentario(id: string) {
+  const i = MOCK_REGRAS_COMENTARIO.findIndex((r) => r.id === id);
+  if (i >= 0) MOCK_REGRAS_COMENTARIO.splice(i, 1);
 }

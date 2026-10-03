@@ -338,6 +338,39 @@ test.describe("Instagram do ministério (admin)", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 
+  test("a aba Respostas abre desligada e só liga depois de uma palavra", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=respostas");
+
+    await expect(
+      page.getByRole("heading", { name: /respostas automáticas a comentários/i }),
+    ).toBeVisible();
+
+    // Palavra única por execução: desktop e celular rodam contra o mesmo servidor.
+    const palavra = `FUMACA${Date.now().toString().slice(-7)}`;
+    await page.getByLabel("Palavra que a pessoa comenta").fill(palavra);
+    await page.getByLabel("Mensagem direta").fill("Oi {nome}! Aqui está o link.");
+    await page.getByRole("button", { name: "Adicionar palavra" }).click();
+    await expect(page.getByRole("heading", { name: palavra })).toBeVisible();
+
+    // Com uma palavra cadastrada, o botão de ligar fica disponível.
+    await expect(
+      page.getByRole("button", { name: /^(Ligar|Desligar)$/ }),
+    ).toBeEnabled();
+
+    // A mesma palavra não entra duas vezes.
+    await page.getByLabel("Palavra que a pessoa comenta").fill(palavra.toLowerCase());
+    await page.getByLabel("Mensagem direta").fill("outra");
+    await page.getByRole("button", { name: "Adicionar palavra" }).click();
+    await expect(
+      page.getByText(/já existe uma regra para essa palavra/i),
+    ).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
   test("a aba Imagens abre com a imagem livre e a capa de Reel", async ({ page }) => {
     const erros = vigiarErros(page);
     await page.goto("/admin/instagram?aba=imagens");
