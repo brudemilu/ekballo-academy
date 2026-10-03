@@ -170,3 +170,27 @@ export async function chamarLLM(
   if (groq) return groq;
   return viaCloudflare(system, user, maxTokens);
 }
+
+/**
+ * Chama a IA e já lê a resposta com `ler` (o normalizador de quem chama). Se
+ * a leitura falhar — resposta fora do formato, o que acontece nos modelos de
+ * reserva — pede de novo UMA vez. Erro de rede/provedor não é repetido aqui:
+ * a corrente de provedores já cuidou disso.
+ *
+ * Existe por causa do piloto automático: ele roda sem ninguém olhando, e uma
+ * resposta torta não pode custar a semana.
+ */
+export async function chamarLLMLendo<T>(
+  system: string,
+  user: string,
+  maxTokens: number,
+  ler: (bruto: string) => T,
+  timeoutMs = 45_000,
+): Promise<T> {
+  const primeira = await chamarLLM(system, user, maxTokens, timeoutMs);
+  try {
+    return ler(primeira);
+  } catch {
+    return ler(await chamarLLM(system, user, maxTokens, timeoutMs));
+  }
+}

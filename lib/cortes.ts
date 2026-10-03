@@ -16,6 +16,8 @@
  * transcrição realmente tem.
  */
 
+import { lerJSONdaIA } from "@/lib/json-ia";
+
 /** Um pedaço da transcrição, como o Whisper devolve. Tempos em segundos. */
 export type Segmento = { i: number; f: number; t: string };
 
@@ -178,12 +180,10 @@ export function trechoFalado(
  */
 export function normalizarMomentos(bruto: string, segmentos: Segmento[]): Momento[] {
   if (!segmentos.length) throw new Error("a transcrição veio vazia");
-  const semCerca = bruto.replace(/```json/gi, "").replace(/```/g, "");
-  const ini = semCerca.indexOf("{");
-  const fim = semCerca.lastIndexOf("}");
-  if (ini === -1 || fim <= ini)
-    throw new Error("a IA não devolveu uma lista de momentos legível — tente de novo");
-  const o = JSON.parse(semCerca.slice(ini, fim + 1)) as { momentos?: unknown };
+  const o = lerJSONdaIA(
+    bruto,
+    "a IA não devolveu uma lista de momentos legível — tente de novo",
+  ) as { momentos?: unknown };
   const lista = Array.isArray(o.momentos) ? o.momentos : [];
   const total = segmentos[segmentos.length - 1].f;
 

@@ -53,3 +53,26 @@ describe("caminhoDoFundo · chave do cache no Storage", () => {
     expect(await caminhoDoFundo("a burning torch", 7)).not.toBe(base);
   });
 });
+
+describe("chamarLLMLendo · segunda tentativa quando a resposta vem ilegível", () => {
+  // Sem chave nenhuma no ambiente de teste, `chamarLLM` lança antes de chamar
+  // rede — então o que se confere aqui é o contrato: erro do PROVEDOR não é
+  // engolido nem repetido como se fosse erro de leitura.
+  it("erro de provedor sobe como está", async () => {
+    const { chamarLLMLendo } = await import("@/lib/llm");
+    const antes = { ...process.env };
+    delete process.env.GEMINI_API_KEY;
+    delete process.env.GROQ_API_KEY;
+    delete process.env.CLOUDFLARE_ACCOUNT_ID;
+    delete process.env.CLOUDFLARE_API_TOKEN;
+    let leituras = 0;
+    await expect(
+      chamarLLMLendo("s", "u", 10, () => {
+        leituras++;
+        return 1;
+      }),
+    ).rejects.toThrow(/Nenhum provedor/);
+    expect(leituras).toBe(0);
+    process.env = antes;
+  });
+});

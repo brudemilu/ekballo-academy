@@ -11,7 +11,9 @@
  * SEM ROSTO reconhecível (figura sagrada com rosto inventado por IA é um
  * problema pastoral, e rosto gerado costuma sair deformado).
  */
+
 import type { FormatoImagem } from "@/lib/instagram";
+import { lerJSONdaIA } from "@/lib/json-ia";
 
 export const ESTILOS = {
   cinematografico: {
@@ -89,14 +91,10 @@ Responda SOMENTE com JSON válido: {"cena":"..."}`;
 
 /** Limpa a resposta da IA; lança se não vier cena. */
 export function normalizarCena(bruto: string): string {
-  const semCerca = bruto.replace(/```json/gi, "").replace(/```/g, "");
-  const ini = semCerca.indexOf("{");
-  const fim = semCerca.lastIndexOf("}");
-  if (ini === -1 || fim <= ini)
-    throw new Error(
-      "a IA não devolveu uma cena legível — tente descrever de outro jeito",
-    );
-  const o = JSON.parse(semCerca.slice(ini, fim + 1)) as { cena?: unknown };
+  const o = lerJSONdaIA(
+    bruto,
+    "a IA não devolveu uma cena legível — tente descrever de outro jeito",
+  ) as { cena?: unknown };
   const cena =
     typeof o.cena === "string" ? o.cena.trim().replace(/\s+/g, " ").slice(0, 500) : "";
   if (cena.length < 8)

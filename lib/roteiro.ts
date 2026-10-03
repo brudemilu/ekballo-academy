@@ -16,6 +16,8 @@
  *    que quem grava sozinho consegue seguir sem decorar.
  */
 
+import { lerJSONdaIA } from "@/lib/json-ia";
+
 export const DURACOES = [15, 30, 60, 90] as const;
 export type Duracao = (typeof DURACOES)[number];
 
@@ -189,12 +191,10 @@ export function usuarioRoteiro(fonte: FonteRoteiro, foco?: string): string {
 const MOMENTOS: MomentoRoteiro[] = ["gancho", "corpo", "chamada"];
 
 function soJSON(bruto: string): unknown {
-  const semCerca = bruto.replace(/```json/gi, "").replace(/```/g, "");
-  const ini = semCerca.indexOf("{");
-  const fim = semCerca.lastIndexOf("}");
-  if (ini === -1 || fim <= ini)
-    throw new Error("a IA não devolveu um roteiro legível — tente gerar de novo");
-  return JSON.parse(semCerca.slice(ini, fim + 1));
+  return lerJSONdaIA(
+    bruto,
+    "a IA não devolveu um roteiro legível — tente gerar de novo",
+  );
 }
 
 function frase(v: unknown, max: number): string {

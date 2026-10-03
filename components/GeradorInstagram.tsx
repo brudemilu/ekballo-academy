@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { VISUAIS } from "@/lib/carrossel-ideia";
 import { TEMA_PADRAO, TEMAS, type TemaKey } from "@/lib/instagram-render";
 
 // Fontes pra prévia ao vivo (mesmas do servidor). Carregadas via @font-face.
@@ -179,6 +180,9 @@ export function GeradorInstagram({
   const uploadsRef = useRef<Upload[]>([]);
   const [tema, setTema] = useState<TemaKey>(TEMA_PADRAO); // cor do post (opção)
   const [tom, setTom] = useState<Tom>("escuro"); // título creme (escuro) ou navy (claro)
+  // "conteudo": o pastor cola o texto e a IA só reorganiza. "ideia": ele dá uma
+  // frase e a IA escreve o post (com a voz e os limites da aba Perfil).
+  const [modoTexto, setModoTexto] = useState<"conteudo" | "ideia">("conteudo");
   const [ideiaId, setIdeiaId] = useState<string | undefined>(undefined);
 
   // Pré-preenche o editor quando chega um roteiro de fora (sugestão da IA).
@@ -271,7 +275,7 @@ export function GeradorInstagram({
       const res = await fetch("/api/admin/instagram/montar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, tipo }),
+        body: JSON.stringify({ conteudo, tipo, modo: modoTexto }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao montar.");
@@ -549,25 +553,61 @@ export function GeradorInstagram({
 
         {tipo !== "upload" ? (
           <>
+            <div className="mb-3 flex flex-wrap gap-2">
+              {(
+                [
+                  { v: "conteudo", label: "📄 Tenho o conteúdo" },
+                  { v: "ideia", label: "💡 Só tenho a ideia" },
+                ] as const
+              ).map((o) => (
+                <button
+                  type="button"
+                  key={o.v}
+                  onClick={() => setModoTexto(o.v)}
+                  aria-pressed={modoTexto === o.v}
+                  className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
+                    modoTexto === o.v
+                      ? "border-mesa-700 bg-mesa-700 text-mesa-50"
+                      : "border-mesa-200 bg-white text-mesa-600 hover:bg-mesa-100"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
             <label
               htmlFor="ig-conteudo"
               className="mb-2 block text-sm font-medium text-mesa-700"
             >
-              Seu conteúdo
+              {modoTexto === "ideia" ? "Sua ideia, em uma frase" : "Seu conteúdo"}
             </label>
             <textarea
               id="ig-conteudo"
               value={conteudo}
               onChange={(e) => setConteudo(e.target.value)}
-              rows={5}
-              placeholder="Ex.: Essa nova estação não será construída apenas por estratégias humanas. Ela será sustentada pela glória de Deus…"
+              rows={modoTexto === "ideia" ? 2 : 5}
+              placeholder={
+                modoTexto === "ideia"
+                  ? "Ex.: por que o discipulado acontece à mesa e não na sala de aula"
+                  : "Ex.: Essa nova estação não será construída apenas por estratégias humanas. Ela será sustentada pela glória de Deus…"
+              }
               className="w-full resize-y rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-mesa-800 outline-none focus:border-laranja-400"
             />
+            {modoTexto === "ideia" && (
+              <p className="mt-2 max-w-2xl text-justify text-xs leading-relaxed text-mesa-500 hyphens-auto">
+                Aqui a IA escreve o post inteiro, com a voz e os limites da aba Perfil.
+                Ela não cita versículo com referência (a menos que você escreva a
+                referência na ideia) e não inventa fatos. Leia antes de publicar: o
+                texto é dela, a responsabilidade é sua.
+              </p>
+            )}
             <div className="mt-4 flex items-center gap-3">
               <button
                 type="button"
                 onClick={montar}
-                disabled={montando || conteudo.trim().length < 8}
+                disabled={
+                  montando || conteudo.trim().length < (modoTexto === "ideia" ? 4 : 8)
+                }
                 className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
               >
                 {montando
@@ -641,6 +681,55 @@ export function GeradorInstagram({
               <div className="mt-1 text-center text-xs text-mesa-400">{i + 1}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Opções de visual: conjuntos prontos de cor, fonte e tom */}
+      {tipo !== "upload" && slides.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-mesa-200 bg-white p-5">
+          <p className="mb-3 text-sm font-medium text-mesa-700">
+            Escolha o visual{" "}
+            <span className="font-normal text-mesa-400">
+              — vale para todos os slides; dá para ajustar depois
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {VISUAIS.map((v) => {
+              const ativo =
+                tema === v.tema &&
+                tom === v.tom &&
+                slides.every((x) => x.fonte === v.fonte);
+              return (
+                <button
+                  type="button"
+                  key={v.chave}
+                  onClick={() => {
+                    setTema(v.tema);
+                    setTom(v.tom);
+                    setSlides((prev) => prev.map((x) => ({ ...x, fonte: v.fonte })));
+                    setSalvo(false);
+                  }}
+                  aria-pressed={ativo}
+                  className={`w-28 rounded-xl border p-1.5 text-left transition ${
+                    ativo
+                      ? "border-laranja-500 bg-laranja-50"
+                      : "border-mesa-200 hover:border-mesa-400"
+                  }`}
+                >
+                  {/* biome-ignore lint/performance/noImgElement: a prévia é um PNG gerado na hora pela rota OG; next/image não otimiza rota OG */}
+                  <img
+                    src={ogSrc({ ...slides[0], fonte: v.fonte }, v.tema, v.tom)}
+                    alt=""
+                    loading="lazy"
+                    className="aspect-[4/5] w-full rounded-lg bg-mesa-100 object-cover"
+                  />
+                  <span className="mt-1 block text-center text-xs font-medium text-mesa-700">
+                    {v.nome}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 

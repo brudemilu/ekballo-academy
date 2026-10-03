@@ -12,6 +12,8 @@
  * não entram, mesmo que a forma dela inspire.
  */
 
+import { lerJSONdaIA } from "@/lib/json-ia";
+
 export const MAX_REFERENCIAS = 5;
 export const MAX_PILARES = 6;
 const MAX_EXEMPLOS = 12_000;
@@ -229,12 +231,7 @@ REGRAS
 Responda SOMENTE com JSON válido: {"tom":"...","vocabulario":["até 12"],"evitar":["até 8"]}`;
 
 function soJSON(bruto: string): unknown {
-  const semCerca = bruto.replace(/```json/gi, "").replace(/```/g, "");
-  const ini = semCerca.indexOf("{");
-  const fim = semCerca.lastIndexOf("}");
-  if (ini === -1 || fim <= ini)
-    throw new Error("a IA não devolveu um resultado legível");
-  return JSON.parse(semCerca.slice(ini, fim + 1));
+  return lerJSONdaIA(bruto, "a IA não devolveu um resultado legível — tente de novo");
 }
 
 function frase(v: unknown, max: number): string {

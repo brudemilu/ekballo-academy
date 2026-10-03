@@ -43,6 +43,8 @@ export default defineConfig({
         "lib/cortes.ts",
         "lib/piloto.ts",
         "lib/imagem-livre.ts",
+        "lib/carrossel-ideia.ts",
+        "lib/json-ia.ts",
         "lib/painel.ts",
       ],
       thresholds: {
