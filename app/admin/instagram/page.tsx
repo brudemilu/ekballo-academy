@@ -4,12 +4,16 @@ import { AdminShell } from "@/components/AdminShell";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
+import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
 import { diaSP } from "@/lib/conteudo-calendario";
+import { PERFIL_VAZIO } from "@/lib/conteudo-perfil";
 import {
   getCurrentSession,
   getIdeiaConteudo,
+  getPerfilConteudo,
   listCarrosseisInstagram,
   listIdeiasConteudo,
+  listReferenciasConteudo,
 } from "@/lib/db";
 
 export const metadata = { title: "Instagram — Ekballo" };
@@ -23,6 +27,7 @@ export const dynamic = "force-dynamic";
 const ABAS = [
   { v: "calendario", label: "🗓️ Calendário" },
   { v: "criar", label: "✨ Criar e postar" },
+  { v: "perfil", label: "🧭 Perfil" },
 ] as const;
 type Aba = (typeof ABAS)[number]["v"];
 
@@ -43,11 +48,25 @@ export default async function AdminInstagramPage({
       ? (abaParam as Aba)
       : "calendario";
 
-  const [carrosseis, ideias, ideia] = await Promise.all([
-    listCarrosseisInstagram().catch(() => []),
+  // Cada aba busca só o que mostra.
+  const [carrosseis, ideias, ideia, perfil, referencias] = await Promise.all([
+    aba === "perfil" ? Promise.resolve([]) : listCarrosseisInstagram().catch(() => []),
     aba === "calendario" ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
     ideiaId ? getIdeiaConteudo(ideiaId).catch(() => null) : Promise.resolve(null),
+    aba === "perfil"
+      ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
+      : Promise.resolve(PERFIL_VAZIO),
+    aba === "perfil" ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
   ]);
+
+  const INTRO: Record<Aba, string> = {
+    calendario:
+      "A semana num lugar só. Guarde a ideia quando ela vier, arraste para o dia em que pretende postar e leve ao estúdio para virar post. Os posts agendados e publicados aparecem aqui sozinhos.",
+    criar:
+      "Cole qualquer conteúdo (trecho de mensagem, frase de livro, reflexão, versículo). A IA monta os slides, sugere a imagem que conversa com o texto, a palavra-chave e a legenda. Você edita tudo e aprova.",
+    perfil:
+      "Conte ao copiloto quem é o ministério, como você fala e em quem se inspira. É daqui que os roteiros e os posts tiram o jeito de escrever.",
+  };
 
   const configurado = Boolean(
     process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN,
@@ -63,9 +82,7 @@ export default async function AdminInstagramPage({
           Instagram do ministério
         </h1>
         <p className="mt-3 max-w-2xl text-justify leading-relaxed text-mesa-600 hyphens-auto">
-          {aba === "calendario"
-            ? "A semana num lugar só. Guarde a ideia quando ela vier, arraste para o dia em que pretende postar e leve ao estúdio para virar post. Os posts agendados e publicados aparecem aqui sozinhos."
-            : "Cole qualquer conteúdo (trecho de mensagem, frase de livro, reflexão, versículo). A IA monta os slides, sugere a imagem que conversa com o texto, a palavra-chave e a legenda. Você edita tudo e aprova."}
+          {INTRO[aba]}
         </p>
       </div>
 
@@ -89,7 +106,9 @@ export default async function AdminInstagramPage({
         ))}
       </nav>
 
-      {aba === "calendario" ? (
+      {aba === "perfil" ? (
+        <PerfilConteudoForm perfilInicial={perfil} referenciasIniciais={referencias} />
+      ) : aba === "calendario" ? (
         <CalendarioConteudo
           ideiasIniciais={ideias}
           posts={carrosseis.map((c) => ({

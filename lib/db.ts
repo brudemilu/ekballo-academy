@@ -23,16 +23,24 @@ function agendaSR() {
 
 import type { AgendaEvento } from "@/lib/agenda";
 import {
+  PERFIL_VAZIO,
+  type PerfilConteudo,
+  type ReferenciaConteudo,
+} from "@/lib/conteudo-perfil";
+import {
   addMockCarrossel,
   addMockCompromisso,
   addMockIdeia,
+  addMockReferencia,
   type CarrosselInstagramMock,
   getMockMcAnswer,
+  getMockPerfilConteudo,
   type IdeiaConteudoMock,
   isMockMode,
   listMockCarrosseis,
   listMockCompromissos,
   listMockIdeias,
+  listMockReferencias,
   MOCK_ALUNOS,
   MOCK_ATIVIDADES,
   MOCK_AULAS,
@@ -54,8 +62,10 @@ import {
   removeMockCarrossel,
   removeMockCompromisso,
   removeMockIdeia,
+  removeMockReferencia,
   setMockLeitura,
   setMockMcAnswer,
+  setMockPerfilConteudo,
   updateMockCompromisso,
 } from "@/lib/mock-data";
 import { PERMISSOES, type Permissao } from "@/lib/permissoes";
@@ -2470,6 +2480,122 @@ export async function deletarIdeiaConteudo(id: string): Promise<void> {
   }
   const supabase = await createClient();
   const { error } = await supabase.from("conteudo_ideias").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Perfil de conteúdo e criadores de referência (copiloto)
+// =============================================================
+const COLUNAS_PERFIL =
+  "objetivo, publico, pilares, voz_amostras, voz_dna, temas_proibidos, chamada_padrao";
+const COLUNAS_REFERENCIA = "id, nome, link, exemplos, dna, analisado_em";
+
+export async function getPerfilConteudo(): Promise<PerfilConteudo> {
+  if (isMockMode()) return getMockPerfilConteudo();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_perfil")
+    .select(COLUNAS_PERFIL)
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? ({ ...PERFIL_VAZIO, ...data } as PerfilConteudo) : PERFIL_VAZIO;
+}
+
+/** Grava só os campos enviados (a tela salva o formulário; a análise salva a voz). */
+export async function salvarPerfilConteudo(
+  patch: Partial<PerfilConteudo>,
+): Promise<void> {
+  if (isMockMode()) {
+    setMockPerfilConteudo({ ...getMockPerfilConteudo(), ...patch });
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_perfil")
+    .upsert({ id: 1, ...patch, atualizado_em: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
+export async function listReferenciasConteudo(): Promise<ReferenciaConteudo[]> {
+  if (isMockMode()) return listMockReferencias();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_referencias")
+    .select(COLUNAS_REFERENCIA)
+    .order("criado_em", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data || []) as ReferenciaConteudo[];
+}
+
+export async function getReferenciaConteudo(
+  id: string,
+): Promise<ReferenciaConteudo | null> {
+  if (isMockMode()) return listMockReferencias().find((r) => r.id === id) ?? null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_referencias")
+    .select(COLUNAS_REFERENCIA)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as ReferenciaConteudo | null) ?? null;
+}
+
+export async function criarReferenciaConteudo(
+  input: Pick<ReferenciaConteudo, "nome"> &
+    Partial<Pick<ReferenciaConteudo, "link" | "exemplos">>,
+): Promise<ReferenciaConteudo> {
+  const linha = {
+    nome: input.nome,
+    link: input.link ?? "",
+    exemplos: input.exemplos ?? "",
+  };
+  if (isMockMode()) {
+    const ref: ReferenciaConteudo = {
+      id: crypto.randomUUID(),
+      ...linha,
+      dna: null,
+      analisado_em: null,
+    };
+    addMockReferencia(ref);
+    return ref;
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_referencias")
+    .insert(linha)
+    .select(COLUNAS_REFERENCIA)
+    .single();
+  if (error) throw new Error(error.message);
+  return data as ReferenciaConteudo;
+}
+
+export async function atualizarReferenciaConteudo(
+  id: string,
+  patch: Partial<Omit<ReferenciaConteudo, "id">>,
+): Promise<void> {
+  if (!Object.keys(patch).length) return;
+  if (isMockMode()) {
+    const ref = listMockReferencias().find((r) => r.id === id);
+    if (ref) Object.assign(ref, patch);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_referencias")
+    .update(patch)
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deletarReferenciaConteudo(id: string): Promise<void> {
+  if (isMockMode()) {
+    removeMockReferencia(id);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("conteudo_referencias").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 
