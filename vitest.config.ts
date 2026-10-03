@@ -47,6 +47,7 @@ export default defineConfig({
         "lib/json-ia.ts",
         "lib/assistente.ts",
         "lib/whatsapp-instagram.ts",
+        "lib/instagram-modelos.ts",
         "lib/painel.ts",
       ],
       thresholds: {

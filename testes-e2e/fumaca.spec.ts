@@ -159,6 +159,16 @@ test.describe("Instagram do ministério (admin)", () => {
       page.getByText(/o texto é dela, a responsabilidade é sua/i),
     ).toBeVisible();
 
+    // Os modelos de texto: escolher um explica o que ele é, e a imagem sai
+    // de verdade (sem foto e sem IA, então dá para conferir aqui).
+    await page.getByRole("button", { name: "Checklist", exact: true }).click();
+    await expect(page.getByText(/não usa imagem de IA/i)).toBeVisible();
+    const imagem = await page.request.get(
+      `/api/og/instagram?modelo=checklist&verso=${encodeURIComponent("Antes de discipular; ore; ouça; abra a Bíblia")}`,
+    );
+    expect(imagem.status()).toBe(200);
+    expect(imagem.headers()["content-type"]).toContain("image/png");
+
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 

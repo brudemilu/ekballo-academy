@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { obterFundo } from "@/lib/fundo-cache";
+import { lerModelo } from "@/lib/instagram-modelos";
+import { renderSlideModelo } from "@/lib/instagram-modelos-render";
 import {
   BRUSH_FILE,
   FOG_FILE,
@@ -29,6 +31,12 @@ import { buscarFotoPexels } from "@/lib/pexels";
 //   - papel          → public/fundos/paper.jpg (asset fixo).
 //
 // Params: verso, fonte, realce, cor, top, ref, prompt, seed, foto, tom, dl, bg.
+//
+// `modelo` (citacao | checklist | cartao | manchete) troca tudo isso por uma
+// moldura só de texto: não busca foto nem chama a IA.
+
+// A serifada de leitura dos modelos de texto (corpo da citação, itens, cartão).
+const FONTE_TEXTO_FILE = "dm-serif.ttf";
 
 const fontCache: Record<string, ArrayBuffer> = {};
 async function loadFont(origin: string, file: string) {
@@ -73,9 +81,53 @@ export async function GET(req: NextRequest) {
   const download = url.searchParams.get("dl") === "1";
   const soFundo = url.searchParams.get("bg") === "1";
 
+  const modelo = lerModelo(url.searchParams.get("modelo"));
+
   if (!FONTES[fonteKey]) return new Response("fonte inválida", { status: 400 });
   if (!soFundo && !verso)
     return new Response("parâmetro 'verso' obrigatório", { status: 400 });
+
+  const filename = sanitizeFilename(`${verso.replace(/[{}()]/g, "").slice(0, 40)}.png`);
+  const cabecalhos = download
+    ? { "Content-Disposition": `attachment; filename="${filename}"` }
+    : undefined;
+
+  // Modelo de texto: sai antes de qualquer busca de foto.
+  if (modelo !== "foto" && !soFundo) {
+    const [display, script, textoFonte] = await Promise.all([
+      loadFont(selfOrigin, FONTES[fonteKey].file),
+      loadFont(selfOrigin, SCRIPT_FONT_FILE),
+      loadFont(selfOrigin, FONTE_TEXTO_FILE),
+    ]);
+    return new ImageResponse(
+      renderSlideModelo({
+        modelo,
+        texto: verso,
+        cor,
+        tom,
+        maiusculas: FONTES[fonteKey].upper,
+        top,
+        ref,
+        largura: TAMANHO_W,
+        altura,
+      }),
+      {
+        width: TAMANHO_W,
+        height: altura,
+        fonts: [
+          {
+            name: "Display",
+            data: display,
+            weight: 400,
+            style: FONTES[fonteKey].style,
+          },
+          { name: "Script", data: script, weight: 400, style: "normal" },
+          { name: "Texto", data: textoFonte, weight: 400, style: "normal" },
+        ],
+        headers: cabecalhos,
+      },
+    );
+  }
 
   // resolve a foto: 1) IA (FLUX.2, guardada no Storage por prompt+seed) →
   //                 2) Pexels (foto de banco) se a IA falhar ou a cota acabar →
@@ -140,8 +192,6 @@ export async function GET(req: NextRequest) {
     altura,
   });
 
-  const filename = sanitizeFilename(`${verso.replace(/[{}()]/g, "").slice(0, 40)}.png`);
-
   return new ImageResponse(jsx, {
     width: TAMANHO_W,
     height: altura,
@@ -154,8 +204,6 @@ export async function GET(req: NextRequest) {
       },
       { name: "Script", data: scriptFont, weight: 400, style: "normal" },
     ],
-    headers: download
-      ? { "Content-Disposition": `attachment; filename="${filename}"` }
-      : undefined,
+    headers: cabecalhos,
   });
 }

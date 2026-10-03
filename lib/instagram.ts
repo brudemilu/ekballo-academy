@@ -191,6 +191,11 @@ export function gerarFundoLivre(
 // ----------------------------------------------------------------------------
 const MODOS_VALIDOS: RealceModo[] = ["circulo", "grifo", "marca", "dourado", "nenhum"];
 
+/** O pedido padrão (reorganizar o conteúdo colado), para quem precisa acrescentar algo a ele. */
+export function systemCarrosselPadrao(tipo: "carrossel" | "unico"): string {
+  return buildSystemPrompt(tipo);
+}
+
 function buildSystemPrompt(tipo: "carrossel" | "unico"): string {
   const quantidade =
     tipo === "unico"
