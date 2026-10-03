@@ -48,6 +48,7 @@ import {
   addMockRoteiro,
   type CarrosselInstagramMock,
   getMockMcAnswer,
+  getMockPendenteWhatsApp,
   getMockPerfilConteudo,
   getMockPiloto,
   type IdeiaConteudoMock,
@@ -85,6 +86,7 @@ import {
   removeMockRoteiro,
   setMockLeitura,
   setMockMcAnswer,
+  setMockPendenteWhatsApp,
   setMockPerfilConteudo,
   setMockPiloto,
   updateMockCompromisso,
@@ -2886,8 +2888,56 @@ export async function atualizarExecucaoPiloto(
   if (error) throw new Error(error.message);
 }
 
+// ---- Rascunho em conversa no WhatsApp (sempre pelo cliente de serviço) ----
+export type PendenteWhatsApp = {
+  carrossel_id: string | null;
+  ideia: string;
+  tentativas: number;
+};
+
+export async function getPendenteWhatsApp(): Promise<PendenteWhatsApp | null> {
+  if (isMockMode()) return getMockPendenteWhatsApp();
+  const { data, error } = await agendaSR()
+    .from("conteudo_whatsapp_pendente")
+    .select("carrossel_id, ideia, tentativas")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as PendenteWhatsApp | null) ?? null;
+}
+
+export async function setPendenteWhatsApp(p: PendenteWhatsApp): Promise<void> {
+  if (isMockMode()) {
+    setMockPendenteWhatsApp(p);
+    return;
+  }
+  const { error } = await agendaSR()
+    .from("conteudo_whatsapp_pendente")
+    .upsert({ id: 1, ...p, atualizado_em: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
+/** O post, lido pelo cliente de serviço (o webhook não tem sessão). */
+export async function getCarrosselInstagram(
+  id: string,
+): Promise<CarrosselInstagramMock | null> {
+  if (isMockMode()) return listMockCarrosseis().find((c) => c.id === id) ?? null;
+  const { data, error } = await agendaSR()
+    .from("instagram_carrosseis")
+    .select(
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as unknown as CarrosselInstagramMock | null) ?? null;
+}
+
 /** Tira um post da fila de publicação (veto): volta a ser rascunho, sem data. */
-export async function desagendarCarrosselInstagram(id: string): Promise<void> {
+export async function desagendarCarrosselInstagram(
+  id: string,
+  servico = false,
+): Promise<void> {
   if (isMockMode()) {
     const c = listMockCarrosseis().find((x) => x.id === id);
     if (c && c.status === "agendado") {
@@ -2896,7 +2946,7 @@ export async function desagendarCarrosselInstagram(id: string): Promise<void> {
     }
     return;
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   // Só mexe no que ainda está agendado: se o cron já publicou, não há o que vetar.
   const { error } = await supabase
     .from("instagram_carrosseis")
@@ -2906,12 +2956,15 @@ export async function desagendarCarrosselInstagram(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-export async function deletarCarrosselInstagram(id: string): Promise<void> {
+export async function deletarCarrosselInstagram(
+  id: string,
+  servico = false,
+): Promise<void> {
   if (isMockMode()) {
     removeMockCarrossel(id);
     return;
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { error } = await supabase.from("instagram_carrosseis").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
@@ -2920,6 +2973,7 @@ export async function deletarCarrosselInstagram(id: string): Promise<void> {
 export async function reagendarCarrosselInstagram(
   id: string,
   agendadoPara: string,
+  servico = false,
 ): Promise<void> {
   if (isMockMode()) {
     const c = listMockCarrosseis().find((x) => x.id === id);
@@ -2929,7 +2983,7 @@ export async function reagendarCarrosselInstagram(
     }
     return;
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { error } = await supabase
     .from("instagram_carrosseis")
     .update({

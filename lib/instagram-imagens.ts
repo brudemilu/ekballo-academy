@@ -9,7 +9,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 const BUCKET = "instagram";
 
-type SlidePub = {
+export type SlidePub = {
   texto: string;
   prompt: string;
   modo: string;
@@ -23,7 +23,7 @@ type SlidePub = {
   imageUrl?: string; // já é uma imagem pronta (modo upload) — usa direto
 };
 
-function ogUrlDoSlide(origin: string, s: SlidePub): string {
+export function ogUrlDoSlide(origin: string, s: SlidePub): string {
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,

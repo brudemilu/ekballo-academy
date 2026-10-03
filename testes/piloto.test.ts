@@ -192,6 +192,12 @@ describe("mensagemDoPiloto e veto", () => {
     expect(msg).toContain("*Esperando você:*\n• Roteiro para você gravar");
     expect(msg).toContain("• Reel (feito pela IA) (cota de voz)");
     expect(msg).toContain("não precisa fazer nada");
+    // dá para vetar respondendo a própria mensagem, sem abrir o site
+    expect(msg).toContain(
+      "responda aqui *cancelar carrossel*, *cancelar reel* ou *cancelar tudo*",
+    );
+    // começa com a marca do robô: o webhook não a lê como comando
+    expect(msg.startsWith("🤖")).toBe(true);
     expect(msg.endsWith("https://x/piloto")).toBe(true);
   });
 
