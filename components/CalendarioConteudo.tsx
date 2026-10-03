@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { datasEntre } from "@/lib/calendario-cristao";
 import {
   diaDoPost,
   diasDaSemana,
@@ -199,6 +200,11 @@ export function CalendarioConteudo({
   const [erro, setErro] = useState<string | null>(null);
 
   const dias = useMemo(() => diasDaSemana(segunda), [segunda]);
+  // Páscoa, Reforma, Dia da Bíblia…: o selo aparece no dia em que cai.
+  const datasDaSemana = useMemo(
+    () => datasEntre(segunda, somarDias(segunda, 6)),
+    [segunda],
+  );
 
   // Ideia ligada a post agendado/publicado sai do calendário: quem aparece é
   // o post. Ligada a um rascunho, fica — é ela que dá dia ao rascunho.
@@ -376,6 +382,7 @@ export function CalendarioConteudo({
           const v = porDia.get(dia) || { ideias: [], posts: [] };
           const ehHoje = dia === hoje;
           const passou = dia < hoje;
+          const datas = datasDaSemana.filter((d) => d.dia === dia);
           return (
             <section
               key={dia}
@@ -398,6 +405,15 @@ export function CalendarioConteudo({
                 </span>
                 <span className="text-xs text-mesa-400">{rotuloDia(dia)}</span>
               </header>
+              {datas.map((d) => (
+                <p
+                  key={d.chave}
+                  title={d.angulo}
+                  className="mb-1.5 rounded-md border border-oliveira-200 bg-oliveira-50 px-1.5 py-1 text-[11px] font-semibold leading-tight text-oliveira-800"
+                >
+                  ✝ {d.nome}
+                </p>
+              ))}
               <div className="flex flex-1 flex-col gap-1.5">
                 {v.posts.map((p) => (
                   <CartaoPost key={p.id} post={p} />

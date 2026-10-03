@@ -5,6 +5,8 @@ import {
   systemAssistente,
   validarConversa,
 } from "@/lib/assistente";
+import { dataPorExtenso, proximasDatas } from "@/lib/calendario-cristao";
+import { diaSP } from "@/lib/conteudo-calendario";
 import { contextoDoPerfil } from "@/lib/conteudo-perfil";
 import { getCurrentSession, getPerfilConteudo } from "@/lib/db";
 import { chamarLLMLendo } from "@/lib/llm";
@@ -35,8 +37,11 @@ export async function POST(req: NextRequest) {
       year: "numeric",
       timeZone: "America/Sao_Paulo",
     });
+    const datas = proximasDatas(diaSP(new Date()), 45)
+      .map((d) => `- ${dataPorExtenso(d)}`)
+      .join("\n");
     const resposta = await chamarLLMLendo(
-      systemAssistente(perfil ? contextoDoPerfil(perfil) : "", hoje),
+      systemAssistente(perfil ? contextoDoPerfil(perfil) : "", hoje, datas),
       conversaParaIA(v.valor),
       1800,
       normalizarResposta,

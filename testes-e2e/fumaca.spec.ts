@@ -144,6 +144,18 @@ test.describe("Instagram do ministério (admin)", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 
+  test("o calendário marca as datas cristãs no dia em que caem", async ({ page }) => {
+    const erros = vigiarErros(page);
+    // Semana fixa, para o teste não depender do dia em que roda: a Semana
+    // Santa de 2026 (Sexta-feira Santa dia 3, Páscoa dia 5 de abril).
+    await page.goto("/admin/instagram?aba=calendario&semana=2026-04-05");
+
+    await expect(page.getByText("✝ Sexta-feira Santa")).toBeVisible();
+    await expect(page.getByText("✝ Páscoa")).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
   test("a aba Criar mantém o estúdio de carrossel", async ({ page }) => {
     const erros = vigiarErros(page);
     await page.goto("/admin/instagram?aba=criar");

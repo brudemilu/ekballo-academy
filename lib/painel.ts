@@ -15,6 +15,7 @@
  *   mostrar +300% em cima de um post só.
  */
 
+import { proximasDatas } from "@/lib/calendario-cristao";
 import { diaSP, inicioDaSemana, somarDias } from "@/lib/conteudo-calendario";
 
 export const JANELA_DIAS = 90;
@@ -302,10 +303,13 @@ function diasEntre(de: string, ate: string): number {
   return Math.round((Date.UTC(a2, m2 - 1, d2) - Date.UTC(a1, m1 - 1, d1)) / 86_400_000);
 }
 
+/** Com quantos dias de antecedência uma data do calendário cristão vira ação. */
+export const ANTECEDENCIA_DATA_DIAS = 10;
+
 /**
  * As até três coisas a fazer hoje, da mais urgente à menos. Regras fixas, na
- * ordem: o que está quebrado → o que vence hoje ou amanhã → o que falta para a
- * semana → o que melhora o copiloto.
+ * ordem: o que está quebrado → o que vence hoje ou amanhã → data do calendário
+ * cristão chegando → o que falta para a semana → o que melhora o copiloto.
  */
 export function acoesDoDia(e: EstadoDoCopiloto, max = 3): Acao[] {
   const acoes: Acao[] = [];
@@ -363,6 +367,21 @@ export function acoesDoDia(e: EstadoDoCopiloto, max = 3): Acao[] {
       detalhe: `Está no calendário para ${quando(story.data_planejada, e.hoje)}.`,
       href: "/admin/instagram?aba=calendario",
       rotulo: "Ver no calendário",
+    });
+  }
+
+  // Data do calendário cristão chegando sem nada planejado para o dia. Só a
+  // mais próxima: uma lista de datas viraria ruído.
+  const data = proximasDatas(e.hoje, ANTECEDENCIA_DATA_DIAS).find(
+    (d) => !e.ideias.some((i) => i.data_planejada === d.dia),
+  );
+  if (data) {
+    acoes.push({
+      chave: "data",
+      titulo: `${data.nome} é ${quando(data.dia, e.hoje)}`,
+      detalhe: `Não há nada no calendário para o dia. Um ponto de partida: ${data.angulo}`,
+      href: `/admin/instagram?aba=calendario&semana=${data.dia}`,
+      rotulo: "Planejar no calendário",
     });
   }
 

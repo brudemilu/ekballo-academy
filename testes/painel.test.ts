@@ -131,6 +131,14 @@ describe("destaques · fora da curva do próprio perfil", () => {
 });
 
 describe("acoesDoDia · até três, da mais urgente à menos", () => {
+  // HOJE fica a 9 dias do Dia das Crianças. Com esta ideia no calendário, a
+  // data está coberta e não vira ação — os testes abaixo olham as outras regras.
+  const DIA_DAS_CRIANCAS = {
+    titulo: "Fé que se ensina a uma criança",
+    formato: "carrossel",
+    data_planejada: "2026-10-12",
+    carrossel_id: null,
+  };
   const vazio: EstadoDoCopiloto = {
     hoje: HOJE,
     posts: [post(1, 10)],
@@ -142,6 +150,7 @@ describe("acoesDoDia · até três, da mais urgente à menos", () => {
         data_planejada: "2026-10-04",
         carrossel_id: null,
       },
+      DIA_DAS_CRIANCAS,
     ],
     perfil: { feitos: 4, total: 4 },
   };
@@ -211,15 +220,46 @@ describe("acoesDoDia · até três, da mais urgente à menos", () => {
           data_planejada: HOJE,
           carrossel_id: "c1",
         },
+        DIA_DAS_CRIANCAS,
       ],
     });
     expect(a).toEqual([]);
   });
 
   it("semana sem nada planejado e perfil parado há dias", () => {
-    const a = acoesDoDia({ ...vazio, ideias: [], posts: [post(9, 10)] });
+    const a = acoesDoDia({
+      ...vazio,
+      ideias: [DIA_DAS_CRIANCAS],
+      posts: [post(9, 10)],
+    });
     expect(a.map((x) => x.chave)).toEqual(["semana", "parado"]);
     expect(a[1].titulo).toBe("Faz 9 dias que o perfil não posta");
+  });
+
+  it("data do calendário cristão chegando sem nada planejado vira ação", () => {
+    const a = acoesDoDia({ ...vazio, ideias: [vazio.ideias[0]] });
+    expect(a.map((x) => x.chave)).toEqual(["data"]);
+    expect(a[0].titulo).toBe("Dia das Crianças é daqui a 9 dias");
+    // O botão abre o calendário já na semana da data.
+    expect(a[0].href).toContain("semana=2026-10-12");
+  });
+
+  it("data longe demais ainda não é assunto", () => {
+    // Em 1º de julho a próxima data (Dia dos Pais, 9 de agosto) está a mais de um mês.
+    const a = acoesDoDia({
+      ...vazio,
+      hoje: "2026-07-01",
+      posts: [],
+      ideias: [
+        {
+          titulo: "Qualquer",
+          formato: "carrossel",
+          data_planejada: "2026-07-02",
+          carrossel_id: null,
+        },
+      ],
+    });
+    expect(a).toEqual([]);
   });
 
   it("nunca passa de três", () => {
@@ -230,6 +270,6 @@ describe("acoesDoDia · até três, da mais urgente à menos", () => {
       ideias: [],
       perfil: { feitos: 0, total: 4 },
     });
-    expect(a.map((x) => x.chave)).toEqual(["erro", "semana", "parado"]);
+    expect(a.map((x) => x.chave)).toEqual(["erro", "data", "semana"]);
   });
 });
