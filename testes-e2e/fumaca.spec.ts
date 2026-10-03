@@ -134,9 +134,12 @@ test.describe("Instagram do ministério (admin)", () => {
     await expect(page.getByText(/convite para a próxima turma/i)).toBeVisible();
 
     await page.getByRole("button", { name: "+ Ideia" }).last().click();
-    await page.getByLabel("Título").fill("Ideia criada pelo teste de fumaça");
+    // Título único: desktop e celular rodam contra o mesmo servidor, e a
+    // ideia de um aparece na tela do outro.
+    const titulo = `Ideia de fumaça ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    await page.getByLabel("Título").fill(titulo);
     await page.getByRole("button", { name: "Salvar" }).click();
-    await expect(page.getByText("Ideia criada pelo teste de fumaça")).toBeVisible();
+    await expect(page.getByText(titulo)).toBeVisible();
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
@@ -193,6 +196,27 @@ test.describe("Instagram do ministério (admin)", () => {
     await expect(gerar).toBeEnabled();
 
     await expect(page.getByText(/nenhum ainda/i)).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
+  test("o pacote da semana abre no calendário e só libera com fonte escolhida", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram");
+
+    await page.getByRole("button", { name: "Montar a semana" }).click();
+    const montar = page.getByRole("button", { name: /montar e pôr no calendário/i });
+    await expect(montar).toBeDisabled();
+    // Os três dias já vêm sugeridos: sobra só escolher a fonte.
+    await expect(page.getByLabel(/carrossel/i).first()).not.toHaveValue("");
+
+    await page.getByLabel("Livro ou temática").selectOption({ index: 1 });
+    const mesa = page.getByLabel("Mesa ou capítulo");
+    await expect(mesa.locator("option")).not.toHaveCount(1);
+    await mesa.selectOption({ index: 1 });
+    await expect(montar).toBeEnabled();
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });

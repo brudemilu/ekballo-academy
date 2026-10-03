@@ -3,6 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+  type CursoOpcao,
+  fonteInicial,
+  fontePronta,
+  pedidoDaFonte,
+  SeletorFonteConteudo,
+} from "@/components/SeletorFonteConteudo";
+import {
   type BlocoRoteiro,
   DURACOES,
   type Duracao,
@@ -23,10 +30,7 @@ import {
  * trechos que sustentam o roteiro ficam à vista para conferência.
  */
 
-type CursoOpcao = { id: string; titulo: string; autor?: string | null };
 type ReferenciaOpcao = { id: string; nome: string };
-type AulaOpcao = { id: string; titulo: string; ordem: number };
-type TipoFonte = "mesa" | "devocional" | "livre";
 
 type EmEdicao = {
   /** id quando já está guardado. */
@@ -51,12 +55,6 @@ const NOME_MOMENTO: Record<BlocoRoteiro["momento"], string> = {
   chamada: "Chamada final",
 };
 
-const FONTES: { v: TipoFonte; label: string }[] = [
-  { v: "mesa", label: "📚 Uma mesa ou capítulo" },
-  { v: "devocional", label: "🙏 Um devocional" },
-  { v: "livre", label: "✍️ Um texto meu" },
-];
-
 async function chamar(url: string, metodo: string, corpo?: object) {
   const res = await fetch(url, {
     method: metodo,
@@ -73,6 +71,7 @@ export function RoteirosConteudo({
   referencias,
   roteirosIniciais,
   hoje,
+  abrirId,
 }: {
   cursos: CursoOpcao[];
   /** Só as referências já analisadas (as outras não têm forma para emprestar). */
@@ -80,15 +79,11 @@ export function RoteirosConteudo({
   roteirosIniciais: RoteiroSalvo[];
   /** "YYYY-MM-DD" de hoje em SP, do servidor. */
   hoje: string;
+  /** Roteiro guardado a abrir ao entrar (vindo do calendário: ?roteiro=<id>). */
+  abrirId?: string;
 }) {
   const router = useRouter();
-  const [tipo, setTipo] = useState<TipoFonte>("mesa");
-  const [cursoId, setCursoId] = useState("");
-  const [aulas, setAulas] = useState<AulaOpcao[]>([]);
-  const [aulaId, setAulaId] = useState("");
-  const [dataDev, setDataDev] = useState(hoje);
-  const [tituloLivre, setTituloLivre] = useState("");
-  const [textoLivre, setTextoLivre] = useState("");
+  const [fonteEscolhida, setFonteEscolhida] = useState(() => fonteInicial(hoje));
   const [duracao, setDuracao] = useState<Duracao>(30);
   const [referenciaId, setReferenciaId] = useState("");
   const [foco, setFoco] = useState("");
@@ -97,41 +92,17 @@ export function RoteirosConteudo({
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [edicao, setEdicao] = useState<EmEdicao | null>(null);
+  const [edicao, setEdicao] = useState<EmEdicao | null>(() => {
+    const r = abrirId ? roteirosIniciais.find((x) => x.id === abrirId) : undefined;
+    return r
+      ? { id: r.id, roteiro: r.roteiro, duracao: r.duracao, fonte: r.fonte }
+      : null;
+  });
   const [salvos, setSalvos] = useState(roteirosIniciais);
   const [teleprompter, setTeleprompter] = useState(false);
   const resultado = useRef<HTMLDivElement>(null);
 
-  // Trocou o livro: busca as mesas dele.
-  useEffect(() => {
-    setAulaId("");
-    setAulas([]);
-    if (!cursoId) return;
-    let vivo = true;
-    chamar(`/api/admin/instagram/roteiros?aulasDe=${cursoId}`, "GET")
-      .then((d) => {
-        if (vivo) setAulas(d.aulas as AulaOpcao[]);
-      })
-      .catch((e) => {
-        if (vivo) setErro(e instanceof Error ? e.message : "Falha ao listar as mesas.");
-      });
-    return () => {
-      vivo = false;
-    };
-  }, [cursoId]);
-
-  function pedidoDeFonte() {
-    if (tipo === "mesa") return { tipo, cursoId, aulaId };
-    if (tipo === "devocional") return { tipo, data: dataDev };
-    return { tipo, titulo: tituloLivre, texto: textoLivre };
-  }
-
-  const podeGerar =
-    tipo === "mesa"
-      ? Boolean(cursoId && aulaId)
-      : tipo === "devocional"
-        ? Boolean(dataDev)
-        : textoLivre.trim().length >= 80;
+  const podeGerar = fontePronta(fonteEscolhida);
 
   async function gerar() {
     setGerando(true);
@@ -140,7 +111,7 @@ export function RoteirosConteudo({
     try {
       const d = await chamar("/api/admin/instagram/roteiros", "POST", {
         gerar: {
-          fonte: pedidoDeFonte(),
+          fonte: pedidoDaFonte(fonteEscolhida),
           duracao,
           referenciaId: referenciaId || undefined,
           foco,
@@ -257,119 +228,12 @@ export function RoteirosConteudo({
           De onde sai o roteiro?
         </h2>
 
-        <div className="mb-4 flex flex-wrap gap-2">
-          {FONTES.map((f) => (
-            <button
-              type="button"
-              key={f.v}
-              onClick={() => setTipo(f.v)}
-              aria-pressed={tipo === f.v}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                tipo === f.v
-                  ? "border-laranja-600 bg-laranja-50 text-laranja-700"
-                  : "border-mesa-200 bg-white text-mesa-600 hover:bg-mesa-100"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {tipo === "mesa" && (
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className={ROTULO} htmlFor="rot-curso">
-                Livro ou temática
-              </label>
-              <select
-                id="rot-curso"
-                value={cursoId}
-                onChange={(e) => setCursoId(e.target.value)}
-                className={CAMPO}
-              >
-                <option value="">Escolha…</option>
-                {cursos.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.titulo}
-                    {c.autor ? ` — ${c.autor}` : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={ROTULO} htmlFor="rot-aula">
-                Mesa ou capítulo
-              </label>
-              <select
-                id="rot-aula"
-                value={aulaId}
-                onChange={(e) => setAulaId(e.target.value)}
-                disabled={!cursoId}
-                className={CAMPO}
-              >
-                <option value="">
-                  {cursoId
-                    ? aulas.length
-                      ? "Escolha…"
-                      : "Carregando…"
-                    : "Escolha o livro antes"}
-                </option>
-                {aulas.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.titulo}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-
-        {tipo === "devocional" && (
-          <div className="max-w-xs">
-            <label className={ROTULO} htmlFor="rot-data">
-              Devocional do dia
-            </label>
-            <input
-              id="rot-data"
-              type="date"
-              value={dataDev}
-              onChange={(e) => setDataDev(e.target.value)}
-              className={CAMPO}
-            />
-          </div>
-        )}
-
-        {tipo === "livre" && (
-          <div className="space-y-3">
-            <div>
-              <label className={ROTULO} htmlFor="rot-titulo-livre">
-                Do que é o texto{" "}
-                <span className="font-normal text-mesa-400">(opcional)</span>
-              </label>
-              <input
-                id="rot-titulo-livre"
-                maxLength={120}
-                value={tituloLivre}
-                onChange={(e) => setTituloLivre(e.target.value)}
-                placeholder="Ex.: pregação de domingo, João 15"
-                className={CAMPO}
-              />
-            </div>
-            <div>
-              <label className={ROTULO} htmlFor="rot-texto-livre">
-                Texto
-              </label>
-              <textarea
-                id="rot-texto-livre"
-                rows={7}
-                value={textoLivre}
-                onChange={(e) => setTextoLivre(e.target.value)}
-                placeholder="Cole o trecho da pregação, da anotação ou do estudo. O roteiro sai só do que estiver aqui."
-                className={CAMPO}
-              />
-            </div>
-          </div>
-        )}
+        <SeletorFonteConteudo
+          cursos={cursos}
+          valor={fonteEscolhida}
+          onMudar={setFonteEscolhida}
+          onErro={setErro}
+        />
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <fieldset>

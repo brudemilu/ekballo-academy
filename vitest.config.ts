@@ -39,6 +39,7 @@ export default defineConfig({
         "lib/conteudo-calendario.ts",
         "lib/conteudo-perfil.ts",
         "lib/roteiro.ts",
+        "lib/pacote.ts",
       ],
       thresholds: {
         // Piso, não meta. Serve para acusar remoção de teste, não

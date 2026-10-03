@@ -8,6 +8,7 @@ import {
   diasDaSemana,
   FORMATOS_IDEIA,
   type FormatoIdeiaCal,
+  ideiaVisivel,
   inicioDaSemana,
   somarDias,
 } from "@/lib/conteudo-calendario";
@@ -29,6 +30,8 @@ export type IdeiaCal = {
   formato: FormatoIdeiaCal;
   data_planejada: string | null;
   carrossel_id: string | null;
+  /** Roteiro guardado que a ideia representa (pacote da semana). */
+  roteiro_id?: string | null;
 };
 
 export type PostCal = {
@@ -120,7 +123,11 @@ function CartaoIdeia({
       }`}
     >
       <span className="text-[10px] font-semibold uppercase tracking-wider text-laranja-700">
-        💡 Ideia · {f.icone} {f.nome}
+        {ideia.carrossel_id
+          ? `${f.icone} Rascunho pronto`
+          : ideia.roteiro_id
+            ? "🎬 Roteiro pronto"
+            : `💡 Ideia · ${f.icone} ${f.nome}`}
       </span>
       <span className="mt-0.5 line-clamp-3 block text-sm font-medium leading-snug text-mesa-800">
         {ideia.titulo}
@@ -154,18 +161,36 @@ function CartaoPost({ post }: { post: PostCal }) {
   );
 }
 
+/** O botão de ação da ideia: muda conforme ela já tem peça pronta ou não. */
+function atalhoDaIdeia(ideia: IdeiaCal): { href: string; rotulo: string } {
+  if (ideia.carrossel_id)
+    return { href: "/admin/instagram?aba=criar#posts", rotulo: "Abrir o rascunho" };
+  if (ideia.roteiro_id) {
+    return {
+      href: `/admin/instagram?aba=roteiros&roteiro=${ideia.roteiro_id}`,
+      rotulo: "Abrir o roteiro",
+    };
+  }
+  if (ideia.formato === "roteiro")
+    return { href: "/admin/instagram?aba=roteiros", rotulo: "Escrever o roteiro" };
+  return { href: `/admin/instagram?ideia=${ideia.id}`, rotulo: "Levar ao estúdio" };
+}
+
 export function CalendarioConteudo({
   ideiasIniciais,
   posts,
   hoje,
+  semanaInicial,
 }: {
   ideiasIniciais: IdeiaCal[];
   posts: PostCal[];
   /** "YYYY-MM-DD" de hoje em SP, calculado no servidor (evita divergência na hidratação). */
   hoje: string;
+  /** Dia cuja semana deve abrir (ex.: logo depois de montar um pacote). */
+  semanaInicial?: string;
 }) {
   const router = useRouter();
-  const [segunda, setSegunda] = useState(() => inicioDaSemana(hoje));
+  const [segunda, setSegunda] = useState(() => inicioDaSemana(semanaInicial || hoje));
   const [ideias, setIdeias] = useState(ideiasIniciais);
   const [criandoEm, setCriandoEm] = useState<string | "sem-data" | null>(null);
   const [editando, setEditando] = useState<IdeiaCal | null>(null);
@@ -175,8 +200,10 @@ export function CalendarioConteudo({
 
   const dias = useMemo(() => diasDaSemana(segunda), [segunda]);
 
-  // Ideia que já virou post sai do calendário: quem aparece é o post.
-  const ideiasSoltas = ideias.filter((i) => !i.carrossel_id);
+  // Ideia ligada a post agendado/publicado sai do calendário: quem aparece é
+  // o post. Ligada a um rascunho, fica — é ela que dá dia ao rascunho.
+  const ideiasSoltas = ideias.filter((i) => ideiaVisivel(i, posts));
+  const comIdeia = new Set(ideiasSoltas.map((i) => i.carrossel_id).filter(Boolean));
 
   const porDia = useMemo(() => {
     const mapa = new Map<string, { ideias: IdeiaCal[]; posts: PostCal[] }>();
@@ -199,7 +226,8 @@ export function CalendarioConteudo({
   }, [dias, ideiasSoltas, posts]);
 
   const semData = ideiasSoltas.filter((i) => !i.data_planejada);
-  const rascunhos = posts.filter((p) => p.status === "rascunho");
+  // Rascunho que já aparece pela ideia dele não entra de novo em "Sem data".
+  const rascunhos = posts.filter((p) => p.status === "rascunho" && !comIdeia.has(p.id));
   const diasComConteudo = dias.filter((d) => {
     const v = porDia.get(d);
     return v && (v.ideias.length || v.posts.length);
@@ -456,11 +484,7 @@ export function CalendarioConteudo({
         <FormIdeia
           titulo="Ideia"
           inicial={editando}
-          estudioHref={
-            editando.formato === "roteiro"
-              ? null
-              : `/admin/instagram?ideia=${editando.id}`
-          }
+          atalho={atalhoDaIdeia(editando)}
           onCancelar={() => setEditando(null)}
           onExcluir={() => excluir(editando.id)}
           onSalvar={async (dados) => {
@@ -477,15 +501,15 @@ type DadosIdeia = Omit<IdeiaCal, "id" | "carrossel_id">;
 function FormIdeia({
   titulo,
   inicial,
-  estudioHref,
+  atalho,
   onCancelar,
   onSalvar,
   onExcluir,
 }: {
   titulo: string;
   inicial: DadosIdeia;
-  /** Link para abrir a ideia no estúdio; null = formato ainda sem estúdio. */
-  estudioHref?: string | null;
+  /** Para onde a ideia leva: o estúdio, o rascunho pronto ou o roteiro guardado. */
+  atalho?: { href: string; rotulo: string };
   onCancelar: () => void;
   onSalvar: (dados: DadosIdeia) => Promise<void> | void;
   onExcluir?: () => void;
@@ -640,12 +664,12 @@ function FormIdeia({
             >
               Cancelar
             </button>
-            {estudioHref && (
+            {atalho && (
               <Link
-                href={estudioHref}
+                href={atalho.href}
                 className="rounded-full border border-laranja-300 px-4 py-2 text-sm font-semibold text-laranja-700 hover:bg-laranja-50"
               >
-                Levar ao estúdio →
+                {atalho.rotulo} →
               </Link>
             )}
             <button
@@ -657,11 +681,6 @@ function FormIdeia({
             </button>
           </div>
         </div>
-        {estudioHref === null && (
-          <p className="mt-3 text-xs text-mesa-500">
-            O roteiro falado com IA chega na próxima etapa do copiloto.
-          </p>
-        )}
       </form>
     </div>
   );

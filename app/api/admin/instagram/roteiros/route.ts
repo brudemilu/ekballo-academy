@@ -1,21 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  listarMesasComLeitura,
+  montarFonte,
+  type PedidoFonte,
+} from "@/lib/conteudo-fonte";
 import { contextoDoPerfil } from "@/lib/conteudo-perfil";
 import {
   atualizarRoteiroConteudo,
   deletarRoteiroConteudo,
-  getAula,
   getCurrentSession,
   getPerfilConteudo,
   getReferenciaConteudo,
-  listAulasByCurso,
-  listCursosPublicados,
   salvarRoteiroConteudo,
 } from "@/lib/db";
-import { getDevocionalDoDia } from "@/lib/devocionais";
 import { chamarLLM } from "@/lib/llm";
 import {
   duracaoValida,
-  type FonteRoteiro,
   MIN_FONTE,
   normalizarRoteiro,
   type OrigemRoteiro,
@@ -35,9 +35,6 @@ export const maxDuration = 60;
  *  - PATCH  { id, roteiro }                    → atualiza um roteiro guardado
  *  - DELETE ?id=<uuid>
  */
-
-// Aulas que são prova, não leitura: não servem de fonte.
-const MARCA_AVALIACAO = "[[AVALIACAO_PARACH]]";
 
 async function exigirAdmin() {
   const session = await getCurrentSession();
@@ -60,59 +57,11 @@ export async function GET(req: NextRequest) {
   const cursoId = req.nextUrl.searchParams.get("aulasDe");
   if (!cursoId) return recusa("aulasDe é obrigatório");
   try {
-    const aulas = (await listAulasByCurso(cursoId))
-      .filter((a) => a.conteudo && !a.conteudo.startsWith(MARCA_AVALIACAO))
-      .map((a) => ({ id: a.id, titulo: a.titulo, ordem: a.ordem }));
+    const aulas = await listarMesasComLeitura(cursoId);
     return NextResponse.json({ aulas });
   } catch (e) {
     return falha(e, "Falha ao listar as mesas.");
   }
-}
-
-type PedidoFonte =
-  | { tipo: "mesa"; cursoId?: string; aulaId?: string }
-  | { tipo: "devocional"; data?: string }
-  | { tipo: "livre"; titulo?: string; texto?: string };
-
-/** Busca o texto da fonte escolhida; devolve a mensagem de erro para a tela se não der. */
-async function montarFonte(pedido: PedidoFonte): Promise<FonteRoteiro | string> {
-  if (pedido?.tipo === "mesa") {
-    if (!pedido.cursoId || !pedido.aulaId) return "Escolha o livro e a mesa.";
-    const [aula, cursos] = await Promise.all([
-      getAula(pedido.aulaId, pedido.cursoId),
-      listCursosPublicados(),
-    ]);
-    if (!aula?.conteudo) return "Essa mesa não tem texto de leitura.";
-    const curso = cursos.find((c) => c.id === pedido.cursoId);
-    return {
-      tipo: "mesa",
-      titulo: curso ? `${curso.titulo} · ${aula.titulo}` : aula.titulo,
-      autor: curso?.autor || undefined,
-      texto: aula.conteudo,
-    };
-  }
-  if (pedido?.tipo === "devocional") {
-    const dia = /^\d{4}-\d{2}-\d{2}$/.test(pedido.data || "") ? pedido.data : undefined;
-    const dev = await getDevocionalDoDia(dia);
-    if (!dev) return "Não há devocional para esse dia.";
-    return {
-      tipo: "devocional",
-      titulo: `Devocional · ${dev.titulo || dev.versiculo_ref}`,
-      autor: dev.autor || undefined,
-      texto: `${dev.versiculo_ref} (${dev.versiculo_versao}): ${dev.versiculo_texto}\n\n${dev.reflexao}`,
-    };
-  }
-  if (pedido?.tipo === "livre") {
-    const texto = typeof pedido.texto === "string" ? pedido.texto : "";
-    return {
-      tipo: "livre",
-      titulo:
-        (typeof pedido.titulo === "string" && pedido.titulo.trim().slice(0, 120)) ||
-        "Texto colado",
-      texto,
-    };
-  }
-  return "Escolha de onde o roteiro vai sair.";
 }
 
 export async function POST(req: NextRequest) {

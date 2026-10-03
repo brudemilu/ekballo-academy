@@ -2381,7 +2381,7 @@ export type IdeiaConteudoInput = {
 };
 
 const COLUNAS_IDEIA =
-  "id, titulo, nota, formato, data_planejada, carrossel_id, criado_em";
+  "id, titulo, nota, formato, data_planejada, carrossel_id, roteiro_id, criado_em";
 
 export async function listIdeiasConteudo(): Promise<IdeiaConteudo[]> {
   if (isMockMode()) return listMockIdeias();
@@ -2397,18 +2397,21 @@ export async function listIdeiasConteudo(): Promise<IdeiaConteudo[]> {
 
 export async function criarIdeiaConteudo(
   input: Required<Pick<IdeiaConteudoInput, "titulo">> & IdeiaConteudoInput,
+  vinculo?: { carrossel_id?: string; roteiro_id?: string },
 ): Promise<IdeiaConteudo> {
   const linha = {
     titulo: input.titulo,
     nota: input.nota ?? "",
     formato: input.formato ?? "carrossel",
     data_planejada: input.data_planejada ?? null,
+    // Peça que já nasce pronta (pacote da semana): a ideia aponta para ela.
+    carrossel_id: vinculo?.carrossel_id ?? null,
+    roteiro_id: vinculo?.roteiro_id ?? null,
   };
   if (isMockMode()) {
     const ideia: IdeiaConteudo = {
       id: crypto.randomUUID(),
       ...linha,
-      carrossel_id: null,
       criado_em: new Date().toISOString(),
     };
     addMockIdeia(ideia);

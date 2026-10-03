@@ -61,6 +61,26 @@ export function diaDoPost(p: {
   return null;
 }
 
+/**
+ * A ideia aparece no calendário? Sem post ligado, sempre. Ligada a um post,
+ * depende do post: enquanto ele é rascunho (não tem dia), a ideia segura o
+ * lugar dele no dia planejado; quando ele é agendado ou publicado, some — o
+ * post passa a ocupar o próprio dia e os dois seriam a mesma coisa em dobro.
+ */
+export function ideiaVisivel(
+  ideia: { carrossel_id?: string | null },
+  posts: {
+    id: string;
+    status: string;
+    agendado_para?: string | null;
+    publicado_em?: string | null;
+  }[],
+): boolean {
+  if (!ideia.carrossel_id) return true;
+  const post = posts.find((p) => p.id === ideia.carrossel_id);
+  return !post || diaDoPost(post) === null;
+}
+
 export type IdeiaValidada = {
   titulo?: string;
   nota?: string;
