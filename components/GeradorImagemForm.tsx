@@ -19,6 +19,9 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
   );
   const [formato, setFormato] = useState<Formato>("feed");
   const [previewKey, setPreviewKey] = useState(0); // força recarregar preview
+  // Semente da foto de fundo. Sem ela a rota tira a semente do próprio texto,
+  // e o mesmo versículo dava sempre a mesma foto, sem como pedir outra.
+  const [seed, setSeed] = useState<number | null>(null);
 
   const url = useMemo(() => {
     const params = new URLSearchParams();
@@ -31,8 +34,9 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
     params.set("f", formato);
     params.set("tema", tema);
     if (tema === "editorial") params.set("moldura", moldura);
+    if (seed !== null) params.set("seed", String(seed));
     return `/api/og/livre?${params.toString()}`;
-  }, [verso, ref, top, sub, brand, bg, formato, tema, moldura, iaAtiva]);
+  }, [verso, ref, top, sub, brand, bg, formato, tema, moldura, iaAtiva, seed]);
 
   const downloadUrl = `${url}&dl=1`;
 
@@ -173,6 +177,13 @@ export function GeradorImagemForm({ iaAtiva }: { iaAtiva: boolean }) {
             className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-medium text-mesa-50 hover:bg-mesa-800"
           >
             🔄 Atualizar preview
+          </button>
+          <button
+            type="button"
+            onClick={() => setSeed(Math.floor(Math.random() * 900_000) + 1)}
+            className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 hover:bg-mesa-100"
+          >
+            🎲 Outra foto
           </button>
           <a
             href={downloadUrl}

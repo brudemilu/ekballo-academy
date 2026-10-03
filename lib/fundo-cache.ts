@@ -8,7 +8,7 @@
  *
  * Sem service role (modo mock, dev sem chave) cai de volta só na memória.
  */
-import { gerarFundoLivre } from "@/lib/instagram";
+import { type FormatoImagem, gerarFundoLivre } from "@/lib/instagram";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const BUCKET = "instagram";
@@ -104,7 +104,16 @@ export async function fundoComCache(
   return gerado;
 }
 
-/** Fundo do carrossel do Instagram para (prompt, seed). */
-export function obterFundo(prompt: string, seed: number): Promise<string | null> {
-  return fundoComCache(`${prompt.trim()}|${seed}`, () => gerarFundoLivre(prompt, seed));
+/**
+ * Fundo do carrossel do Instagram para (prompt, seed). O formato "feed" mantém
+ * a chave de sempre (os fundos já guardados continuam valendo); os outros
+ * formatos entram na chave para não devolver uma imagem 4:5 onde se pediu 9:16.
+ */
+export function obterFundo(
+  prompt: string,
+  seed: number,
+  formato: FormatoImagem = "feed",
+): Promise<string | null> {
+  const chave = `${prompt.trim()}|${seed}${formato === "feed" ? "" : `|${formato}`}`;
+  return fundoComCache(chave, () => gerarFundoLivre(prompt, seed, formato));
 }

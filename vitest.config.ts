@@ -42,6 +42,7 @@ export default defineConfig({
         "lib/pacote.ts",
         "lib/cortes.ts",
         "lib/piloto.ts",
+        "lib/imagem-livre.ts",
         "lib/painel.ts",
       ],
       thresholds: {

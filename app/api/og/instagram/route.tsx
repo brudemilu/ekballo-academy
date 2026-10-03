@@ -67,6 +67,9 @@ export async function GET(req: NextRequest) {
   const seed = parseInt(url.searchParams.get("seed") || "0", 10) || 0;
   const foto = url.searchParams.get("foto")?.trim() || "fallback";
   const tom = url.searchParams.get("tom") === "claro" ? "claro" : "escuro";
+  // f=story: capa de Reel / story (1080×1920) em vez do post 4:5.
+  const story = url.searchParams.get("f") === "story";
+  const altura = story ? 1920 : TAMANHO_H;
   const download = url.searchParams.get("dl") === "1";
   const soFundo = url.searchParams.get("bg") === "1";
 
@@ -81,11 +84,11 @@ export async function GET(req: NextRequest) {
   // raramente conversa com o texto do slide; a gerada segue o prompt.
   let bgSrc = `${selfOrigin}/fundos/${foto}.jpg`;
   if (prompt) {
-    const gerado = await obterFundo(prompt, seed);
+    const gerado = await obterFundo(prompt, seed, story ? "story" : "feed");
     if (gerado) {
       bgSrc = gerado;
     } else {
-      const pex = await buscarFotoPexels(prompt, seed);
+      const pex = await buscarFotoPexels(prompt, seed, TAMANHO_W, altura);
       if (pex) bgSrc = pex;
     }
   }
@@ -134,13 +137,14 @@ export async function GET(req: NextRequest) {
     top,
     ref,
     tom,
+    altura,
   });
 
   const filename = sanitizeFilename(`${verso.replace(/[{}()]/g, "").slice(0, 40)}.png`);
 
   return new ImageResponse(jsx, {
     width: TAMANHO_W,
-    height: TAMANHO_H,
+    height: altura,
     fonts: [
       {
         name: "Display",

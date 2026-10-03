@@ -282,4 +282,24 @@ test.describe("Instagram do ministério (admin)", () => {
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
+
+  test("a aba Imagens abre com a imagem livre e a capa de Reel", async ({ page }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=imagens");
+
+    await expect(page.getByRole("heading", { name: "Imagem livre" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Capa de Reel" })).toBeVisible();
+    // Sem descrição não há o que criar.
+    await expect(
+      page.getByRole("button", { name: /criar 4 variações/i }),
+    ).toBeDisabled();
+    await page
+      .getByLabel("O que você quer ver")
+      .fill("uma mesa com pão e uma Bíblia aberta");
+    await expect(
+      page.getByRole("button", { name: /criar 4 variações/i }),
+    ).toBeEnabled();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
 });
