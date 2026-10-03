@@ -5,10 +5,11 @@ import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
 import { PacoteSemana } from "@/components/PacoteSemana";
+import { PainelInstagram } from "@/components/PainelInstagram";
 import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
 import { RoteirosConteudo } from "@/components/RoteirosConteudo";
 import { diaSP } from "@/lib/conteudo-calendario";
-import { PERFIL_VAZIO } from "@/lib/conteudo-perfil";
+import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
 import {
   getCurrentSession,
   getIdeiaConteudo,
@@ -19,7 +20,16 @@ import {
   listReferenciasConteudo,
   listRoteirosConteudo,
 } from "@/lib/db";
+import { analisarPerfil } from "@/lib/instagram-insights";
 import { diasSugeridos } from "@/lib/pacote";
+import {
+  acoesDoDia,
+  constancia,
+  destaques,
+  indicadores,
+  postsNaJanela,
+} from "@/lib/painel";
+import { carregarDadosPainel } from "@/lib/painel-dados";
 
 export const metadata = { title: "Instagram — Ekballo" };
 export const dynamic = "force-dynamic";
@@ -30,6 +40,7 @@ export const dynamic = "force-dynamic";
  * frentes do copiloto (roteiros, painel, referências) entram como abas novas.
  */
 const ABAS = [
+  { v: "painel", label: "📊 Painel" },
   { v: "calendario", label: "🗓️ Calendário" },
   { v: "criar", label: "✨ Criar e postar" },
   { v: "roteiros", label: "🎬 Roteiros" },
@@ -62,25 +73,37 @@ export default async function AdminInstagramPage({
     ? "criar"
     : ABAS.some((a) => a.v === abaParam)
       ? (abaParam as Aba)
-      : "calendario";
+      : "painel";
 
   // Cada aba busca só o que mostra.
-  const usaPosts = aba === "calendario" || aba === "criar";
+  const noPainel = aba === "painel";
+  const usaPosts = aba === "calendario" || aba === "criar" || noPainel;
+  const usaIdeias = aba === "calendario" || noPainel;
   // O calendário também escolhe fonte e referência (pacote da semana).
   const usaFontes = aba === "roteiros" || aba === "calendario";
-  const usaReferencias = aba === "perfil" || usaFontes;
-  const [carrosseis, ideias, ideia, perfil, referencias, cursos, roteiros] =
-    await Promise.all([
-      usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
-      aba === "calendario" ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
-      ideiaId ? getIdeiaConteudo(ideiaId).catch(() => null) : Promise.resolve(null),
-      aba === "perfil"
-        ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
-        : Promise.resolve(PERFIL_VAZIO),
-      usaReferencias ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
-      usaFontes ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
-      aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
-    ]);
+  const usaReferencias = aba === "perfil" || usaFontes || noPainel;
+  const usaPerfil = aba === "perfil" || noPainel;
+  const [
+    carrosseis,
+    ideias,
+    ideia,
+    perfil,
+    referencias,
+    cursos,
+    roteiros,
+    dadosPainel,
+  ] = await Promise.all([
+    usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
+    usaIdeias ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
+    ideiaId ? getIdeiaConteudo(ideiaId).catch(() => null) : Promise.resolve(null),
+    usaPerfil
+      ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
+      : Promise.resolve(PERFIL_VAZIO),
+    usaReferencias ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
+    usaFontes ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
+    aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
+    noPainel ? carregarDadosPainel() : Promise.resolve(null),
+  ]);
 
   const hoje = diaSP(new Date());
   const cursosOpcoes = cursos
@@ -92,7 +115,12 @@ export default async function AdminInstagramPage({
     .filter((r) => r.dna)
     .map((r) => ({ id: r.id, nome: r.nome }));
 
+  const postsDoPeriodo = dadosPainel ? postsNaJanela(dadosPainel.posts, hoje) : [];
+  const resumoPerfil = analisarPerfil(postsDoPeriodo);
+
   const INTRO: Record<Aba, string> = {
+    painel:
+      "O que fazer hoje, como o perfil andou nos últimos 90 dias e o que foi diferente nos posts que saíram do normal. Tudo vem dos seus próprios números.",
     calendario:
       "A semana num lugar só. Guarde a ideia quando ela vier, arraste para o dia em que pretende postar e leve ao estúdio para virar post. Os posts agendados e publicados aparecem aqui sozinhos.",
     criar:
@@ -141,7 +169,26 @@ export default async function AdminInstagramPage({
         ))}
       </nav>
 
-      {aba === "roteiros" ? (
+      {aba === "painel" && dadosPainel ? (
+        <PainelInstagram
+          conectado={dadosPainel.conectado}
+          erro={dadosPainel.erro}
+          conta={dadosPainel.conta}
+          acoes={acoesDoDia({
+            hoje,
+            posts: dadosPainel.posts,
+            salvos: carrosseis.map((c) => ({ id: c.id, status: c.status })),
+            ideias,
+            perfil: progressoDoPerfil(perfil, referencias),
+          })}
+          indicadores={indicadores(dadosPainel.posts, hoje)}
+          semanas={constancia(dadosPainel.posts, hoje)}
+          destaques={destaques(dadosPainel.posts, hoje)}
+          melhorMomento={resumoPerfil.melhorHorario}
+          formatoTop={resumoPerfil.formatoTop}
+          totalPosts={postsDoPeriodo.length}
+        />
+      ) : aba === "roteiros" ? (
         <RoteirosConteudo
           cursos={cursosOpcoes}
           referencias={referenciasAnalisadas}

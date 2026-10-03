@@ -72,7 +72,7 @@ type MediaRaw = {
 async function buscarReach(id: string, token: string): Promise<number | null> {
   try {
     const url = `${GRAPH}/${id}/insights?metric=reach&access_token=${encodeURIComponent(token)}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
     if (!res.ok) return null;
     const json = (await res.json()) as {
       data?: { values?: { value?: number }[] }[];
@@ -97,7 +97,8 @@ export async function listarPostsComMetricas(limit = 25): Promise<PostMetrica[]>
 
   const campos = "id,caption,media_type,timestamp,like_count,comments_count,permalink";
   const url = `${GRAPH}/${igUserId}/media?fields=${campos}&limit=${limit}&access_token=${encodeURIComponent(token)}`;
-  const res = await fetch(url);
+  // Sem limite de tempo, uma API lenta prendia a página inteira do painel.
+  const res = await fetch(url, { signal: AbortSignal.timeout(12_000) });
   const json = (await res.json()) as {
     data?: MediaRaw[];
     error?: { message?: string };
@@ -134,7 +135,9 @@ function capitalizar(s: string): string {
 function diaDaSemana(iso: string): string {
   try {
     return capitalizar(
-      new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, weekday: "long" }).format(new Date(iso)),
+      new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, weekday: "long" }).format(
+        new Date(iso),
+      ),
     );
   } catch {
     return "";
@@ -143,9 +146,11 @@ function diaDaSemana(iso: string): string {
 
 function horaLocal(iso: string): number {
   try {
-    const h = new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, hour: "2-digit", hour12: false }).format(
-      new Date(iso),
-    );
+    const h = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: TZ,
+      hour: "2-digit",
+      hour12: false,
+    }).format(new Date(iso));
     const n = parseInt(h, 10);
     return Number.isFinite(n) ? n % 24 : -1;
   } catch {
@@ -212,7 +217,8 @@ export function analisarPerfil(posts: PostMetrica[]): PerfilResumo {
     }) || "—";
 
   const formatoBruto = melhorPorMedia(posts, (p) => p.mediaType);
-  const formatoTop = FORMATO_LABEL[formatoBruto] || (formatoBruto ? "Imagem única" : "—");
+  const formatoTop =
+    FORMATO_LABEL[formatoBruto] || (formatoBruto ? "Imagem única" : "—");
 
   const topPosts = [...posts]
     .sort((a, b) => b.interacoes - a.interacoes)
@@ -226,7 +232,9 @@ export function analisarPerfil(posts: PostMetrica[]): PerfilResumo {
     }));
 
   const melhorHorario =
-    melhorDia !== "—" && melhorFaixa !== "—" ? `${melhorDia}, ${melhorFaixa}` : melhorDia;
+    melhorDia !== "—" && melhorFaixa !== "—"
+      ? `${melhorDia}, ${melhorFaixa}`
+      : melhorDia;
 
   return {
     totalPosts: total,
