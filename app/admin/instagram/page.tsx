@@ -4,6 +4,7 @@ import { AdminShell } from "@/components/AdminShell";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
+import { PacoteSemana } from "@/components/PacoteSemana";
 import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
 import { RoteirosConteudo } from "@/components/RoteirosConteudo";
 import { diaSP } from "@/lib/conteudo-calendario";
@@ -18,6 +19,7 @@ import {
   listReferenciasConteudo,
   listRoteirosConteudo,
 } from "@/lib/db";
+import { diasSugeridos } from "@/lib/pacote";
 
 export const metadata = { title: "Instagram — Ekballo" };
 export const dynamic = "force-dynamic";
@@ -38,13 +40,23 @@ type Aba = (typeof ABAS)[number]["v"];
 export default async function AdminInstagramPage({
   searchParams,
 }: {
-  searchParams: Promise<{ aba?: string; ideia?: string }>;
+  searchParams: Promise<{
+    aba?: string;
+    ideia?: string;
+    semana?: string;
+    roteiro?: string;
+  }>;
 }) {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (!session.profile?.is_admin) redirect("/dashboard");
 
-  const { aba: abaParam, ideia: ideiaId } = await searchParams;
+  const {
+    aba: abaParam,
+    ideia: ideiaId,
+    semana,
+    roteiro: roteiroId,
+  } = await searchParams;
   // Abrir uma ideia no estúdio implica a aba Criar.
   const aba: Aba = ideiaId
     ? "criar"
@@ -54,7 +66,9 @@ export default async function AdminInstagramPage({
 
   // Cada aba busca só o que mostra.
   const usaPosts = aba === "calendario" || aba === "criar";
-  const usaReferencias = aba === "perfil" || aba === "roteiros";
+  // O calendário também escolhe fonte e referência (pacote da semana).
+  const usaFontes = aba === "roteiros" || aba === "calendario";
+  const usaReferencias = aba === "perfil" || usaFontes;
   const [carrosseis, ideias, ideia, perfil, referencias, cursos, roteiros] =
     await Promise.all([
       usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
@@ -64,9 +78,19 @@ export default async function AdminInstagramPage({
         ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
         : Promise.resolve(PERFIL_VAZIO),
       usaReferencias ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
-      aba === "roteiros" ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
+      usaFontes ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
       aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
     ]);
+
+  const hoje = diaSP(new Date());
+  const cursosOpcoes = cursos
+    // Cursos com tela própria (Bíblia etc.) não têm mesas de leitura.
+    .filter((c) => !c.external_path)
+    .map((c) => ({ id: c.id, titulo: c.titulo, autor: c.autor }))
+    .sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"));
+  const referenciasAnalisadas = referencias
+    .filter((r) => r.dna)
+    .map((r) => ({ id: r.id, nome: r.nome }));
 
   const INTRO: Record<Aba, string> = {
     calendario:
@@ -119,32 +143,40 @@ export default async function AdminInstagramPage({
 
       {aba === "roteiros" ? (
         <RoteirosConteudo
-          cursos={cursos
-            // Cursos com tela própria (Bíblia etc.) não têm mesas de leitura.
-            .filter((c) => !c.external_path)
-            .map((c) => ({ id: c.id, titulo: c.titulo, autor: c.autor }))
-            .sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"))}
-          referencias={referencias
-            .filter((r) => r.dna)
-            .map((r) => ({ id: r.id, nome: r.nome }))}
+          cursos={cursosOpcoes}
+          referencias={referenciasAnalisadas}
           roteirosIniciais={roteiros}
-          hoje={diaSP(new Date())}
+          hoje={hoje}
+          abrirId={roteiroId}
         />
       ) : aba === "perfil" ? (
         <PerfilConteudoForm perfilInicial={perfil} referenciasIniciais={referencias} />
       ) : aba === "calendario" ? (
-        <CalendarioConteudo
-          ideiasIniciais={ideias}
-          posts={carrosseis.map((c) => ({
-            id: c.id,
-            status: c.status,
-            tipo: c.tipo,
-            legenda: c.legenda,
-            agendado_para: c.agendado_para ?? null,
-            publicado_em: c.publicado_em ?? null,
-          }))}
-          hoje={diaSP(new Date())}
-        />
+        <>
+          <PacoteSemana
+            cursos={cursosOpcoes}
+            referencias={referenciasAnalisadas}
+            hoje={hoje}
+            diasIniciais={diasSugeridos(hoje)}
+          />
+          <CalendarioConteudo
+            // Montar um pacote cria ideias no servidor: a chave refaz o calendário com elas.
+            key={`${ideias.length}:${carrosseis.length}:${semana ?? ""}`}
+            ideiasIniciais={ideias}
+            posts={carrosseis.map((c) => ({
+              id: c.id,
+              status: c.status,
+              tipo: c.tipo,
+              legenda: c.legenda,
+              agendado_para: c.agendado_para ?? null,
+              publicado_em: c.publicado_em ?? null,
+            }))}
+            hoje={hoje}
+            semanaInicial={
+              semana && /^\d{4}-\d{2}-\d{2}$/.test(semana) ? semana : undefined
+            }
+          />
+        </>
       ) : (
         <>
           {!configurado && (

@@ -581,6 +581,8 @@ export type IdeiaConteudoMock = {
   /** "YYYY-MM-DD" (dia planejado, sem hora) ou null = ainda sem data. */
   data_planejada: string | null;
   carrossel_id: string | null;
+  /** Roteiro guardado que esta ideia representa (pacote da semana). */
+  roteiro_id?: string | null;
   criado_em: string;
 };
 function _diaSP(offset: number): string {

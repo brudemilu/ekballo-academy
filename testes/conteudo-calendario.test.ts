@@ -3,6 +3,7 @@ import {
   diaDoPost,
   diaSP,
   diasDaSemana,
+  ideiaVisivel,
   inicioDaSemana,
   somarDias,
   validarIdeia,
@@ -77,6 +78,31 @@ describe("diaDoPost · onde cada post aparece", () => {
 
   it("rascunho não tem dia", () => {
     expect(diaDoPost({ status: "rascunho", agendado_para: null })).toBeNull();
+  });
+});
+
+describe("ideiaVisivel · ideia ligada a um post", () => {
+  const posts = [
+    { id: "rasc", status: "rascunho" },
+    { id: "agen", status: "agendado", agendado_para: "2026-10-07T21:00:00Z" },
+    { id: "pub", status: "publicado", publicado_em: "2026-10-06T12:00:00Z" },
+  ];
+
+  it("ideia solta sempre aparece", () => {
+    expect(ideiaVisivel({ carrossel_id: null }, posts)).toBe(true);
+  });
+
+  it("enquanto o post é rascunho, a ideia segura o lugar dele no dia planejado", () => {
+    expect(ideiaVisivel({ carrossel_id: "rasc" }, posts)).toBe(true);
+  });
+
+  it("post agendado ou publicado ocupa o próprio dia e a ideia some", () => {
+    expect(ideiaVisivel({ carrossel_id: "agen" }, posts)).toBe(false);
+    expect(ideiaVisivel({ carrossel_id: "pub" }, posts)).toBe(false);
+  });
+
+  it("post fora da lista carregada não esconde a ideia", () => {
+    expect(ideiaVisivel({ carrossel_id: "antigo" }, posts)).toBe(true);
   });
 });
 
