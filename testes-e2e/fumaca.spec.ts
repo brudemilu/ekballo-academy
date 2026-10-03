@@ -174,4 +174,26 @@ test.describe("Instagram do ministério (admin)", () => {
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
+
+  test("a aba Roteiros abre e só libera gerar quando há fonte", async ({ page }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=roteiros");
+
+    await expect(
+      page.getByRole("heading", { name: /de onde sai o roteiro/i }),
+    ).toBeVisible();
+    const gerar = page.getByRole("button", { name: /gerar roteiro/i });
+    await expect(gerar).toBeDisabled();
+
+    // Escolher o livro traz as mesas dele; escolher a mesa libera o botão.
+    await page.getByLabel("Livro ou temática").selectOption({ index: 1 });
+    const mesa = page.getByLabel("Mesa ou capítulo");
+    await expect(mesa.locator("option")).not.toHaveCount(1);
+    await mesa.selectOption({ index: 1 });
+    await expect(gerar).toBeEnabled();
+
+    await expect(page.getByText(/nenhum ainda/i)).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
 });

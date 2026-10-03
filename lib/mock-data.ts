@@ -10,6 +10,7 @@ import {
   EGO_REFLEXOES,
 } from "@/lib/ego-transformado-atividades";
 import { EGO_K1, EGO_K2, EGO_K3, EGO_K4 } from "@/lib/ego-transformado-content";
+import type { RoteiroSalvo } from "@/lib/roteiro";
 import type { Alternativa, Atividade, Aula, Curso, Profile } from "@/lib/types";
 
 export const MOCK_USER_ID = "mock-lucas";
@@ -658,6 +659,19 @@ export function addMockReferencia(r: ReferenciaConteudo) {
 export function removeMockReferencia(id: string) {
   const i = MOCK_REFERENCIAS.findIndex((x) => x.id === id);
   if (i >= 0) MOCK_REFERENCIAS.splice(i, 1);
+}
+
+// ---- Roteiros de vídeo (copiloto, mock mutável) ----
+const MOCK_ROTEIROS: RoteiroSalvo[] = [];
+export function listMockRoteiros(): RoteiroSalvo[] {
+  return MOCK_ROTEIROS;
+}
+export function addMockRoteiro(r: RoteiroSalvo) {
+  MOCK_ROTEIROS.unshift(r);
+}
+export function removeMockRoteiro(id: string) {
+  const i = MOCK_ROTEIROS.findIndex((x) => x.id === id);
+  if (i >= 0) MOCK_ROTEIROS.splice(i, 1);
 }
 
 // ---- Compromissos da agenda pessoal (mock mutável) ----

@@ -32,6 +32,7 @@ import {
   addMockCompromisso,
   addMockIdeia,
   addMockReferencia,
+  addMockRoteiro,
   type CarrosselInstagramMock,
   getMockMcAnswer,
   getMockPerfilConteudo,
@@ -41,6 +42,7 @@ import {
   listMockCompromissos,
   listMockIdeias,
   listMockReferencias,
+  listMockRoteiros,
   MOCK_ALUNOS,
   MOCK_ATIVIDADES,
   MOCK_AULAS,
@@ -63,12 +65,14 @@ import {
   removeMockCompromisso,
   removeMockIdeia,
   removeMockReferencia,
+  removeMockRoteiro,
   setMockLeitura,
   setMockMcAnswer,
   setMockPerfilConteudo,
   updateMockCompromisso,
 } from "@/lib/mock-data";
 import { PERMISSOES, type Permissao } from "@/lib/permissoes";
+import type { Roteiro, RoteiroSalvo } from "@/lib/roteiro";
 import type {
   Alternativa,
   Atividade,
@@ -2596,6 +2600,82 @@ export async function deletarReferenciaConteudo(id: string): Promise<void> {
   }
   const supabase = await createClient();
   const { error } = await supabase.from("conteudo_referencias").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Roteiros de vídeo (copiloto)
+// =============================================================
+const COLUNAS_ROTEIRO = "id, titulo, duracao, fonte, roteiro, criado_em";
+
+export async function listRoteirosConteudo(): Promise<RoteiroSalvo[]> {
+  if (isMockMode()) return listMockRoteiros();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_roteiros")
+    .select(COLUNAS_ROTEIRO)
+    .order("criado_em", { ascending: false })
+    .limit(100);
+  if (error) throw new Error(error.message);
+  return (data || []) as RoteiroSalvo[];
+}
+
+export async function salvarRoteiroConteudo(
+  input: Pick<RoteiroSalvo, "duracao" | "fonte" | "roteiro">,
+): Promise<RoteiroSalvo> {
+  const linha = {
+    titulo: input.roteiro.titulo,
+    duracao: input.duracao,
+    fonte: input.fonte,
+    roteiro: input.roteiro,
+  };
+  if (isMockMode()) {
+    const salvo: RoteiroSalvo = {
+      id: crypto.randomUUID(),
+      ...linha,
+      criado_em: new Date().toISOString(),
+    };
+    addMockRoteiro(salvo);
+    return salvo;
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_roteiros")
+    .insert(linha)
+    .select(COLUNAS_ROTEIRO)
+    .single();
+  if (error) throw new Error(error.message);
+  return data as RoteiroSalvo;
+}
+
+export async function atualizarRoteiroConteudo(
+  id: string,
+  roteiro: Roteiro,
+): Promise<void> {
+  if (isMockMode()) {
+    const r = listMockRoteiros().find((x) => x.id === id);
+    if (r) Object.assign(r, { roteiro, titulo: roteiro.titulo });
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_roteiros")
+    .update({
+      roteiro,
+      titulo: roteiro.titulo,
+      atualizado_em: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deletarRoteiroConteudo(id: string): Promise<void> {
+  if (isMockMode()) {
+    removeMockRoteiro(id);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("conteudo_roteiros").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 
