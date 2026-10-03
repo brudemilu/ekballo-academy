@@ -36,6 +36,44 @@ const CONHECIDAS = [
     porque: "Herdada do postcss acima; some junto quando o Next 16 entrar.",
     issue: 74,
   },
+  {
+    pacote: "braces",
+    porque:
+      "Estouro de pilha com padrão muito aninhado (GHSA-vfj7-8cjw-p6xm). " +
+      "Toda versão é afetada; só some com o Tailwind 4 (versão maior). " +
+      "Roda em tempo de BUILD, expandindo os globs de `content` do " +
+      "tailwind.config — escritos no repositório, não por usuário —, então " +
+      "o vetor não é alcançável em produção.",
+    issue: 191,
+  },
+  {
+    pacote: "chokidar",
+    porque: "Herdada do braces acima; some junto com o Tailwind 4.",
+    issue: 191,
+  },
+  {
+    pacote: "tailwindcss",
+    porque: "Herdada do braces acima (via chokidar/micromatch); some com o Tailwind 4.",
+    issue: 191,
+  },
+  {
+    pacote: "micromatch",
+    porque: "Herdada do braces acima; vem do Tailwind e do Knip.",
+    issue: 191,
+  },
+  {
+    pacote: "fast-glob",
+    porque: "Herdada do braces (via micromatch); vem do Knip.",
+    issue: 191,
+  },
+  {
+    pacote: "knip",
+    porque:
+      "Herdada do braces (via fast-glob). Ferramenta de código morto que " +
+      "só roda na CI e na máquina de quem desenvolve, sobre arquivos do " +
+      "repositório; correção é o Knip 6 (versão maior).",
+    issue: 191,
+  },
 ];
 
 const permitidas = new Map(CONHECIDAS.map((c) => [c.pacote, c]));
