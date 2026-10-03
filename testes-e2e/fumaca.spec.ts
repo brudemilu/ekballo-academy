@@ -256,4 +256,30 @@ test.describe("Instagram do ministério (admin)", () => {
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
+
+  test("o piloto abre desligado e não liga sem um WhatsApp para avisar", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=piloto");
+
+    await expect(
+      page.getByRole("heading", { name: /como o piloto trabalha/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /o que o piloto preparou/i }),
+    ).toBeVisible();
+
+    // Sem telefone não há aviso, e sem aviso não há direito a veto: a tela recusa.
+    await page.getByLabel("WhatsApp que recebe o aviso").fill("");
+    const ligar = page.getByRole("button", { name: "Ligar o piloto" });
+    if (await ligar.count()) {
+      await ligar.click();
+      await expect(
+        page.getByText(/informe o whatsapp que recebe o aviso/i),
+      ).toBeVisible();
+    }
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
 });

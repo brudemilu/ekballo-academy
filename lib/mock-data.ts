@@ -11,6 +11,7 @@ import {
   EGO_REFLEXOES,
 } from "@/lib/ego-transformado-atividades";
 import { EGO_K1, EGO_K2, EGO_K3, EGO_K4 } from "@/lib/ego-transformado-content";
+import { type ExecucaoPiloto, PILOTO_PADRAO, type PilotoConfig } from "@/lib/piloto";
 import type { RoteiroSalvo } from "@/lib/roteiro";
 import type { Alternativa, Atividade, Aula, Curso, Profile } from "@/lib/types";
 
@@ -688,6 +689,22 @@ export function addMockCorte(c: CorteSalvo) {
 export function removeMockCorte(id: string) {
   const i = MOCK_CORTES.findIndex((x) => x.id === id);
   if (i >= 0) MOCK_CORTES.splice(i, 1);
+}
+
+// ---- Piloto automático (copiloto, mock mutável) ----
+const MOCK_PILOTO: { valor: PilotoConfig } = { valor: { ...PILOTO_PADRAO } };
+export function getMockPiloto(): PilotoConfig {
+  return MOCK_PILOTO.valor;
+}
+export function setMockPiloto(c: PilotoConfig) {
+  MOCK_PILOTO.valor = c;
+}
+const MOCK_EXECUCOES: ExecucaoPiloto[] = [];
+export function listMockExecucoes(): ExecucaoPiloto[] {
+  return MOCK_EXECUCOES;
+}
+export function addMockExecucao(e: ExecucaoPiloto) {
+  MOCK_EXECUCOES.unshift(e);
 }
 
 // ---- Compromissos da agenda pessoal (mock mutável) ----
