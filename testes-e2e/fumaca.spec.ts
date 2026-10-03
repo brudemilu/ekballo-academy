@@ -151,4 +151,27 @@ test.describe("Instagram do ministério (admin)", () => {
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
+
+  test("a aba Perfil abre e guarda um criador de referência", async ({ page }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=perfil");
+
+    await expect(
+      page.getByRole("heading", { name: /seu copiloto conhece o ministério/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /criadores que você admira/i }),
+    ).toBeVisible();
+
+    const criador = `@fumaca_${Date.now()}`;
+    await page.getByLabel("Nome ou @").fill(criador);
+    await page.getByRole("button", { name: "+ Adicionar criador" }).click();
+    await expect(page.getByRole("heading", { name: criador })).toBeVisible();
+    // Sem exemplos colados, a análise fica indisponível e a tela diz o que falta.
+    await expect(
+      page.getByText(/faltam 200 caracteres de exemplo/i).last(),
+    ).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
 });

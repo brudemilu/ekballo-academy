@@ -37,6 +37,7 @@ export default defineConfig({
         "lib/telefone.ts",
         "lib/rate-limit.ts",
         "lib/conteudo-calendario.ts",
+        "lib/conteudo-perfil.ts",
       ],
       thresholds: {
         // Piso, não meta. Serve para acusar remoção de teste, não

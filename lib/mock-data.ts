@@ -3,6 +3,7 @@
 // Ativado quando NEXT_PUBLIC_MOCK_MODE=true (padrão em .env.local)
 // =============================================================
 
+import type { PerfilConteudo, ReferenciaConteudo } from "@/lib/conteudo-perfil";
 import {
   EGO_ALTERNATIVAS,
   EGO_MCS,
@@ -624,6 +625,39 @@ export function addMockIdeia(i: IdeiaConteudoMock) {
 export function removeMockIdeia(id: string) {
   const i = MOCK_IDEIAS.findIndex((x) => x.id === id);
   if (i >= 0) MOCK_IDEIAS.splice(i, 1);
+}
+
+// ---- Perfil de conteúdo e criadores de referência (copiloto, mock mutável) ----
+const MOCK_PERFIL_CONTEUDO: { valor: PerfilConteudo } = {
+  valor: {
+    objetivo: "Levar quem segue o perfil para uma mesa de discipulado.",
+    publico: "Jovens adultos da igreja local que leem pouco e querem crescer na fé.",
+    pilares: [
+      { nome: "Mesa", descricao: "Trechos das mesas de discipulado e dos livros" },
+      { nome: "Palavra", descricao: "Um versículo e o que ele pede de mim hoje" },
+    ],
+    voz_amostras: "",
+    voz_dna: null,
+    temas_proibidos: "",
+    chamada_padrao: "",
+  },
+};
+export function getMockPerfilConteudo(): PerfilConteudo {
+  return MOCK_PERFIL_CONTEUDO.valor;
+}
+export function setMockPerfilConteudo(p: PerfilConteudo) {
+  MOCK_PERFIL_CONTEUDO.valor = p;
+}
+const MOCK_REFERENCIAS: ReferenciaConteudo[] = [];
+export function listMockReferencias(): ReferenciaConteudo[] {
+  return MOCK_REFERENCIAS;
+}
+export function addMockReferencia(r: ReferenciaConteudo) {
+  MOCK_REFERENCIAS.push(r);
+}
+export function removeMockReferencia(id: string) {
+  const i = MOCK_REFERENCIAS.findIndex((x) => x.id === id);
+  if (i >= 0) MOCK_REFERENCIAS.splice(i, 1);
 }
 
 // ---- Compromissos da agenda pessoal (mock mutável) ----
