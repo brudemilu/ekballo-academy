@@ -35,13 +35,48 @@ import {
   type PilotoConfig,
   type TipoFontePiloto,
 } from "@/lib/piloto";
-import { type FonteRoteiro, MIN_FONTE, recortarFonte } from "@/lib/roteiro";
+import { lerEApagar, montarReelNarrado } from "@/lib/reel-narrado";
+import {
+  type FonteRoteiro,
+  MIN_FONTE,
+  type Roteiro,
+  recortarFonte,
+} from "@/lib/roteiro";
 import { siteBase } from "@/lib/site-url";
 import { createServiceClient } from "@/lib/supabase/service";
 import { enviarTextoWhatsApp } from "@/lib/whatsapp-enviar";
 
 const MARCA_AVALIACAO = "[[AVALIACAO_PARACH]]";
 const DURACAO_REEL = 30;
+
+const CENA_PADRAO = "sunrise light over quiet mountains";
+
+/**
+ * Monta o Reel, sobe para o Storage e devolve a URL pública (é de lá que o
+ * Instagram busca o vídeo na hora de publicar).
+ */
+async function montarEGuardarReel(
+  roteiro: Roteiro,
+  execucaoId: string,
+  cena: string,
+): Promise<string> {
+  const reel = await montarReelNarrado(roteiro, {
+    id: execucaoId,
+    cena,
+    seed: Date.now() % 1000,
+  });
+  const bytes = await lerEApagar(reel.arquivo);
+  // No modo demonstração não há Storage: o vídeo foi montado de verdade, só não fica guardado.
+  if (isMockMode()) return `mock://reel-${execucaoId}.mp4`;
+  const storage = createServiceClient().storage.from("instagram");
+  const caminho = `reels/piloto-${execucaoId}.mp4`;
+  const { error } = await storage.upload(caminho, bytes, {
+    contentType: "video/mp4",
+    upsert: true,
+  });
+  if (error) throw new Error(`não consegui guardar o vídeo: ${error.message}`);
+  return storage.getPublicUrl(caminho).data.publicUrl;
+}
 
 type FonteEscolhida = {
   tipo: TipoFontePiloto;
@@ -193,7 +228,8 @@ export async function executarPiloto(
       perfil,
       duracaoReel: DURACAO_REEL,
       comPecas: config.pecas.carrossel,
-      comRoteiro: config.pecas.roteiro,
+      // O Reel da IA é montado em cima do roteiro, mesmo que o pastor não queira gravá-lo.
+      comRoteiro: config.pecas.roteiro || config.pecas.reel_ia,
     });
     const horarios = horariosDaExecucao(agora, config);
 
@@ -267,15 +303,49 @@ export async function executarPiloto(
     }
 
     if (config.pecas.reel_ia) {
-      // O Reel narrado pela IA ainda não é montado aqui (próxima fatia). Dizer
-      // isso no aviso é melhor que prometer um vídeo que não vai sair.
-      pecas.push({
-        tipo: "reel_ia",
-        titulo: "",
-        quando: null,
-        estado: "falhou",
-        detalhe: "o Reel feito pela IA ainda não está disponível",
-      });
+      if (gerado.roteiro) {
+        try {
+          // A cena de fundo vem do primeiro slide do carrossel quando há: lá a
+          // IA já foi instruída a pedir objetos e paisagens, sem rostos.
+          const cena = gerado.pecas?.carrossel.slides[0]?.prompt || CENA_PADRAO;
+          const videoUrl = await montarEGuardarReel(gerado.roteiro, execucaoId, cena);
+          const { id } = await salvarCarrosselInstagram(
+            {
+              conteudo: `${fonte.titulo}\n\nReel narrado pelo piloto automático`,
+              slides: [] as never,
+              legenda: gerado.roteiro.legenda,
+              agendadoPara: horarios.reel,
+              tipo: "reel",
+              videoUrl,
+            },
+            true,
+          );
+          pecas.push({
+            tipo: "reel_ia",
+            titulo: gerado.roteiro.titulo,
+            quando: horarios.reel,
+            post_id: id,
+            estado: "agendado",
+          });
+        } catch (e) {
+          pecas.push({
+            tipo: "reel_ia",
+            titulo: gerado.roteiro.titulo,
+            quando: null,
+            estado: "falhou",
+            detalhe:
+              e instanceof Error ? e.message.slice(0, 160) : "falha ao montar o vídeo",
+          });
+        }
+      } else {
+        pecas.push({
+          tipo: "reel_ia",
+          titulo: "",
+          quando: null,
+          estado: "falhou",
+          detalhe: gerado.erros.roteiro,
+        });
+      }
     }
 
     if (!pecas.some((p) => p.estado !== "falhou")) {
