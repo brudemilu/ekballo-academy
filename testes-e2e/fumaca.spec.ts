@@ -185,6 +185,32 @@ test.describe("Instagram do ministério (admin)", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 
+  test("a aba Perfil guarda uma regra ensinada à IA e deixa apagar", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=perfil");
+
+    await expect(
+      page.getByRole("heading", { name: /o que a IA já aprendeu com você/i }),
+    ).toBeVisible();
+
+    // Única por execução: desktop e celular rodam contra o mesmo servidor.
+    const regra = `Nunca terminar com pergunta ${Date.now()}`;
+    await page.getByLabel("Ensinar uma regra").fill(regra);
+    await page.getByRole("button", { name: "Ensinar", exact: true }).click();
+    await expect(page.getByText(regra)).toBeVisible();
+
+    // Continua lá depois de recarregar: foi gravada, não só desenhada.
+    await page.reload();
+    await expect(page.getByText(regra)).toBeVisible();
+
+    await page.getByRole("button", { name: `Apagar: ${regra}` }).click();
+    await expect(page.getByText(regra)).toHaveCount(0);
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
   test("a aba Roteiros abre e só libera gerar quando há fonte", async ({ page }) => {
     const erros = vigiarErros(page);
     await page.goto("/admin/instagram?aba=roteiros");

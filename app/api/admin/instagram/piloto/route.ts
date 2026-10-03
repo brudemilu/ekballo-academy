@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { motivoValido, preferenciaDaRecusa } from "@/lib/conteudo-perfil";
 import {
+  aprenderPreferencia,
   atualizarExecucaoPiloto,
   criarExecucaoPiloto,
   desagendarCarrosselInstagram,
@@ -17,7 +19,8 @@ export const runtime = "nodejs";
  *  - GET                                  → as execuções recentes (a tela consulta enquanto prepara)
  *  - PUT  { ...configuração }             → salva e liga/desliga
  *  - POST { rodar: true }                 → prepara a semana agora
- *  - POST { vetar: { execucaoId, indice } } → cancela a publicação de uma peça
+ *  - POST { vetar: { execucaoId, indice, motivo?, detalhe? } } → cancela a publicação de uma
+ *    peça; com o motivo, a IA guarda o que aprendeu para as próximas
  */
 
 async function exigirAdmin() {
@@ -55,9 +58,11 @@ export async function POST(req: NextRequest) {
   const corpo = await req.json().catch(() => null);
 
   if (corpo?.vetar) {
-    const { execucaoId, indice } = corpo.vetar as {
+    const { execucaoId, indice, motivo, detalhe } = corpo.vetar as {
       execucaoId?: string;
       indice?: number;
+      motivo?: unknown;
+      detalhe?: unknown;
     };
     if (!execucaoId || typeof indice !== "number") return recusa("Pedido inválido.");
     try {
@@ -74,7 +79,17 @@ export async function POST(req: NextRequest) {
         i === indice ? { ...p, estado: "vetado" as const } : p,
       );
       await atualizarExecucaoPiloto(execucaoId, { pecas });
-      return NextResponse.json({ ok: true, pecas });
+      // Aprender é o bônus: se falhar, o veto (que é o que importa) já valeu.
+      let aprendeu = false;
+      if (motivoValido(motivo)) {
+        const frase = preferenciaDaRecusa(
+          motivo,
+          typeof detalhe === "string" ? detalhe : "",
+          peca.titulo,
+        );
+        if (frase) aprendeu = await aprenderPreferencia(frase).catch(() => false);
+      }
+      return NextResponse.json({ ok: true, pecas, aprendeu });
     } catch (e) {
       return recusa(e instanceof Error ? e.message : "Falha ao cancelar.", 500);
     }

@@ -33,6 +33,8 @@ async function banco(servico = false) {
 
 import type { AgendaEvento } from "@/lib/agenda";
 import {
+  adicionarPreferencia,
+  limparPreferencias,
   PERFIL_VAZIO,
   type PerfilConteudo,
   type ReferenciaConteudo,
@@ -2520,7 +2522,7 @@ export async function deletarIdeiaConteudo(id: string): Promise<void> {
 // Perfil de conteúdo e criadores de referência (copiloto)
 // =============================================================
 const COLUNAS_PERFIL =
-  "objetivo, publico, pilares, voz_amostras, voz_dna, temas_proibidos, chamada_padrao";
+  "objetivo, publico, pilares, voz_amostras, voz_dna, temas_proibidos, chamada_padrao, preferencias";
 const COLUNAS_REFERENCIA = "id, nome, link, exemplos, dna, analisado_em";
 
 export async function getPerfilConteudo(servico = false): Promise<PerfilConteudo> {
@@ -2538,16 +2540,34 @@ export async function getPerfilConteudo(servico = false): Promise<PerfilConteudo
 /** Grava só os campos enviados (a tela salva o formulário; a análise salva a voz). */
 export async function salvarPerfilConteudo(
   patch: Partial<PerfilConteudo>,
+  servico = false,
 ): Promise<void> {
   if (isMockMode()) {
     setMockPerfilConteudo({ ...getMockPerfilConteudo(), ...patch });
     return;
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { error } = await supabase
     .from("conteudo_perfil")
     .upsert({ id: 1, ...patch, atualizado_em: new Date().toISOString() });
   if (error) throw new Error(error.message);
+}
+
+/**
+ * Guarda o que a IA aprendeu com uma recusa. Devolve false quando não havia o
+ * que aprender (frase vazia ou já conhecida). `servico` para o WhatsApp, que
+ * não tem sessão.
+ */
+export async function aprenderPreferencia(
+  texto: string,
+  servico = false,
+): Promise<boolean> {
+  const perfil = await getPerfilConteudo(servico);
+  const atual = limparPreferencias(perfil.preferencias);
+  const nova = adicionarPreferencia(atual, texto, new Date().toISOString());
+  if (nova === atual) return false;
+  await salvarPerfilConteudo({ preferencias: nova }, servico);
+  return true;
 }
 
 export async function listReferenciasConteudo(): Promise<ReferenciaConteudo[]> {

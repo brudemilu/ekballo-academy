@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
+  limparPreferencias,
   normalizarVozDNA,
   SYSTEM_ANALISE_VOZ,
   validarPerfil,
@@ -14,6 +15,7 @@ export const maxDuration = 60;
  * Perfil de conteúdo do ministério (aba Perfil em /admin/instagram). Admin-only.
  *  - PUT  { objetivo, publico, pilares, voz_amostras, temas_proibidos, chamada_padrao } → salva
  *  - POST {}  → analisa as amostras de voz já salvas e guarda o resultado
+ *  - PATCH { preferencias } → troca a lista do que a IA aprendeu (a tela acrescenta e remove)
  */
 
 async function exigirAdmin() {
@@ -32,6 +34,24 @@ export async function PUT(req: NextRequest) {
     const vozMudou = atual.voz_amostras.trim() !== v.valor.voz_amostras.trim();
     await salvarPerfilConteudo(vozMudou ? { ...v.valor, voz_dna: null } : v.valor);
     return NextResponse.json({ ok: true, vozMudou });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Falha ao salvar." },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  if (!(await exigirAdmin()))
+    return NextResponse.json({ error: "não autorizado" }, { status: 401 });
+  const corpo = await req.json().catch(() => null);
+  if (!Array.isArray(corpo?.preferencias))
+    return NextResponse.json({ error: "Pedido inválido." }, { status: 400 });
+  try {
+    const preferencias = limparPreferencias(corpo.preferencias);
+    await salvarPerfilConteudo({ preferencias });
+    return NextResponse.json({ ok: true, preferencias });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Falha ao salvar." },

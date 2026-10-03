@@ -51,32 +51,61 @@ describe("interpretarComando · aprovar, refazer, cancelar", () => {
     });
   });
 
-  it("refazer", () => {
-    expect(interpretarComando("refazer")).toEqual({ tipo: "refazer" });
-    expect(interpretarComando("Outra versão.")).toEqual({ tipo: "refazer" });
+  it("refazer, com ou sem um ajuste", () => {
+    expect(interpretarComando("refazer")).toEqual({ tipo: "refazer", ajuste: "" });
+    expect(interpretarComando("Outra versão.")).toEqual({
+      tipo: "refazer",
+      ajuste: "",
+    });
+    expect(interpretarComando("Refaça mais curto, com um versículo no fim.")).toEqual({
+      tipo: "refazer",
+      ajuste: "mais curto, com um versículo no fim",
+    });
+    // "refazerei" não é o comando: a palavra tem de terminar ali.
+    expect(interpretarComando("refazenda de sábado")).toBeNull();
   });
 
   it("cancelar o rascunho ou uma peça do piloto", () => {
     expect(interpretarComando("cancelar")).toEqual({
       tipo: "cancelar",
       alvo: "rascunho",
+      motivo: "",
     });
     expect(interpretarComando("cancela o post")).toEqual({
       tipo: "cancelar",
       alvo: "rascunho",
+      motivo: "",
     });
     expect(interpretarComando("cancelar carrossel")).toEqual({
       tipo: "cancelar",
       alvo: "carrossel",
+      motivo: "",
     });
     expect(interpretarComando("Cancela o reel")).toEqual({
       tipo: "cancelar",
       alvo: "reel",
+      motivo: "",
     });
     expect(interpretarComando("vetar tudo")).toEqual({
       tipo: "cancelar",
       alvo: "tudo",
+      motivo: "",
     });
+  });
+
+  it("cancelar dizendo o motivo guarda o motivo como foi escrito", () => {
+    expect(interpretarComando("Cancelar porque está Formal demais.")).toEqual({
+      tipo: "cancelar",
+      alvo: "rascunho",
+      motivo: "está Formal demais",
+    });
+    expect(interpretarComando("cancelar carrossel, pois já falei disso")).toEqual({
+      tipo: "cancelar",
+      alvo: "carrossel",
+      motivo: "já falei disso",
+    });
+    // Ter um "porque" não transforma assunto da agenda em comando nosso.
+    expect(interpretarComando("cancelar a reunião porque vou viajar")).toBeNull();
   });
 });
 

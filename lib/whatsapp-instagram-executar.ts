@@ -8,8 +8,9 @@
  * de todo post da plataforma — um só lugar que fala com o Instagram.
  */
 import { systemCarrosselDaIdeia } from "@/lib/carrossel-ideia";
-import { contextoDoPerfil } from "@/lib/conteudo-perfil";
+import { contextoDoPerfil, preferenciaDaRecusa } from "@/lib/conteudo-perfil";
 import {
+  aprenderPreferencia,
   atualizarExecucaoPiloto,
   deletarCarrosselInstagram,
   desagendarCarrosselInstagram,
@@ -55,11 +56,30 @@ const OPCOES = [
   "• *cancelar* — descarto",
 ].join("\n");
 
-/** Cria o rascunho a partir da ideia, guarda como pendente e manda a prévia. */
-async function criar(numero: string, ideia: string, tentativas: number): Promise<void> {
+/**
+ * Guarda o motivo de uma recusa como preferência e devolve o que acrescentar
+ * à resposta. Sem motivo, não há o que aprender — e a resposta fica como era.
+ */
+async function aprender(motivo: string, titulo: string): Promise<string> {
+  const frase = motivo ? preferenciaDaRecusa("outro", motivo, titulo) : null;
+  if (!frase) return "";
+  const guardou = await aprenderPreferencia(frase, true).catch(() => false);
+  return guardou ? " Anotei o motivo: vou levar em conta nas próximas." : "";
+}
+
+/**
+ * Cria o rascunho a partir da ideia, guarda como pendente e manda a prévia.
+ * `ajuste` é o pedido de um "refazer mais curto": vale só para esta versão.
+ */
+async function criar(
+  numero: string,
+  ideia: string,
+  tentativas: number,
+  ajuste = "",
+): Promise<void> {
   const perfil = await getPerfilConteudo(true).catch(() => null);
   const carrossel = await gerarCarrosselIA(
-    `IDEIA DO PASTOR: ${ideia}`,
+    `IDEIA DO PASTOR: ${ideia}${ajuste ? `\n\nAJUSTE PEDIDO PELO PASTOR (obrigatório): ${ajuste}` : ""}`,
     "carrossel",
     systemCarrosselDaIdeia("carrossel", perfil ? contextoDoPerfil(perfil) : ""),
   );
@@ -133,7 +153,7 @@ async function publicar(numero: string, quando: string, agora: Date): Promise<vo
   );
 }
 
-async function refazer(numero: string): Promise<void> {
+async function refazer(numero: string, ajuste: string): Promise<void> {
   const pendente = await getPendenteWhatsApp();
   if (!pendente?.ideia) {
     await dizer(numero, "Não há rascunho para refazer. Mande *post* + a ideia.");
@@ -153,10 +173,10 @@ async function refazer(numero: string): Promise<void> {
   if (anterior?.status === "rascunho")
     await deletarCarrosselInstagram(anterior.id, true);
   await dizer(numero, "⏳ Fazendo outra versão…");
-  await criar(numero, pendente.ideia, pendente.tentativas + 1);
+  await criar(numero, pendente.ideia, pendente.tentativas + 1, ajuste);
 }
 
-async function cancelarRascunho(numero: string): Promise<void> {
+async function cancelarRascunho(numero: string, motivo: string): Promise<void> {
   const pendente = await getPendenteWhatsApp();
   const post = pendente?.carrossel_id
     ? await getCarrosselInstagram(pendente.carrossel_id)
@@ -172,14 +192,17 @@ async function cancelarRascunho(numero: string): Promise<void> {
     await desagendarCarrosselInstagram(post.id, true);
     await dizer(
       numero,
-      "🛑 Tirei da fila. O post voltou a ser rascunho e não vai ao ar.",
+      `🛑 Tirei da fila. O post voltou a ser rascunho e não vai ao ar.${await aprender(motivo, pendente?.ideia ?? "")}`,
     );
     return;
   }
   if (post.status === "rascunho") {
     await deletarCarrosselInstagram(post.id, true);
     await setPendenteWhatsApp({ carrossel_id: null, ideia: "", tentativas: 0 });
-    await dizer(numero, "🗑️ Rascunho descartado.");
+    await dizer(
+      numero,
+      `🗑️ Rascunho descartado.${await aprender(motivo, pendente?.ideia ?? "")}`,
+    );
     return;
   }
   await dizer(numero, "Esse post já foi ao ar; não dá mais para cancelar por aqui.");
@@ -190,6 +213,7 @@ async function cancelarDoPiloto(
   numero: string,
   alvo: "carrossel" | "reel" | "tudo",
   agora: Date,
+  motivo: string,
 ): Promise<void> {
   const [execucao] = await listExecucoesPiloto(true);
   const tipos =
@@ -197,11 +221,13 @@ async function cancelarDoPiloto(
       ? ["carrossel", "reel_ia"]
       : [alvo === "reel" ? "reel_ia" : "carrossel"];
   const vetadas: string[] = [];
+  const titulos: string[] = [];
   const pecas = [];
   for (const p of execucao?.pecas ?? []) {
     if (tipos.includes(p.tipo) && podeVetar(p, agora)) {
       if (p.post_id) await desagendarCarrosselInstagram(p.post_id, true);
       vetadas.push(p.tipo === "reel_ia" ? "o Reel" : "o carrossel");
+      if (p.titulo && !titulos.includes(p.titulo)) titulos.push(p.titulo);
       pecas.push({ ...p, estado: "vetado" as const });
     } else {
       pecas.push(p);
@@ -212,7 +238,10 @@ async function cancelarDoPiloto(
     return;
   }
   await atualizarExecucaoPiloto(execucao.id, { pecas });
-  await dizer(numero, `🛑 Cancelei ${vetadas.join(" e ")}. Não vai ao ar.`);
+  await dizer(
+    numero,
+    `🛑 Cancelei ${vetadas.join(" e ")}. Não vai ao ar.${await aprender(motivo, titulos.join(" / "))}`,
+  );
 }
 
 /** Executa o comando e responde. Nunca lança: a falha vira uma mensagem no chat. */
@@ -234,11 +263,11 @@ export async function executarComandoInstagram(
         await publicar(numero, comando.quando, agora);
         return;
       case "refazer":
-        await refazer(numero);
+        await refazer(numero, comando.ajuste);
         return;
       case "cancelar":
-        if (comando.alvo === "rascunho") await cancelarRascunho(numero);
-        else await cancelarDoPiloto(numero, comando.alvo, agora);
+        if (comando.alvo === "rascunho") await cancelarRascunho(numero, comando.motivo);
+        else await cancelarDoPiloto(numero, comando.alvo, agora, comando.motivo);
         return;
     }
   } catch (e) {

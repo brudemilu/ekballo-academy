@@ -3,11 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
+  adicionarPreferencia,
   MAX_PILARES,
+  MAX_PREFERENCIAS,
   MAX_REFERENCIAS,
   MIN_EXEMPLOS,
   type PerfilConteudo,
   type Pilar,
+  type Preferencia,
   podeAnalisar,
   progressoDoPerfil,
   type ReferenciaConteudo,
@@ -378,12 +381,125 @@ export function PerfilConteudoForm({
         )}
       </div>
 
+      <PreferenciasAprendidas
+        preferencias={perfil.preferencias ?? []}
+        onMudar={(preferencias) => setPerfil((p) => ({ ...p, preferencias }))}
+        onErro={setErro}
+      />
+
       <ReferenciasConteudo
         referencias={referencias}
         onMudar={setReferencias}
         onErro={setErro}
       />
     </div>
+  );
+}
+
+/**
+ * O que a IA aprendeu com as recusas. Cada item grava na hora (não depende do
+ * "Salvar perfil"): é uma lista à parte, que também cresce sozinha quando o
+ * pastor cancela uma peça dizendo por quê.
+ */
+function PreferenciasAprendidas({
+  preferencias,
+  onMudar,
+  onErro,
+}: {
+  preferencias: Preferencia[];
+  onMudar: (lista: Preferencia[]) => void;
+  onErro: (erro: string | null) => void;
+}) {
+  const router = useRouter();
+  const [nova, setNova] = useState("");
+  const [gravando, setGravando] = useState(false);
+
+  async function gravar(lista: Preferencia[]) {
+    setGravando(true);
+    onErro(null);
+    try {
+      const d = await chamar("/api/admin/instagram/perfil", "PATCH", {
+        preferencias: lista,
+      });
+      onMudar(d.preferencias as Preferencia[]);
+      router.refresh();
+      return true;
+    } catch (e) {
+      onErro(e instanceof Error ? e.message : "Falha ao salvar.");
+      return false;
+    } finally {
+      setGravando(false);
+    }
+  }
+
+  async function adicionar(e: React.FormEvent) {
+    e.preventDefault();
+    const lista = adicionarPreferencia(preferencias, nova, new Date().toISOString());
+    if (lista === preferencias) return;
+    if (await gravar(lista)) setNova("");
+  }
+
+  return (
+    <section className="rounded-2xl border border-mesa-200 bg-white p-5">
+      <h2 className="mb-1 font-serif text-xl font-semibold text-mesa-800">
+        O que a IA já aprendeu com você
+      </h2>
+      <p className="mb-4 text-justify text-sm leading-relaxed text-mesa-600 hyphens-auto">
+        Quando você cancela uma peça e diz o motivo — aqui no site ou respondendo
+        “cancelar porque…” no WhatsApp —, a IA guarda a correção e passa a segui-la em
+        tudo o que escreve. Você também pode ensinar direto, e apagar o que não vale
+        mais. Ficam as {MAX_PREFERENCIAS} mais recentes.
+      </p>
+
+      {preferencias.length === 0 ? (
+        <p className="mb-4 rounded-lg border border-dashed border-mesa-200 p-4 text-sm text-mesa-500">
+          Ainda não há nada anotado.
+        </p>
+      ) : (
+        <ul className="mb-4 space-y-2">
+          {preferencias.map((p) => (
+            <li
+              key={p.texto}
+              className="flex items-start justify-between gap-3 rounded-lg border border-mesa-200 bg-bege-50 p-3"
+            >
+              <p className="min-w-0 text-sm text-mesa-800">{p.texto}</p>
+              <button
+                type="button"
+                disabled={gravando}
+                onClick={() => gravar(preferencias.filter((x) => x.texto !== p.texto))}
+                aria-label={`Apagar: ${p.texto}`}
+                className="shrink-0 rounded-full border border-mesa-200 bg-white px-3 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100 disabled:opacity-60"
+              >
+                Apagar
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form onSubmit={adicionar} className="flex flex-wrap items-end gap-2">
+        <div className="min-w-0 flex-1 basis-64">
+          <label htmlFor="preferencia-nova" className={ROTULO}>
+            Ensinar uma regra
+          </label>
+          <input
+            id="preferencia-nova"
+            value={nova}
+            onChange={(e) => setNova(e.target.value)}
+            maxLength={300}
+            placeholder="Ex.: nunca terminar com pergunta; sempre citar o versículo por extenso."
+            className={CAMPO}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={gravando || !nova.trim()}
+          className={BOTAO_SECUNDARIO}
+        >
+          {gravando ? "Gravando…" : "Ensinar"}
+        </button>
+      </form>
+    </section>
   );
 }
 

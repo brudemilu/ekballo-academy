@@ -38,7 +38,100 @@ export type PerfilConteudo = {
   temas_proibidos: string;
   /** Para onde o conteúdo leva (ex.: "comente MESA para receber o link"). */
   chamada_padrao: string;
+  /** O que a IA aprendeu com as recusas do pastor (mais recentes no fim). */
+  preferencias: Preferencia[];
 };
+
+/** Uma regra aprendida, em uma frase. */
+export type Preferencia = { texto: string; criada_em: string };
+
+export const MAX_PREFERENCIAS = 20;
+
+/**
+ * Por que o pastor recusou uma peça. Cada motivo vira uma regra diferente — e
+ * "outro" só vira regra se ele escrever o que foi.
+ */
+export const MOTIVOS_RECUSA = {
+  nao_meu_jeito: "Não é o meu jeito de falar",
+  ja_falei: "Já falei disso",
+  informacao_errada: "Tem informação errada",
+  fora_de_hora: "Não é o momento para esse assunto",
+  outro: "Outro motivo",
+} as const;
+
+export type MotivoRecusa = keyof typeof MOTIVOS_RECUSA;
+
+export function motivoValido(v: unknown): v is MotivoRecusa {
+  return typeof v === "string" && Object.hasOwn(MOTIVOS_RECUSA, v);
+}
+
+/**
+ * A frase que entra nas preferências a partir de uma recusa. Devolve null
+ * quando a recusa não ensina nada duradouro: "não é o momento" é sobre
+ * AGORA, e "outro" sem explicação não diz o que mudar.
+ */
+export function preferenciaDaRecusa(
+  motivo: MotivoRecusa,
+  detalhe: string,
+  titulo: string,
+): string | null {
+  const d = detalhe.trim().replace(/\s+/g, " ").slice(0, 200);
+  const t = titulo.trim().slice(0, 120);
+  switch (motivo) {
+    case "nao_meu_jeito":
+      return d
+        ? `Não escrever assim: ${d}`
+        : t
+          ? `O pastor recusou "${t}" por não soar como ele. Evite esse tom.`
+          : null;
+    case "ja_falei":
+      return t
+        ? `Já foi falado de "${t}"${d ? ` (${d})` : ""}. Não repetir o mesmo ângulo.`
+        : null;
+    case "informacao_errada":
+      return d
+        ? `Cuidado com erro de informação: ${d}`
+        : t
+          ? `"${t}" tinha informação errada. Não afirmar o que a fonte não diz.`
+          : null;
+    case "fora_de_hora":
+      return null;
+    case "outro":
+      // Solto, "muito longo" não diz nada daqui a um mês; com o título, diz.
+      return d ? (t ? `O pastor recusou "${t}" porque: ${d}` : d) : null;
+  }
+}
+
+/**
+ * Acrescenta uma preferência: sem repetir a que já existe (ignorando caixa e
+ * espaços) e sem passar do limite — a mais antiga sai para a nova entrar.
+ */
+export function adicionarPreferencia(
+  lista: Preferencia[],
+  texto: string,
+  agoraISO: string,
+): Preferencia[] {
+  const limpo = texto.trim().replace(/\s+/g, " ").slice(0, 300);
+  if (!limpo) return lista;
+  const igual = (a: string) => a.toLowerCase() === limpo.toLowerCase();
+  if (lista.some((p) => igual(p.texto))) return lista;
+  return [...lista, { texto: limpo, criada_em: agoraISO }].slice(-MAX_PREFERENCIAS);
+}
+
+/** Garante a forma das preferências vindas do banco (ou do navegador). */
+export function limparPreferencias(v: unknown): Preferencia[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((p) => {
+      const o = (p || {}) as Record<string, unknown>;
+      return {
+        texto: typeof o.texto === "string" ? o.texto.trim().slice(0, 300) : "",
+        criada_em: typeof o.criada_em === "string" ? o.criada_em : "",
+      };
+    })
+    .filter((p) => p.texto)
+    .slice(-MAX_PREFERENCIAS);
+}
 
 export const PERFIL_VAZIO: PerfilConteudo = {
   objetivo: "",
@@ -48,6 +141,7 @@ export const PERFIL_VAZIO: PerfilConteudo = {
   voz_dna: null,
   temas_proibidos: "",
   chamada_padrao: "",
+  preferencias: [],
 };
 
 /** O que se aproveita de um criador admirado: a forma, nunca o conteúdo. */
@@ -101,7 +195,7 @@ function listaDeTextos(v: unknown, maxItens: number, maxChars = 240): string[] {
 /** Valida o perfil vindo da tela (PUT inteiro: o formulário manda tudo). */
 export function validarPerfil(
   corpo: unknown,
-): Resultado<Omit<PerfilConteudo, "voz_dna">> {
+): Resultado<Omit<PerfilConteudo, "voz_dna" | "preferencias">> {
   if (!corpo || typeof corpo !== "object")
     return { ok: false, erro: "Corpo inválido." };
   const c = corpo as Record<string, unknown>;
@@ -304,6 +398,13 @@ export function contextoDoPerfil(
     linhas.push(`NÃO ENTRE NESTES ASSUNTOS: ${perfil.temas_proibidos}`);
   if (perfil.chamada_padrao)
     linhas.push(`CHAMADA FINAL PREFERIDA: ${perfil.chamada_padrao}`);
+  // O que ele já recusou e por quê. Vale mais que qualquer instrução genérica:
+  // é a correção dele sobre o que a IA escreveu.
+  if (perfil.preferencias?.length) {
+    linhas.push(
+      `O QUE O PASTOR JÁ CORRIGIU (siga sempre):\n${perfil.preferencias.map((p) => `- ${p.texto}`).join("\n")}`,
+    );
+  }
 
   if (referencia?.dna) {
     const d = referencia.dna;
