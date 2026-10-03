@@ -54,7 +54,14 @@ describe("postsNaJanela", () => {
 
 describe("indicadores · 45 dias contra os 45 anteriores", () => {
   it("soma, tira a média e compara as duas metades", () => {
-    const l = [post(1, 30), post(10, 50), post(20, 40), post(50, 20), post(60, 20), post(70, 20)];
+    const l = [
+      post(1, 30),
+      post(10, 50),
+      post(20, 40),
+      post(50, 20),
+      post(60, 20),
+      post(70, 20),
+    ];
     const [publicados, interacoes, porPost, alcance] = indicadores(l, HOJE);
     expect(publicados).toEqual({ rotulo: "Posts publicados", valor: 6, variacao: 0 });
     expect(interacoes.valor).toBe(180);
