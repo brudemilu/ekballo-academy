@@ -126,7 +126,7 @@ test.describe("acessibilidade mínima", () => {
 test.describe("Instagram do ministério (admin)", () => {
   test("o calendário abre na semana e guarda uma ideia nova", async ({ page }) => {
     const erros = vigiarErros(page);
-    await page.goto("/admin/instagram");
+    await page.goto("/admin/instagram?aba=calendario");
 
     await expect(page.getByRole("button", { name: /esta semana/i })).toBeVisible();
     await expect(page.getByText(/dias com algo planejado/i)).toBeVisible();
@@ -204,7 +204,7 @@ test.describe("Instagram do ministério (admin)", () => {
     page,
   }) => {
     const erros = vigiarErros(page);
-    await page.goto("/admin/instagram");
+    await page.goto("/admin/instagram?aba=calendario");
 
     await page.getByRole("button", { name: "Montar a semana" }).click();
     const montar = page.getByRole("button", { name: /montar e pôr no calendário/i });
@@ -217,6 +217,27 @@ test.describe("Instagram do ministério (admin)", () => {
     await expect(mesa.locator("option")).not.toHaveCount(1);
     await mesa.selectOption({ index: 1 });
     await expect(montar).toBeEnabled();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
+  test("o painel é a entrada: ações do dia, números de 90 dias e a constância", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram");
+
+    await expect(
+      page.getByRole("heading", { name: /o que fazer hoje/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: /últimos 90 dias/i })).toBeVisible();
+    await expect(page.getByText("Posts publicados")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /constância/i })).toBeVisible();
+    // O post de demonstração que saiu do normal aparece com o que tinha de diferente.
+    await expect(
+      page.getByRole("heading", { name: /o que saiu do seu normal/i }),
+    ).toBeVisible();
+    await expect(page.getByText(/× o seu normal/).first()).toBeVisible();
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
