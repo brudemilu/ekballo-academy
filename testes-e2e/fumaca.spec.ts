@@ -309,4 +309,21 @@ test.describe("Instagram do ministério (admin)", () => {
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
+
+  test("a aba Assistente abre com sugestões de pergunta e o campo de mensagem", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=assistente");
+
+    await expect(
+      page.getByRole("button", { name: /me dê 5 ideias de post/i }),
+    ).toBeVisible();
+    // Sem texto, não há o que enviar.
+    await expect(page.getByRole("button", { name: "Enviar" })).toBeDisabled();
+    await page.getByLabel("Sua mensagem").fill("oi");
+    await expect(page.getByRole("button", { name: "Enviar" })).toBeEnabled();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
 });

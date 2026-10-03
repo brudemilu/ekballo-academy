@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
+import { AssistenteConteudo } from "@/components/AssistenteConteudo";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { CortesConteudo } from "@/components/CortesConteudo";
 import { ImagensConteudo } from "@/components/ImagensConteudo";
@@ -55,6 +56,7 @@ const ABAS = [
   { v: "imagens", label: "🖼️ Imagens" },
   { v: "roteiros", label: "🎬 Roteiros" },
   { v: "cortes", label: "✂️ Cortes" },
+  { v: "assistente", label: "💬 Assistente" },
   { v: "piloto", label: "🤖 Piloto" },
   { v: "perfil", label: "🧭 Perfil" },
 ] as const;
@@ -151,6 +153,8 @@ export default async function AdminInstagramPage({
       "Escolha uma mesa, um devocional ou um texto seu e receba o roteiro de um vídeo curto: o que falar, o que aparece na tela e o que mostrar. A IA só usa o que está na fonte, e mostra de onde tirou.",
     cortes:
       "Cole o link de uma pregação no YouTube e a IA aponta os melhores momentos para virar vídeo curto: onde começa, onde termina, a frase que abre e a legenda do post.",
+    assistente:
+      "Converse sobre o conteúdo do perfil: peça ideias, cole um texto para ele criticar, planeje a semana. As ideias que ele sugerir podem ir direto para o calendário.",
     piloto:
       "Ligue o piloto e a IA cuida da semana: escolhe o assunto, cria as peças, agenda a publicação e te avisa no WhatsApp. Nada vai ao ar sem você ter tido tempo de cancelar.",
     perfil:
@@ -234,6 +238,8 @@ export default async function AdminInstagramPage({
           )}
           configurado={youtubeConfigurado() && Boolean(process.env.GROQ_API_KEY)}
         />
+      ) : aba === "assistente" ? (
+        <AssistenteConteudo />
       ) : aba === "piloto" ? (
         <PilotoConteudo
           configInicial={piloto}

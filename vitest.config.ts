@@ -45,6 +45,7 @@ export default defineConfig({
         "lib/imagem-livre.ts",
         "lib/carrossel-ideia.ts",
         "lib/json-ia.ts",
+        "lib/assistente.ts",
         "lib/painel.ts",
       ],
       thresholds: {
