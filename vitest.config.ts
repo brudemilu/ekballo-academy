@@ -40,6 +40,7 @@ export default defineConfig({
         "lib/conteudo-perfil.ts",
         "lib/roteiro.ts",
         "lib/pacote.ts",
+        "lib/cortes.ts",
         "lib/painel.ts",
       ],
       thresholds: {

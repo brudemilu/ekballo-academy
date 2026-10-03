@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
   // e garante que o binário/lib entre no deploy da função de render.
   outputFileTracingIncludes: {
     "/api/admin/instagram/reel-gerar": ["./node_modules/ffmpeg-static/**"],
+    // Cortes de pregação: o ffmpeg reduz o áudio antes da transcrição.
+    "/api/admin/instagram/cortes": ["./node_modules/ffmpeg-static/**"],
     "/api/cron/gerar-audio-tick": [
       "./node_modules/msedge-tts/**",
       "./node_modules/ws/**",

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
+import { CortesConteudo } from "@/components/CortesConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
 import { PacoteSemana } from "@/components/PacoteSemana";
@@ -10,11 +11,13 @@ import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
 import { RoteirosConteudo } from "@/components/RoteirosConteudo";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
+import { travado } from "@/lib/cortes";
 import {
   getCurrentSession,
   getIdeiaConteudo,
   getPerfilConteudo,
   listCarrosseisInstagram,
+  listCortesConteudo,
   listCursosPublicados,
   listIdeiasConteudo,
   listReferenciasConteudo,
@@ -30,6 +33,7 @@ import {
   postsNaJanela,
 } from "@/lib/painel";
 import { carregarDadosPainel } from "@/lib/painel-dados";
+import { apiConfigurada as youtubeConfigurado } from "@/lib/youtube";
 
 export const metadata = { title: "Instagram — Ekballo" };
 export const dynamic = "force-dynamic";
@@ -44,6 +48,7 @@ const ABAS = [
   { v: "calendario", label: "🗓️ Calendário" },
   { v: "criar", label: "✨ Criar e postar" },
   { v: "roteiros", label: "🎬 Roteiros" },
+  { v: "cortes", label: "✂️ Cortes" },
   { v: "perfil", label: "🧭 Perfil" },
 ] as const;
 type Aba = (typeof ABAS)[number]["v"];
@@ -92,6 +97,7 @@ export default async function AdminInstagramPage({
     cursos,
     roteiros,
     dadosPainel,
+    cortes,
   ] = await Promise.all([
     usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
     usaIdeias ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
@@ -103,6 +109,7 @@ export default async function AdminInstagramPage({
     usaFontes ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
     aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
     noPainel ? carregarDadosPainel() : Promise.resolve(null),
+    aba === "cortes" ? listCortesConteudo().catch(() => []) : Promise.resolve([]),
   ]);
 
   const hoje = diaSP(new Date());
@@ -127,6 +134,8 @@ export default async function AdminInstagramPage({
       "Cole qualquer conteúdo (trecho de mensagem, frase de livro, reflexão, versículo). A IA monta os slides, sugere a imagem que conversa com o texto, a palavra-chave e a legenda. Você edita tudo e aprova.",
     roteiros:
       "Escolha uma mesa, um devocional ou um texto seu e receba o roteiro de um vídeo curto: o que falar, o que aparece na tela e o que mostrar. A IA só usa o que está na fonte, e mostra de onde tirou.",
+    cortes:
+      "Cole o link de uma pregação no YouTube e a IA aponta os melhores momentos para virar vídeo curto: onde começa, onde termina, a frase que abre e a legenda do post.",
     perfil:
       "Conte ao copiloto quem é o ministério, como você fala e em quem se inspira. É daqui que os roteiros e os posts tiram o jeito de escrever.",
   };
@@ -195,6 +204,16 @@ export default async function AdminInstagramPage({
           roteirosIniciais={roteiros}
           hoje={hoje}
           abrirId={roteiroId}
+        />
+      ) : aba === "cortes" ? (
+        <CortesConteudo
+          // Análise que ficou "processando" depois de um reinício do servidor aparece como falha.
+          cortesIniciais={cortes.map((c) =>
+            travado(c)
+              ? { ...c, status: "erro" as const, erro: "A análise foi interrompida." }
+              : c,
+          )}
+          configurado={youtubeConfigurado() && Boolean(process.env.GROQ_API_KEY)}
         />
       ) : aba === "perfil" ? (
         <PerfilConteudoForm perfilInicial={perfil} referenciasIniciais={referencias} />
