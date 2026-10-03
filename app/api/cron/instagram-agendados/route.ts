@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/service";
-import { publicarInstagram, publicarReel, instagramConfigurado } from "@/lib/instagram-publish";
+import { type NextRequest, NextResponse } from "next/server";
 import { prepararImageUrls } from "@/lib/instagram-imagens";
+import {
+  instagramConfigurado,
+  publicarInstagram,
+  publicarReel,
+} from "@/lib/instagram-publish";
 import { selfOrigin } from "@/lib/site-url";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -88,15 +92,27 @@ export async function GET(req: NextRequest) {
           })();
       await supabase
         .from("instagram_carrosseis")
-        .update({ status: "publicado", publicado_em: new Date().toISOString(), ig_post_id: postId, erro: null })
+        .update({
+          status: "publicado",
+          publicado_em: new Date().toISOString(),
+          ig_post_id: postId,
+          erro: null,
+        })
         .eq("id", post.id);
       resultados.push({ id: post.id, ok: true });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "falha";
-      await supabase.from("instagram_carrosseis").update({ status: "erro", erro: msg }).eq("id", post.id);
+      await supabase
+        .from("instagram_carrosseis")
+        .update({ status: "erro", erro: msg })
+        .eq("id", post.id);
       resultados.push({ id: post.id, ok: false, erro: msg });
     }
   }
 
-  return NextResponse.json({ ok: true, publicados: resultados.filter((r) => r.ok).length, resultados });
+  return NextResponse.json({
+    ok: true,
+    publicados: resultados.filter((r) => r.ok).length,
+    resultados,
+  });
 }

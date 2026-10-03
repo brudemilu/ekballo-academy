@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TEMAS, TEMA_PADRAO, type TemaKey } from "@/lib/instagram-render";
+import { useEffect, useRef, useState } from "react";
+import { TEMA_PADRAO, TEMAS, type TemaKey } from "@/lib/instagram-render";
 
 // Fontes pra prévia ao vivo (mesmas do servidor). Carregadas via @font-face.
 const FONT_FACES = `
@@ -79,7 +79,19 @@ function ogSrc(s: Slide, tema: TemaKey): string {
 // Prévia WYSIWYG: renderiza a imagem REAL da rota OG (template papel 4:5),
 // com debounce. Evita divergência preview×Satori. A foto (Flux) é cacheada por
 // prompt+seed, então editar só o texto re-renderiza rápido (sem regenerar foto).
-function SlidePreview({ slide, tema, index, total, size = 300 }: { slide: Slide; tema: TemaKey; index: number; total: number; size?: number }) {
+function SlidePreview({
+  slide,
+  tema,
+  index,
+  total,
+  size = 300,
+}: {
+  slide: Slide;
+  tema: TemaKey;
+  index: number;
+  total: number;
+  size?: number;
+}) {
   const W = size;
   const H = Math.round(size * 1.25); // retrato 4:5
   const alvo = ogSrc(slide, tema);
@@ -93,8 +105,18 @@ function SlidePreview({ slide, tema, index, total, size = 300 }: { slide: Slide;
 
   return (
     <div className="shrink-0">
-      <div style={{ width: W, height: H, position: "relative", overflow: "hidden", borderRadius: 14, background: "#F4EACB", boxShadow: "0 8px 30px rgba(0,0,0,0.25)" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+      <div
+        style={{
+          width: W,
+          height: H,
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: 14,
+          background: "#F4EACB",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
+        }}
+      >
+        {/* biome-ignore lint/performance/noImgElement: a prévia é um PNG gerado na hora pela rota OG; next/image não otimiza rota OG */}
         <img
           src={src}
           alt=""
@@ -105,7 +127,19 @@ function SlidePreview({ slide, tema, index, total, size = 300 }: { slide: Slide;
           style={{ width: W, height: H, objectFit: "cover", display: "block" }}
         />
         {carregando && (
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(244,234,203,0.55)", color: "#1B2A4A", fontSize: 13, fontWeight: 600 }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(244,234,203,0.55)",
+              color: "#1B2A4A",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
             gerando arte…
           </div>
         )}
@@ -117,7 +151,11 @@ function SlidePreview({ slide, tema, index, total, size = 300 }: { slide: Slide;
   );
 }
 
-export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroInicial } = {}) {
+export function GeradorInstagram({
+  roteiroInicial,
+}: {
+  roteiroInicial?: RoteiroInicial;
+} = {}) {
   const router = useRouter();
   const [tipo, setTipo] = useState<Tipo>("carrossel");
   const [conteudo, setConteudo] = useState("");
@@ -138,6 +176,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
   const [ideiaId, setIdeiaId] = useState<string | undefined>(undefined);
 
   // Pré-preenche o editor quando chega um roteiro de fora (sugestão da IA).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: dispara só pelo nonce — reaplicar a cada render apagaria o que a pessoa editou
   useEffect(() => {
     if (!roteiroInicial) return;
     const novos: Slide[] = roteiroInicial.slides.map((s) => ({
@@ -156,7 +195,6 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     setConteudo(roteiroInicial.conteudo || "");
     setIdeiaId(roteiroInicial.ideiaId);
     setSalvo(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roteiroInicial?.nonce]);
 
   // Slides que vão pro servidor: no modo upload, viram {imageUrl}; senão, os da IA.
@@ -164,7 +202,18 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     if (tipo === "upload") {
       return uploads
         .filter((u) => u.url)
-        .map((u) => ({ imageUrl: u.url, texto: "", prompt: "", modo: "nenhum", cor: "#C9A961", fonte: "anton", top: "", ref: "", seed: 0, tema }));
+        .map((u) => ({
+          imageUrl: u.url,
+          texto: "",
+          prompt: "",
+          modo: "nenhum",
+          cor: "#C9A961",
+          fonte: "anton",
+          top: "",
+          ref: "",
+          seed: 0,
+          tema,
+        }));
     }
     // injeta o tema em cada slide pra persistir/publicar com a cor escolhida.
     return slides.map((s) => ({ ...s, tema }));
@@ -177,17 +226,27 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
     for (const file of Array.from(files)) {
       const preview = URL.createObjectURL(file);
       const idx = uploadsRef.current.length;
-      uploadsRef.current = [...uploadsRef.current, { url: "", preview, enviando: true }];
+      uploadsRef.current = [
+        ...uploadsRef.current,
+        { url: "", preview, enviando: true },
+      ];
       setUploads([...uploadsRef.current]);
       try {
         const fd = new FormData();
         fd.append("file", file);
-        const res = await fetch("/api/admin/instagram/upload", { method: "POST", body: fd });
+        const res = await fetch("/api/admin/instagram/upload", {
+          method: "POST",
+          body: fd,
+        });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || "Falha no upload.");
-        uploadsRef.current = uploadsRef.current.map((u, i) => (i === idx ? { ...u, url: data.url, enviando: false } : u));
+        uploadsRef.current = uploadsRef.current.map((u, i) =>
+          i === idx ? { ...u, url: data.url, enviando: false } : u,
+        );
       } catch (e) {
-        uploadsRef.current = uploadsRef.current.map((u, i) => (i === idx ? { ...u, enviando: false, erro: true } : u));
+        uploadsRef.current = uploadsRef.current.map((u, i) =>
+          i === idx ? { ...u, enviando: false, erro: true } : u,
+        );
         setErro(e instanceof Error ? e.message : "Falha no upload.");
       }
       setUploads([...uploadsRef.current]);
@@ -244,7 +303,16 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
   function adicionarSlide() {
     setSlides((prev) => [
       ...prev,
-      { texto: "Novo {slide}", prompt: "soft golden light in darkness", modo: "circulo", cor: "#C9A961", fonte: "anton", top: "", ref: "", seed: novoSeed() },
+      {
+        texto: "Novo {slide}",
+        prompt: "soft golden light in darkness",
+        modo: "circulo",
+        cor: "#C9A961",
+        fonte: "anton",
+        top: "",
+        ref: "",
+        seed: novoSeed(),
+      },
     ]);
   }
 
@@ -301,7 +369,13 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
       const res = await fetch("/api/admin/instagram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, tipo, ideiaId }),
+        body: JSON.stringify({
+          conteudo,
+          slides: slidesParaEnvio(),
+          legenda,
+          tipo,
+          ideiaId,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao salvar.");
@@ -366,7 +440,13 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
       const res = await fetch("/api/admin/instagram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, slides: slidesParaEnvio(), legenda, agendadoPara: quando.toISOString(), ideiaId }),
+        body: JSON.stringify({
+          conteudo,
+          slides: slidesParaEnvio(),
+          legenda,
+          agendadoPara: quando.toISOString(),
+          ideiaId,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao agendar.");
@@ -390,12 +470,15 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
       <div className="rounded-2xl border border-mesa-200 bg-white p-6">
         {/* tipo de post */}
         <div className="mb-4 flex gap-2">
-          {([
-            { v: "carrossel", label: "📚 Carrossel (IA)" },
-            { v: "unico", label: "🖼️ Imagem única (IA)" },
-            { v: "upload", label: "⬆️ Enviar minhas imagens" },
-          ] as { v: Tipo; label: string }[]).map((opt) => (
+          {(
+            [
+              { v: "carrossel", label: "📚 Carrossel (IA)" },
+              { v: "unico", label: "🖼️ Imagem única (IA)" },
+              { v: "upload", label: "⬆️ Enviar minhas imagens" },
+            ] as { v: Tipo; label: string }[]
+          ).map((opt) => (
             <button
+              type="button"
               key={opt.v}
               onClick={() => setTipo(opt.v)}
               className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
@@ -414,14 +497,20 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
           <span className="text-sm font-medium text-mesa-700">🎨 Cor:</span>
           {(Object.keys(TEMAS) as TemaKey[]).map((k) => (
             <button
+              type="button"
               key={k}
               onClick={() => setTema(k)}
               title={TEMAS[k].label}
               className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                tema === k ? "border-mesa-700 bg-mesa-50 text-mesa-800" : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"
+                tema === k
+                  ? "border-mesa-700 bg-mesa-50 text-mesa-800"
+                  : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"
               }`}
             >
-              <span className="h-4 w-4 rounded-full" style={{ backgroundColor: TEMAS[k].cor }} />
+              <span
+                className="h-4 w-4 rounded-full"
+                style={{ backgroundColor: TEMAS[k].cor }}
+              />
               {TEMAS[k].label}
             </button>
           ))}
@@ -429,8 +518,14 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
 
         {tipo !== "upload" ? (
           <>
-            <label className="mb-2 block text-sm font-medium text-mesa-700">Seu conteúdo</label>
+            <label
+              htmlFor="ig-conteudo"
+              className="mb-2 block text-sm font-medium text-mesa-700"
+            >
+              Seu conteúdo
+            </label>
             <textarea
+              id="ig-conteudo"
               value={conteudo}
               onChange={(e) => setConteudo(e.target.value)}
               rows={5}
@@ -439,23 +534,35 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
             />
             <div className="mt-4 flex items-center gap-3">
               <button
+                type="button"
                 onClick={montar}
                 disabled={montando || conteudo.trim().length < 8}
                 className="rounded-full bg-laranja-500 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
               >
-                {montando ? "Montando com IA…" : tipo === "unico" ? "✨ Gerar imagem com IA" : "✨ Montar carrossel com IA"}
+                {montando
+                  ? "Montando com IA…"
+                  : tipo === "unico"
+                    ? "✨ Gerar imagem com IA"
+                    : "✨ Montar carrossel com IA"}
               </button>
               {erro && <span className="text-sm text-red-600">{erro}</span>}
             </div>
           </>
         ) : (
           <>
-            <label className="mb-2 block text-sm font-medium text-mesa-700">
-              Suas imagens <span className="text-mesa-400">— JPG/PNG/WEBP, até 10 (vira carrossel)</span>
+            <label
+              htmlFor="ig-imagens"
+              className="mb-2 block text-sm font-medium text-mesa-700"
+            >
+              Suas imagens{" "}
+              <span className="text-mesa-400">
+                — JPG/PNG/WEBP, até 10 (vira carrossel)
+              </span>
             </label>
             <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-mesa-300 bg-mesa-50 px-6 py-8 text-sm font-medium text-mesa-600 transition hover:border-mesa-400 hover:bg-mesa-100">
               ⬆️ Clique para escolher imagens (ou arraste aqui)
               <input
+                id="ig-imagens"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
@@ -476,15 +583,24 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
         <div className="flex flex-wrap gap-3">
           {uploads.map((u, i) => (
             <div key={i} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u.preview} alt={`imagem ${i + 1}`} className="h-32 w-32 rounded-xl object-cover shadow" />
+              {/* biome-ignore lint/performance/noImgElement: prévia local (blob:) do arquivo escolhido; next/image não serve blob */}
+              <img
+                src={u.preview}
+                alt={`imagem ${i + 1}`}
+                className="h-32 w-32 rounded-xl object-cover shadow"
+              />
               {u.enviando && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/45 text-xs text-white">enviando…</div>
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/45 text-xs text-white">
+                  enviando…
+                </div>
               )}
               {u.erro && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-red-900/60 text-xs text-white">falhou</div>
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-red-900/60 text-xs text-white">
+                  falhou
+                </div>
               )}
               <button
+                type="button"
                 onClick={() => removerUpload(i)}
                 className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-mesa-800 text-xs text-white"
                 title="Remover"
@@ -500,111 +616,152 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
       {/* Slides (IA) + ações */}
       {temConteudo && (
         <div className="space-y-6">
-          {tipo !== "upload" && slides.map((s, i) => (
-            <div key={i} className="flex flex-col gap-5 rounded-2xl border border-mesa-200 bg-white p-5 md:flex-row">
-              <SlidePreview slide={s} tema={tema} index={i} total={slides.length} />
+          {tipo !== "upload" &&
+            slides.map((s, i) => (
+              <div
+                key={i}
+                className="flex flex-col gap-5 rounded-2xl border border-mesa-200 bg-white p-5 md:flex-row"
+              >
+                <SlidePreview slide={s} tema={tema} index={i} total={slides.length} />
 
-              <div className="flex-1 space-y-3">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-mesa-600">
-                    Texto <span className="text-mesa-400">— a palavra entre {"{ }"} vira o destaque</span>
-                  </label>
-                  <input
-                    value={s.texto}
-                    onChange={(e) => patch(i, { texto: e.target.value })}
-                    className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-mesa-600">
-                    Imagem (descrição em inglês) — o que aparece de fundo
-                  </label>
-                  <div className="flex gap-2">
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <label
+                      htmlFor={`ig-slide-${i}-texto`}
+                      className="mb-1 block text-xs font-medium text-mesa-600"
+                    >
+                      Texto{" "}
+                      <span className="text-mesa-400">
+                        — a palavra entre {"{ }"} vira o destaque
+                      </span>
+                    </label>
                     <input
-                      value={s.prompt}
-                      onChange={(e) => patch(i, { prompt: e.target.value })}
+                      id={`ig-slide-${i}-texto`}
+                      value={s.texto}
+                      onChange={(e) => patch(i, { texto: e.target.value })}
                       className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400"
                     />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`ig-slide-${i}-prompt`}
+                      className="mb-1 block text-xs font-medium text-mesa-600"
+                    >
+                      Imagem (descrição em inglês) — o que aparece de fundo
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id={`ig-slide-${i}-prompt`}
+                        value={s.prompt}
+                        onChange={(e) => patch(i, { prompt: e.target.value })}
+                        className="w-full rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800 outline-none focus:border-laranja-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => regerar(i)}
+                        title="Gerar outra imagem"
+                        className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm text-mesa-700 transition hover:bg-mesa-100"
+                      >
+                        🔄 Regerar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div>
+                      <label
+                        htmlFor={`ig-slide-${i}-modo`}
+                        className="mb-1 block text-xs font-medium text-mesa-600"
+                      >
+                        Destaque
+                      </label>
+                      <select
+                        id={`ig-slide-${i}-modo`}
+                        value={s.modo}
+                        onChange={(e) => patch(i, { modo: e.target.value as Modo })}
+                        className="rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800"
+                      >
+                        {MODOS.map((m) => (
+                          <option key={m.v} value={m.v}>
+                            {m.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`ig-slide-${i}-cor`}
+                        className="mb-1 block text-xs font-medium text-mesa-600"
+                      >
+                        Cor
+                      </label>
+                      <input
+                        id={`ig-slide-${i}-cor`}
+                        type="color"
+                        value={s.cor}
+                        onChange={(e) => patch(i, { cor: e.target.value })}
+                        className="h-9 w-14 rounded border border-mesa-200 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`ig-slide-${i}-fonte`}
+                        className="mb-1 block text-xs font-medium text-mesa-600"
+                      >
+                        Fonte
+                      </label>
+                      <select
+                        id={`ig-slide-${i}-fonte`}
+                        value={s.fonte}
+                        onChange={(e) => patch(i, { fonte: e.target.value as Fonte })}
+                        className="rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800"
+                      >
+                        {FONTES.map((ft) => (
+                          <option key={ft.v} value={ft.v}>
+                            {ft.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grow" />
                     <button
-                      onClick={() => regerar(i)}
-                      title="Gerar outra imagem"
-                      className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm text-mesa-700 transition hover:bg-mesa-100"
+                      type="button"
+                      onClick={() => baixarUm(s, i)}
+                      title="Baixar esta imagem (PNG 1080×1080)"
+                      className="rounded-lg border border-mesa-200 px-3 py-2 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
                     >
-                      🔄 Regerar
+                      ⬇️ Baixar
                     </button>
+                    {slides.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removerSlide(i)}
+                        className="rounded-lg px-3 py-2 text-sm text-red-500 transition hover:bg-red-50"
+                      >
+                        Remover
+                      </button>
+                    )}
                   </div>
-                </div>
-                <div className="flex flex-wrap items-end gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-mesa-600">Destaque</label>
-                    <select
-                      value={s.modo}
-                      onChange={(e) => patch(i, { modo: e.target.value as Modo })}
-                      className="rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800"
-                    >
-                      {MODOS.map((m) => (
-                        <option key={m.v} value={m.v}>{m.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-mesa-600">Cor</label>
+                  <div className="flex flex-wrap gap-3">
                     <input
-                      type="color"
-                      value={s.cor}
-                      onChange={(e) => patch(i, { cor: e.target.value })}
-                      className="h-9 w-14 rounded border border-mesa-200 bg-white"
+                      value={s.top}
+                      onChange={(e) => patch(i, { top: e.target.value })}
+                      placeholder="Rótulo do topo (opcional)"
+                      className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400"
+                    />
+                    <input
+                      value={s.ref}
+                      onChange={(e) => patch(i, { ref: e.target.value })}
+                      placeholder="Rodapé / referência (opcional)"
+                      className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400"
                     />
                   </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-mesa-600">Fonte</label>
-                    <select
-                      value={s.fonte}
-                      onChange={(e) => patch(i, { fonte: e.target.value as Fonte })}
-                      className="rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-800"
-                    >
-                      {FONTES.map((ft) => (
-                        <option key={ft.v} value={ft.v}>{ft.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="grow" />
-                  <button
-                    onClick={() => baixarUm(s, i)}
-                    title="Baixar esta imagem (PNG 1080×1080)"
-                    className="rounded-lg border border-mesa-200 px-3 py-2 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
-                  >
-                    ⬇️ Baixar
-                  </button>
-                  {slides.length > 1 && (
-                    <button
-                      onClick={() => removerSlide(i)}
-                      className="rounded-lg px-3 py-2 text-sm text-red-500 transition hover:bg-red-50"
-                    >
-                      Remover
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <input
-                    value={s.top}
-                    onChange={(e) => patch(i, { top: e.target.value })}
-                    placeholder="Rótulo do topo (opcional)"
-                    className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400"
-                  />
-                  <input
-                    value={s.ref}
-                    onChange={(e) => patch(i, { ref: e.target.value })}
-                    placeholder="Rodapé / referência (opcional)"
-                    className="w-44 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-800 outline-none focus:border-laranja-400"
-                  />
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
 
           {tipo === "carrossel" && (
             <button
+              type="button"
               onClick={adicionarSlide}
               className="rounded-full border border-dashed border-mesa-300 px-5 py-2.5 text-sm font-medium text-mesa-600 transition hover:bg-mesa-100"
             >
@@ -614,8 +771,14 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
 
           {/* Legenda */}
           <div className="rounded-2xl border border-mesa-200 bg-white p-5">
-            <label className="mb-2 block text-sm font-medium text-mesa-700">Legenda do post</label>
+            <label
+              htmlFor="ig-legenda"
+              className="mb-2 block text-sm font-medium text-mesa-700"
+            >
+              Legenda do post
+            </label>
             <textarea
+              id="ig-legenda"
               value={legenda}
               onChange={(e) => {
                 setLegenda(e.target.value);
@@ -631,6 +794,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
             {tipo !== "upload" && (
               <>
                 <button
+                  type="button"
                   onClick={baixarTodas}
                   className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
                 >
@@ -638,6 +802,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
                 </button>
                 {podeCompartilhar && (
                   <button
+                    type="button"
                     onClick={salvarNoCelular}
                     title="Abre a bandeja do celular para salvar na galeria"
                     className="rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
@@ -648,14 +813,18 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
               </>
             )}
             <button
+              type="button"
               onClick={salvar}
               disabled={salvando}
               className="rounded-full bg-laranja-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
             >
               {salvando ? "Salvando…" : "💾 Salvar rascunho"}
             </button>
-            {salvo && <span className="text-sm text-oliveira-700">Rascunho salvo ✓</span>}
+            {salvo && (
+              <span className="text-sm text-oliveira-700">Rascunho salvo ✓</span>
+            )}
             <button
+              type="button"
               onClick={publicar}
               disabled={publicando}
               className="rounded-full bg-gradient-to-r from-pink-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
@@ -663,7 +832,9 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
               {publicando ? "Publicando…" : "📲 Publicar no Instagram"}
             </button>
             {publicado && (
-              <span className="text-sm font-medium text-oliveira-700">Publicado no Instagram ✓</span>
+              <span className="text-sm font-medium text-oliveira-700">
+                Publicado no Instagram ✓
+              </span>
             )}
           </div>
 
@@ -680,6 +851,7 @@ export function GeradorInstagram({ roteiroInicial }: { roteiroInicial?: RoteiroI
               className="rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800"
             />
             <button
+              type="button"
               onClick={agendar}
               disabled={agendando}
               className="rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-mesa-800 disabled:opacity-40"

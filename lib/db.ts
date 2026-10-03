@@ -27,13 +27,12 @@ import {
   addMockCompromisso,
   addMockIdeia,
   type CarrosselInstagramMock,
-  type IdeiaConteudoMock,
   getMockMcAnswer,
+  type IdeiaConteudoMock,
   isMockMode,
   listMockCarrosseis,
-  listMockIdeias,
-  removeMockIdeia,
   listMockCompromissos,
+  listMockIdeias,
   MOCK_ALUNOS,
   MOCK_ATIVIDADES,
   MOCK_AULAS,
@@ -54,6 +53,7 @@ import {
   respostasByAluno as mockRespByAluno,
   removeMockCarrossel,
   removeMockCompromisso,
+  removeMockIdeia,
   setMockLeitura,
   setMockMcAnswer,
   updateMockCompromisso,
@@ -2366,7 +2366,8 @@ export type IdeiaConteudoInput = {
   data_planejada?: string | null;
 };
 
-const COLUNAS_IDEIA = "id, titulo, nota, formato, data_planejada, carrossel_id, criado_em";
+const COLUNAS_IDEIA =
+  "id, titulo, nota, formato, data_planejada, carrossel_id, criado_em";
 
 export async function listIdeiasConteudo(): Promise<IdeiaConteudo[]> {
   if (isMockMode()) return listMockIdeias();
@@ -2433,7 +2434,10 @@ export async function atualizarIdeiaConteudo(
 }
 
 /** Liga a ideia ao post que nasceu dela (o calendário passa a mostrar o post). */
-export async function vincularIdeiaAoPost(ideiaId: string, carrosselId: string): Promise<void> {
+export async function vincularIdeiaAoPost(
+  ideiaId: string,
+  carrosselId: string,
+): Promise<void> {
   if (isMockMode()) {
     const ideia = listMockIdeias().find((x) => x.id === ideiaId);
     if (ideia) ideia.carrossel_id = carrosselId;

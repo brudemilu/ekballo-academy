@@ -521,7 +521,7 @@ export function aulaCompleta(alunoId: string, aulaId: string): boolean {
       const altSelId = MOCK_MC_ANSWERS.get(`${alunoId}::${atv.id}`);
       if (!altSelId) return false;
       const alt = MOCK_ALTERNATIVAS.find((a) => a.id === altSelId);
-      if (!alt || !alt.correta) return false;
+      if (!alt?.correta) return false;
     } else {
       // reflexao
       const r = MOCK_RESPOSTAS.find(
@@ -590,7 +590,7 @@ const MOCK_IDEIAS: IdeiaConteudoMock[] = [
   {
     id: "ideia-1",
     titulo: "Por que discipulado acontece à mesa",
-    nota: "Puxar da Mesa 01 do Ego Transformado. Gancho: \"Jesus não abriu uma escola.\"",
+    nota: 'Puxar da Mesa 01 do Ego Transformado. Gancho: "Jesus não abriu uma escola."',
     formato: "reel",
     data_planejada: _diaSP(1),
     carrossel_id: null,
