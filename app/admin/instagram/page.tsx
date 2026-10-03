@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { CortesConteudo } from "@/components/CortesConteudo";
+import { ImagensConteudo } from "@/components/ImagensConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
 import { PacoteSemana } from "@/components/PacoteSemana";
@@ -51,6 +52,7 @@ const ABAS = [
   { v: "painel", label: "📊 Painel" },
   { v: "calendario", label: "🗓️ Calendário" },
   { v: "criar", label: "✨ Criar e postar" },
+  { v: "imagens", label: "🖼️ Imagens" },
   { v: "roteiros", label: "🎬 Roteiros" },
   { v: "cortes", label: "✂️ Cortes" },
   { v: "piloto", label: "🤖 Piloto" },
@@ -143,6 +145,8 @@ export default async function AdminInstagramPage({
       "A semana num lugar só. Guarde a ideia quando ela vier, arraste para o dia em que pretende postar e leve ao estúdio para virar post. Os posts agendados e publicados aparecem aqui sozinhos.",
     criar:
       "Cole qualquer conteúdo (trecho de mensagem, frase de livro, reflexão, versículo). A IA monta os slides, sugere a imagem que conversa com o texto, a palavra-chave e a legenda. Você edita tudo e aprova.",
+    imagens:
+      "Descreva o que quer ver e a IA cria a imagem, sem texto por cima, em quatro variações. Ou monte a capa de um Reel com o título no padrão do ministério.",
     roteiros:
       "Escolha uma mesa, um devocional ou um texto seu e receba o roteiro de um vídeo curto: o que falar, o que aparece na tela e o que mostrar. A IA só usa o que está na fonte, e mostra de onde tirou.",
     cortes:
@@ -218,6 +222,8 @@ export default async function AdminInstagramPage({
           hoje={hoje}
           abrirId={roteiroId}
         />
+      ) : aba === "imagens" ? (
+        <ImagensConteudo />
       ) : aba === "cortes" ? (
         <CortesConteudo
           // Análise que ficou "processando" depois de um reinício do servidor aparece como falha.

@@ -104,6 +104,8 @@ export type SlideRenderPayload = {
    * com foto luminosa.
    */
   tom?: TomSlide;
+  /** Altura do quadro. Padrão 1350 (post 4:5); 1920 para capa de Reel/story. */
+  altura?: number;
 };
 
 export type TomSlide = "escuro" | "claro";
@@ -144,7 +146,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
   // cor de destaque do TEMA (não mais dourado fixo); fallback dourado.
   const gold = p.cor && /^#[0-9a-fA-F]{6}$/.test(p.cor) ? p.cor : COR_GOLD;
   const W = TAMANHO_W;
-  const H = TAMANHO_H;
+  const H = p.altura ?? TAMANHO_H;
 
   const { words, script } = parseTexto(p.texto, f.upper);
   const escuro = p.tom !== "claro";

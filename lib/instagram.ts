@@ -52,8 +52,14 @@ const ESTILO_DEVOCIONAL = [
 
 // Formato nativo do post (4:5). O FLUX.2 exige múltiplos de 16; a sobra de
 // 8 px em cada eixo some no `objectFit: cover` do canvas 1080×1350.
-const FUNDO_W = 1088;
-const FUNDO_H = 1360;
+export type FormatoImagem = "feed" | "story" | "quadrado";
+
+// Os dois lados precisam ser múltiplos de 16 (exigência do FLUX.2).
+const DIMENSOES: Record<FormatoImagem, { w: number; h: number }> = {
+  feed: { w: 1088, h: 1360 }, // 4:5
+  story: { w: 1024, h: 1824 }, // 9:16
+  quadrado: { w: 1024, h: 1024 },
+};
 
 // Em ordem de preferência. Quem manda aqui é a cota grátis da Workers AI
 // (10.000 neurons/dia), medida em out/2026 no tamanho do post (issue #189):
@@ -77,13 +83,14 @@ async function fundoFlux2(
   modelo: string,
   prompt: string,
   seed: number | undefined,
+  formato: FormatoImagem,
   accountId: string,
   apiToken: string,
 ): Promise<string | null> {
   const form = new FormData();
   form.set("prompt", prompt);
-  form.set("width", String(FUNDO_W));
-  form.set("height", String(FUNDO_H));
+  form.set("width", String(DIMENSOES[formato].w));
+  form.set("height", String(DIMENSOES[formato].h));
   if (seed !== undefined) form.set("seed", String(seed));
   const res = await fetch(
     `${CF_BASE}/${accountId}/ai/run/@cf/black-forest-labs/${modelo}`,
@@ -126,32 +133,55 @@ async function fundoSchnell(
   return typeof b64 === "string" && b64 ? b64 : null;
 }
 
-export async function gerarFundoLivre(
-  prompt: string,
-  seed?: number,
+/**
+ * Gera uma imagem a partir de um prompt JÁ COMPLETO (com o estilo), no formato
+ * pedido. Devolve uma data URL, ou null se nenhum modelo conseguiu (cota do
+ * dia esgotada, serviço fora do ar).
+ */
+export async function gerarImagem(
+  promptCompleto: string,
+  opcoes: { seed?: number; formato?: FormatoImagem } = {},
 ): Promise<string | null> {
   const { accountId, apiToken } = creds();
-  if (!accountId || !apiToken || !prompt.trim()) return null;
-  const completo = `${prompt.trim()}. ${ESTILO_DEVOCIONAL}`;
+  if (!accountId || !apiToken || !promptCompleto.trim()) return null;
+  const formato = opcoes.formato ?? "feed";
   const semente =
-    typeof seed === "number" && Number.isFinite(seed)
-      ? Math.abs(Math.trunc(seed))
+    typeof opcoes.seed === "number" && Number.isFinite(opcoes.seed)
+      ? Math.abs(Math.trunc(opcoes.seed))
       : undefined;
 
   for (const modelo of modelosFundo()) {
     try {
-      const b64 = await fundoFlux2(modelo, completo, semente, accountId, apiToken);
+      const b64 = await fundoFlux2(
+        modelo,
+        promptCompleto,
+        semente,
+        formato,
+        accountId,
+        apiToken,
+      );
       if (b64) return `data:image/jpeg;base64,${b64}`;
     } catch {
       // timeout ou rede: tenta o próximo modelo
     }
   }
   try {
-    const b64 = await fundoSchnell(completo, accountId, apiToken);
+    // O schnell só sabe fazer quadrado; quem mostra corta para o formato.
+    const b64 = await fundoSchnell(promptCompleto, accountId, apiToken);
     return b64 ? `data:image/jpeg;base64,${b64}` : null;
   } catch {
     return null;
   }
+}
+
+/** Fundo de slide: o prompt do slide + o estilo devocional da casa. */
+export function gerarFundoLivre(
+  prompt: string,
+  seed?: number,
+  formato: FormatoImagem = "feed",
+): Promise<string | null> {
+  if (!prompt.trim()) return Promise.resolve(null);
+  return gerarImagem(`${prompt.trim()}. ${ESTILO_DEVOCIONAL}`, { seed, formato });
 }
 
 // ----------------------------------------------------------------------------
