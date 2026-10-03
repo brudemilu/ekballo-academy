@@ -22,6 +22,7 @@ type SlideIn = {
   ref?: string;
   tema?: string;
   tom?: string;
+  modelo?: string;
   /** Imagem enviada pelo usuário (modo upload) — usa direto, sem IA. */
   imageUrl?: string;
 };

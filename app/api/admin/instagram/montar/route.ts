@@ -2,13 +2,14 @@ import { type NextRequest, NextResponse } from "next/server";
 import { systemCarrosselDaIdeia, validarIdeia } from "@/lib/carrossel-ideia";
 import { contextoDoPerfil } from "@/lib/conteudo-perfil";
 import { getCurrentSession, getPerfilConteudo } from "@/lib/db";
-import { gerarCarrosselIA } from "@/lib/instagram";
+import { gerarCarrosselIA, systemCarrosselPadrao } from "@/lib/instagram";
+import { instrucaoDoModelo, lerModelo } from "@/lib/instagram-modelos";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
- * POST /api/admin/instagram/montar  { conteudo: string }
+ * POST /api/admin/instagram/montar  { conteudo, tipo?, modo?, modelo? }
  * Usa a IA (Cloudflare/Llama) pra quebrar o conteúdo em slides + legenda.
  * Admin-only. Não gera imagens aqui — só o "esqueleto" do carrossel.
  */
@@ -30,11 +31,15 @@ export async function POST(req: NextRequest) {
   let conteudo = "";
   let tipo: "carrossel" | "unico" = "carrossel";
   let modo: "conteudo" | "ideia" = "conteudo";
+  // O modelo do slide muda o FORMATO do texto pedido (uma lista para o
+  // checklist, poucas palavras para a manchete). Vazio no de foto.
+  let formato = "";
   try {
     const body = await req.json();
     conteudo = typeof body?.conteudo === "string" ? body.conteudo : "";
     if (body?.tipo === "unico") tipo = "unico";
     if (body?.modo === "ideia") modo = "ideia";
+    formato = instrucaoDoModelo(lerModelo(body?.modelo));
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
@@ -45,10 +50,10 @@ export async function POST(req: NextRequest) {
     if (!v.ok) return NextResponse.json({ error: v.erro }, { status: 400 });
     try {
       const perfil = await getPerfilConteudo().catch(() => null);
-      const system = systemCarrosselDaIdeia(
+      const system = `${systemCarrosselDaIdeia(
         tipo,
         perfil ? contextoDoPerfil(perfil) : "",
-      );
+      )}${formato ? `\n\n${formato}` : ""}`;
       return NextResponse.json(
         await gerarCarrosselIA(`IDEIA DO PASTOR: ${v.valor}`, tipo, system),
       );
@@ -68,7 +73,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const carrossel = await gerarCarrosselIA(conteudo, tipo);
+    const carrossel = await gerarCarrosselIA(
+      conteudo,
+      tipo,
+      formato ? `${systemCarrosselPadrao(tipo)}\n\n${formato}` : undefined,
+    );
     return NextResponse.json(carrossel);
   } catch (e) {
     return NextResponse.json(

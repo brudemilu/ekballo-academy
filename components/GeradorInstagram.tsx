@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { VISUAIS } from "@/lib/carrossel-ideia";
+import { MODELOS, type ModeloSlide } from "@/lib/instagram-modelos";
 import { TEMA_PADRAO, TEMAS, type TemaKey } from "@/lib/instagram-render";
 
 // Fontes pra prévia ao vivo (mesmas do servidor). Carregadas via @font-face.
@@ -64,7 +65,12 @@ function novoSeed() {
 
 type Tom = "escuro" | "claro";
 
-function ogSrc(s: Slide, tema: TemaKey, tom: Tom): string {
+function ogSrc(
+  s: Slide,
+  tema: TemaKey,
+  tom: Tom,
+  modelo: ModeloSlide = "foto",
+): string {
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,
@@ -75,6 +81,7 @@ function ogSrc(s: Slide, tema: TemaKey, tom: Tom): string {
     fonte: s.fonte,
     seed: String(s.seed),
   });
+  if (modelo !== "foto") p.set("modelo", modelo);
   if (s.top.trim()) p.set("top", s.top.trim());
   if (s.ref.trim()) p.set("ref", s.ref.trim());
   return `/api/og/instagram?${p.toString()}`;
@@ -87,6 +94,7 @@ function SlidePreview({
   slide,
   tema,
   tom,
+  modelo,
   index,
   total,
   size = 300,
@@ -94,13 +102,14 @@ function SlidePreview({
   slide: Slide;
   tema: TemaKey;
   tom: Tom;
+  modelo: ModeloSlide;
   index: number;
   total: number;
   size?: number;
 }) {
   const W = size;
   const H = Math.round(size * 1.25); // retrato 4:5
-  const alvo = ogSrc(slide, tema, tom);
+  const alvo = ogSrc(slide, tema, tom, modelo);
   const [src, setSrc] = useState(alvo);
   const [carregando, setCarregando] = useState(true);
   useEffect(() => {
@@ -180,6 +189,8 @@ export function GeradorInstagram({
   const uploadsRef = useRef<Upload[]>([]);
   const [tema, setTema] = useState<TemaKey>(TEMA_PADRAO); // cor do post (opção)
   const [tom, setTom] = useState<Tom>("escuro"); // título creme (escuro) ou navy (claro)
+  // O desenho do slide: foto (o de sempre) ou uma moldura só de texto.
+  const [modelo, setModelo] = useState<ModeloSlide>("foto");
   // "conteudo": o pastor cola o texto e a IA só reorganiza. "ideia": ele dá uma
   // frase e a IA escreve o post (com a voz e os limites da aba Perfil).
   const [modoTexto, setModoTexto] = useState<"conteudo" | "ideia">("conteudo");
@@ -226,7 +237,7 @@ export function GeradorInstagram({
         }));
     }
     // injeta o tema e o tom em cada slide pra persistir/publicar como na prévia.
-    return slides.map((s) => ({ ...s, tema, tom }));
+    return slides.map((s) => ({ ...s, tema, tom, modelo }));
   }
 
   async function enviarArquivos(files: FileList | null) {
@@ -275,7 +286,7 @@ export function GeradorInstagram({
       const res = await fetch("/api/admin/instagram/montar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conteudo, tipo, modo: modoTexto }),
+        body: JSON.stringify({ conteudo, tipo, modo: modoTexto, modelo }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Falha ao montar.");
@@ -328,7 +339,7 @@ export function GeradorInstagram({
 
   function baixarUm(s: Slide, idx: number) {
     const a = document.createElement("a");
-    a.href = `${ogSrc(s, tema, tom)}&dl=1`;
+    a.href = `${ogSrc(s, tema, tom, modelo)}&dl=1`;
     a.download = `slide-${idx + 1}.png`;
     document.body.appendChild(a);
     a.click();
@@ -348,7 +359,7 @@ export function GeradorInstagram({
     try {
       const files: File[] = [];
       for (let idx = 0; idx < slides.length; idx++) {
-        const r = await fetch(`${ogSrc(slides[idx], tema, tom)}&dl=1`);
+        const r = await fetch(`${ogSrc(slides[idx], tema, tom, modelo)}&dl=1`);
         if (!r.ok) throw new Error("falha");
         const b = await r.blob();
         files.push(new File([b], `slide-${idx + 1}.png`, { type: "image/png" }));
@@ -551,6 +562,39 @@ export function GeradorInstagram({
           ))}
         </div>
 
+        {/* modelo do slide: foto ou uma moldura só de texto */}
+        {tipo !== "upload" && (
+          <div className="mb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-mesa-700">🧩 Modelo:</span>
+              {(Object.keys(MODELOS) as ModeloSlide[]).map((k) => (
+                <button
+                  type="button"
+                  key={k}
+                  onClick={() => {
+                    setModelo(k);
+                    setSalvo(false);
+                  }}
+                  aria-pressed={modelo === k}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                    modelo === k
+                      ? "border-mesa-700 bg-mesa-50 text-mesa-800"
+                      : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"
+                  }`}
+                >
+                  {MODELOS[k].nome}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-mesa-500">
+              {MODELOS[modelo].detalhe}
+              {modelo !== "foto"
+                ? " Não usa imagem de IA: sai na hora e não gasta a cota de imagens."
+                : ""}
+            </p>
+          </div>
+        )}
+
         {tipo !== "upload" ? (
           <>
             <div className="mb-3 flex flex-wrap gap-2">
@@ -718,7 +762,7 @@ export function GeradorInstagram({
                 >
                   {/* biome-ignore lint/performance/noImgElement: a prévia é um PNG gerado na hora pela rota OG; next/image não otimiza rota OG */}
                   <img
-                    src={ogSrc({ ...slides[0], fonte: v.fonte }, v.tema, v.tom)}
+                    src={ogSrc({ ...slides[0], fonte: v.fonte }, v.tema, v.tom, modelo)}
                     alt=""
                     loading="lazy"
                     className="aspect-[4/5] w-full rounded-lg bg-mesa-100 object-cover"
@@ -746,6 +790,7 @@ export function GeradorInstagram({
                   slide={s}
                   tema={tema}
                   tom={tom}
+                  modelo={modelo}
                   index={i}
                   total={slides.length}
                 />

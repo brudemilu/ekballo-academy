@@ -26,6 +26,7 @@ type SlideRow = {
   ref?: string;
   tema?: string;
   tom?: string;
+  modelo?: string;
   imageUrl?: string;
 };
 
