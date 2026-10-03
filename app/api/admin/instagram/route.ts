@@ -1,5 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession, salvarCarrosselInstagram, deletarCarrosselInstagram, reagendarCarrosselInstagram, atualizarConteudoCarrosselInstagram } from "@/lib/db";
+import { type NextRequest, NextResponse } from "next/server";
+import {
+  atualizarConteudoCarrosselInstagram,
+  deletarCarrosselInstagram,
+  getCurrentSession,
+  reagendarCarrosselInstagram,
+  salvarCarrosselInstagram,
+  vincularIdeiaAoPost,
+} from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -13,7 +20,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
 
-  let body: { conteudo?: string; slides?: unknown[]; legenda?: string; agendadoPara?: string; tipo?: string; videoUrl?: string };
+  let body: {
+    conteudo?: string;
+    slides?: unknown[];
+    legenda?: string;
+    agendadoPara?: string;
+    tipo?: string;
+    videoUrl?: string;
+    ideiaId?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -27,7 +42,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Envie um vídeo primeiro." }, { status: 400 });
     }
   } else if (!slides.length) {
-    return NextResponse.json({ error: "Nada pra salvar — monte o carrossel primeiro." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Nada pra salvar — monte o carrossel primeiro." },
+      { status: 400 },
+    );
   }
 
   // valida a data de agendamento (se houver): tem que ser no futuro
@@ -35,10 +53,16 @@ export async function POST(req: NextRequest) {
   if (body.agendadoPara) {
     const t = new Date(body.agendadoPara).getTime();
     if (Number.isNaN(t)) {
-      return NextResponse.json({ error: "Data de agendamento inválida." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Data de agendamento inválida." },
+        { status: 400 },
+      );
     }
     if (t < Date.now() - 60_000) {
-      return NextResponse.json({ error: "A data de agendamento já passou." }, { status: 400 });
+      return NextResponse.json(
+        { error: "A data de agendamento já passou." },
+        { status: 400 },
+      );
     }
     agendadoPara = new Date(t).toISOString();
   }
@@ -53,6 +77,11 @@ export async function POST(req: NextRequest) {
       tipo: isReel ? "reel" : "carrossel",
       videoUrl: isReel ? body.videoUrl : null,
     });
+    // Veio de uma ideia do calendário: o post passa a representá-la. Falhar
+    // aqui não desfaz o post já salvo — no pior caso a ideia segue solta.
+    if (typeof body.ideiaId === "string" && body.ideiaId) {
+      await vincularIdeiaAoPost(body.ideiaId, id).catch(() => {});
+    }
     return NextResponse.json({ ok: true, id, agendado: Boolean(agendadoPara) });
   } catch (e) {
     return NextResponse.json(
@@ -121,8 +150,14 @@ export async function PATCH(req: NextRequest) {
   try {
     // 1) edição de conteúdo (slides/legenda/conteúdo/vídeo)
     if (temConteudo) {
-      if (body.slides !== undefined && (!Array.isArray(body.slides) || !body.slides.length)) {
-        return NextResponse.json({ error: "Um post precisa de pelo menos uma imagem." }, { status: 400 });
+      if (
+        body.slides !== undefined &&
+        (!Array.isArray(body.slides) || !body.slides.length)
+      ) {
+        return NextResponse.json(
+          { error: "Um post precisa de pelo menos uma imagem." },
+          { status: 400 },
+        );
       }
       await atualizarConteudoCarrosselInstagram(body.id, {
         slides: body.slides as never,
@@ -139,7 +174,10 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: "Data inválida." }, { status: 400 });
       }
       if (t < Date.now() - 60_000) {
-        return NextResponse.json({ error: "Escolha uma data/hora no futuro." }, { status: 400 });
+        return NextResponse.json(
+          { error: "Escolha uma data/hora no futuro." },
+          { status: 400 },
+        );
       }
       await reagendarCarrosselInstagram(body.id, new Date(t).toISOString());
     }

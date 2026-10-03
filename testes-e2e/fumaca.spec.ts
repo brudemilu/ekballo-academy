@@ -122,3 +122,33 @@ test.describe("acessibilidade mínima", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", /pt/i);
   });
 });
+
+test.describe("Instagram do ministério (admin)", () => {
+  test("o calendário abre na semana e guarda uma ideia nova", async ({ page }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram");
+
+    await expect(page.getByRole("button", { name: /esta semana/i })).toBeVisible();
+    await expect(page.getByText(/dias com algo planejado/i)).toBeVisible();
+    // Ideia sem data do mock fica na coluna "Sem data".
+    await expect(page.getByText(/convite para a próxima turma/i)).toBeVisible();
+
+    await page.getByRole("button", { name: "+ Ideia" }).last().click();
+    await page.getByLabel("Título").fill("Ideia criada pelo teste de fumaça");
+    await page.getByRole("button", { name: "Salvar" }).click();
+    await expect(page.getByText("Ideia criada pelo teste de fumaça")).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
+  test("a aba Criar mantém o estúdio de carrossel", async ({ page }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=criar");
+
+    await expect(
+      page.getByRole("heading", { name: /agendados e rascunhos/i }),
+    ).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+});

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
 import { getPermissoesPapel } from "@/lib/db";
-import { TAB_PERMISSAO, podeVerAgenda } from "@/lib/permissoes";
+import { podeVerAgenda, TAB_PERMISSAO } from "@/lib/permissoes";
 import { visaoAlunoAtiva } from "@/lib/visao";
 
 export type AdminTab =
@@ -47,18 +47,90 @@ const GRUPOS: { key: GrupoKey; label: string }[] = [
 ];
 
 const ITEMS: Item[] = [
-  { key: "painel", label: "Painel", href: "/admin", hint: "Visão geral", grupo: "visao" },
-  { key: "dashboard", label: "Dashboard", href: "/admin/dashboard", hint: "Engajamento, filtros e gráficos", grupo: "visao" },
-  { key: "english", label: "English", href: "/admin/english", hint: "Curso premium Ekballo English", grupo: "discipulado" },
-  { key: "cursos", label: "Temáticas", href: "/admin/cursos", hint: "Progresso por temática e discípulo", grupo: "discipulado" },
-  { key: "respostas", label: "Respostas", href: "/admin/respostas", hint: "Reflexões e devolutivas", grupo: "discipulado" },
-  { key: "alunos", label: "Discípulos", href: "/admin/alunos", hint: "Matrículas e contatos", grupo: "discipulado" },
-  { key: "mensagens", label: "Mensagens", href: "/admin/mensagens", hint: "Email, WhatsApp e grupos", grupo: "comunicacao" },
-  { key: "templates", label: "Templates", href: "/admin/templates", hint: "Emails automáticos", grupo: "comunicacao" },
-  { key: "imagens", label: "Imagens", href: "/admin/imagens", hint: "Gerador cinematográfico IA", grupo: "criacao" },
-  { key: "instagram", label: "Instagram", href: "/admin/instagram", hint: "Gerar carrossel e postar", grupo: "criacao" },
-  { key: "youtube", label: "YouTube", href: "/admin/youtube", hint: "Baixar áudio em MP3", grupo: "criacao" },
-  { key: "marca", label: "Marca", href: "/admin/marca", hint: "Logo, cores e o nome Ekballo", grupo: "config" },
+  {
+    key: "painel",
+    label: "Painel",
+    href: "/admin",
+    hint: "Visão geral",
+    grupo: "visao",
+  },
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    href: "/admin/dashboard",
+    hint: "Engajamento, filtros e gráficos",
+    grupo: "visao",
+  },
+  {
+    key: "english",
+    label: "English",
+    href: "/admin/english",
+    hint: "Curso premium Ekballo English",
+    grupo: "discipulado",
+  },
+  {
+    key: "cursos",
+    label: "Temáticas",
+    href: "/admin/cursos",
+    hint: "Progresso por temática e discípulo",
+    grupo: "discipulado",
+  },
+  {
+    key: "respostas",
+    label: "Respostas",
+    href: "/admin/respostas",
+    hint: "Reflexões e devolutivas",
+    grupo: "discipulado",
+  },
+  {
+    key: "alunos",
+    label: "Discípulos",
+    href: "/admin/alunos",
+    hint: "Matrículas e contatos",
+    grupo: "discipulado",
+  },
+  {
+    key: "mensagens",
+    label: "Mensagens",
+    href: "/admin/mensagens",
+    hint: "Email, WhatsApp e grupos",
+    grupo: "comunicacao",
+  },
+  {
+    key: "templates",
+    label: "Templates",
+    href: "/admin/templates",
+    hint: "Emails automáticos",
+    grupo: "comunicacao",
+  },
+  {
+    key: "imagens",
+    label: "Imagens",
+    href: "/admin/imagens",
+    hint: "Gerador cinematográfico IA",
+    grupo: "criacao",
+  },
+  {
+    key: "instagram",
+    label: "Instagram",
+    href: "/admin/instagram",
+    hint: "Calendário, criação e postagem",
+    grupo: "criacao",
+  },
+  {
+    key: "youtube",
+    label: "YouTube",
+    href: "/admin/youtube",
+    hint: "Baixar áudio em MP3",
+    grupo: "criacao",
+  },
+  {
+    key: "marca",
+    label: "Marca",
+    href: "/admin/marca",
+    hint: "Logo, cores e o nome Ekballo",
+    grupo: "config",
+  },
 ];
 
 // Ícones só para a grade de cartões no celular (deixa mais visual/tocável).
@@ -89,7 +161,12 @@ export async function AdminShell({
 }: {
   current: AdminTab;
   session: {
-    profile: { nome: string | null; email: string; papel?: string; is_admin?: boolean } | null;
+    profile: {
+      nome: string | null;
+      email: string;
+      papel?: string;
+      is_admin?: boolean;
+    } | null;
     email: string;
   };
   children: ReactNode;
@@ -168,7 +245,9 @@ export async function AdminShell({
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-mesa-500">
                 Painel pastoral
               </p>
-              <p className="mt-1 text-sm text-mesa-500 md:text-xs">Gestão e acompanhamento</p>
+              <p className="mt-1 text-sm text-mesa-500 md:text-xs">
+                Gestão e acompanhamento
+              </p>
             </div>
 
             <nav className="space-y-6 md:space-y-4">

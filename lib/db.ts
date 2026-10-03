@@ -25,11 +25,14 @@ import type { AgendaEvento } from "@/lib/agenda";
 import {
   addMockCarrossel,
   addMockCompromisso,
+  addMockIdeia,
   type CarrosselInstagramMock,
   getMockMcAnswer,
+  type IdeiaConteudoMock,
   isMockMode,
   listMockCarrosseis,
   listMockCompromissos,
+  listMockIdeias,
   MOCK_ALUNOS,
   MOCK_ATIVIDADES,
   MOCK_AULAS,
@@ -50,6 +53,7 @@ import {
   respostasByAluno as mockRespByAluno,
   removeMockCarrossel,
   removeMockCompromisso,
+  removeMockIdeia,
   setMockLeitura,
   setMockMcAnswer,
   updateMockCompromisso,
@@ -2340,12 +2344,133 @@ export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[
   const { data, error } = await supabase
     .from("instagram_carrosseis")
     .select(
-      "id, conteudo, slides, legenda, status, agendado_para, criado_em, tipo, video_url",
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url",
     )
     .order("criado_em", { ascending: false })
     .limit(50);
   if (error) throw new Error(error.message);
   return (data || []) as unknown as CarrosselInstagramMock[];
+}
+
+// =============================================================
+// Ideias de conteúdo (copiloto — etapa antes do rascunho)
+// =============================================================
+export type IdeiaConteudo = IdeiaConteudoMock;
+export type FormatoIdeia = IdeiaConteudo["formato"];
+
+export type IdeiaConteudoInput = {
+  titulo?: string;
+  nota?: string;
+  formato?: FormatoIdeia;
+  /** "YYYY-MM-DD" ou null para tirar da agenda. */
+  data_planejada?: string | null;
+};
+
+const COLUNAS_IDEIA =
+  "id, titulo, nota, formato, data_planejada, carrossel_id, criado_em";
+
+export async function listIdeiasConteudo(): Promise<IdeiaConteudo[]> {
+  if (isMockMode()) return listMockIdeias();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_ideias")
+    .select(COLUNAS_IDEIA)
+    .order("criado_em", { ascending: false })
+    .limit(300);
+  if (error) throw new Error(error.message);
+  return (data || []) as IdeiaConteudo[];
+}
+
+export async function criarIdeiaConteudo(
+  input: Required<Pick<IdeiaConteudoInput, "titulo">> & IdeiaConteudoInput,
+): Promise<IdeiaConteudo> {
+  const linha = {
+    titulo: input.titulo,
+    nota: input.nota ?? "",
+    formato: input.formato ?? "carrossel",
+    data_planejada: input.data_planejada ?? null,
+  };
+  if (isMockMode()) {
+    const ideia: IdeiaConteudo = {
+      id: crypto.randomUUID(),
+      ...linha,
+      carrossel_id: null,
+      criado_em: new Date().toISOString(),
+    };
+    addMockIdeia(ideia);
+    return ideia;
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_ideias")
+    .insert(linha)
+    .select(COLUNAS_IDEIA)
+    .single();
+  if (error) throw new Error(error.message);
+  return data as IdeiaConteudo;
+}
+
+export async function atualizarIdeiaConteudo(
+  id: string,
+  patch: IdeiaConteudoInput,
+): Promise<void> {
+  const campos: Partial<IdeiaConteudo> = {};
+  if (patch.titulo !== undefined) campos.titulo = patch.titulo;
+  if (patch.nota !== undefined) campos.nota = patch.nota;
+  if (patch.formato !== undefined) campos.formato = patch.formato;
+  if (patch.data_planejada !== undefined) campos.data_planejada = patch.data_planejada;
+  if (!Object.keys(campos).length) return;
+  if (isMockMode()) {
+    const ideia = listMockIdeias().find((x) => x.id === id);
+    if (ideia) Object.assign(ideia, campos);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_ideias")
+    .update({ ...campos, atualizado_em: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Liga a ideia ao post que nasceu dela (o calendário passa a mostrar o post). */
+export async function vincularIdeiaAoPost(
+  ideiaId: string,
+  carrosselId: string,
+): Promise<void> {
+  if (isMockMode()) {
+    const ideia = listMockIdeias().find((x) => x.id === ideiaId);
+    if (ideia) ideia.carrossel_id = carrosselId;
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_ideias")
+    .update({ carrossel_id: carrosselId, atualizado_em: new Date().toISOString() })
+    .eq("id", ideiaId);
+  if (error) throw new Error(error.message);
+}
+
+export async function getIdeiaConteudo(id: string): Promise<IdeiaConteudo | null> {
+  if (isMockMode()) return listMockIdeias().find((x) => x.id === id) ?? null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_ideias")
+    .select(COLUNAS_IDEIA)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as IdeiaConteudo | null) ?? null;
+}
+
+export async function deletarIdeiaConteudo(id: string): Promise<void> {
+  if (isMockMode()) {
+    removeMockIdeia(id);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("conteudo_ideias").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export async function deletarCarrosselInstagram(id: string): Promise<void> {
