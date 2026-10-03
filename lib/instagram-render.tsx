@@ -25,8 +25,18 @@ export const FONTES: Record<
 > = {
   anton: { file: "anton.ttf", style: "normal", upper: true, label: "Anton" },
   bebas: { file: "bebas.ttf", style: "normal", upper: true, label: "Bebas Neue" },
-  "dm-serif": { file: "dm-serif.ttf", style: "normal", upper: false, label: "DM Serif Display" },
-  cormorant: { file: "cormorant-italic.ttf", style: "italic", upper: false, label: "Cormorant" },
+  "dm-serif": {
+    file: "dm-serif.ttf",
+    style: "normal",
+    upper: false,
+    label: "DM Serif Display",
+  },
+  cormorant: {
+    file: "cormorant-italic.ttf",
+    style: "italic",
+    upper: false,
+    label: "Cormorant",
+  },
 };
 
 /** Fonte manuscrita/brush (assinatura + fecho ((...))). Carregada como "Script".
@@ -87,7 +97,17 @@ export type SlideRenderPayload = {
   top?: string;
   /** Referência opcional (rodapé pequeno, sobre a faixa). */
   ref?: string;
+  /**
+   * Tom do slide. "escuro" (padrão): título creme sobre a foto escurecida —
+   * lê em qualquer imagem, inclusive nas cinematográficas que a IA gera.
+   * "claro": o desenho original, título navy sobre véu claro; só funciona
+   * com foto luminosa.
+   */
+  tom?: TomSlide;
 };
+
+export type TomSlide = "escuro" | "claro";
+const COR_CREME = "#FBF5E6";
 
 export function sanitizeCor(input: string | null | undefined): string {
   const v = (input || "").trim();
@@ -98,10 +118,13 @@ export function sanitizeCor(input: string | null | undefined): string {
 type DisplayWord = { t: string; accent: boolean };
 
 /** Separa o texto em (1) frase manuscrita ((...)) e (2) palavras display, marcando {chave}. */
-function parseTexto(texto: string, upper: boolean): { words: DisplayWord[]; script: string } {
+function parseTexto(
+  texto: string,
+  upper: boolean,
+): { words: DisplayWord[]; script: string } {
   let script = "";
   const semScript = texto.replace(/\(\(([^)]*)\)\)/g, (_, frase) => {
-    script = (script ? script + " " : "") + String(frase).trim();
+    script = `${script ? `${script} ` : ""}${String(frase).trim()}`;
     return " ";
   });
   const words: DisplayWord[] = [];
@@ -124,13 +147,23 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
   const H = TAMANHO_H;
 
   const { words, script } = parseTexto(p.texto, f.upper);
+  const escuro = p.tom !== "claro";
+  const corTexto = escuro ? COR_CREME : COR_NAVY;
 
   const plain = p.texto.replace(/[{}()]/g, "");
   // fonte GRANDE, proporcional à tela (preenche o quadro).
   const base = 184;
   const len = plain.length;
   const size =
-    len > 64 ? base * 0.56 : len > 44 ? base * 0.68 : len > 28 ? base * 0.82 : len > 14 ? base * 0.94 : base;
+    len > 64
+      ? base * 0.56
+      : len > 44
+        ? base * 0.68
+        : len > 28
+          ? base * 0.82
+          : len > 14
+            ? base * 0.94
+            : base;
   const scriptSize = Math.round(size * 0.74);
 
   const baseW = {
@@ -139,7 +172,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
     fontStyle: f.style,
     fontSize: size,
     letterSpacing: f.upper ? 1 : -0.5,
-    color: COR_NAVY,
+    color: corTexto,
   } as const;
 
   return (
@@ -154,58 +187,105 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
       }}
     >
       {/* FOTO como fundo do quadro INTEIRO */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse */}
       <img
         src={p.bgSrc}
         alt=""
         width={W}
         height={H}
-        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover" }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: W,
+          height: H,
+          objectFit: "cover",
+        }}
       />
       {/* papel MESCLADO por cima (mesmo tom/desgaste nas duas → vira uma coisa só) */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse */}
       <img
         src={p.paperSrc}
         alt=""
         width={W}
         height={H}
-        style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.03 }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: W,
+          height: H,
+          objectFit: "cover",
+          opacity: 0.03,
+        }}
       />
       {/* topo levemente escurecido — o kicker dourado sempre lê sobre céu claro */}
       <div
         style={{
           display: "flex",
           position: "absolute",
-          inset: 0,
+          top: 0,
+          left: 0,
+          width: W,
+          height: H,
           background: `linear-gradient(180deg, rgba(22,26,40,0.34) 0%, rgba(22,26,40,0.1) 12%, rgba(22,26,40,0) 26%)`,
         }}
       />
-      {/* wash de leitura atrás do texto — suave, claro e EVEN (sem halo/blob),
-          só o suficiente pro navy ler; a foto continua vibrante nas bordas. */}
-      <div
-        style={{
-          display: "flex",
-          position: "absolute",
-          inset: 0,
-          background: `radial-gradient(80% 54% at 50% 50%, rgba(250,247,238,0.66) 0%, rgba(250,247,238,0.36) 48%, rgba(250,247,238,0) 78%)`,
-        }}
-      />
-      {/* luz quente canto sup-esq */}
-      <div
-        style={{
-          display: "flex",
-          position: "absolute",
-          inset: 0,
-          background:
-            "radial-gradient(60% 45% at 18% 12%, rgba(255,243,210,0.5) 0%, rgba(255,243,210,0) 60%)",
-        }}
-      />
+      {/* véu de leitura atrás do texto. Tom escuro: a foto inteira desce um
+          pouco e a faixa central desce mais, para o creme ler sobre qualquer
+          imagem. Tom claro: o véu claro original, para o navy. Só gradiente
+          linear — o radial com tamanho ("80% 54% at…") o Satori não desenha. */}
+      {escuro ? (
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: W,
+            height: H,
+            background:
+              "linear-gradient(180deg, rgba(10,12,20,0.3) 0%, rgba(10,12,20,0.58) 34%, rgba(10,12,20,0.6) 62%, rgba(10,12,20,0.34) 100%)",
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: W,
+            height: H,
+            background:
+              "linear-gradient(180deg, rgba(250,247,238,0) 12%, rgba(250,247,238,0.66) 36%, rgba(250,247,238,0.66) 62%, rgba(250,247,238,0) 86%)",
+          }}
+        />
+      )}
+      {/* luz quente canto sup-esq (só no tom claro: no escuro ela lava o topo) */}
+      {escuro ? null : (
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: W,
+            height: H,
+            background:
+              "radial-gradient(60% 45% at 18% 12%, rgba(255,243,210,0.5) 0%, rgba(255,243,210,0) 60%)",
+          }}
+        />
+      )}
       {/* vinheta suave */}
       <div
         style={{
           display: "flex",
           position: "absolute",
-          inset: 0,
+          top: 0,
+          left: 0,
+          width: W,
+          height: H,
           background:
             "radial-gradient(82% 70% at 50% 46%, rgba(80,55,15,0) 64%, rgba(70,48,12,0.1) 100%)",
         }}
@@ -215,20 +295,31 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
         style={{
           display: "flex",
           position: "absolute",
-          inset: 0,
+          top: 0,
+          left: 0,
+          width: W,
+          height: H,
           background:
             "linear-gradient(0deg, rgba(22,26,40,0.52) 0%, rgba(22,26,40,0.18) 15%, rgba(22,26,40,0) 34%)",
         }}
       />
       {/* respingos na zona de mescla (cor do tema) */}
       {p.splatterSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
         <img
           src={p.splatterSrc}
           alt=""
           width={W}
           height={Math.round(H * 0.42)}
-          style={{ position: "absolute", left: 0, top: Math.round(H * 0.4), width: W, height: Math.round(H * 0.42), objectFit: "cover", opacity: 0.04 }}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: Math.round(H * 0.4),
+            width: W,
+            height: Math.round(H * 0.42),
+            objectFit: "cover",
+            opacity: 0.04,
+          }}
         />
       ) : null}
 
@@ -249,15 +340,42 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
         {/* KICKER / eyebrow no topo — dá estrutura editorial */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           {p.top ? (
-            <div style={{ display: "flex", fontFamily: "Display", fontStyle: f.style, fontSize: 30, letterSpacing: 7, color: gold }}>
+            <div
+              style={{
+                display: "flex",
+                fontFamily: "Display",
+                fontStyle: f.style,
+                fontSize: 30,
+                letterSpacing: 7,
+                color: gold,
+              }}
+            >
               {p.top.toUpperCase()}
             </div>
           ) : null}
-          <div style={{ display: "flex", width: p.top ? 76 : 52, height: 5, marginTop: p.top ? 18 : 0, borderRadius: 3, backgroundColor: gold }} />
+          <div
+            style={{
+              display: "flex",
+              width: p.top ? 76 : 52,
+              height: 5,
+              marginTop: p.top ? 18 : 0,
+              borderRadius: 3,
+              backgroundColor: gold,
+            }}
+          />
         </div>
 
         {/* bloco de texto */}
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "26px 0" }}>
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "26px 0",
+          }}
+        >
           <div
             style={{
               display: "flex",
@@ -273,22 +391,63 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
             {words.map((w, idx) => {
               if (w.accent && p.realce === "circulo") {
                 return (
-                  <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "10px 30px", border: `7px solid ${gold}`, borderRadius: 60, transform: "rotate(-2deg)" }}>
-                    <div style={{ ...baseW, color: gold, transform: "rotate(2deg)" }}>{w.t}</div>
+                  <div
+                    key={idx}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "10px 30px",
+                      border: `7px solid ${gold}`,
+                      borderRadius: 60,
+                      transform: "rotate(-2deg)",
+                    }}
+                  >
+                    <div style={{ ...baseW, color: gold, transform: "rotate(2deg)" }}>
+                      {w.t}
+                    </div>
                   </div>
                 );
               }
               if (w.accent && p.realce === "grifo") {
                 return (
-                  <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div
+                    key={idx}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
                     <div style={{ ...baseW, color: gold }}>{w.t}</div>
-                    <div style={{ display: "flex", alignSelf: "stretch", height: 12, marginTop: -Math.round(size * 0.12), borderRadius: 6, backgroundColor: gold, opacity: 0.85 }} />
+                    <div
+                      style={{
+                        display: "flex",
+                        alignSelf: "stretch",
+                        height: 12,
+                        marginTop: -Math.round(size * 0.12),
+                        borderRadius: 6,
+                        backgroundColor: gold,
+                        opacity: 0.85,
+                      }}
+                    />
                   </div>
                 );
               }
               if (w.accent && p.realce === "marca") {
                 return (
-                  <div key={idx} style={{ ...baseW, color: "#FFF7E6", backgroundColor: gold, padding: "0 18px", borderRadius: 6 }}>{w.t}</div>
+                  <div
+                    key={idx}
+                    style={{
+                      ...baseW,
+                      color: "#FFF7E6",
+                      backgroundColor: gold,
+                      padding: "0 18px",
+                      borderRadius: 6,
+                    }}
+                  >
+                    {w.t}
+                  </div>
                 );
               }
               // default (dourado/nenhum): palavra dourada + PINCELADA dourada por baixo
@@ -296,13 +455,40 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
                 const bw = Math.round(w.t.length * size * 0.62 + 30);
                 const bh = Math.round(size * 0.55);
                 return (
-                  <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div
+                    key={idx}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
                     <div style={{ ...baseW, color: gold }}>{w.t}</div>
                     {p.brushSrc ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.brushSrc} alt="" width={bw} height={bh} style={{ marginTop: -Math.round(size * 0.2), width: bw, height: bh, objectFit: "cover" }} />
+                      // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
+                      <img
+                        src={p.brushSrc}
+                        alt=""
+                        width={bw}
+                        height={bh}
+                        style={{
+                          marginTop: -Math.round(size * 0.2),
+                          width: bw,
+                          height: bh,
+                          objectFit: "cover",
+                        }}
+                      />
                     ) : (
-                      <div style={{ display: "flex", alignSelf: "stretch", height: 12, marginTop: -Math.round(size * 0.12), borderRadius: 6, backgroundColor: gold }} />
+                      <div
+                        style={{
+                          display: "flex",
+                          alignSelf: "stretch",
+                          height: 12,
+                          marginTop: -Math.round(size * 0.12),
+                          borderRadius: 6,
+                          backgroundColor: gold,
+                        }}
+                      />
                     )}
                   </div>
                 );
@@ -317,11 +503,35 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
 
           {/* fecho manuscrito ((...)) */}
           {script ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: Math.round(size * 0.12) }}>
-              <div style={{ display: "flex", fontFamily: "Script", fontSize: scriptSize, color: COR_NAVY, transform: "rotate(-2deg)" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                marginTop: Math.round(size * 0.12),
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  fontFamily: "Script",
+                  fontSize: scriptSize,
+                  color: corTexto,
+                  transform: "rotate(-2deg)",
+                }}
+              >
                 {script}
               </div>
-              <div style={{ display: "flex", width: Math.round(scriptSize * Math.min(script.length, 12) * 0.42), height: 9, marginTop: 4, borderRadius: 5, backgroundColor: COR_NAVY }} />
+              <div
+                style={{
+                  display: "flex",
+                  width: Math.round(scriptSize * Math.min(script.length, 12) * 0.42),
+                  height: 9,
+                  marginTop: 4,
+                  borderRadius: 5,
+                  backgroundColor: corTexto,
+                }}
+              />
             </div>
           ) : null}
         </div>
@@ -329,12 +539,41 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
         {/* RODAPÉ: wordmark da marca + referência opcional */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           {p.ref ? (
-            <div style={{ display: "flex", fontFamily: "Display", fontStyle: f.style, fontSize: 30, letterSpacing: 2, color: "#F6ECCB", marginBottom: 14 }}>
+            <div
+              style={{
+                display: "flex",
+                fontFamily: "Display",
+                fontStyle: f.style,
+                fontSize: 30,
+                letterSpacing: 2,
+                color: "#F6ECCB",
+                marginBottom: 14,
+              }}
+            >
               {p.ref}
             </div>
           ) : null}
-          <div style={{ display: "flex", width: 44, height: 4, marginBottom: 16, borderRadius: 2, backgroundColor: gold, opacity: 0.95 }} />
-          <div style={{ display: "flex", fontFamily: "Display", fontStyle: f.style, fontSize: 25, letterSpacing: 8, color: "#F6ECCB" }}>
+          <div
+            style={{
+              display: "flex",
+              width: 44,
+              height: 4,
+              marginBottom: 16,
+              borderRadius: 2,
+              backgroundColor: gold,
+              opacity: 0.95,
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              fontFamily: "Display",
+              fontStyle: f.style,
+              fontSize: 25,
+              letterSpacing: 8,
+              color: "#F6ECCB",
+            }}
+          >
             EKBALLO ACADEMY
           </div>
         </div>
@@ -342,13 +581,21 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
 
       {/* grão de grunge por cima de tudo (textura sutil em papel e letras) */}
       {p.grungeSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
         <img
           src={p.grungeSrc}
           alt=""
           width={W}
           height={H}
-          style={{ position: "absolute", top: 0, left: 0, width: W, height: H, objectFit: "cover", opacity: 0.05 }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: W,
+            height: H,
+            objectFit: "cover",
+            opacity: 0.05,
+          }}
         />
       ) : null}
 

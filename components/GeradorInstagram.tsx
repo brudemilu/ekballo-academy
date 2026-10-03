@@ -61,13 +61,16 @@ function novoSeed() {
   return Math.floor(Math.random() * 1_000_000);
 }
 
-function ogSrc(s: Slide, tema: TemaKey): string {
+type Tom = "escuro" | "claro";
+
+function ogSrc(s: Slide, tema: TemaKey, tom: Tom): string {
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,
     modo: s.modo,
     realce: s.modo,
     tema, // a cor vem do TEMA (não mais do hex do modelo)
+    tom,
     fonte: s.fonte,
     seed: String(s.seed),
   });
@@ -82,19 +85,21 @@ function ogSrc(s: Slide, tema: TemaKey): string {
 function SlidePreview({
   slide,
   tema,
+  tom,
   index,
   total,
   size = 300,
 }: {
   slide: Slide;
   tema: TemaKey;
+  tom: Tom;
   index: number;
   total: number;
   size?: number;
 }) {
   const W = size;
   const H = Math.round(size * 1.25); // retrato 4:5
-  const alvo = ogSrc(slide, tema);
+  const alvo = ogSrc(slide, tema, tom);
   const [src, setSrc] = useState(alvo);
   const [carregando, setCarregando] = useState(true);
   useEffect(() => {
@@ -173,6 +178,7 @@ export function GeradorInstagram({
   const [uploads, setUploads] = useState<Upload[]>([]);
   const uploadsRef = useRef<Upload[]>([]);
   const [tema, setTema] = useState<TemaKey>(TEMA_PADRAO); // cor do post (opção)
+  const [tom, setTom] = useState<Tom>("escuro"); // título creme (escuro) ou navy (claro)
   const [ideiaId, setIdeiaId] = useState<string | undefined>(undefined);
 
   // Pré-preenche o editor quando chega um roteiro de fora (sugestão da IA).
@@ -215,8 +221,8 @@ export function GeradorInstagram({
           tema,
         }));
     }
-    // injeta o tema em cada slide pra persistir/publicar com a cor escolhida.
-    return slides.map((s) => ({ ...s, tema }));
+    // injeta o tema e o tom em cada slide pra persistir/publicar como na prévia.
+    return slides.map((s) => ({ ...s, tema, tom }));
   }
 
   async function enviarArquivos(files: FileList | null) {
@@ -318,7 +324,7 @@ export function GeradorInstagram({
 
   function baixarUm(s: Slide, idx: number) {
     const a = document.createElement("a");
-    a.href = `${ogSrc(s, tema)}&dl=1`;
+    a.href = `${ogSrc(s, tema, tom)}&dl=1`;
     a.download = `slide-${idx + 1}.png`;
     document.body.appendChild(a);
     a.click();
@@ -338,7 +344,7 @@ export function GeradorInstagram({
     try {
       const files: File[] = [];
       for (let idx = 0; idx < slides.length; idx++) {
-        const r = await fetch(`${ogSrc(slides[idx], tema)}&dl=1`);
+        const r = await fetch(`${ogSrc(slides[idx], tema, tom)}&dl=1`);
         if (!r.ok) throw new Error("falha");
         const b = await r.blob();
         files.push(new File([b], `slide-${idx + 1}.png`, { type: "image/png" }));
@@ -516,6 +522,31 @@ export function GeradorInstagram({
           ))}
         </div>
 
+        {/* tom do slide: como o título se destaca da foto */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-mesa-700">🌗 Tom:</span>
+          {(
+            [
+              { v: "escuro", label: "Escuro (título claro)" },
+              { v: "claro", label: "Claro (título azul)" },
+            ] as { v: Tom; label: string }[]
+          ).map((o) => (
+            <button
+              type="button"
+              key={o.v}
+              onClick={() => setTom(o.v)}
+              aria-pressed={tom === o.v}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                tom === o.v
+                  ? "border-mesa-700 bg-mesa-50 text-mesa-800"
+                  : "border-mesa-200 text-mesa-600 hover:bg-mesa-100"
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+
         {tipo !== "upload" ? (
           <>
             <label
@@ -622,7 +653,13 @@ export function GeradorInstagram({
                 key={i}
                 className="flex flex-col gap-5 rounded-2xl border border-mesa-200 bg-white p-5 md:flex-row"
               >
-                <SlidePreview slide={s} tema={tema} index={i} total={slides.length} />
+                <SlidePreview
+                  slide={s}
+                  tema={tema}
+                  tom={tom}
+                  index={i}
+                  total={slides.length}
+                />
 
                 <div className="flex-1 space-y-3">
                   <div>

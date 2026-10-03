@@ -2,7 +2,7 @@
  * Núcleo do gerador de carrossel de Instagram (admin).
  *
  *  - gerarFundoLivre(prompt): gera um fundo cinematográfico por IA (Cloudflare
- *    Flux) com prompt LIVRE — objetos, símbolos, cenas que conversam com o
+ *    FLUX.2, já em 4:5) com prompt LIVRE — objetos, símbolos, cenas que conversam com o
  *    texto (diferente de lib/imagen.ts, que é travado em "só paisagem").
  *  - gerarCarrosselIA(conteudo): usa o modelo de TEXTO da Cloudflare (Llama)
  *    pra quebrar qualquer conteúdo em slides + sugerir prompt de imagem,
@@ -50,23 +50,104 @@ const ESTILO_DEVOCIONAL = [
   "no text, no letters, no watermark, no distorted faces, no deformed hands",
 ].join(", ");
 
-export async function gerarFundoLivre(prompt: string, seed?: number): Promise<string | null> {
+// Formato nativo do post (4:5). O FLUX.2 exige múltiplos de 16; a sobra de
+// 8 px em cada eixo some no `objectFit: cover` do canvas 1080×1350.
+const FUNDO_W = 1088;
+const FUNDO_H = 1360;
+
+// Em ordem de preferência. Quem manda aqui é a cota grátis da Workers AI
+// (10.000 neurons/dia), medida em out/2026 no tamanho do post (issue #189):
+//   klein-4b ≈ 156 neurons  → ~60 imagens/dia, fotográfico, espaço para o título
+//   klein-9b ≈ 1.450 neurons → ~6 imagens/dia, um degrau acima
+//   dev      ≈ milhares      → 1 ou 2 por dia; fica de fora
+// O 9b entra de reserva para o caso de o 4b estar fora do ar. Trocar sem
+// deploy: IMAGE_MODELOS_FUNDO="modelo-a,modelo-b".
+const MODELOS_FUNDO_PADRAO = ["flux-2-klein-4b", "flux-2-klein-9b"];
+
+function modelosFundo(): string[] {
+  const lista = (process.env.IMAGE_MODELOS_FUNDO || "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  return lista.length ? lista : MODELOS_FUNDO_PADRAO;
+}
+
+/** FLUX.2 na Workers AI: corpo multipart, já no tamanho do post. */
+async function fundoFlux2(
+  modelo: string,
+  prompt: string,
+  seed: number | undefined,
+  accountId: string,
+  apiToken: string,
+): Promise<string | null> {
+  const form = new FormData();
+  form.set("prompt", prompt);
+  form.set("width", String(FUNDO_W));
+  form.set("height", String(FUNDO_H));
+  if (seed !== undefined) form.set("seed", String(seed));
+  const res = await fetch(
+    `${CF_BASE}/${accountId}/ai/run/@cf/black-forest-labs/${modelo}`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiToken}` },
+      body: form,
+      signal: AbortSignal.timeout(50_000),
+    },
+  );
+  if (!res.ok) return null;
+  const b64 = (await res.json())?.result?.image;
+  return typeof b64 === "string" && b64 ? b64 : null;
+}
+
+/**
+ * Último recurso: o schnell antigo (1024×1024, 8 passos). NÃO recebe seed —
+ * a API passou a recusar o campo ("/seed not allowed"), e era por isso que a
+ * geração por IA falhava sempre em produção e o post caía na foto de reserva.
+ */
+async function fundoSchnell(
+  prompt: string,
+  accountId: string,
+  apiToken: string,
+): Promise<string | null> {
+  const res = await fetch(
+    `${CF_BASE}/${accountId}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt, steps: 8 }),
+      signal: AbortSignal.timeout(30_000),
+    },
+  );
+  if (!res.ok) return null;
+  const b64 = (await res.json())?.result?.image;
+  return typeof b64 === "string" && b64 ? b64 : null;
+}
+
+export async function gerarFundoLivre(
+  prompt: string,
+  seed?: number,
+): Promise<string | null> {
   const { accountId, apiToken } = creds();
   if (!accountId || !apiToken || !prompt.trim()) return null;
+  const completo = `${prompt.trim()}. ${ESTILO_DEVOCIONAL}`;
+  const semente =
+    typeof seed === "number" && Number.isFinite(seed)
+      ? Math.abs(Math.trunc(seed))
+      : undefined;
+
+  for (const modelo of modelosFundo()) {
+    try {
+      const b64 = await fundoFlux2(modelo, completo, semente, accountId, apiToken);
+      if (b64) return `data:image/jpeg;base64,${b64}`;
+    } catch {
+      // timeout ou rede: tenta o próximo modelo
+    }
+  }
   try {
-    const body: Record<string, unknown> = { prompt: `${prompt.trim()}. ${ESTILO_DEVOCIONAL}`, steps: 8 };
-    if (typeof seed === "number" && Number.isFinite(seed)) body.seed = Math.abs(Math.trunc(seed));
-    const res = await fetch(
-      `${CF_BASE}/${accountId}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      },
-    );
-    if (!res.ok) return null;
-    const json = await res.json();
-    const b64 = json?.result?.image;
+    const b64 = await fundoSchnell(completo, accountId, apiToken);
     return b64 ? `data:image/jpeg;base64,${b64}` : null;
   } catch {
     return null;
@@ -119,14 +200,17 @@ export async function gerarCarrosselIA(
   conteudo: string,
   tipo: "carrossel" | "unico" = "carrossel",
 ): Promise<CarrosselIA> {
-  // Groq (sem teto) → Cloudflare (reserva). Mesmo modelo Llama 3.3 70B.
+  // Corrente de provedores em lib/llm.ts (Gemini → Groq → Cloudflare).
   const texto = await chamarLLM(buildSystemPrompt(tipo), conteudo.trim(), 1200);
   const parsed = extrairJSON(texto) as { slides?: unknown[]; legenda?: unknown };
   const slidesRaw = Array.isArray(parsed.slides) ? parsed.slides : [];
   const slides: SlideIA[] = slidesRaw
     .map((s) => {
       const o = (s || {}) as Record<string, unknown>;
-      const modo = typeof o.modo === "string" && MODOS_VALIDOS.includes(o.modo as RealceModo) ? (o.modo as RealceModo) : "circulo";
+      const modo =
+        typeof o.modo === "string" && MODOS_VALIDOS.includes(o.modo as RealceModo)
+          ? (o.modo as RealceModo)
+          : "circulo";
       return {
         texto: typeof o.texto === "string" ? o.texto.trim() : "",
         prompt: typeof o.prompt === "string" ? o.prompt.trim() : "",

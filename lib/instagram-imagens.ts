@@ -17,6 +17,7 @@ type SlidePub = {
   fonte: string;
   seed: number;
   tema?: string;
+  tom?: string;
   top?: string;
   ref?: string;
   imageUrl?: string; // já é uma imagem pronta (modo upload) — usa direto
@@ -31,8 +32,12 @@ function ogUrlDoSlide(origin: string, s: SlidePub): string {
     fonte: s.fonte,
     seed: String(s.seed),
   });
+  // Com tema, a cor vem DELE — igual à prévia do editor. Mandar também o hex
+  // sugerido pelo modelo fazia a rota preferir o hex, e o post publicado saía
+  // com outra cor de destaque que a aprovada na tela.
   if (s.tema) p.set("tema", s.tema);
-  if (s.cor) p.set("cor", s.cor);
+  else if (s.cor) p.set("cor", s.cor);
+  if (s.tom) p.set("tom", s.tom);
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
   return `${origin}/api/og/instagram?${p.toString()}`;
@@ -43,7 +48,10 @@ function ogUrlDoSlide(origin: string, s: SlidePub): string {
  * pela rota OG, sobe no Storage e devolve a URL pública (estática/rápida).
  * Roda em paralelo. Lança se alguma imagem falhar.
  */
-export async function prepararImageUrls(origin: string, slides: SlidePub[]): Promise<string[]> {
+export async function prepararImageUrls(
+  origin: string,
+  slides: SlidePub[],
+): Promise<string[]> {
   const sb = createServiceClient();
   const urls: string[] = new Array(slides.length);
 
@@ -54,11 +62,17 @@ export async function prepararImageUrls(origin: string, slides: SlidePub[]): Pro
         return;
       }
       const res = await fetch(ogUrlDoSlide(origin, s));
-      if (!res.ok) throw new Error(`falha ao gerar a imagem do slide ${i + 1} (HTTP ${res.status})`);
+      if (!res.ok)
+        throw new Error(
+          `falha ao gerar a imagem do slide ${i + 1} (HTTP ${res.status})`,
+        );
       const bytes = new Uint8Array(await res.arrayBuffer());
       const path = `pub/${crypto.randomUUID()}.png`;
-      const { error } = await sb.storage.from(BUCKET).upload(path, bytes, { contentType: "image/png", upsert: false });
-      if (error) throw new Error(`falha ao subir a imagem do slide ${i + 1}: ${error.message}`);
+      const { error } = await sb.storage
+        .from(BUCKET)
+        .upload(path, bytes, { contentType: "image/png", upsert: false });
+      if (error)
+        throw new Error(`falha ao subir a imagem do slide ${i + 1}: ${error.message}`);
       urls[i] = sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
     }),
   );
