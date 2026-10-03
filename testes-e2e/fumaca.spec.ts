@@ -241,4 +241,19 @@ test.describe("Instagram do ministério (admin)", () => {
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
+
+  test("a aba Cortes abre pronta para receber o link de uma pregação", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=cortes");
+
+    await expect(page.getByRole("heading", { name: /qual pregação/i })).toBeVisible();
+    await expect(page.getByLabel("Link do vídeo")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /pregações analisadas/i }),
+    ).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
 });

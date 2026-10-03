@@ -4,6 +4,7 @@
 // =============================================================
 
 import type { PerfilConteudo, ReferenciaConteudo } from "@/lib/conteudo-perfil";
+import type { CorteSalvo } from "@/lib/cortes";
 import {
   EGO_ALTERNATIVAS,
   EGO_MCS,
@@ -674,6 +675,19 @@ export function addMockRoteiro(r: RoteiroSalvo) {
 export function removeMockRoteiro(id: string) {
   const i = MOCK_ROTEIROS.findIndex((x) => x.id === id);
   if (i >= 0) MOCK_ROTEIROS.splice(i, 1);
+}
+
+// ---- Cortes de pregação (copiloto, mock mutável) ----
+const MOCK_CORTES: CorteSalvo[] = [];
+export function listMockCortes(): CorteSalvo[] {
+  return MOCK_CORTES;
+}
+export function addMockCorte(c: CorteSalvo) {
+  MOCK_CORTES.unshift(c);
+}
+export function removeMockCorte(id: string) {
+  const i = MOCK_CORTES.findIndex((x) => x.id === id);
+  if (i >= 0) MOCK_CORTES.splice(i, 1);
 }
 
 // ---- Compromissos da agenda pessoal (mock mutável) ----

@@ -49,6 +49,7 @@ async function viaGemini(
   system: string,
   user: string,
   maxTokens: number,
+  timeoutMs: number,
 ): Promise<string | null> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
@@ -68,7 +69,7 @@ async function viaGemini(
             maxOutputTokens: maxTokens + 2048,
           },
         }),
-        signal: AbortSignal.timeout(45_000),
+        signal: AbortSignal.timeout(timeoutMs),
       });
       if (!res.ok) continue; // 429 (cota) ou 503 (sobrecarga): tenta o próximo modelo
       const texto = textoDoGemini(await res.json());
@@ -152,13 +153,18 @@ async function viaCloudflare(
   throw new Error("resposta inesperada do modelo");
 }
 
-/** Gera texto (JSON) pela corrente Gemini → Groq → Cloudflare. */
+/**
+ * Gera texto (JSON) pela corrente Gemini → Groq → Cloudflare. `timeoutMs` é o
+ * limite de cada tentativa no Gemini; só pedidos longos (a transcrição de uma
+ * pregação inteira) precisam subir o padrão.
+ */
 export async function chamarLLM(
   system: string,
   user: string,
   maxTokens = 2800,
+  timeoutMs = 45_000,
 ): Promise<string> {
-  const gemini = await viaGemini(system, user, maxTokens);
+  const gemini = await viaGemini(system, user, maxTokens, timeoutMs);
   if (gemini) return gemini;
   const groq = await viaGroq(system, user, maxTokens);
   if (groq) return groq;

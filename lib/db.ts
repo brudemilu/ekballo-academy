@@ -27,9 +27,11 @@ import {
   type PerfilConteudo,
   type ReferenciaConteudo,
 } from "@/lib/conteudo-perfil";
+import type { CorteSalvo } from "@/lib/cortes";
 import {
   addMockCarrossel,
   addMockCompromisso,
+  addMockCorte,
   addMockIdeia,
   addMockReferencia,
   addMockRoteiro,
@@ -40,6 +42,7 @@ import {
   isMockMode,
   listMockCarrosseis,
   listMockCompromissos,
+  listMockCortes,
   listMockIdeias,
   listMockReferencias,
   listMockRoteiros,
@@ -63,6 +66,7 @@ import {
   respostasByAluno as mockRespByAluno,
   removeMockCarrossel,
   removeMockCompromisso,
+  removeMockCorte,
   removeMockIdeia,
   removeMockReferencia,
   removeMockRoteiro,
@@ -2679,6 +2683,96 @@ export async function deletarRoteiroConteudo(id: string): Promise<void> {
   }
   const supabase = await createClient();
   const { error } = await supabase.from("conteudo_roteiros").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Cortes de pregação (copiloto)
+// =============================================================
+const COLUNAS_CORTE_LISTA =
+  "id, video_id, titulo, duracao_seg, status, etapa, erro, momentos, criado_em";
+
+/** Lista sem a transcrição (pesada); `getCorteConteudo` traz tudo. */
+export async function listCortesConteudo(): Promise<CorteSalvo[]> {
+  if (isMockMode()) return listMockCortes();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_cortes")
+    .select(COLUNAS_CORTE_LISTA)
+    .order("criado_em", { ascending: false })
+    .limit(30);
+  if (error) throw new Error(error.message);
+  return (data || []).map((c) => ({ ...c, transcricao: [] })) as CorteSalvo[];
+}
+
+export async function getCorteConteudo(id: string): Promise<CorteSalvo | null> {
+  if (isMockMode()) return listMockCortes().find((c) => c.id === id) ?? null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_cortes")
+    .select(`${COLUNAS_CORTE_LISTA}, transcricao`)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as CorteSalvo | null) ?? null;
+}
+
+export async function criarCorteConteudo(videoId: string): Promise<CorteSalvo> {
+  if (isMockMode()) {
+    const corte: CorteSalvo = {
+      id: crypto.randomUUID(),
+      video_id: videoId,
+      titulo: "",
+      duracao_seg: 0,
+      status: "processando",
+      etapa: "Na fila…",
+      erro: null,
+      transcricao: [],
+      momentos: [],
+      criado_em: new Date().toISOString(),
+    };
+    addMockCorte(corte);
+    return corte;
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conteudo_cortes")
+    .insert({ video_id: videoId, etapa: "Na fila…" })
+    .select(`${COLUNAS_CORTE_LISTA}, transcricao`)
+    .single();
+  if (error) throw new Error(error.message);
+  return data as CorteSalvo;
+}
+
+/**
+ * Atualiza o andamento ou o resultado. É chamada pelo trabalho em segundo
+ * plano, DEPOIS que a requisição terminou — não há sessão do usuário ali, por
+ * isso usa o cliente de serviço (o acesso já foi conferido ao criar a análise).
+ */
+export async function atualizarCorteConteudo(
+  id: string,
+  patch: Partial<Omit<CorteSalvo, "id" | "criado_em">>,
+): Promise<void> {
+  if (isMockMode()) {
+    const c = listMockCortes().find((x) => x.id === id);
+    if (c) Object.assign(c, patch);
+    return;
+  }
+  // agendaSR(): o cliente de serviço que este arquivo já tem (nome histórico).
+  const { error } = await agendaSR()
+    .from("conteudo_cortes")
+    .update({ ...patch, atualizado_em: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deletarCorteConteudo(id: string): Promise<void> {
+  if (isMockMode()) {
+    removeMockCorte(id);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("conteudo_cortes").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 
