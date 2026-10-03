@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { addCompromisso } from "@/lib/db";
-import { parseCompromissoIA } from "@/lib/agenda-parse";
+import { type NextRequest, NextResponse } from "next/server";
 import { transcreverAudio } from "@/lib/agenda-audio";
 import { lerImagem } from "@/lib/agenda-imagem";
+import { parseCompromissoIA } from "@/lib/agenda-parse";
+import { addCompromisso } from "@/lib/db";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 import { chatEhDoDono } from "@/lib/whatsapp-agenda-auth";
+import { ehDoRobo, interpretarComando } from "@/lib/whatsapp-instagram";
+import { executarComandoInstagram } from "@/lib/whatsapp-instagram-executar";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -139,6 +141,39 @@ export async function POST(req: NextRequest) {
   const { text, hasAudio, hasImagem, legenda, midiaB64 } = extrairConteudo(body);
 
   // A partir daqui já sabemos que a mensagem está no chat "Você".
+
+  // Mensagem do próprio robô (resposta ou prévia do Instagram): sai pela conta
+  // do dono para o chat dele e volta por aqui. Ignorar é o que impede o robô
+  // de responder a si mesmo — ou de tentar ler a própria prévia como convite.
+  if (ehDoRobo(text) || ehDoRobo(legenda)) {
+    return NextResponse.json({ ok: true, ignorado: "robo" });
+  }
+
+  // Áudio: transcreve UMA vez, aqui, porque a fala pode ser um comando do
+  // Instagram ("post sobre…") ou um compromisso da agenda — só dá para saber
+  // depois de ouvir.
+  let falado = "";
+  let falhaNoAudio = false;
+  if (!hasImagem && hasAudio && midiaB64 && !text) {
+    try {
+      falado = await transcreverAudio(midiaB64);
+    } catch (e) {
+      falhaNoAudio = true;
+      console.log("[audio] transcrever erro:", e instanceof Error ? e.message : e);
+    }
+    console.log("[audio] transcrição:", falado.slice(0, 120));
+  }
+
+  // Instagram pelo WhatsApp: "post…", "publicar", "refazer", "cancelar…". Os
+  // gatilhos não se confundem com os da agenda (ver lib/whatsapp-instagram.ts).
+  // O trabalho segue depois da resposta: montar um carrossel leva ~20 s, e o
+  // gateway reenviaria a mensagem se ficasse esperando.
+  const comando = hasImagem ? null : interpretarComando(text || falado);
+  if (comando) {
+    void executarComandoInstagram(comando, numero);
+    return NextResponse.json({ ok: true, instagram: comando.tipo });
+  }
+
   let pedido = "";
   const m = text.match(/^\s*(?:agenda|agendar|agende)\b[:,\s-]+([\s\S]+)/i);
   // A imagem é testada ANTES do texto de propósito: quando a foto tem legenda,
@@ -146,7 +181,10 @@ export async function POST(req: NextRequest) {
   // importa está na imagem. No chat "Você", toda imagem pode ser interpretada.
   if (hasImagem) {
     if (!midiaB64) {
-      await responder(numero, "🖼️ Recebi a imagem, mas ela veio sem conteúdo. Tenta mandar de novo?");
+      await responder(
+        numero,
+        "🖼️ Recebi a imagem, mas ela veio sem conteúdo. Tenta mandar de novo?",
+      );
       return NextResponse.json({ ok: true, imagem: "sem_base64" });
     }
     let daImagem = "";
@@ -171,17 +209,18 @@ export async function POST(req: NextRequest) {
   } else if (hasAudio) {
     // áudio pra você mesmo: o Evolution já manda o base64; transcreve (a IA filtra)
     if (!midiaB64) {
-      await responder(numero, "🎙️ Recebi seu áudio, mas veio sem o conteúdo. Tenta de novo?");
+      await responder(
+        numero,
+        "🎙️ Recebi seu áudio, mas veio sem o conteúdo. Tenta de novo?",
+      );
       return NextResponse.json({ ok: true, audio: "sem_base64" });
     }
-    try {
-      pedido = await transcreverAudio(midiaB64);
-    } catch (e) {
-      console.log("[audio] transcrever erro:", e instanceof Error ? e.message : e);
-    }
-    console.log("[audio] transcrição:", pedido.slice(0, 120));
-    if (!pedido) {
-      await responder(numero, "🎙️ Não consegui entender o áudio. Pode falar de novo, devagar?");
+    pedido = falado;
+    if (!pedido || falhaNoAudio) {
+      await responder(
+        numero,
+        "🎙️ Não consegui entender o áudio. Pode falar de novo, devagar?",
+      );
       return NextResponse.json({ ok: true, audio: "transcribe_fail" });
     }
   } else {
@@ -193,7 +232,7 @@ export async function POST(req: NextRequest) {
     if (!c.entendi || !c.inicio) {
       await responder(
         numero,
-        "🤔 Não consegui identificar um compromisso. Tente algo como:\n\"Reunião com a equipe quinta às 15h\" ou \"Culto domingo 19h\".",
+        '🤔 Não consegui identificar um compromisso. Tente algo como:\n"Reunião com a equipe quinta às 15h" ou "Culto domingo 19h".',
       );
       return NextResponse.json({ ok: true, entendi: false });
     }
@@ -213,7 +252,13 @@ export async function POST(req: NextRequest) {
     );
     return NextResponse.json({ ok: true, criado: true });
   } catch (e) {
-    await responder(numero, "⚠️ Tive um problema ao marcar. Tente de novo daqui a pouco.");
-    return NextResponse.json({ error: e instanceof Error ? e.message : "erro" }, { status: 500 });
+    await responder(
+      numero,
+      "⚠️ Tive um problema ao marcar. Tente de novo daqui a pouco.",
+    );
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "erro" },
+      { status: 500 },
+    );
   }
 }

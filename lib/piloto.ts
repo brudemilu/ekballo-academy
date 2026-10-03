@@ -268,7 +268,7 @@ export function mensagemDoPiloto(
   e: Pick<ExecucaoPiloto, "fonte" | "pecas">,
   link: string,
 ): string {
-  const linhas: string[] = ["*Piloto automático do Instagram*", ""];
+  const linhas: string[] = ["🤖 *Piloto automático do Instagram*", ""];
   if (e.fonte)
     linhas.push(
       `Preparei a semana a partir de ${NOME_FONTE[e.fonte.tipo]}: _${e.fonte.titulo}_`,
@@ -301,7 +301,7 @@ export function mensagemDoPiloto(
 
   linhas.push(
     agendadas.length
-      ? "Se estiver tudo certo, não precisa fazer nada. Para ver ou cancelar alguma peça:"
+      ? "Se estiver tudo certo, não precisa fazer nada. Para cancelar, responda aqui *cancelar carrossel*, *cancelar reel* ou *cancelar tudo*. Para ver as peças:"
       : "Para ver o que ficou pronto:",
     link,
   );

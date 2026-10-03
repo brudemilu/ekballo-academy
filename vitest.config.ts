@@ -46,6 +46,7 @@ export default defineConfig({
         "lib/carrossel-ideia.ts",
         "lib/json-ia.ts",
         "lib/assistente.ts",
+        "lib/whatsapp-instagram.ts",
         "lib/painel.ts",
       ],
       thresholds: {

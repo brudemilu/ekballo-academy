@@ -691,6 +691,20 @@ export function removeMockCorte(id: string) {
   if (i >= 0) MOCK_CORTES.splice(i, 1);
 }
 
+// ---- Rascunho em conversa no WhatsApp (mock mutável) ----
+type PendenteWhatsAppMock = {
+  carrossel_id: string | null;
+  ideia: string;
+  tentativas: number;
+};
+const MOCK_PENDENTE_WHATSAPP: { valor: PendenteWhatsAppMock | null } = { valor: null };
+export function getMockPendenteWhatsApp(): PendenteWhatsAppMock | null {
+  return MOCK_PENDENTE_WHATSAPP.valor;
+}
+export function setMockPendenteWhatsApp(p: PendenteWhatsAppMock) {
+  MOCK_PENDENTE_WHATSAPP.valor = p;
+}
+
 // ---- Piloto automático (copiloto, mock mutável) ----
 const MOCK_PILOTO: { valor: PilotoConfig } = { valor: { ...PILOTO_PADRAO } };
 export function getMockPiloto(): PilotoConfig {
