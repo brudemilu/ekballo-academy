@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { AssistenteConteudo } from "@/components/AssistenteConteudo";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
+import { ComentariosAuto } from "@/components/ComentariosAuto";
 import { CortesConteudo } from "@/components/CortesConteudo";
 import { ImagensConteudo } from "@/components/ImagensConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
@@ -16,19 +17,23 @@ import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
 import { travado } from "@/lib/cortes";
 import {
+  getComentariosAtivo,
   getCurrentSession,
   getIdeiaConteudo,
   getPerfilConteudo,
   getPilotoConfig,
   listCarrosseisInstagram,
+  listComentariosRespondidos,
   listCortesConteudo,
   listCursosPublicados,
   listExecucoesPiloto,
   listIdeiasConteudo,
   listReferenciasConteudo,
+  listRegrasComentario,
   listRoteirosConteudo,
 } from "@/lib/db";
 import { analisarPerfil } from "@/lib/instagram-insights";
+import { instagramConfigurado } from "@/lib/instagram-publish";
 import { diasSugeridos } from "@/lib/pacote";
 import {
   acoesDoDia,
@@ -58,6 +63,7 @@ const ABAS = [
   { v: "cortes", label: "✂️ Cortes" },
   { v: "assistente", label: "💬 Assistente" },
   { v: "piloto", label: "🤖 Piloto" },
+  { v: "respostas", label: "↩️ Respostas" },
   { v: "perfil", label: "🧭 Perfil" },
 ] as const;
 type Aba = (typeof ABAS)[number]["v"];
@@ -109,6 +115,9 @@ export default async function AdminInstagramPage({
     cortes,
     piloto,
     execucoes,
+    comentariosAtivo,
+    regrasComentario,
+    comentariosRespondidos,
   ] = await Promise.all([
     usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
     usaIdeias ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
@@ -125,6 +134,13 @@ export default async function AdminInstagramPage({
       ? getPilotoConfig().catch(() => PILOTO_PADRAO)
       : Promise.resolve(PILOTO_PADRAO),
     aba === "piloto" ? listExecucoesPiloto().catch(() => []) : Promise.resolve([]),
+    aba === "respostas"
+      ? getComentariosAtivo().catch(() => false)
+      : Promise.resolve(false),
+    aba === "respostas" ? listRegrasComentario().catch(() => []) : Promise.resolve([]),
+    aba === "respostas"
+      ? listComentariosRespondidos().catch(() => [])
+      : Promise.resolve([]),
   ]);
 
   const hoje = diaSP(new Date());
@@ -157,6 +173,8 @@ export default async function AdminInstagramPage({
       "Converse sobre o conteúdo do perfil: peça ideias, cole um texto para ele criticar, planeje a semana. As ideias que ele sugerir podem ir direto para o calendário.",
     piloto:
       "Ligue o piloto e a IA cuida da semana: escolhe o assunto, cria as peças, agenda a publicação e te avisa no WhatsApp. Nada vai ao ar sem você ter tido tempo de cancelar.",
+    respostas:
+      "Escolha uma palavra e o que responder. Quem comentar essa palavra num post recebe a mensagem direta com o link, sem você precisar acompanhar os comentários.",
     perfil:
       "Conte ao copiloto quem é o ministério, como você fala e em quem se inspira. É daqui que os roteiros e os posts tiram o jeito de escrever.",
   };
@@ -245,6 +263,13 @@ export default async function AdminInstagramPage({
           configInicial={piloto}
           execucoesIniciais={execucoes}
           cursos={cursosOpcoes}
+        />
+      ) : aba === "respostas" ? (
+        <ComentariosAuto
+          ativoInicial={comentariosAtivo}
+          regrasIniciais={regrasComentario}
+          historico={comentariosRespondidos}
+          conectado={instagramConfigurado()}
         />
       ) : aba === "perfil" ? (
         <PerfilConteudoForm perfilInicial={perfil} referenciasIniciais={referencias} />
