@@ -20,6 +20,17 @@ const nextConfig: NextConfig = {
   // e garante que o binário/lib entre no deploy da função de render.
   outputFileTracingIncludes: {
     "/api/admin/instagram/reel-gerar": ["./node_modules/ffmpeg-static/**"],
+    // Piloto automático: monta o Reel narrado (ffmpeg + voz sintética).
+    "/api/cron/piloto-conteudo": [
+      "./node_modules/ffmpeg-static/**",
+      "./node_modules/msedge-tts/**",
+      "./node_modules/ws/**",
+    ],
+    "/api/admin/instagram/piloto": [
+      "./node_modules/ffmpeg-static/**",
+      "./node_modules/msedge-tts/**",
+      "./node_modules/ws/**",
+    ],
     // Cortes de pregação: o ffmpeg reduz o áudio antes da transcrição.
     "/api/admin/instagram/cortes": ["./node_modules/ffmpeg-static/**"],
     "/api/cron/gerar-audio-tick": [

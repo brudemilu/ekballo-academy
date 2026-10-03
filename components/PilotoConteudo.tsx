@@ -339,7 +339,7 @@ export function PilotoConteudo({
                 [
                   "reel_ia",
                   "Reel feito pela IA",
-                  "Vídeo narrado por voz sintética. Ainda em construção: por enquanto o aviso diz que não saiu.",
+                  "Vídeo com narração em voz sintética (não é você falando), texto na tela e vídeo de fundo. Publicado sozinho no dia do Reel.",
                 ],
               ] as const
             ).map(([chave, rotulo, detalhe]) => (
