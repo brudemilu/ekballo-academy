@@ -11,6 +11,7 @@
  */
 
 import { somarDias } from "@/lib/conteudo-calendario";
+import { lerJSONdaIA } from "@/lib/json-ia";
 import type { FonteRoteiro } from "@/lib/roteiro";
 
 export type SlidePacote = {
@@ -122,12 +123,10 @@ function frase(v: unknown, max: number): string {
 
 /** Limpa a resposta da IA; lança se o carrossel não tiver slides aproveitáveis. */
 export function normalizarPacote(bruto: string): PecasPacote {
-  const semCerca = bruto.replace(/```json/gi, "").replace(/```/g, "");
-  const ini = semCerca.indexOf("{");
-  const fim = semCerca.lastIndexOf("}");
-  if (ini === -1 || fim <= ini)
-    throw new Error("a IA não devolveu um pacote legível — tente de novo");
-  const o = JSON.parse(semCerca.slice(ini, fim + 1)) as Record<string, unknown>;
+  const o = lerJSONdaIA(
+    bruto,
+    "a IA não devolveu um pacote legível — tente de novo",
+  ) as Record<string, unknown>;
 
   const c = (o.carrossel || {}) as Record<string, unknown>;
   const slides: SlidePacote[] = (Array.isArray(c.slides) ? c.slides : [])

@@ -10,9 +10,11 @@
  * Cada sugestão já vem com o `roteiro` no formato SlideIA — pronto pra cair no
  * editor (components/GeradorInstagram.tsx) sem rechamar a IA.
  */
+
 import type { SlideIA } from "@/lib/instagram";
 import type { PerfilResumo } from "@/lib/instagram-insights";
 import type { RealceModo } from "@/lib/instagram-render";
+import { lerJSONdaIA } from "@/lib/json-ia";
 import { chamarLLM } from "@/lib/llm";
 
 const MODOS_VALIDOS: RealceModo[] = ["circulo", "grifo", "marca", "dourado", "nenhum"];
@@ -82,14 +84,19 @@ Responda SOMENTE com JSON válido, neste formato EXATO:
 function contextoPerfil(resumo: PerfilResumo): string {
   const linhas: string[] = [];
   linhas.push(`Posts analisados: ${resumo.totalPosts}.`);
-  linhas.push(`Engajamento médio (curtidas+comentários por post): ${resumo.engajamentoMedio}.`);
+  linhas.push(
+    `Engajamento médio (curtidas+comentários por post): ${resumo.engajamentoMedio}.`,
+  );
   linhas.push(`Melhor dia/horário pra postar: ${resumo.melhorHorario}.`);
   linhas.push(`Formato que mais engaja: ${resumo.formatoTop}.`);
   if (resumo.topPosts.length) {
     linhas.push("");
     linhas.push("Legendas que MAIS engajaram (use como referência de tom e tema):");
     resumo.topPosts.forEach((p, i) => {
-      const cap = (p.caption || "(sem legenda)").replace(/\s+/g, " ").trim().slice(0, 280);
+      const cap = (p.caption || "(sem legenda)")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 280);
       linhas.push(`${i + 1}. [${p.likes}❤ ${p.comments}💬] ${cap}`);
     });
   }
@@ -97,11 +104,10 @@ function contextoPerfil(resumo: PerfilResumo): string {
 }
 
 function extrairJSON(txt: string): unknown {
-  const semFence = txt.replace(/```json/gi, "").replace(/```/g, "");
-  const ini = semFence.indexOf("{");
-  const fim = semFence.lastIndexOf("}");
-  if (ini === -1 || fim === -1 || fim < ini) throw new Error("sem JSON na resposta");
-  return JSON.parse(semFence.slice(ini, fim + 1));
+  return lerJSONdaIA(
+    txt,
+    "a IA não devolveu as sugestões em um formato que eu consiga ler — tente de novo",
+  );
 }
 
 function normalizarCor(c: unknown): string {
@@ -125,11 +131,14 @@ const FUNDOS_SEGUROS = [
   "a single burning torch glowing in soft darkness, warm light",
 ];
 // close-up / rosto / mão / selfie → distorce, melhor trocar.
-const HARD_RE = /\b(close-?up|selfie|portrait|facial|eyes|mouth|teeth|smiling face|a face|the face|hands? holding|fingers)\b/i;
+const HARD_RE =
+  /\b(close-?up|selfie|portrait|facial|eyes|mouth|teeth|smiling face|a face|the face|hands? holding|fingers)\b/i;
 // menção a pessoas que o Flux faz bem SE de costas/silhueta.
-const PESSOA_RE = /\b(person|people|man|men|woman|women|child|children|kid|boy|girl|crowd|figure|figures|worshipper|worshippers|congregation|believer|believers)\b/i;
+const PESSOA_RE =
+  /\b(person|people|man|men|woman|women|child|children|kid|boy|girl|crowd|figure|figures|worshipper|worshippers|congregation|believer|believers)\b/i;
 // qualificadores que tornam a pessoa segura (sem rosto nítido).
-const SEGURO_RE = /\b(behind|back view|backs?|silhouette|silhouettes|distant|faceless|from afar|aerial|from above)\b/i;
+const SEGURO_RE =
+  /\b(behind|back view|backs?|silhouette|silhouettes|distant|faceless|from afar|aerial|from above)\b/i;
 
 function sanitizarPromptImagem(prompt: string, i: number): string {
   if (!prompt) return FUNDOS_SEGUROS[i % FUNDOS_SEGUROS.length];
@@ -165,7 +174,10 @@ function normalizarRoteiro(raw: unknown): SlideIA[] {
  * Gera N sugestões de post a partir do resumo do perfil. `melhorHorario` é
  * preenchido pela rota com o valor determinístico do resumo (não pelo modelo).
  */
-export async function gerarSugestoes(resumo: PerfilResumo, n = 3): Promise<SugestaoPost[]> {
+export async function gerarSugestoes(
+  resumo: PerfilResumo,
+  n = 3,
+): Promise<SugestaoPost[]> {
   // Groq (sem teto) → Cloudflare (reserva). Mesmo modelo Llama 3.3 70B.
   const texto = await chamarLLM(systemPrompt(n), contextoPerfil(resumo), 2800);
   const parsed = extrairJSON(texto) as { sugestoes?: unknown[] };
@@ -175,7 +187,10 @@ export async function gerarSugestoes(resumo: PerfilResumo, n = 3): Promise<Suges
   const sugestoes: SugestaoPost[] = lista
     .map((s): SugestaoPost => {
       const o = (s || {}) as Record<string, unknown>;
-      const pilar = typeof o.pilar === "string" && PILARES_VALIDOS.includes(o.pilar as Pilar) ? (o.pilar as Pilar) : "reflexao";
+      const pilar =
+        typeof o.pilar === "string" && PILARES_VALIDOS.includes(o.pilar as Pilar)
+          ? (o.pilar as Pilar)
+          : "reflexao";
       return {
         pilar,
         tema: typeof o.tema === "string" ? o.tema.trim() : "",

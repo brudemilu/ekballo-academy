@@ -152,6 +152,13 @@ test.describe("Instagram do ministério (admin)", () => {
       page.getByRole("heading", { name: /agendados e rascunhos/i }),
     ).toBeVisible();
 
+    // "Só tenho a ideia": o campo vira uma frase e o aviso de responsabilidade aparece.
+    await page.getByRole("button", { name: /só tenho a ideia/i }).click();
+    await expect(page.getByLabel("Sua ideia, em uma frase")).toBeVisible();
+    await expect(
+      page.getByText(/o texto é dela, a responsabilidade é sua/i),
+    ).toBeVisible();
+
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 

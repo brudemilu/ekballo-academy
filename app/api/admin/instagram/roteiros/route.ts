@@ -13,7 +13,7 @@ import {
   getReferenciaConteudo,
   salvarRoteiroConteudo,
 } from "@/lib/db";
-import { chamarLLM } from "@/lib/llm";
+import { chamarLLMLendo } from "@/lib/llm";
 import {
   duracaoValida,
   MIN_FONTE,
@@ -118,13 +118,14 @@ export async function POST(req: NextRequest) {
         : Promise.resolve(null),
     ]);
 
-    const bruto = await chamarLLM(
+    const roteiro = await chamarLLMLendo(
       systemRoteiro(pedido.duracao, contextoDoPerfil(perfil, referencia)),
       usuarioRoteiro(
         { ...fonte, texto },
         typeof pedido.foco === "string" ? pedido.foco.slice(0, 400) : undefined,
       ),
       2200,
+      normalizarRoteiro,
     );
     const origem: OrigemRoteiro = {
       tipo: fonte.tipo,
@@ -133,7 +134,7 @@ export async function POST(req: NextRequest) {
     };
     return NextResponse.json({
       ok: true,
-      roteiro: normalizarRoteiro(bruto),
+      roteiro,
       fonte: origem,
       cortado,
     });

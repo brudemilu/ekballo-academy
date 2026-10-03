@@ -26,7 +26,7 @@ import {
   transcricaoParaIA,
 } from "@/lib/cortes";
 import { atualizarCorteConteudo, getPerfilConteudo } from "@/lib/db";
-import { chamarLLM } from "@/lib/llm";
+import { chamarLLMLendo } from "@/lib/llm";
 import { converterParaMp3 } from "@/lib/youtube";
 
 const GROQ_TRANSCRICAO = "https://api.groq.com/openai/v1/audio/transcriptions";
@@ -173,14 +173,16 @@ export async function processarCorte(id: string, videoId: string): Promise<void>
     await atualizarCorteConteudo(id, { transcricao });
 
     await etapa("Escolhendo os melhores momentos…");
-    const perfil = await getPerfilConteudo().catch(() => null);
-    const bruto = await chamarLLM(
+    // Modo serviço: este trabalho roda depois da requisição, sem sessão. Sem
+    // ele a leitura do perfil falhava calada e o pedido ia sem a voz do pastor.
+    const perfil = await getPerfilConteudo(true).catch(() => null);
+    const momentos = await chamarLLMLendo(
       systemCortes(perfil ? contextoDoPerfil(perfil) : ""),
       `VÍDEO: ${video.title}\n\nTRANSCRIÇÃO:\n${transcricaoParaIA(transcricao)}`,
       6000,
+      (bruto) => normalizarMomentos(bruto, transcricao),
       120_000,
     );
-    const momentos = normalizarMomentos(bruto, transcricao);
 
     await atualizarCorteConteudo(id, {
       status: "pronto",

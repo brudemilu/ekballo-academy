@@ -11,7 +11,7 @@ import {
   type ReferenciaConteudo,
 } from "@/lib/conteudo-perfil";
 import { TEMA_PADRAO } from "@/lib/instagram-render";
-import { chamarLLM } from "@/lib/llm";
+import { chamarLLMLendo } from "@/lib/llm";
 import {
   normalizarPacote,
   type PecasPacote,
@@ -58,18 +58,20 @@ export async function gerarPecasDaFonte(
   } = opcoes;
   const [pecasR, roteiroR] = await Promise.allSettled([
     comPecas
-      ? chamarLLM(
+      ? chamarLLMLendo(
           systemPacote(contextoDoPerfil(perfil)),
           usuarioPacote(fonte, foco),
           2400,
-        ).then(normalizarPacote)
+          normalizarPacote,
+        )
       : Promise.resolve(null),
     comRoteiro
-      ? chamarLLM(
+      ? chamarLLMLendo(
           systemRoteiro(duracaoReel, contextoDoPerfil(perfil, referencia)),
           usuarioRoteiro(fonte, foco),
           2200,
-        ).then(normalizarRoteiro)
+          normalizarRoteiro,
+        )
       : Promise.resolve(null),
   ]);
   const motivo = (r: PromiseRejectedResult) =>

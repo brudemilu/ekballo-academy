@@ -10,8 +10,10 @@
  *
  * Tudo via as mesmas credenciais CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN.
  */
+
 import type { FonteKey, RealceModo } from "@/lib/instagram-render";
-import { chamarLLM } from "@/lib/llm";
+import { lerJSONdaIA } from "@/lib/json-ia";
+import { chamarLLMLendo } from "@/lib/llm";
 
 const CF_BASE = "https://api.cloudflare.com/client/v4/accounts";
 
@@ -211,12 +213,10 @@ Responda SOMENTE com JSON válido, sem comentários, neste formato:
 }
 
 function extrairJSON(txt: string): unknown {
-  // remove cercas de código e pega o primeiro bloco {...}
-  const semFence = txt.replace(/```json/gi, "").replace(/```/g, "");
-  const ini = semFence.indexOf("{");
-  const fim = semFence.lastIndexOf("}");
-  if (ini === -1 || fim === -1 || fim < ini) throw new Error("sem JSON na resposta");
-  return JSON.parse(semFence.slice(ini, fim + 1));
+  return lerJSONdaIA(
+    txt,
+    "a IA não devolveu o post em um formato que eu consiga ler — tente de novo",
+  );
 }
 
 function normalizarCor(c: unknown): string {
@@ -229,9 +229,21 @@ function normalizarCor(c: unknown): string {
 export async function gerarCarrosselIA(
   conteudo: string,
   tipo: "carrossel" | "unico" = "carrossel",
+  /** Troca o pedido padrão (reorganizar o conteúdo) por outro — ex.: escrever a partir de uma ideia. */
+  system?: string,
 ): Promise<CarrosselIA> {
   // Corrente de provedores em lib/llm.ts (Gemini → Groq → Cloudflare).
-  const texto = await chamarLLM(buildSystemPrompt(tipo), conteudo.trim(), 1200);
+  // A leitura acontece dentro de `chamarLLMLendo`: resposta fora do formato
+  // (comum nos modelos de reserva) ganha uma segunda tentativa.
+  return chamarLLMLendo(
+    system ?? buildSystemPrompt(tipo),
+    conteudo.trim(),
+    system ? 2000 : 1200,
+    (texto) => lerCarrossel(texto, tipo),
+  );
+}
+
+function lerCarrossel(texto: string, tipo: "carrossel" | "unico"): CarrosselIA {
   const parsed = extrairJSON(texto) as { slides?: unknown[]; legenda?: unknown };
   const slidesRaw = Array.isArray(parsed.slides) ? parsed.slides : [];
   const slides: SlideIA[] = slidesRaw
