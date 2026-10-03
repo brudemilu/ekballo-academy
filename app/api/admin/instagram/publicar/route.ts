@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
-import { createClient } from "@/lib/supabase/server";
-import { publicarInstagram, publicarReel, instagramConfigurado } from "@/lib/instagram-publish";
 import { prepararImageUrls } from "@/lib/instagram-imagens";
+import {
+  instagramConfigurado,
+  publicarInstagram,
+  publicarReel,
+} from "@/lib/instagram-publish";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -17,6 +21,7 @@ type SlideIn = {
   top?: string;
   ref?: string;
   tema?: string;
+  tom?: string;
   /** Imagem enviada pelo usuário (modo upload) — usa direto, sem IA. */
   imageUrl?: string;
 };
@@ -32,7 +37,9 @@ export async function POST(req: NextRequest) {
   }
   if (!instagramConfigurado()) {
     return NextResponse.json(
-      { error: "Instagram ainda não conectado (faltam IG_USER_ID e META_ACCESS_TOKEN)." },
+      {
+        error: "Instagram ainda não conectado (faltam IG_USER_ID e META_ACCESS_TOKEN).",
+      },
       { status: 503 },
     );
   }
@@ -79,7 +86,10 @@ export async function POST(req: NextRequest) {
   const origin = req.nextUrl.origin;
   if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
     return NextResponse.json(
-      { error: "Publicação só funciona no site publicado (o Instagram não acessa localhost)." },
+      {
+        error:
+          "Publicação só funciona no site publicado (o Instagram não acessa localhost).",
+      },
       { status: 400 },
     );
   }
@@ -105,7 +115,12 @@ export async function POST(req: NextRequest) {
       const supabase = await createClient();
       await supabase
         .from("instagram_carrosseis")
-        .update({ status: "publicado", publicado_em: new Date().toISOString(), ig_post_id: id, erro: null })
+        .update({
+          status: "publicado",
+          publicado_em: new Date().toISOString(),
+          ig_post_id: id,
+          erro: null,
+        })
         .eq("id", postId);
     }
     return NextResponse.json({ ok: true, id });
@@ -113,7 +128,10 @@ export async function POST(req: NextRequest) {
     const msg = e instanceof Error ? e.message : "Falha ao publicar.";
     if (postId) {
       const supabase = await createClient();
-      await supabase.from("instagram_carrosseis").update({ status: "erro", erro: msg }).eq("id", postId);
+      await supabase
+        .from("instagram_carrosseis")
+        .update({ status: "erro", erro: msg })
+        .eq("id", postId);
     }
     return NextResponse.json({ error: msg }, { status: 502 });
   }

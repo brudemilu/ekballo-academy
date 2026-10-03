@@ -1,42 +1,41 @@
 import { ImageResponse } from "next/og";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { obterFundo } from "@/lib/fundo-cache";
 import {
-  renderSlideInstagram,
-  sanitizeCor,
-  FONTES,
-  SCRIPT_FONT_FILE,
-  PAPEL_FILE,
-  GRUNGE_FILE,
   BRUSH_FILE,
-  SPLATTER_FILE,
-  PAPER_SPECKS_FILE,
   FOG_FILE,
-  TEMAS,
-  TEMA_PADRAO,
-  TAMANHO_W,
-  TAMANHO_H,
+  FONTES,
   type FonteKey,
+  GRUNGE_FILE,
+  PAPEL_FILE,
+  PAPER_SPECKS_FILE,
   type RealceModo,
+  renderSlideInstagram,
+  SCRIPT_FONT_FILE,
+  SPLATTER_FILE,
+  sanitizeCor,
+  TAMANHO_H,
+  TAMANHO_W,
+  TEMA_PADRAO,
+  TEMAS,
   type TemaKey,
 } from "@/lib/instagram-render";
-import { gerarFundoLivre } from "@/lib/instagram";
 import { buscarFotoPexels } from "@/lib/pexels";
 
 // Rota OG do carrossel (template "papel" 4:5). Compõe texto navy/dourado sobre
 // papel creme + uma FOTO na faixa de baixo:
-//   - prompt + seed  → gera (ou reaproveita do cache) a foto Flux (faixa).
+//   - prompt + seed  → gera (ou reaproveita do Storage) a foto FLUX.2.
 //   - foto           → usa public/fundos/<foto>.jpg (fallback confiável).
 //   - papel          → public/fundos/paper.jpg (asset fixo).
 //
-// Params: verso, fonte, realce, cor, top, ref, prompt, seed, foto, dl, bg.
-
-// cache em memória da foto Flux por (prompt|seed) — evita regerar a cada tweak.
-const fundoCache = new Map<string, string>();
+// Params: verso, fonte, realce, cor, top, ref, prompt, seed, foto, tom, dl, bg.
 
 const fontCache: Record<string, ArrayBuffer> = {};
 async function loadFont(origin: string, file: string) {
   if (!fontCache[file]) {
-    fontCache[file] = await fetch(`${origin}/fonts/${file}`).then((r) => r.arrayBuffer());
+    fontCache[file] = await fetch(`${origin}/fonts/${file}`).then((r) =>
+      r.arrayBuffer(),
+    );
   }
   return fontCache[file];
 }
@@ -67,32 +66,27 @@ export async function GET(req: NextRequest) {
   const prompt = url.searchParams.get("prompt")?.trim() || "";
   const seed = parseInt(url.searchParams.get("seed") || "0", 10) || 0;
   const foto = url.searchParams.get("foto")?.trim() || "fallback";
+  const tom = url.searchParams.get("tom") === "claro" ? "claro" : "escuro";
   const download = url.searchParams.get("dl") === "1";
   const soFundo = url.searchParams.get("bg") === "1";
 
   if (!FONTES[fonteKey]) return new Response("fonte inválida", { status: 400 });
-  if (!soFundo && !verso) return new Response("parâmetro 'verso' obrigatório", { status: 400 });
+  if (!soFundo && !verso)
+    return new Response("parâmetro 'verso' obrigatório", { status: 400 });
 
-  // resolve a foto: 1) Pexels (foto real, grátis e ILIMITADO) →
-  //                 2) Cloudflare Flux (IA, teto diário) como reserva →
+  // resolve a foto: 1) IA (FLUX.2, guardada no Storage por prompt+seed) →
+  //                 2) Pexels (foto de banco) se a IA falhar ou a cota acabar →
   //                 3) fallback local.
+  // A IA vem primeiro porque a foto de banco é escolhida por palavra-chave e
+  // raramente conversa com o texto do slide; a gerada segue o prompt.
   let bgSrc = `${selfOrigin}/fundos/${foto}.jpg`;
   if (prompt) {
-    const pex = await buscarFotoPexels(prompt, seed);
-    if (pex) {
-      bgSrc = pex;
+    const gerado = await obterFundo(prompt, seed);
+    if (gerado) {
+      bgSrc = gerado;
     } else {
-      const key = `${prompt}|${seed}`;
-      let data = fundoCache.get(key);
-      if (!data) {
-        const gerado = await gerarFundoLivre(prompt, seed);
-        if (gerado) {
-          data = gerado;
-          fundoCache.set(key, data);
-          if (fundoCache.size > 120) fundoCache.delete(fundoCache.keys().next().value!);
-        }
-      }
-      if (data) bgSrc = data;
+      const pex = await buscarFotoPexels(prompt, seed);
+      if (pex) bgSrc = pex;
     }
   }
 
@@ -104,7 +98,10 @@ export async function GET(req: NextRequest) {
       const bytes = new Uint8Array(bin.length);
       for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
       return new Response(bytes, {
-        headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=86400" },
+        headers: {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "public, max-age=86400",
+        },
       });
     }
     return Response.redirect(bgSrc, 302);
@@ -122,7 +119,22 @@ export async function GET(req: NextRequest) {
   const paperSpecksSrc = `${selfOrigin}/texturas/${PAPER_SPECKS_FILE}`;
   const fogSrc = `${selfOrigin}/texturas/${FOG_FILE}`;
 
-  const jsx = renderSlideInstagram({ texto: verso, bgSrc, paperSrc, grungeSrc, brushSrc, splatterSrc, paperSpecksSrc, fogSrc, fonteKey, realce, cor, top, ref });
+  const jsx = renderSlideInstagram({
+    texto: verso,
+    bgSrc,
+    paperSrc,
+    grungeSrc,
+    brushSrc,
+    splatterSrc,
+    paperSpecksSrc,
+    fogSrc,
+    fonteKey,
+    realce,
+    cor,
+    top,
+    ref,
+    tom,
+  });
 
   const filename = sanitizeFilename(`${verso.replace(/[{}()]/g, "").slice(0, 40)}.png`);
 
@@ -130,9 +142,16 @@ export async function GET(req: NextRequest) {
     width: TAMANHO_W,
     height: TAMANHO_H,
     fonts: [
-      { name: "Display", data: displayFont, weight: 400, style: FONTES[fonteKey].style },
+      {
+        name: "Display",
+        data: displayFont,
+        weight: 400,
+        style: FONTES[fonteKey].style,
+      },
       { name: "Script", data: scriptFont, weight: 400, style: "normal" },
     ],
-    headers: download ? { "Content-Disposition": `attachment; filename="${filename}"` } : undefined,
+    headers: download
+      ? { "Content-Disposition": `attachment; filename="${filename}"` }
+      : undefined,
   });
 }
