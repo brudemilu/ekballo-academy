@@ -21,6 +21,16 @@ function agendaSR() {
   );
 }
 
+/**
+ * Cliente do banco: o da sessão de quem está logado (padrão) ou o de serviço.
+ * O de serviço é para trabalho SEM usuário — o piloto automático roda pelo
+ * cron — e ignora RLS: só passe `servico = true` em código que já conferiu o
+ * acesso por outro meio (segredo do cron).
+ */
+async function banco(servico = false) {
+  return servico ? agendaSR() : await createClient();
+}
+
 import type { AgendaEvento } from "@/lib/agenda";
 import {
   PERFIL_VAZIO,
@@ -32,17 +42,20 @@ import {
   addMockCarrossel,
   addMockCompromisso,
   addMockCorte,
+  addMockExecucao,
   addMockIdeia,
   addMockReferencia,
   addMockRoteiro,
   type CarrosselInstagramMock,
   getMockMcAnswer,
   getMockPerfilConteudo,
+  getMockPiloto,
   type IdeiaConteudoMock,
   isMockMode,
   listMockCarrosseis,
   listMockCompromissos,
   listMockCortes,
+  listMockExecucoes,
   listMockIdeias,
   listMockReferencias,
   listMockRoteiros,
@@ -73,9 +86,11 @@ import {
   setMockLeitura,
   setMockMcAnswer,
   setMockPerfilConteudo,
+  setMockPiloto,
   updateMockCompromisso,
 } from "@/lib/mock-data";
 import { PERMISSOES, type Permissao } from "@/lib/permissoes";
+import { type ExecucaoPiloto, PILOTO_PADRAO, type PilotoConfig } from "@/lib/piloto";
 import type { Roteiro, RoteiroSalvo } from "@/lib/roteiro";
 import type {
   Alternativa,
@@ -177,11 +192,11 @@ export async function getMatrizPermissoes(): Promise<Record<string, Permissao[]>
 
 // -------- CURSOS --------
 
-export async function listCursosPublicados(): Promise<Curso[]> {
+export async function listCursosPublicados(servico = false): Promise<Curso[]> {
   if (isMockMode()) {
     return MOCK_CURSOS.filter((c) => c.publicado).sort((a, b) => a.ordem - b.ordem);
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data } = await supabase
     .from("cursos")
     .select("*")
@@ -218,9 +233,12 @@ export async function getCursoBySlug(slug: string): Promise<Curso | null> {
 
 // -------- AULAS --------
 
-export async function listAulasByCurso(cursoId: string): Promise<Aula[]> {
+export async function listAulasByCurso(
+  cursoId: string,
+  servico = false,
+): Promise<Aula[]> {
   if (isMockMode()) return mockAulasByCurso(cursoId);
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data } = await supabase
     .from("aulas")
     .select("*")
@@ -2319,6 +2337,7 @@ export type CarrosselInstagramInput = {
 
 export async function salvarCarrosselInstagram(
   input: CarrosselInstagramInput,
+  servico = false,
 ): Promise<{ id: string }> {
   const agendado = Boolean(input.agendadoPara);
   const status = agendado ? "agendado" : "rascunho";
@@ -2338,7 +2357,7 @@ export async function salvarCarrosselInstagram(
     });
     return { id };
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("instagram_carrosseis")
     .insert({
@@ -2402,6 +2421,7 @@ export async function listIdeiasConteudo(): Promise<IdeiaConteudo[]> {
 export async function criarIdeiaConteudo(
   input: Required<Pick<IdeiaConteudoInput, "titulo">> & IdeiaConteudoInput,
   vinculo?: { carrossel_id?: string; roteiro_id?: string },
+  servico = false,
 ): Promise<IdeiaConteudo> {
   const linha = {
     titulo: input.titulo,
@@ -2421,7 +2441,7 @@ export async function criarIdeiaConteudo(
     addMockIdeia(ideia);
     return ideia;
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_ideias")
     .insert(linha)
@@ -2501,9 +2521,9 @@ const COLUNAS_PERFIL =
   "objetivo, publico, pilares, voz_amostras, voz_dna, temas_proibidos, chamada_padrao";
 const COLUNAS_REFERENCIA = "id, nome, link, exemplos, dna, analisado_em";
 
-export async function getPerfilConteudo(): Promise<PerfilConteudo> {
+export async function getPerfilConteudo(servico = false): Promise<PerfilConteudo> {
   if (isMockMode()) return getMockPerfilConteudo();
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_perfil")
     .select(COLUNAS_PERFIL)
@@ -2629,6 +2649,7 @@ export async function listRoteirosConteudo(): Promise<RoteiroSalvo[]> {
 
 export async function salvarRoteiroConteudo(
   input: Pick<RoteiroSalvo, "duracao" | "fonte" | "roteiro">,
+  servico = false,
 ): Promise<RoteiroSalvo> {
   const linha = {
     titulo: input.roteiro.titulo,
@@ -2645,7 +2666,7 @@ export async function salvarRoteiroConteudo(
     addMockRoteiro(salvo);
     return salvo;
   }
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_roteiros")
     .insert(linha)
@@ -2693,9 +2714,9 @@ const COLUNAS_CORTE_LISTA =
   "id, video_id, titulo, duracao_seg, status, etapa, erro, momentos, criado_em";
 
 /** Lista sem a transcrição (pesada); `getCorteConteudo` traz tudo. */
-export async function listCortesConteudo(): Promise<CorteSalvo[]> {
+export async function listCortesConteudo(servico = false): Promise<CorteSalvo[]> {
   if (isMockMode()) return listMockCortes();
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_cortes")
     .select(COLUNAS_CORTE_LISTA)
@@ -2705,9 +2726,12 @@ export async function listCortesConteudo(): Promise<CorteSalvo[]> {
   return (data || []).map((c) => ({ ...c, transcricao: [] })) as CorteSalvo[];
 }
 
-export async function getCorteConteudo(id: string): Promise<CorteSalvo | null> {
+export async function getCorteConteudo(
+  id: string,
+  servico = false,
+): Promise<CorteSalvo | null> {
   if (isMockMode()) return listMockCortes().find((c) => c.id === id) ?? null;
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_cortes")
     .select(`${COLUNAS_CORTE_LISTA}, transcricao`)
@@ -2773,6 +2797,112 @@ export async function deletarCorteConteudo(id: string): Promise<void> {
   }
   const supabase = await createClient();
   const { error } = await supabase.from("conteudo_cortes").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Piloto automático do Instagram
+// =============================================================
+const COLUNAS_PILOTO =
+  "ativo, fontes, curso_id, ultima_mesa_ordem, preparo, carrossel, reel, pecas, telefone, ultima_fonte, ultimo_corte_id";
+const COLUNAS_EXECUCAO = "id, status, fonte, pecas, erro, aviso_enviado, criado_em";
+
+export async function getPilotoConfig(servico = false): Promise<PilotoConfig> {
+  if (isMockMode()) return getMockPiloto();
+  const supabase = await banco(servico);
+  const { data, error } = await supabase
+    .from("conteudo_piloto")
+    .select(COLUNAS_PILOTO)
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? ({ ...PILOTO_PADRAO, ...data } as PilotoConfig) : PILOTO_PADRAO;
+}
+
+export async function salvarPilotoConfig(
+  patch: Partial<PilotoConfig>,
+  servico = false,
+): Promise<void> {
+  if (isMockMode()) {
+    setMockPiloto({ ...getMockPiloto(), ...patch });
+    return;
+  }
+  const supabase = await banco(servico);
+  const { error } = await supabase
+    .from("conteudo_piloto")
+    .upsert({ id: 1, ...patch, atualizado_em: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
+export async function listExecucoesPiloto(servico = false): Promise<ExecucaoPiloto[]> {
+  if (isMockMode()) return listMockExecucoes();
+  const supabase = await banco(servico);
+  const { data, error } = await supabase
+    .from("conteudo_piloto_execucoes")
+    .select(COLUNAS_EXECUCAO)
+    .order("criado_em", { ascending: false })
+    .limit(12);
+  if (error) throw new Error(error.message);
+  return (data || []) as ExecucaoPiloto[];
+}
+
+/** Abre uma execução. Sempre pelo cliente de serviço: quem dispara é o cron ou o trabalho em segundo plano. */
+export async function criarExecucaoPiloto(): Promise<ExecucaoPiloto> {
+  if (isMockMode()) {
+    const e: ExecucaoPiloto = {
+      id: crypto.randomUUID(),
+      status: "preparando",
+      fonte: null,
+      pecas: [],
+      erro: null,
+      aviso_enviado: false,
+      criado_em: new Date().toISOString(),
+    };
+    addMockExecucao(e);
+    return e;
+  }
+  const { data, error } = await agendaSR()
+    .from("conteudo_piloto_execucoes")
+    .insert({})
+    .select(COLUNAS_EXECUCAO)
+    .single();
+  if (error) throw new Error(error.message);
+  return data as ExecucaoPiloto;
+}
+
+export async function atualizarExecucaoPiloto(
+  id: string,
+  patch: Partial<Omit<ExecucaoPiloto, "id" | "criado_em">>,
+): Promise<void> {
+  if (isMockMode()) {
+    const e = listMockExecucoes().find((x) => x.id === id);
+    if (e) Object.assign(e, patch);
+    return;
+  }
+  const { error } = await agendaSR()
+    .from("conteudo_piloto_execucoes")
+    .update(patch)
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Tira um post da fila de publicação (veto): volta a ser rascunho, sem data. */
+export async function desagendarCarrosselInstagram(id: string): Promise<void> {
+  if (isMockMode()) {
+    const c = listMockCarrosseis().find((x) => x.id === id);
+    if (c && c.status === "agendado") {
+      c.status = "rascunho";
+      c.agendado_para = undefined;
+    }
+    return;
+  }
+  const supabase = await createClient();
+  // Só mexe no que ainda está agendado: se o cron já publicou, não há o que vetar.
+  const { error } = await supabase
+    .from("instagram_carrosseis")
+    .update({ status: "rascunho", agendado_para: null })
+    .eq("id", id)
+    .eq("status", "agendado");
   if (error) throw new Error(error.message);
 }
 

@@ -8,6 +8,7 @@ import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram"
 import { PacoteSemana } from "@/components/PacoteSemana";
 import { PainelInstagram } from "@/components/PainelInstagram";
 import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
+import { PilotoConteudo } from "@/components/PilotoConteudo";
 import { RoteirosConteudo } from "@/components/RoteirosConteudo";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
@@ -16,9 +17,11 @@ import {
   getCurrentSession,
   getIdeiaConteudo,
   getPerfilConteudo,
+  getPilotoConfig,
   listCarrosseisInstagram,
   listCortesConteudo,
   listCursosPublicados,
+  listExecucoesPiloto,
   listIdeiasConteudo,
   listReferenciasConteudo,
   listRoteirosConteudo,
@@ -33,6 +36,7 @@ import {
   postsNaJanela,
 } from "@/lib/painel";
 import { carregarDadosPainel } from "@/lib/painel-dados";
+import { PILOTO_PADRAO } from "@/lib/piloto";
 import { apiConfigurada as youtubeConfigurado } from "@/lib/youtube";
 
 export const metadata = { title: "Instagram — Ekballo" };
@@ -49,6 +53,7 @@ const ABAS = [
   { v: "criar", label: "✨ Criar e postar" },
   { v: "roteiros", label: "🎬 Roteiros" },
   { v: "cortes", label: "✂️ Cortes" },
+  { v: "piloto", label: "🤖 Piloto" },
   { v: "perfil", label: "🧭 Perfil" },
 ] as const;
 type Aba = (typeof ABAS)[number]["v"];
@@ -85,7 +90,7 @@ export default async function AdminInstagramPage({
   const usaPosts = aba === "calendario" || aba === "criar" || noPainel;
   const usaIdeias = aba === "calendario" || noPainel;
   // O calendário também escolhe fonte e referência (pacote da semana).
-  const usaFontes = aba === "roteiros" || aba === "calendario";
+  const usaFontes = aba === "roteiros" || aba === "calendario" || aba === "piloto";
   const usaReferencias = aba === "perfil" || usaFontes || noPainel;
   const usaPerfil = aba === "perfil" || noPainel;
   const [
@@ -98,6 +103,8 @@ export default async function AdminInstagramPage({
     roteiros,
     dadosPainel,
     cortes,
+    piloto,
+    execucoes,
   ] = await Promise.all([
     usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
     usaIdeias ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
@@ -110,6 +117,10 @@ export default async function AdminInstagramPage({
     aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
     noPainel ? carregarDadosPainel() : Promise.resolve(null),
     aba === "cortes" ? listCortesConteudo().catch(() => []) : Promise.resolve([]),
+    aba === "piloto"
+      ? getPilotoConfig().catch(() => PILOTO_PADRAO)
+      : Promise.resolve(PILOTO_PADRAO),
+    aba === "piloto" ? listExecucoesPiloto().catch(() => []) : Promise.resolve([]),
   ]);
 
   const hoje = diaSP(new Date());
@@ -136,6 +147,8 @@ export default async function AdminInstagramPage({
       "Escolha uma mesa, um devocional ou um texto seu e receba o roteiro de um vídeo curto: o que falar, o que aparece na tela e o que mostrar. A IA só usa o que está na fonte, e mostra de onde tirou.",
     cortes:
       "Cole o link de uma pregação no YouTube e a IA aponta os melhores momentos para virar vídeo curto: onde começa, onde termina, a frase que abre e a legenda do post.",
+    piloto:
+      "Ligue o piloto e a IA cuida da semana: escolhe o assunto, cria as peças, agenda a publicação e te avisa no WhatsApp. Nada vai ao ar sem você ter tido tempo de cancelar.",
     perfil:
       "Conte ao copiloto quem é o ministério, como você fala e em quem se inspira. É daqui que os roteiros e os posts tiram o jeito de escrever.",
   };
@@ -214,6 +227,12 @@ export default async function AdminInstagramPage({
               : c,
           )}
           configurado={youtubeConfigurado() && Boolean(process.env.GROQ_API_KEY)}
+        />
+      ) : aba === "piloto" ? (
+        <PilotoConteudo
+          configInicial={piloto}
+          execucoesIniciais={execucoes}
+          cursos={cursosOpcoes}
         />
       ) : aba === "perfil" ? (
         <PerfilConteudoForm perfilInicial={perfil} referenciasIniciais={referencias} />

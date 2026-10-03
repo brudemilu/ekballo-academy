@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { montarFonte, type PedidoFonte } from "@/lib/conteudo-fonte";
-import { contextoDoPerfil } from "@/lib/conteudo-perfil";
 import {
   criarIdeiaConteudo,
   getCurrentSession,
@@ -9,22 +8,9 @@ import {
   salvarCarrosselInstagram,
   salvarRoteiroConteudo,
 } from "@/lib/db";
-import { TEMA_PADRAO } from "@/lib/instagram-render";
-import { chamarLLM } from "@/lib/llm";
-import {
-  normalizarPacote,
-  storyEmTexto,
-  systemPacote,
-  usuarioPacote,
-  validarDias,
-} from "@/lib/pacote";
-import {
-  MIN_FONTE,
-  normalizarRoteiro,
-  recortarFonte,
-  systemRoteiro,
-  usuarioRoteiro,
-} from "@/lib/roteiro";
+import { storyEmTexto, validarDias } from "@/lib/pacote";
+import { gerarPecasDaFonte, slidesParaSalvar } from "@/lib/pacote-gerar";
+import { MIN_FONTE, recortarFonte } from "@/lib/roteiro";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -80,45 +66,27 @@ export async function POST(req: NextRequest) {
     const foco = typeof corpo.foco === "string" ? corpo.foco.slice(0, 400) : undefined;
     const fonteIA = { ...fonte, texto };
 
-    // As duas chamadas saem juntas: carrossel + story numa, roteiro na outra.
-    // A referência de forma só vale para o roteiro — é nele que gancho e ritmo importam.
-    const [pecasR, roteiroR] = await Promise.allSettled([
-      chamarLLM(
-        systemPacote(contextoDoPerfil(perfil)),
-        usuarioPacote(fonteIA, foco),
-        2400,
-      ).then(normalizarPacote),
-      chamarLLM(
-        systemRoteiro(DURACAO_REEL, contextoDoPerfil(perfil, referencia)),
-        usuarioRoteiro(fonteIA, foco),
-        2200,
-      ).then(normalizarRoteiro),
-    ]);
-
-    if (pecasR.status === "rejected" && roteiroR.status === "rejected") {
-      throw pecasR.reason instanceof Error
-        ? pecasR.reason
-        : new Error("Falha ao montar o pacote.");
+    const gerado = await gerarPecasDaFonte(fonteIA, {
+      perfil,
+      referencia,
+      foco,
+      duracaoReel: DURACAO_REEL,
+    });
+    if (!gerado.pecas && !gerado.roteiro) {
+      throw new Error(
+        gerado.erros.pecas || gerado.erros.roteiro || "Falha ao montar o pacote.",
+      );
     }
 
     const origem = { tipo: fonte.tipo, titulo: fonte.titulo, autor: fonte.autor };
     const criadas: string[] = [];
     const falhas: string[] = [];
 
-    if (pecasR.status === "fulfilled") {
-      const pecas = pecasR.value;
+    if (gerado.pecas) {
+      const pecas = gerado.pecas;
       const { id: carrosselId } = await salvarCarrosselInstagram({
         conteudo: `${fonte.titulo}\n\n${pecas.tema}`.trim(),
-        slides: pecas.carrossel.slides.map((s) => ({
-          ...s,
-          cor: "#C9A961",
-          fonte: "anton",
-          top: "",
-          ref: "",
-          seed: Math.floor(Math.random() * 1_000_000),
-          tema: TEMA_PADRAO,
-          tom: "escuro",
-        })) as never,
+        slides: slidesParaSalvar(pecas) as never,
         legenda: pecas.carrossel.legenda,
       });
       await criarIdeiaConteudo(
@@ -147,9 +115,9 @@ export async function POST(req: NextRequest) {
       falhas.push("carrossel", "story");
     }
 
-    if (roteiroR.status === "fulfilled") {
+    if (gerado.roteiro) {
       const salvo = await salvarRoteiroConteudo({
-        roteiro: roteiroR.value,
+        roteiro: gerado.roteiro,
         duracao: DURACAO_REEL,
         fonte: origem,
       });
