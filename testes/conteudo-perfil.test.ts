@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  adicionarPreferencia,
   contextoDoPerfil,
+  limparPreferencias,
+  MAX_PREFERENCIAS,
+  motivoValido,
   normalizarDNAReferencia,
   normalizarVozDNA,
   PERFIL_VAZIO,
   type PerfilConteudo,
   podeAnalisar,
+  preferenciaDaRecusa,
   progressoDoPerfil,
   type ReferenciaConteudo,
   validarPerfil,
@@ -189,5 +194,76 @@ describe("progressoDoPerfil", () => {
     const p = progressoDoPerfil(perfil, [REF]);
     expect(p.feitos).toBe(3);
     expect(p.passos.find((x) => x.chave === "voz")?.feito).toBe(false);
+  });
+});
+
+// O que a IA aprende com as recusas. O risco aqui é guardar lixo: uma
+// regra que não diz nada, a mesma regra vinte vezes, ou uma lista que
+// cresce até engolir o pedido inteiro.
+describe("preferências aprendidas com as recusas", () => {
+  const AGORA = "2026-10-03T12:00:00.000Z";
+
+  it("cada motivo vira uma regra que cita a peça recusada", () => {
+    expect(preferenciaDaRecusa("ja_falei", "", "Graça barata")).toContain(
+      "Graça barata",
+    );
+    expect(preferenciaDaRecusa("nao_meu_jeito", "muita gíria", "X")).toBe(
+      "Não escrever assim: muita gíria",
+    );
+    expect(preferenciaDaRecusa("informacao_errada", "", "Lutero")).toContain("Lutero");
+    expect(preferenciaDaRecusa("outro", "longo demais", "Jejum")).toBe(
+      'O pastor recusou "Jejum" porque: longo demais',
+    );
+  });
+
+  it("recusa que não ensina nada duradouro não vira regra", () => {
+    // "Não é o momento" fala de agora, não do jeito de escrever.
+    expect(preferenciaDaRecusa("fora_de_hora", "luto na igreja", "Festa")).toBeNull();
+    expect(preferenciaDaRecusa("outro", "   ", "Festa")).toBeNull();
+    expect(preferenciaDaRecusa("ja_falei", "", "")).toBeNull();
+  });
+
+  it("só aceita os motivos conhecidos", () => {
+    expect(motivoValido("ja_falei")).toBe(true);
+    expect(motivoValido("qualquer")).toBe(false);
+    expect(motivoValido(undefined)).toBe(false);
+    // Não cai em propriedade herdada do objeto.
+    expect(motivoValido("toString")).toBe(false);
+  });
+
+  it("não repete a regra que já existe e ignora frase vazia", () => {
+    const um = adicionarPreferencia([], "Sem gíria", AGORA);
+    expect(um).toHaveLength(1);
+    expect(adicionarPreferencia(um, "  sem   GÍRIA ", AGORA)).toBe(um);
+    expect(adicionarPreferencia(um, "   ", AGORA)).toBe(um);
+  });
+
+  it("no limite, a mais antiga sai para a nova entrar", () => {
+    let lista = limparPreferencias([]);
+    for (let i = 0; i < MAX_PREFERENCIAS + 3; i++)
+      lista = adicionarPreferencia(lista, `regra ${i}`, AGORA);
+    expect(lista).toHaveLength(MAX_PREFERENCIAS);
+    expect(lista[0].texto).toBe("regra 3");
+    expect(lista.at(-1)?.texto).toBe(`regra ${MAX_PREFERENCIAS + 2}`);
+  });
+
+  it("limpa o que vem torto do banco ou do navegador", () => {
+    expect(limparPreferencias(null)).toEqual([]);
+    expect(limparPreferencias("x")).toEqual([]);
+    expect(
+      limparPreferencias([{ texto: " ok ", criada_em: AGORA }, { texto: 3 }, null, {}]),
+    ).toEqual([{ texto: "ok", criada_em: AGORA }]);
+  });
+
+  it("entram no contexto de todo pedido; sem nenhuma, o bloco não aparece", () => {
+    const com: PerfilConteudo = {
+      ...PERFIL_VAZIO,
+      objetivo: "Levar à mesa",
+      preferencias: [{ texto: "Sem gíria", criada_em: AGORA }],
+    };
+    expect(contextoDoPerfil(com)).toContain("- Sem gíria");
+    expect(
+      contextoDoPerfil({ ...PERFIL_VAZIO, objetivo: "Levar à mesa" }),
+    ).not.toContain("JÁ CORRIGIU");
   });
 });

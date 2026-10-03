@@ -29,8 +29,13 @@ export function ehDoRobo(texto: string): boolean {
 export type ComandoInstagram =
   | { tipo: "criar"; ideia: string }
   | { tipo: "publicar"; quando: string }
-  | { tipo: "refazer" }
-  | { tipo: "cancelar"; alvo: "rascunho" | "carrossel" | "reel" | "tudo" }
+  | { tipo: "refazer"; ajuste: string }
+  | {
+      tipo: "cancelar";
+      alvo: "rascunho" | "carrossel" | "reel" | "tudo";
+      /** O que veio depois de "porque": vira preferência da IA. */
+      motivo: string;
+    }
   | { tipo: "ajuda" };
 
 /** Tira acento e caixa, para comparar o que foi dito com os gatilhos. */
@@ -42,6 +47,12 @@ function plano(t: string): string {
 // de áudio costuma vir com pontuação e sem os dois-pontos.
 const RE_CRIAR =
   /^(?:(?:cri[ae]|faz|faca|fazer|monta|montar|gera|gerar)\s+(?:um\s+|uma\s+)?(?:post|postagem|carrossel)|post(?:ar|agem)?|carrossel|instagram)\b[\s:,.-]*(?:(?:sobre|de|do|da|com|para)\b[\s:,-]*)?/;
+
+// "…porque está formal demais", "…pois já falei disso"
+const RE_MOTIVO = /\b(?:porque|pois)\b[\s:,-]*([\s\S]+)$/i;
+
+const RE_REFAZER =
+  /^(?:refaz(?:er)?|refa[cç]a|outra vers[aã]o|outro|de novo|tenta de novo)(?![\p{L}])[\s:,.-]*([\s\S]*)$/iu;
 
 /**
  * Entende um comando de Instagram. Devolve null quando a mensagem não é para
@@ -62,16 +73,23 @@ export function interpretarComando(texto: string): ComandoInstagram | null {
   );
   if (cancelar) {
     const resto = cancelar[1];
-    if (/^(?:tudo|todos|todas)/.test(resto)) return { tipo: "cancelar", alvo: "tudo" };
-    if (/^carrossel/.test(resto)) return { tipo: "cancelar", alvo: "carrossel" };
-    if (/^(?:reel|reels|video)/.test(resto)) return { tipo: "cancelar", alvo: "reel" };
-    if (!resto || /^(?:post|postagem|rascunho|esse|este|isso)/.test(resto))
-      return { tipo: "cancelar", alvo: "rascunho" };
+    // O motivo sai do texto ORIGINAL: é ele que a IA vai ler depois, com acento.
+    const motivo = (original.match(RE_MOTIVO)?.[1] ?? "").replace(/[.!?]+$/, "").trim();
+    if (/^(?:tudo|todos|todas)/.test(resto))
+      return { tipo: "cancelar", alvo: "tudo", motivo };
+    if (/^carrossel/.test(resto))
+      return { tipo: "cancelar", alvo: "carrossel", motivo };
+    if (/^(?:reel|reels|video)/.test(resto))
+      return { tipo: "cancelar", alvo: "reel", motivo };
+    if (!resto || /^(?:post|postagem|rascunho|esse|este|isso|porque|pois)/.test(resto))
+      return { tipo: "cancelar", alvo: "rascunho", motivo };
     return null; // "cancelar a reunião de quinta" não é conosco
   }
 
-  if (/^(?:refaz|refazer|refaca|outra versao|outro|de novo|tenta de novo)\b/.test(t))
-    return { tipo: "refazer" };
+  // "refazer", "refazer mais curto", "refaça com um versículo no final"
+  const refazer = original.match(RE_REFAZER);
+  if (refazer)
+    return { tipo: "refazer", ajuste: refazer[1].replace(/[.!?]+$/, "").trim() };
 
   // "publicar", "publica agora", "aprovar", "publicar terça 19h"
   const publicar = t.match(
@@ -148,8 +166,9 @@ export const AJUDA_INSTAGRAM = [
   "   ex.: _post por que o discipulado acontece à mesa_",
   "• *publicar* — vai ao ar agora",
   "• *publicar terça 19h* — fica agendado",
-  "• *refazer* — faço outra versão",
+  "• *refazer* — faço outra versão (*refazer mais curto* também vale)",
   "• *cancelar* — descarto o rascunho",
+  "• *cancelar porque…* — descarto e aprendo o motivo para as próximas",
   "• *cancelar carrossel*, *cancelar reel* ou *cancelar tudo* — tiro da fila o que o piloto agendou",
   "",
   "Pode mandar por áudio também.",

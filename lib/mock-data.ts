@@ -645,6 +645,7 @@ const MOCK_PERFIL_CONTEUDO: { valor: PerfilConteudo } = {
     voz_dna: null,
     temas_proibidos: "",
     chamada_padrao: "",
+    preferencias: [],
   },
 };
 export function getMockPerfilConteudo(): PerfilConteudo {

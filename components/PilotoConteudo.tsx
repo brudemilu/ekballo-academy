@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { MOTIVOS_RECUSA, type MotivoRecusa } from "@/lib/conteudo-perfil";
 import {
   type ExecucaoPiloto,
   JANELA_VETO_HORAS,
@@ -213,16 +214,27 @@ export function PilotoConteudo({
     }
   }
 
-  async function vetar(execucaoId: string, indice: number, titulo: string) {
-    if (!confirm(`Cancelar a publicação de "${titulo}"? Ela volta a ser rascunho.`))
-      return;
+  async function vetar(
+    execucaoId: string,
+    indice: number,
+    motivo: MotivoRecusa | null,
+    detalhe: string,
+  ) {
     setErro(null);
+    setAviso(null);
     try {
-      const d = await chamar("POST", { vetar: { execucaoId, indice } });
+      const d = await chamar("POST", {
+        vetar: { execucaoId, indice, motivo: motivo ?? undefined, detalhe },
+      });
       setExecucoes((l) =>
         l.map((e) =>
           e.id === execucaoId ? { ...e, pecas: d.pecas as PecaPiloto[] } : e,
         ),
+      );
+      setAviso(
+        d.aprendeu
+          ? "Publicação cancelada. Anotei o motivo: a IA leva em conta nas próximas (veja na aba Perfil)."
+          : "Publicação cancelada. A peça voltou a ser rascunho.",
       );
       router.refresh();
     } catch (e) {
@@ -461,8 +473,32 @@ function Execucao({
   onVetar,
 }: {
   execucao: ExecucaoPiloto;
-  onVetar: (execucaoId: string, indice: number, titulo: string) => void;
+  onVetar: (
+    execucaoId: string,
+    indice: number,
+    motivo: MotivoRecusa | null,
+    detalhe: string,
+  ) => Promise<void>;
 }) {
+  // Qual peça está com a pergunta "por quê?" aberta.
+  const [vetando, setVetando] = useState<number | null>(null);
+  const [motivo, setMotivo] = useState<MotivoRecusa | null>(null);
+  const [detalhe, setDetalhe] = useState("");
+  const [enviando, setEnviando] = useState(false);
+
+  function abrirVeto(i: number) {
+    setVetando(i);
+    setMotivo(null);
+    setDetalhe("");
+  }
+
+  async function confirmarVeto(i: number) {
+    setEnviando(true);
+    await onVetar(e.id, i, motivo, detalhe);
+    setEnviando(false);
+    setVetando(null);
+  }
+
   const quando = new Date(e.criado_em).toLocaleString("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
@@ -505,52 +541,121 @@ function Execucao({
               // A ordem das peças de uma execução não muda depois de gravada.
               <li
                 key={`${p.tipo}-${i}`}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-mesa-200 bg-bege-50 p-3"
+                className="rounded-lg border border-mesa-200 bg-bege-50 p-3"
               >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-mesa-800">
-                    {NOME_PECA[p.tipo]}
-                    {p.titulo ? `: ${p.titulo}` : ""}
-                  </p>
-                  <p className="mt-0.5 text-xs text-mesa-500">
-                    <span
-                      className={`mr-2 inline-block rounded-full border px-2 py-0.5 font-semibold ${st.cls}`}
-                    >
-                      {st.txt}
-                    </span>
-                    {p.estado === "agendado" && p.quando
-                      ? `vai ao ar ${quandoPorExtenso(p.quando)}`
-                      : ""}
-                    {p.estado === "falhou" && p.detalhe ? p.detalhe : ""}
-                  </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-mesa-800">
+                      {NOME_PECA[p.tipo]}
+                      {p.titulo ? `: ${p.titulo}` : ""}
+                    </p>
+                    <p className="mt-0.5 text-xs text-mesa-500">
+                      <span
+                        className={`mr-2 inline-block rounded-full border px-2 py-0.5 font-semibold ${st.cls}`}
+                      >
+                        {st.txt}
+                      </span>
+                      {p.estado === "agendado" && p.quando
+                        ? `vai ao ar ${quandoPorExtenso(p.quando)}`
+                        : ""}
+                      {p.estado === "falhou" && p.detalhe ? p.detalhe : ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {p.post_id && (
+                      <Link
+                        href="/admin/instagram?aba=criar#posts"
+                        className={BOTAO_SECUNDARIO}
+                      >
+                        Ver o post
+                      </Link>
+                    )}
+                    {p.roteiro_id && (
+                      <Link
+                        href={`/admin/instagram?aba=roteiros&roteiro=${p.roteiro_id}`}
+                        className={BOTAO_SECUNDARIO}
+                      >
+                        Abrir o roteiro
+                      </Link>
+                    )}
+                    {podeVetar(p, new Date()) && vetando !== i && (
+                      <button
+                        type="button"
+                        onClick={() => abrirVeto(i)}
+                        className="rounded-full border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                      >
+                        Cancelar publicação
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {p.post_id && (
-                    <Link
-                      href="/admin/instagram?aba=criar#posts"
-                      className={BOTAO_SECUNDARIO}
-                    >
-                      Ver o post
-                    </Link>
-                  )}
-                  {p.roteiro_id && (
-                    <Link
-                      href={`/admin/instagram?aba=roteiros&roteiro=${p.roteiro_id}`}
-                      className={BOTAO_SECUNDARIO}
-                    >
-                      Abrir o roteiro
-                    </Link>
-                  )}
-                  {podeVetar(p, new Date()) && (
-                    <button
-                      type="button"
-                      onClick={() => onVetar(e.id, i, p.titulo || NOME_PECA[p.tipo])}
-                      className="rounded-full border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
-                    >
-                      Cancelar publicação
-                    </button>
-                  )}
-                </div>
+
+                {vetando === i && (
+                  <fieldset className="mt-3 border-t border-mesa-200 pt-3">
+                    <legend className="sr-only">Por que cancelar esta peça</legend>
+                    <p className="text-sm font-medium text-mesa-800">
+                      Por que não serve?{" "}
+                      <span className="font-normal text-mesa-500">
+                        (opcional — a IA aprende com a resposta)
+                      </span>
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(Object.keys(MOTIVOS_RECUSA) as MotivoRecusa[]).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          aria-pressed={motivo === m}
+                          onClick={() => setMotivo(motivo === m ? null : m)}
+                          className={`rounded-full border px-3 py-1.5 text-sm ${
+                            motivo === m
+                              ? "border-laranja-600 bg-laranja-50 font-semibold text-laranja-700"
+                              : "border-mesa-200 bg-white text-mesa-700 hover:bg-mesa-100"
+                          }`}
+                        >
+                          {MOTIVOS_RECUSA[m]}
+                        </button>
+                      ))}
+                    </div>
+                    {motivo && motivo !== "fora_de_hora" && (
+                      <div className="mt-2">
+                        <label
+                          htmlFor={`veto-detalhe-${e.id}-${i}`}
+                          className="mb-1 block text-xs text-mesa-600"
+                        >
+                          {motivo === "outro"
+                            ? "O que foi? (é isto que a IA vai guardar)"
+                            : "Quer explicar? (ajuda a IA a acertar)"}
+                        </label>
+                        <input
+                          id={`veto-detalhe-${e.id}-${i}`}
+                          value={detalhe}
+                          onChange={(ev) => setDetalhe(ev.target.value)}
+                          maxLength={200}
+                          placeholder="Ex.: formal demais, eu não falo assim"
+                          className="w-full rounded-lg border border-mesa-200 bg-white px-3 py-2 text-sm text-mesa-800"
+                        />
+                      </div>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={enviando}
+                        onClick={() => confirmarVeto(i)}
+                        className="rounded-full bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-60"
+                      >
+                        {enviando ? "Cancelando…" : "Confirmar cancelamento"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={enviando}
+                        onClick={() => setVetando(null)}
+                        className={BOTAO_SECUNDARIO}
+                      >
+                        Manter agendada
+                      </button>
+                    </div>
+                  </fieldset>
+                )}
               </li>
             );
           })}
