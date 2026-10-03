@@ -5,6 +5,7 @@ import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
 import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
+import { RoteirosConteudo } from "@/components/RoteirosConteudo";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO } from "@/lib/conteudo-perfil";
 import {
@@ -12,8 +13,10 @@ import {
   getIdeiaConteudo,
   getPerfilConteudo,
   listCarrosseisInstagram,
+  listCursosPublicados,
   listIdeiasConteudo,
   listReferenciasConteudo,
+  listRoteirosConteudo,
 } from "@/lib/db";
 
 export const metadata = { title: "Instagram — Ekballo" };
@@ -27,6 +30,7 @@ export const dynamic = "force-dynamic";
 const ABAS = [
   { v: "calendario", label: "🗓️ Calendário" },
   { v: "criar", label: "✨ Criar e postar" },
+  { v: "roteiros", label: "🎬 Roteiros" },
   { v: "perfil", label: "🧭 Perfil" },
 ] as const;
 type Aba = (typeof ABAS)[number]["v"];
@@ -49,21 +53,28 @@ export default async function AdminInstagramPage({
       : "calendario";
 
   // Cada aba busca só o que mostra.
-  const [carrosseis, ideias, ideia, perfil, referencias] = await Promise.all([
-    aba === "perfil" ? Promise.resolve([]) : listCarrosseisInstagram().catch(() => []),
-    aba === "calendario" ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
-    ideiaId ? getIdeiaConteudo(ideiaId).catch(() => null) : Promise.resolve(null),
-    aba === "perfil"
-      ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
-      : Promise.resolve(PERFIL_VAZIO),
-    aba === "perfil" ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
-  ]);
+  const usaPosts = aba === "calendario" || aba === "criar";
+  const usaReferencias = aba === "perfil" || aba === "roteiros";
+  const [carrosseis, ideias, ideia, perfil, referencias, cursos, roteiros] =
+    await Promise.all([
+      usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
+      aba === "calendario" ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
+      ideiaId ? getIdeiaConteudo(ideiaId).catch(() => null) : Promise.resolve(null),
+      aba === "perfil"
+        ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
+        : Promise.resolve(PERFIL_VAZIO),
+      usaReferencias ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
+      aba === "roteiros" ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
+      aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
+    ]);
 
   const INTRO: Record<Aba, string> = {
     calendario:
       "A semana num lugar só. Guarde a ideia quando ela vier, arraste para o dia em que pretende postar e leve ao estúdio para virar post. Os posts agendados e publicados aparecem aqui sozinhos.",
     criar:
       "Cole qualquer conteúdo (trecho de mensagem, frase de livro, reflexão, versículo). A IA monta os slides, sugere a imagem que conversa com o texto, a palavra-chave e a legenda. Você edita tudo e aprova.",
+    roteiros:
+      "Escolha uma mesa, um devocional ou um texto seu e receba o roteiro de um vídeo curto: o que falar, o que aparece na tela e o que mostrar. A IA só usa o que está na fonte, e mostra de onde tirou.",
     perfil:
       "Conte ao copiloto quem é o ministério, como você fala e em quem se inspira. É daqui que os roteiros e os posts tiram o jeito de escrever.",
   };
@@ -106,7 +117,20 @@ export default async function AdminInstagramPage({
         ))}
       </nav>
 
-      {aba === "perfil" ? (
+      {aba === "roteiros" ? (
+        <RoteirosConteudo
+          cursos={cursos
+            // Cursos com tela própria (Bíblia etc.) não têm mesas de leitura.
+            .filter((c) => !c.external_path)
+            .map((c) => ({ id: c.id, titulo: c.titulo, autor: c.autor }))
+            .sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"))}
+          referencias={referencias
+            .filter((r) => r.dna)
+            .map((r) => ({ id: r.id, nome: r.nome }))}
+          roteirosIniciais={roteiros}
+          hoje={diaSP(new Date())}
+        />
+      ) : aba === "perfil" ? (
         <PerfilConteudoForm perfilInicial={perfil} referenciasIniciais={referencias} />
       ) : aba === "calendario" ? (
         <CalendarioConteudo
