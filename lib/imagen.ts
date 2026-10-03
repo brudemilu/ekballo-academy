@@ -2,10 +2,10 @@
  * Helper para gerar imagens de fundo via backends possíveis:
  *
  *   - "cloudflare" (DEFAULT)
- *       Cloudflare Workers AI (FLUX.1 schnell). Grátis até 10k neurons/dia
- *       (~100 imagens), sem cartão. Precisa CLOUDFLARE_ACCOUNT_ID +
- *       CLOUDFLARE_API_TOKEN. A imagem volta como data URL embutida (base64),
- *       então o Satori não faz fetch externo — render resiliente.
+ *       Cloudflare Workers AI. FLUX.2 klein-4b (já no formato pedido, aceita
+ *       seed, ~60 imagens/dia nos 10k neurons grátis), com o FLUX.1 schnell de
+ *       reserva. Precisa CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN. Cada
+ *       imagem é gerada uma vez e guardada no Storage (lib/fundo-cache.ts).
  *
  *   - "pollinations"
  *       Era grátis sem chave via https://image.pollinations.ai, mas em 2026 o
@@ -17,10 +17,10 @@
  *       e BILLING ATIVO no projeto (o free tier de imagem foi zerado).
  *       Melhor qualidade fotográfica.
  *
- * Edge-runtime compatível.
- *
  * Trocar backend: defina IMAGE_BACKEND no .env.local + Vercel.
  */
+
+import { fundoComCache } from "@/lib/fundo-cache";
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
@@ -142,7 +142,8 @@ async function callImagenPredict(
       },
     }),
   });
-  if (!res.ok) throw new Error(`Imagen API ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  if (!res.ok)
+    throw new Error(`Imagen API ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const json = await res.json();
   const pred = json.predictions?.[0];
   if (!pred?.bytesBase64Encoded) throw new Error("Imagen: resposta sem imagem");
@@ -165,10 +166,13 @@ async function callGeminiImage(
       generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
     }),
   });
-  if (!res.ok) throw new Error(`Gemini API ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  if (!res.ok)
+    throw new Error(`Gemini API ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const json = await res.json();
   const parts = json.candidates?.[0]?.content?.parts || [];
-  const imgPart = parts.find((p: { inlineData?: { data?: string } }) => p.inlineData?.data);
+  const imgPart = parts.find(
+    (p: { inlineData?: { data?: string } }) => p.inlineData?.data,
+  );
   if (!imgPart) throw new Error("Gemini: resposta sem imagem");
   return {
     dataUrl: `data:${imgPart.inlineData.mimeType || "image/png"};base64,${imgPart.inlineData.data}`,
@@ -178,7 +182,8 @@ async function callGeminiImage(
 async function gerarGemini(params: GerarParams): Promise<GerarResult | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
-  const model = params.model || process.env.GEMINI_IMAGE_MODEL || "imagen-4.0-generate-001";
+  const model =
+    params.model || process.env.GEMINI_IMAGE_MODEL || "imagen-4.0-generate-001";
   const prompt = buildPrompt(params.tema, params.aspect);
   const isImagen = /^imagen-/i.test(model);
   const r = isImagen
@@ -197,47 +202,87 @@ async function gerarGemini(params: GerarParams): Promise<GerarResult | null> {
 // chamada falhar, gerarFundoSafe captura e cai no gradiente (nunca quebra a
 // imagem inteira). Precisa CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN
 // (token com permissão Workers AI).
-async function gerarCloudflare(
-  params: GerarParams,
-): Promise<GerarResult | null> {
+// Tamanhos do FLUX.2: os dois lados precisam ser múltiplos de 16.
+function dimensoesFlux2(aspect: AspectRatio): { w: number; h: number } {
+  switch (aspect) {
+    case "9:16":
+      return { w: 1024, h: 1824 };
+    case "16:9":
+      return { w: 1824, h: 1024 };
+    case "4:5":
+      return { w: 1024, h: 1280 };
+    case "3:4":
+      return { w: 1024, h: 1360 };
+    default:
+      return { w: 1024, h: 1024 };
+  }
+}
+
+const FLUX2_PADRAO = "@cf/black-forest-labs/flux-2-klein-4b";
+const SCHNELL = "@cf/black-forest-labs/flux-1-schnell";
+
+function imagemDaResposta(json: {
+  success?: boolean;
+  result?: { image?: string };
+  errors?: unknown;
+}) {
+  const b64 = json?.result?.image;
+  if (!json?.success || !b64) {
+    throw new Error(
+      `Cloudflare AI: resposta sem imagem — ${JSON.stringify(json?.errors || json).slice(0, 300)}`,
+    );
+  }
+  return `data:image/jpeg;base64,${b64}`;
+}
+
+async function gerarCloudflare(params: GerarParams): Promise<GerarResult | null> {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
   if (!accountId || !apiToken) return null;
 
-  const model = params.model || "@cf/black-forest-labs/flux-1-schnell";
+  const base = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run`;
   const prompt = buildPrompt(params.tema, params.aspect);
   const seed =
     typeof params.seed === "number" && Number.isFinite(params.seed)
       ? Math.abs(Math.trunc(params.seed))
       : undefined;
+  const modelo = params.model || FLUX2_PADRAO;
 
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
-  const res = await fetch(url, {
+  // FLUX.2: aceita seed e já sai no formato pedido. É o caminho normal.
+  if (modelo.includes("flux-2")) {
+    const { w, h } = dimensoesFlux2(params.aspect);
+    const form = new FormData();
+    form.set("prompt", prompt);
+    form.set("width", String(w));
+    form.set("height", String(h));
+    if (seed !== undefined) form.set("seed", String(seed));
+    const res = await fetch(`${base}/${modelo}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiToken}` },
+      body: form,
+      signal: AbortSignal.timeout(50_000),
+    });
+    if (res.ok)
+      return { src: imagemDaResposta(await res.json()), backend: "cloudflare" };
+    // Cota do dia esgotada ou modelo fora do ar: tenta o schnell, que é mais barato.
+  }
+
+  // flux-1-schnell: 1024×1024 sempre, 8 passos. NÃO recebe seed — a API passou
+  // a recusar o campo ("/seed not allowed"), e como o template sempre mandava
+  // seed, TODA geração falhava e a imagem caía no gradiente (issue #193).
+  const res = await fetch(`${base}/${SCHNELL}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      prompt,
-      steps: 8, // máx do schnell; melhor qualidade ainda dentro do free tier
-      ...(seed !== undefined ? { seed } : {}),
-    }),
+    body: JSON.stringify({ prompt, steps: 8 }),
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) {
-    throw new Error(
-      `Cloudflare AI ${res.status}: ${(await res.text()).slice(0, 300)}`,
-    );
+    throw new Error(`Cloudflare AI ${res.status}: ${(await res.text()).slice(0, 300)}`);
   }
-  const json = await res.json();
-  const b64 = json?.result?.image;
-  if (!json?.success || !b64) {
-    throw new Error(
-      "Cloudflare AI: resposta sem imagem — " +
-        JSON.stringify(json?.errors || json).slice(0, 300),
-    );
-  }
-  return { src: `data:image/jpeg;base64,${b64}`, backend: "cloudflare" };
+  return { src: imagemDaResposta(await res.json()), backend: "cloudflare" };
 }
 
 // ----------------------------------------------------------------------------
@@ -266,7 +311,19 @@ export async function gerarFundoCinematografico(
  */
 export async function gerarFundoSafe(params: GerarParams): Promise<GerarResult | null> {
   try {
-    return await gerarFundoCinematografico(params);
+    const backend = (process.env.IMAGE_BACKEND || "cloudflare").toLowerCase();
+    // Pollinations devolve uma URL que o próprio Satori busca: não há o que guardar.
+    if (backend === "pollinations") return await gerarFundoCinematografico(params);
+
+    // Mesmo tema + formato + seed = mesma imagem, gerada UMA vez. O devocional
+    // do dia é visto por muita gente; sem isto cada visualização gastaria a
+    // cota de geração (a mesma que o Instagram usa).
+    const chave = `cine|${backend}|${params.model || ""}|${params.aspect}|${params.seed ?? ""}|${params.tema.trim()}`;
+    const src = await fundoComCache(
+      chave,
+      async () => (await gerarFundoCinematografico(params))?.src ?? null,
+    );
+    return src ? { src, backend } : null;
   } catch (err) {
     console.error("[imagen] erro:", err instanceof Error ? err.message : err);
     return null;

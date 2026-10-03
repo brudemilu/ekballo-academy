@@ -27,14 +27,17 @@ function lembrar(chave: string, valor: string) {
   }
 }
 
-/** Caminho estável do fundo no bucket: hash de (prompt, seed). */
-export async function caminhoDoFundo(prompt: string, seed: number): Promise<string> {
-  const dados = new TextEncoder().encode(`${prompt.trim()}|${seed}`);
-  const hash = await crypto.subtle.digest("SHA-256", dados);
+async function caminhoDaChave(chave: string): Promise<string> {
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(chave));
   const hex = Array.from(new Uint8Array(hash).slice(0, 16))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
   return `${PREFIXO}/${hex}.jpg`;
+}
+
+/** Caminho estável do fundo no bucket: hash de (prompt, seed). */
+export function caminhoDoFundo(prompt: string, seed: number): Promise<string> {
+  return caminhoDaChave(`${prompt.trim()}|${seed}`);
 }
 
 function bytesDeDataUrl(dataUrl: string): Uint8Array {
@@ -45,11 +48,17 @@ function bytesDeDataUrl(dataUrl: string): Uint8Array {
 }
 
 /**
- * Devolve a imagem de fundo para (prompt, seed): URL pública do Storage quando
- * dá para guardar, data URL quando não dá, null se a geração falhou.
+ * Devolve a imagem identificada por `chave`: do Storage se já foi gerada, senão
+ * chama `gerar` (que devolve uma data URL), guarda e devolve a URL pública.
+ * Sem Storage, devolve a data URL e lembra só em memória. null se `gerar` falhar.
+ *
+ * A chave precisa conter TUDO o que muda a imagem (prompt, formato, seed):
+ * duas imagens diferentes com a mesma chave viram uma só.
  */
-export async function obterFundo(prompt: string, seed: number): Promise<string | null> {
-  const chave = `${prompt.trim()}|${seed}`;
+export async function fundoComCache(
+  chave: string,
+  gerar: () => Promise<string | null>,
+): Promise<string | null> {
   const emMemoria = memoria.get(chave);
   if (emMemoria) return emMemoria;
 
@@ -59,7 +68,7 @@ export async function obterFundo(prompt: string, seed: number): Promise<string |
   let caminho = "";
   try {
     storage = createServiceClient().storage.from(BUCKET);
-    caminho = await caminhoDoFundo(prompt, seed);
+    caminho = await caminhoDaChave(chave);
     const url = storage.getPublicUrl(caminho).data.publicUrl;
     const existe = await fetch(url, {
       method: "HEAD",
@@ -73,10 +82,10 @@ export async function obterFundo(prompt: string, seed: number): Promise<string |
     storage = null; // sem Storage: segue só com a memória
   }
 
-  const gerado = await gerarFundoLivre(prompt, seed);
+  const gerado = await gerar();
   if (!gerado) return null;
 
-  if (storage) {
+  if (storage && gerado.startsWith("data:")) {
     try {
       const { error } = await storage.upload(caminho, bytesDeDataUrl(gerado), {
         contentType: "image/jpeg",
@@ -93,4 +102,9 @@ export async function obterFundo(prompt: string, seed: number): Promise<string |
   }
   lembrar(chave, gerado);
   return gerado;
+}
+
+/** Fundo do carrossel do Instagram para (prompt, seed). */
+export function obterFundo(prompt: string, seed: number): Promise<string | null> {
+  return fundoComCache(`${prompt.trim()}|${seed}`, () => gerarFundoLivre(prompt, seed));
 }
