@@ -28,6 +28,8 @@ type Slide = {
   top: string;
   ref: string;
   seed: number;
+  /** Foto enviada pelo pastor para ESTE slide (fica no lugar da gerada). */
+  img?: string;
 };
 
 /**
@@ -82,6 +84,7 @@ function ogSrc(
     seed: String(s.seed),
   });
   if (modelo !== "foto") p.set("modelo", modelo);
+  if (s.img) p.set("img", s.img);
   if (s.top.trim()) p.set("top", s.top.trim());
   if (s.ref.trim()) p.set("ref", s.ref.trim());
   return `/api/og/instagram?${p.toString()}`;
@@ -190,7 +193,8 @@ export function GeradorInstagram({
   const [tema, setTema] = useState<TemaKey>(TEMA_PADRAO); // cor do post (opção)
   const [tom, setTom] = useState<Tom>("escuro"); // título creme (escuro) ou navy (claro)
   // O desenho do slide: foto (o de sempre) ou uma moldura só de texto.
-  const [modelo, setModelo] = useState<ModeloSlide>("foto");
+  const [modelo, setModelo] = useState<ModeloSlide>("cinema");
+  const [enviandoFoto, setEnviandoFoto] = useState<number | null>(null);
   // "conteudo": o pastor cola o texto e a IA só reorganiza. "ideia": ele dá uma
   // frase e a IA escreve o post (com a voz e os limites da aba Perfil).
   const [modoTexto, setModoTexto] = useState<"conteudo" | "ideia">("conteudo");
@@ -317,6 +321,27 @@ export function GeradorInstagram({
   }
   function regerar(i: number) {
     patch(i, { seed: novoSeed() });
+  }
+  /** Põe uma foto do próprio ministério no fundo do slide. */
+  async function enviarFotoDoSlide(i: number, file: File | undefined) {
+    if (!file) return;
+    setErro(null);
+    setEnviandoFoto(i);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/instagram/upload", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Falha no upload.");
+      patch(i, { img: data.url as string });
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Falha no upload.");
+    } finally {
+      setEnviandoFoto(null);
+    }
   }
   function removerSlide(i: number) {
     setSlides((prev) => prev.filter((_, idx) => idx !== i));
@@ -835,6 +860,40 @@ export function GeradorInstagram({
                       >
                         🔄 Regerar
                       </button>
+                    </div>
+                    {/* Foto do próprio ministério: é o que mais aproxima o post
+                        das referências — gente e lugar de verdade. */}
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <label
+                        htmlFor={`ig-slide-${i}-foto`}
+                        className="cursor-pointer rounded-lg border border-mesa-200 px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:bg-mesa-100"
+                      >
+                        {enviandoFoto === i
+                          ? "Enviando…"
+                          : s.img
+                            ? "📷 Trocar a minha foto"
+                            : "📷 Usar uma foto minha"}
+                      </label>
+                      <input
+                        id={`ig-slide-${i}-foto`}
+                        type="file"
+                        // sem WEBP: o desenhador da imagem só lê JPG e PNG
+                        accept="image/jpeg,image/png"
+                        className="sr-only"
+                        onChange={(e) => {
+                          enviarFotoDoSlide(i, e.target.files?.[0]);
+                          e.target.value = "";
+                        }}
+                      />
+                      {s.img && (
+                        <button
+                          type="button"
+                          onClick={() => patch(i, { img: undefined })}
+                          className="rounded-lg border border-mesa-200 px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:bg-mesa-100"
+                        >
+                          Voltar à foto gerada
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-end gap-3">

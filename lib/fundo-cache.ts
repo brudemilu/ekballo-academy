@@ -8,7 +8,7 @@
  *
  * Sem service role (modo mock, dev sem chave) cai de volta só na memória.
  */
-import { type FormatoImagem, gerarFundoLivre } from "@/lib/instagram";
+import { type EstiloFoto, type FormatoImagem, gerarFundoLivre } from "@/lib/instagram";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const BUCKET = "instagram";
@@ -113,7 +113,10 @@ export function obterFundo(
   prompt: string,
   seed: number,
   formato: FormatoImagem = "feed",
+  estilo: EstiloFoto = "devocional",
 ): Promise<string | null> {
-  const chave = `${prompt.trim()}|${seed}${formato === "feed" ? "" : `|${formato}`}`;
-  return fundoComCache(chave, () => gerarFundoLivre(prompt, seed, formato));
+  // O estilo entra na chave só quando não é o de sempre: os fundos já
+  // guardados continuam valendo.
+  const chave = `${prompt.trim()}|${seed}${formato === "feed" ? "" : `|${formato}`}${estilo === "devocional" ? "" : `|${estilo}`}`;
+  return fundoComCache(chave, () => gerarFundoLivre(prompt, seed, formato, estilo));
 }

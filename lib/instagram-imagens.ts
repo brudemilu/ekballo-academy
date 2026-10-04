@@ -20,6 +20,8 @@ export type SlidePub = {
   tom?: string;
   /** Modelo do slide (lib/instagram-modelos.ts). Sem ele, é o de foto. */
   modelo?: string;
+  /** Foto do próprio ministério, no lugar da gerada (URL do nosso Storage). */
+  img?: string;
   top?: string;
   ref?: string;
   imageUrl?: string; // já é uma imagem pronta (modo upload) — usa direto
@@ -41,6 +43,7 @@ export function ogUrlDoSlide(origin: string, s: SlidePub): string {
   else if (s.cor) p.set("cor", s.cor);
   if (s.tom) p.set("tom", s.tom);
   if (s.modelo && s.modelo !== "foto") p.set("modelo", s.modelo);
+  if (s.img) p.set("img", s.img);
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
   return `${origin}/api/og/instagram?${p.toString()}`;

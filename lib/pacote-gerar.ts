@@ -10,6 +10,7 @@ import {
   type PerfilConteudo,
   type ReferenciaConteudo,
 } from "@/lib/conteudo-perfil";
+import { instrucaoDoModelo, MODELO_AUTOMATICO } from "@/lib/instagram-modelos";
 import { TEMA_PADRAO } from "@/lib/instagram-render";
 import { chamarLLMLendo } from "@/lib/llm";
 import {
@@ -59,7 +60,7 @@ export async function gerarPecasDaFonte(
   const [pecasR, roteiroR] = await Promise.allSettled([
     comPecas
       ? chamarLLMLendo(
-          systemPacote(contextoDoPerfil(perfil)),
+          `${systemPacote(contextoDoPerfil(perfil))}\n\n${instrucaoDoModelo(MODELO_AUTOMATICO)}`,
           usuarioPacote(fonte, foco),
           2400,
           normalizarPacote,
@@ -97,5 +98,6 @@ export function slidesParaSalvar(pecas: PecasPacote) {
     seed: Math.floor(Math.random() * 1_000_000),
     tema: TEMA_PADRAO,
     tom: "escuro",
+    modelo: MODELO_AUTOMATICO,
   }));
 }

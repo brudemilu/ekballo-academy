@@ -52,6 +52,20 @@ const ESTILO_DEVOCIONAL = [
   "no text, no letters, no watermark, no distorted faces, no deformed hands",
 ].join(", ");
 
+// O estilo dos modelos novos (issue #211), tirado das referências do Bruno:
+// foto de reportagem dentro da igreja, escura, com gente de verdade — não a
+// paisagem contemplativa de banco de imagem.
+const ESTILO_DOCUMENTAL = [
+  "candid documentary photograph, photojournalism, shot on 35mm film",
+  "dark moody low-key lighting, deep blacks, single warm practical light, subtle teal shadows",
+  "shallow depth of field, slightly underexposed, natural skin texture, visible film grain",
+  "people seen from behind, in profile or as silhouettes, hands and small details in close-up",
+  "authentic unposed moment, muted desaturated colors, large dark empty area for typography",
+  "no text, no letters, no watermark, no logo, no illustration, no cgi look, no distorted faces, no deformed hands, no extra fingers",
+].join(", ");
+
+export type EstiloFoto = "devocional" | "documental";
+
 // Formato nativo do post (4:5). O FLUX.2 exige múltiplos de 16; a sobra de
 // 8 px em cada eixo some no `objectFit: cover` do canvas 1080×1350.
 export type FormatoImagem = "feed" | "story" | "quadrado";
@@ -103,9 +117,22 @@ async function fundoFlux2(
       signal: AbortSignal.timeout(50_000),
     },
   );
-  if (!res.ok) return null;
-  const b64 = (await res.json())?.result?.image;
-  return typeof b64 === "string" && b64 ? b64 : null;
+  if (!res.ok) {
+    // Sem isto a falha é muda: o post cai na foto de banco e ninguém sabe por quê.
+    const motivo = (await res.text().catch(() => "")).slice(0, 200);
+    console.warn(`[imagem] ${modelo} respondeu ${res.status}: ${motivo}`);
+    return null;
+  }
+  const corpo = await res.json();
+  const b64 = corpo?.result?.image;
+  if (typeof b64 !== "string" || !b64) {
+    console.warn(
+      `[imagem] ${modelo} sem imagem na resposta:`,
+      JSON.stringify(corpo).slice(0, 200),
+    );
+    return null;
+  }
+  return b64;
 }
 
 /**
@@ -163,8 +190,9 @@ export async function gerarImagem(
         apiToken,
       );
       if (b64) return `data:image/jpeg;base64,${b64}`;
-    } catch {
+    } catch (e) {
       // timeout ou rede: tenta o próximo modelo
+      console.warn("[imagem] falhou em", modelo, e instanceof Error ? e.message : e);
     }
   }
   try {
@@ -181,9 +209,11 @@ export function gerarFundoLivre(
   prompt: string,
   seed?: number,
   formato: FormatoImagem = "feed",
+  estilo: EstiloFoto = "devocional",
 ): Promise<string | null> {
   if (!prompt.trim()) return Promise.resolve(null);
-  return gerarImagem(`${prompt.trim()}. ${ESTILO_DEVOCIONAL}`, { seed, formato });
+  const acabamento = estilo === "documental" ? ESTILO_DOCUMENTAL : ESTILO_DEVOCIONAL;
+  return gerarImagem(`${prompt.trim()}. ${acabamento}`, { seed, formato });
 }
 
 // ----------------------------------------------------------------------------

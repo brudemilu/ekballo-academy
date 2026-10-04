@@ -11,7 +11,7 @@
  */
 import {
   itensDoChecklist,
-  type ModeloSlide,
+  type ModeloDeTexto,
   type Palavra,
   palavrasDoSlide,
   tamanhoPorTexto,
@@ -24,7 +24,7 @@ const PAPEL = "#F4EACB";
 const MARGEM = 96;
 
 export type ModeloRenderPayload = {
-  modelo: Exclude<ModeloSlide, "foto">;
+  modelo: ModeloDeTexto;
   texto: string;
   /** Cor de destaque do tema (hex). */
   cor: string;
