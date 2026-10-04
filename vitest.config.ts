@@ -48,6 +48,7 @@ export default defineConfig({
         "lib/assistente.ts",
         "lib/whatsapp-instagram.ts",
         "lib/instagram-modelos.ts",
+        "lib/instagram-letras.ts",
         "lib/calendario-cristao.ts",
         "lib/comentarios-auto.ts",
         "lib/painel.ts",

@@ -21,7 +21,14 @@ const STOP = new Set(
     "tones tone color colors colours film grain atmospheric dramatic high resolution " +
     "ultra detailed shot wide angle bokeh depth field backlight warm soft volumetric " +
     "god rays mood elegant minimal minimalist composition negative space typography " +
-    "faces face visible distant aerial above"
+    "faces face visible distant aerial above " +
+    // enquadramento, luz e tamanho: descrevem a foto, não o assunto. Na frente
+    // da busca, traziam foto de qualquer coisa "em close" (issue #211).
+    "close closeup extreme macro small big large tiny single one two three during " +
+    "while dark darkness moody low key light lighting lit side behind back front " +
+    "blurred blurry background foreground scene real candid documentary " +
+    "his her their its someone person people man woman mans womans young old " +
+    "that this who what where being are is"
   ).split(/\s+/),
 );
 
@@ -29,10 +36,12 @@ const STOP = new Set(
 export function querify(prompt: string): string {
   const words = prompt
     .toLowerCase()
+    .replace(/'s\b/g, "")
     .replace(/[^a-z\s]/g, " ")
     .split(/\s+/)
     .filter((w) => w.length > 2 && !STOP.has(w));
-  const q = words.slice(0, 5).join(" ").trim();
+  // Poucas palavras: o Pexels casa TODAS, e com cinco a busca volta vazia ou torta.
+  const q = words.slice(0, 4).join(" ").trim();
   return (
     q ||
     prompt
@@ -78,7 +87,9 @@ export async function buscarFotoPexels(
     const photos = Array.isArray(json.photos) ? json.photos : [];
     if (!photos.length) return null;
 
-    const idx = Math.abs(seed) % photos.length;
+    // Só entre as primeiras: a relevância do Pexels cai depressa, e sortear
+    // entre 24 trazia foto que não tinha nada a ver com o texto.
+    const idx = Math.abs(seed) % Math.min(photos.length, 8);
     const original = photos[idx]?.src?.original;
     if (!original) return null;
 

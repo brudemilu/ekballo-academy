@@ -24,6 +24,7 @@ import {
 } from "@/lib/db";
 import { gerarCarrosselIA } from "@/lib/instagram";
 import { ogUrlDoSlide, type SlidePub } from "@/lib/instagram-imagens";
+import { instrucaoDoModelo, MODELO_AUTOMATICO } from "@/lib/instagram-modelos";
 import { instagramConfigurado } from "@/lib/instagram-publish";
 import { TEMA_PADRAO } from "@/lib/instagram-render";
 import { podeVetar, quandoPorExtenso } from "@/lib/piloto";
@@ -81,7 +82,7 @@ async function criar(
   const carrossel = await gerarCarrosselIA(
     `IDEIA DO PASTOR: ${ideia}${ajuste ? `\n\nAJUSTE PEDIDO PELO PASTOR (obrigatório): ${ajuste}` : ""}`,
     "carrossel",
-    systemCarrosselDaIdeia("carrossel", perfil ? contextoDoPerfil(perfil) : ""),
+    `${systemCarrosselDaIdeia("carrossel", perfil ? contextoDoPerfil(perfil) : "")}\n\n${instrucaoDoModelo(MODELO_AUTOMATICO)}`,
   );
   const slides: SlidePub[] = carrossel.slides.map((s) => ({
     ...s,
@@ -91,6 +92,7 @@ async function criar(
     seed: Math.floor(Math.random() * 1_000_000),
     tema: TEMA_PADRAO,
     tom: "escuro",
+    modelo: MODELO_AUTOMATICO,
   }));
   const { id } = await salvarCarrosselInstagram(
     { conteudo: ideia, slides: slides as never, legenda: carrossel.legenda },

@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { obterFundo } from "@/lib/fundo-cache";
-import { lerModelo } from "@/lib/instagram-modelos";
+import { renderSlideEditorial } from "@/lib/instagram-editorial-render";
+import { ehModeloDeTexto, ehModeloEditorial, lerModelo } from "@/lib/instagram-modelos";
 import { renderSlideModelo } from "@/lib/instagram-modelos-render";
 import {
   BRUSH_FILE,
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
     : undefined;
 
   // Modelo de texto: sai antes de qualquer busca de foto.
-  if (modelo !== "foto" && !soFundo) {
+  if (ehModeloDeTexto(modelo) && !soFundo) {
     const [display, script, textoFonte] = await Promise.all([
       loadFont(selfOrigin, FONTES[fonteKey].file),
       loadFont(selfOrigin, SCRIPT_FONT_FILE),
@@ -134,9 +135,21 @@ export async function GET(req: NextRequest) {
   //                 3) fallback local.
   // A IA vem primeiro porque a foto de banco é escolhida por palavra-chave e
   // raramente conversa com o texto do slide; a gerada segue o prompt.
-  let bgSrc = `${selfOrigin}/fundos/${foto}.jpg`;
-  if (prompt) {
-    const gerado = await obterFundo(prompt, seed, story ? "story" : "feed");
+  let bgSrc = `${selfOrigin}/fundos/${foto}${story ? "-story" : ""}.jpg`;
+  // Foto enviada pelo pastor: vale mais que qualquer foto gerada. Só aceita o
+  // que está no nosso próprio Storage — a rota não vira busca de URL alheia.
+  const img = url.searchParams.get("img")?.trim() || "";
+  const storage = `${(process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "")}/storage/v1/object/public/`;
+  const fotoPropria = img && storage.length > 30 && img.startsWith(storage) ? img : "";
+  if (fotoPropria) {
+    bgSrc = fotoPropria;
+  } else if (prompt && modelo !== "editorial") {
+    const gerado = await obterFundo(
+      prompt,
+      seed,
+      story ? "story" : "feed",
+      ehModeloEditorial(modelo) ? "documental" : "devocional",
+    );
     if (gerado) {
       bgSrc = gerado;
     } else {
@@ -160,6 +173,40 @@ export async function GET(req: NextRequest) {
       });
     }
     return Response.redirect(bgSrc, 302);
+  }
+
+  // Modelos novos (cinema, bloco, cartaz, editorial): letra sobre a foto crua.
+  if (ehModeloEditorial(modelo)) {
+    const [condensada, grotesca, legenda, script] = await Promise.all([
+      loadFont(selfOrigin, FONTES.anton.file),
+      loadFont(selfOrigin, "inter-800.ttf"),
+      loadFont(selfOrigin, "inter-500.ttf"),
+      loadFont(selfOrigin, SCRIPT_FONT_FILE),
+    ]);
+    return new ImageResponse(
+      renderSlideEditorial({
+        modelo,
+        texto: verso,
+        cor,
+        bgSrc: modelo === "editorial" ? undefined : bgSrc,
+        graoSrc: `${selfOrigin}/texturas/grao.png`,
+        top,
+        ref,
+        largura: TAMANHO_W,
+        altura,
+      }),
+      {
+        width: TAMANHO_W,
+        height: altura,
+        fonts: [
+          { name: "Condensada", data: condensada, weight: 400, style: "normal" },
+          { name: "Grotesca", data: grotesca, weight: 800, style: "normal" },
+          { name: "Legenda", data: legenda, weight: 500, style: "normal" },
+          { name: "Script", data: script, weight: 400, style: "normal" },
+        ],
+        headers: cabecalhos,
+      },
+    );
   }
 
   const [displayFont, scriptFont] = await Promise.all([
