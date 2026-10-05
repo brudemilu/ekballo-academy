@@ -5,7 +5,12 @@ import { parseCompromissoIA } from "@/lib/agenda-parse";
 import { addCompromisso } from "@/lib/db";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 import { chatEhDoDono } from "@/lib/whatsapp-agenda-auth";
-import { ehDoRobo, interpretarComando } from "@/lib/whatsapp-instagram";
+import {
+  type ComandoInstagram,
+  ehDoRobo,
+  interpretarComando,
+  interpretarFormato,
+} from "@/lib/whatsapp-instagram";
 import { executarComandoInstagram } from "@/lib/whatsapp-instagram-executar";
 
 export const runtime = "nodejs";
@@ -168,7 +173,15 @@ export async function POST(req: NextRequest) {
   // gatilhos não se confundem com os da agenda (ver lib/whatsapp-instagram.ts).
   // O trabalho segue depois da resposta: montar um carrossel leva ~20 s, e o
   // gateway reenviaria a mensagem se ficasse esperando.
-  const comando = hasImagem ? null : interpretarComando(text || falado);
+  // "1", "única", "carrossel": só é resposta se houver uma ideia esperando o
+  // formato — quem confere isso é o executor, que ignora a mensagem se não houver.
+  const dito = text || falado;
+  const formato = hasImagem ? null : interpretarFormato(dito);
+  const comando: ComandoInstagram | null = hasImagem
+    ? null
+    : formato
+      ? { tipo: "formato", formato }
+      : interpretarComando(dito);
   if (comando) {
     void executarComandoInstagram(comando, numero);
     return NextResponse.json({ ok: true, instagram: comando.tipo });

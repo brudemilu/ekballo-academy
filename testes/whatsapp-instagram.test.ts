@@ -3,6 +3,7 @@ import {
   AJUDA_INSTAGRAM,
   ehDoRobo,
   interpretarComando,
+  interpretarFormato,
   interpretarQuando,
   MARCA_ROBO,
 } from "@/lib/whatsapp-instagram";
@@ -28,7 +29,59 @@ describe("interpretarComando · criar", () => {
     ["faz um carrossel de João 15, a videira", "João 15, a videira"],
     ["instagram, a fé que descansa", "a fé que descansa"],
   ])("%s", (mensagem, ideia) => {
-    expect(interpretarComando(mensagem)).toEqual({ tipo: "criar", ideia });
+    expect(interpretarComando(mensagem)).toMatchObject({ tipo: "criar", ideia });
+  });
+
+  it("sem formato dito, o comando sai sem formato — é o sinal para perguntar", () => {
+    expect(interpretarComando("post sobre a graça que alcança")).toEqual({
+      tipo: "criar",
+      ideia: "a graça que alcança",
+      formato: null,
+    });
+  });
+
+  it("o formato dito junto com a ideia dispensa a pergunta", () => {
+    expect(interpretarComando("Post único sobre fé que dá o passo")).toEqual({
+      tipo: "criar",
+      ideia: "fé que dá o passo",
+      formato: "unico",
+    });
+    expect(interpretarComando("post de uma imagem só: a mesa está posta")).toEqual({
+      tipo: "criar",
+      ideia: "a mesa está posta",
+      formato: "unico",
+    });
+    expect(interpretarComando("carrossel sobre os frutos do Espírito")).toEqual({
+      tipo: "criar",
+      ideia: "os frutos do Espírito",
+      formato: "carrossel",
+    });
+  });
+
+  it("story dito no pedido, de qualquer um dos jeitos", () => {
+    expect(interpretarComando("story sobre a mesa de quinta")).toEqual({
+      tipo: "criar",
+      ideia: "a mesa de quinta",
+      formato: "story",
+    });
+    expect(interpretarComando("Post story: culto hoje às 19h")).toEqual({
+      tipo: "criar",
+      ideia: "culto hoje às 19h",
+      formato: "story",
+    });
+    expect(interpretarComando("faz um story de Colossenses 3")).toEqual({
+      tipo: "criar",
+      ideia: "Colossenses 3",
+      formato: "story",
+    });
+  });
+
+  it("'única' no meio da ideia é assunto, não formato", () => {
+    expect(interpretarComando("post sobre a única esperança")).toEqual({
+      tipo: "criar",
+      ideia: "a única esperança",
+      formato: null,
+    });
   });
 
   it("gatilho sem ideia vira pedido de ajuda, não um post vazio", () => {
@@ -172,5 +225,28 @@ describe("o robô não responde a si mesmo", () => {
   it("mensagem comum não é do robô", () => {
     expect(ehDoRobo("post sobre a mesa")).toBe(false);
     expect(ehDoRobo("")).toBe(false);
+  });
+});
+
+describe("interpretarFormato · a resposta à pergunta do formato", () => {
+  it.each([
+    ["1", "unico"],
+    ["Única.", "unico"],
+    ["uma imagem", "unico"],
+    ["imagem única", "unico"],
+    ["2", "carrossel"],
+    ["Carrossel", "carrossel"],
+    ["3", "story"],
+    ["Story.", "story"],
+    ["stories", "story"],
+  ])("%s → %s", (mensagem, formato) => {
+    expect(interpretarFormato(mensagem)).toBe(formato);
+  });
+
+  it("só a mensagem inteira vale como resposta", () => {
+    expect(interpretarFormato("carrossel de ideias para domingo")).toBeNull();
+    expect(interpretarFormato("1 hora de oração")).toBeNull();
+    expect(interpretarFormato("agenda reunião às 2")).toBeNull();
+    expect(interpretarFormato("")).toBeNull();
   });
 });

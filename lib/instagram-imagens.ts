@@ -20,12 +20,19 @@ export type SlidePub = {
   tom?: string;
   /** Modelo do slide (lib/instagram-modelos.ts). Sem ele, é o de foto. */
   modelo?: string;
+  /** "story": a imagem sai em 9:16 e o post é publicado como story, não no feed. */
+  formato?: string;
   /** Foto do próprio ministério, no lugar da gerada (URL do nosso Storage). */
   img?: string;
   top?: string;
   ref?: string;
   imageUrl?: string; // já é uma imagem pronta (modo upload) — usa direto
 };
+
+/** O post é um story? (uma imagem só, marcada como story) */
+export function ehStory(slides: { formato?: string }[]): boolean {
+  return slides.length === 1 && slides[0]?.formato === "story";
+}
 
 export function ogUrlDoSlide(origin: string, s: SlidePub): string {
   const p = new URLSearchParams({
@@ -44,6 +51,7 @@ export function ogUrlDoSlide(origin: string, s: SlidePub): string {
   if (s.tom) p.set("tom", s.tom);
   if (s.modelo && s.modelo !== "foto") p.set("modelo", s.modelo);
   if (s.img) p.set("img", s.img);
+  if (s.formato === "story") p.set("f", "story");
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
   return `${origin}/api/og/instagram?${p.toString()}`;

@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { prepararImageUrls } from "@/lib/instagram-imagens";
+import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
   instagramConfigurado,
   publicarInstagram,
   publicarReel,
+  publicarStory,
 } from "@/lib/instagram-publish";
 import { selfOrigin } from "@/lib/site-url";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -28,6 +29,7 @@ type SlideRow = {
   tom?: string;
   modelo?: string;
   img?: string;
+  formato?: string;
   imageUrl?: string;
 };
 
@@ -86,6 +88,14 @@ export async function GET(req: NextRequest) {
         : await (async () => {
             if (!slides.length) throw new Error("sem slides");
             const imageUrls = await prepararImageUrls(origin, slides);
+            // Story: uma imagem 9:16, sem legenda, que some em 24 h.
+            if (ehStory(slides)) {
+              return publicarStory({
+                igUserId: process.env.IG_USER_ID!,
+                token: process.env.META_ACCESS_TOKEN!,
+                imageUrl: imageUrls[0],
+              });
+            }
             return publicarInstagram({
               igUserId: process.env.IG_USER_ID!,
               token: process.env.META_ACCESS_TOKEN!,
