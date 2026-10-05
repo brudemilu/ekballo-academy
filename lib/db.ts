@@ -2923,13 +2923,15 @@ export type PendenteWhatsApp = {
   carrossel_id: string | null;
   ideia: string;
   tentativas: number;
+  /** Só na leitura: quando a conversa mudou pela última vez. */
+  atualizado_em?: string;
 };
 
 export async function getPendenteWhatsApp(): Promise<PendenteWhatsApp | null> {
   if (isMockMode()) return getMockPendenteWhatsApp();
   const { data, error } = await agendaSR()
     .from("conteudo_whatsapp_pendente")
-    .select("carrossel_id, ideia, tentativas")
+    .select("carrossel_id, ideia, tentativas, atualizado_em")
     .eq("id", 1)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -2941,9 +2943,13 @@ export async function setPendenteWhatsApp(p: PendenteWhatsApp): Promise<void> {
     setMockPendenteWhatsApp(p);
     return;
   }
-  const { error } = await agendaSR()
-    .from("conteudo_whatsapp_pendente")
-    .upsert({ id: 1, ...p, atualizado_em: new Date().toISOString() });
+  const { error } = await agendaSR().from("conteudo_whatsapp_pendente").upsert({
+    id: 1,
+    carrossel_id: p.carrossel_id,
+    ideia: p.ideia,
+    tentativas: p.tentativas,
+    atualizado_em: new Date().toISOString(),
+  });
   if (error) throw new Error(error.message);
 }
 

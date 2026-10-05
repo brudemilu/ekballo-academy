@@ -18,6 +18,7 @@ import {
   getPendenteWhatsApp,
   getPerfilConteudo,
   listExecucoesPiloto,
+  type PendenteWhatsApp,
   reagendarCarrosselInstagram,
   salvarCarrosselInstagram,
   setPendenteWhatsApp,
@@ -33,6 +34,7 @@ import { enviarImagemWhatsApp, enviarTextoWhatsApp } from "@/lib/whatsapp-enviar
 import {
   AJUDA_INSTAGRAM,
   type ComandoInstagram,
+  type FormatoPost,
   interpretarQuando,
   MARCA_ROBO,
 } from "@/lib/whatsapp-instagram";
@@ -42,6 +44,34 @@ function dizer(numero: string, mensagem: string) {
   return enviarTextoWhatsApp(
     numero,
     mensagem.startsWith(MARCA_ROBO) ? mensagem : `${MARCA_ROBO} ${mensagem}`,
+  );
+}
+
+const PERGUNTA_FORMATO = [
+  "Qual formato?",
+  "• *1* — uma imagem só",
+  "• *2* — carrossel",
+  "",
+  "Da próxima vez pode dizer junto: _post único sobre…_ ou _carrossel sobre…_",
+].join("\n");
+
+const AVISO_MONTANDO: Record<FormatoPost, string> = {
+  unico: "⏳ Montando a imagem. Leva uns 15 segundos.",
+  carrossel: "⏳ Montando o carrossel. Leva uns 20 segundos.",
+};
+
+// Quanto tempo a pergunta do formato espera pela resposta.
+export const ESPERA_FORMATO_MIN = 30;
+
+/** Há uma ideia guardada, sem rascunho, esperando o pastor dizer o formato? */
+export function esperandoFormato(
+  p: PendenteWhatsApp | null,
+  agora: Date,
+): p is PendenteWhatsApp {
+  if (!p?.ideia || p.carrossel_id) return false;
+  if (!p.atualizado_em) return true;
+  return (
+    agora.getTime() - new Date(p.atualizado_em).getTime() < ESPERA_FORMATO_MIN * 60_000
   );
 }
 
@@ -77,12 +107,13 @@ async function criar(
   ideia: string,
   tentativas: number,
   ajuste = "",
+  formato: FormatoPost = "carrossel",
 ): Promise<void> {
   const perfil = await getPerfilConteudo(true).catch(() => null);
   const carrossel = await gerarCarrosselIA(
     `IDEIA DO PASTOR: ${ideia}${ajuste ? `\n\nAJUSTE PEDIDO PELO PASTOR (obrigatório): ${ajuste}` : ""}`,
-    "carrossel",
-    `${systemCarrosselDaIdeia("carrossel", perfil ? contextoDoPerfil(perfil) : "")}\n\n${instrucaoDoModelo(MODELO_AUTOMATICO)}`,
+    formato,
+    `${systemCarrosselDaIdeia(formato, perfil ? contextoDoPerfil(perfil) : "")}\n\n${instrucaoDoModelo(MODELO_AUTOMATICO)}`,
   );
   const slides: SlidePub[] = carrossel.slides.map((s) => ({
     ...s,
@@ -106,8 +137,17 @@ async function criar(
     await enviarImagemWhatsApp(
       numero,
       ogUrlDoSlide(base, slides[0]),
-      `${MARCA_ROBO} Slide 1 de ${slides.length}`,
+      slides.length === 1
+        ? `${MARCA_ROBO} A imagem`
+        : `${MARCA_ROBO} Slide 1 de ${slides.length}`,
     );
+  }
+  if (slides.length === 1) {
+    await dizer(
+      numero,
+      `*Imagem pronta*\n\n${slides[0].texto.replace(/[{}~]/g, "")}\n\n*Legenda*\n${carrossel.legenda}\n\n${OPCOES}`,
+    );
+    return;
   }
   const textoSlides = slides
     .map((s, i) => `${i + 1}. ${s.texto.replace(/[{}]/g, "")}`)
@@ -175,7 +215,9 @@ async function refazer(numero: string, ajuste: string): Promise<void> {
   if (anterior?.status === "rascunho")
     await deletarCarrosselInstagram(anterior.id, true);
   await dizer(numero, "⏳ Fazendo outra versão…");
-  await criar(numero, pendente.ideia, pendente.tentativas + 1, ajuste);
+  // Refaz no mesmo formato da versão anterior.
+  const formato: FormatoPost = anterior?.slides?.length === 1 ? "unico" : "carrossel";
+  await criar(numero, pendente.ideia, pendente.tentativas + 1, ajuste, formato);
 }
 
 async function cancelarRascunho(numero: string, motivo: string): Promise<void> {
@@ -258,9 +300,28 @@ export async function executarComandoInstagram(
         await dizer(numero, AJUDA_INSTAGRAM);
         return;
       case "criar":
-        await dizer(numero, "⏳ Montando o carrossel. Leva uns 20 segundos.");
-        await criar(numero, comando.ideia, 0);
+        if (!comando.formato) {
+          // Guarda a ideia e pergunta. Ideia sem rascunho = esperando o formato.
+          await setPendenteWhatsApp({
+            carrossel_id: null,
+            ideia: comando.ideia,
+            tentativas: 0,
+          });
+          await dizer(numero, PERGUNTA_FORMATO);
+          return;
+        }
+        await dizer(numero, AVISO_MONTANDO[comando.formato]);
+        await criar(numero, comando.ideia, 0, "", comando.formato);
         return;
+      case "formato": {
+        const esperando = await getPendenteWhatsApp();
+        // Só vale como resposta se houver uma ideia esperando, e recente:
+        // um "2" solto no chat, horas depois, não é conosco.
+        if (!esperandoFormato(esperando, agora)) return;
+        await dizer(numero, AVISO_MONTANDO[comando.formato]);
+        await criar(numero, esperando.ideia, 0, "", comando.formato);
+        return;
+      }
       case "publicar":
         await publicar(numero, comando.quando, agora);
         return;

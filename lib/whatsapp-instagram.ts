@@ -26,8 +26,14 @@ export function ehDoRobo(texto: string): boolean {
   return (texto || "").trimStart().startsWith(MARCA_ROBO);
 }
 
+/** O que o pastor quer que saia: uma imagem só ou um carrossel. */
+export type FormatoPost = "unico" | "carrossel";
+
 export type ComandoInstagram =
-  | { tipo: "criar"; ideia: string }
+  // `formato` null: ele não disse — o robô pergunta antes de montar.
+  | { tipo: "criar"; ideia: string; formato: FormatoPost | null }
+  // A resposta à pergunta "qual formato?".
+  | { tipo: "formato"; formato: FormatoPost }
   | { tipo: "publicar"; quando: string }
   | { tipo: "refazer"; ajuste: string }
   | {
@@ -53,6 +59,26 @@ const RE_MOTIVO = /\b(?:porque|pois)\b[\s:,-]*([\s\S]+)$/i;
 
 const RE_REFAZER =
   /^(?:refaz(?:er)?|refa[cç]a|outra vers[aã]o|outro|de novo|tenta de novo)(?![\p{L}])[\s:,.-]*([\s\S]*)$/iu;
+
+/**
+ * A resposta à pergunta do formato: "1", "única", "imagem", "2", "carrossel"…
+ * Só a mensagem inteira vale — "carrossel de ideias para domingo" não é resposta.
+ */
+export function interpretarFormato(texto: string): FormatoPost | null {
+  const t = plano(texto || "").replace(/[.!?]+$/, "");
+  if (
+    /^(?:1|um|uma|unic[oa]|(?:uma |so uma )?imagem(?: unica)?|post unico|so uma)$/.test(
+      t,
+    )
+  )
+    return "unico";
+  if (/^(?:2|dois|carrossel|varios slides|slides)$/.test(t)) return "carrossel";
+  return null;
+}
+
+// "único sobre fé", "de uma imagem só sobre…": o formato dito junto com a ideia.
+const RE_UNICO_NA_IDEIA =
+  /^(?:[úu]nic[oa]|de uma imagem(?: s[óo])?|(?:com )?uma imagem(?: s[óo])?|imagem [úu]nica)(?![\p{L}])[\s:,.-]*(?:(?:sobre|de|do|da|com|para)(?![\p{L}])[\s:,-]*)?/iu;
 
 /**
  * Entende um comando de Instagram. Devolve null quando a mensagem não é para
@@ -104,11 +130,18 @@ export function interpretarComando(texto: string): ComandoInstagram | null {
   const criar = t.match(RE_CRIAR);
   if (criar) {
     // Recorta a ideia do texto ORIGINAL (com acento e caixa), pelo mesmo tamanho do gatilho.
-    const ideia = original
+    let ideia = original
       .slice(criar[0].length)
       .replace(/^[\s:,.-]+/, "")
       .trim();
-    return ideia.length >= 4 ? { tipo: "criar", ideia } : { tipo: "ajuda" };
+    // O formato pode vir no próprio pedido: "carrossel sobre…", "post único sobre…".
+    let formato: FormatoPost | null = /carrossel/.test(criar[0]) ? "carrossel" : null;
+    const unico = ideia.match(RE_UNICO_NA_IDEIA);
+    if (unico) {
+      formato = "unico";
+      ideia = ideia.slice(unico[0].length).trim();
+    }
+    return ideia.length >= 4 ? { tipo: "criar", ideia, formato } : { tipo: "ajuda" };
   }
   return null;
 }
@@ -162,8 +195,9 @@ export function interpretarQuando(texto: string, agora: Date): string | null {
 export const AJUDA_INSTAGRAM = [
   `${MARCA_ROBO} *Instagram pelo WhatsApp*`,
   "",
-  "• *post* + a ideia — eu monto o carrossel e te mando a prévia",
+  "• *post* + a ideia — pergunto o formato, monto e te mando a prévia",
   "   ex.: _post por que o discipulado acontece à mesa_",
+  "   já dizendo o formato: _post único sobre fé_ ou _carrossel sobre fé_",
   "• *publicar* — vai ao ar agora",
   "• *publicar terça 19h* — fica agendado",
   "• *refazer* — faço outra versão (*refazer mais curto* também vale)",
