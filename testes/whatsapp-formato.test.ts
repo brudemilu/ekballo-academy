@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ehStory, ogUrlDoSlide } from "@/lib/instagram-imagens";
 import {
   ESPERA_FORMATO_MIN,
   esperandoFormato,
@@ -48,5 +49,25 @@ describe("esperandoFormato", () => {
         AGORA,
       ),
     ).toBe(false);
+  });
+});
+
+describe("ehStory · o que decide onde o post é publicado", () => {
+  it("uma imagem marcada como story é story", () => {
+    expect(ehStory([{ formato: "story" }])).toBe(true);
+  });
+
+  it("imagem única comum e carrossel vão para o feed", () => {
+    expect(ehStory([{}])).toBe(false);
+    expect(ehStory([{ formato: "story" }, { formato: "story" }])).toBe(false);
+    expect(ehStory([])).toBe(false);
+  });
+
+  it("o endereço da imagem de um story pede o quadro 9:16", () => {
+    const base = { texto: "x", prompt: "", modo: "nenhum", fonte: "anton", seed: 1 };
+    expect(ogUrlDoSlide("http://a", { ...base, formato: "story" })).toContain(
+      "f=story",
+    );
+    expect(ogUrlDoSlide("http://a", base)).not.toContain("f=story");
   });
 });

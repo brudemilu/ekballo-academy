@@ -58,6 +58,24 @@ describe("interpretarComando · criar", () => {
     });
   });
 
+  it("story dito no pedido, de qualquer um dos jeitos", () => {
+    expect(interpretarComando("story sobre a mesa de quinta")).toEqual({
+      tipo: "criar",
+      ideia: "a mesa de quinta",
+      formato: "story",
+    });
+    expect(interpretarComando("Post story: culto hoje às 19h")).toEqual({
+      tipo: "criar",
+      ideia: "culto hoje às 19h",
+      formato: "story",
+    });
+    expect(interpretarComando("faz um story de Colossenses 3")).toEqual({
+      tipo: "criar",
+      ideia: "Colossenses 3",
+      formato: "story",
+    });
+  });
+
   it("'única' no meio da ideia é assunto, não formato", () => {
     expect(interpretarComando("post sobre a única esperança")).toEqual({
       tipo: "criar",
@@ -218,6 +236,9 @@ describe("interpretarFormato · a resposta à pergunta do formato", () => {
     ["imagem única", "unico"],
     ["2", "carrossel"],
     ["Carrossel", "carrossel"],
+    ["3", "story"],
+    ["Story.", "story"],
+    ["stories", "story"],
   ])("%s → %s", (mensagem, formato) => {
     expect(interpretarFormato(mensagem)).toBe(formato);
   });

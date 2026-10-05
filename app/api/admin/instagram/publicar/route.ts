@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
-import { prepararImageUrls } from "@/lib/instagram-imagens";
+import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
   instagramConfigurado,
   publicarInstagram,
   publicarReel,
+  publicarStory,
 } from "@/lib/instagram-publish";
 import { createClient } from "@/lib/supabase/server";
 
@@ -24,6 +25,7 @@ type SlideIn = {
   tom?: string;
   modelo?: string;
   img?: string;
+  formato?: string;
   /** Imagem enviada pelo usuário (modo upload) — usa direto, sem IA. */
   imageUrl?: string;
 };
@@ -107,12 +109,19 @@ export async function POST(req: NextRequest) {
           videoUrl,
           legenda,
         })
-      : await publicarInstagram({
-          igUserId: process.env.IG_USER_ID!,
-          token: process.env.META_ACCESS_TOKEN!,
-          imageUrls,
-          legenda,
-        });
+      : ehStory(slides)
+        ? // Story: uma imagem 9:16, sem legenda, que some em 24 h.
+          await publicarStory({
+            igUserId: process.env.IG_USER_ID!,
+            token: process.env.META_ACCESS_TOKEN!,
+            imageUrl: imageUrls[0],
+          })
+        : await publicarInstagram({
+            igUserId: process.env.IG_USER_ID!,
+            token: process.env.META_ACCESS_TOKEN!,
+            imageUrls,
+            legenda,
+          });
     if (postId) {
       const supabase = await createClient();
       await supabase
