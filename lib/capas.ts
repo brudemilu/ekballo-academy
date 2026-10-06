@@ -275,4 +275,8 @@ export const CAPA_LIVRO: Record<string, string> = {
   "a-predestinacao-wesley": "/capas/a-predestinacao-wesley.jpg",
   "salvacao-pela-fe-wesley": "/capas/salvacao-pela-fe-wesley.jpg",
   "romanos-9-wesley": "/capas/romanos-9-wesley.jpg",
+  "as-cinco-linguagens-do-amor": "/capas/as-cinco-linguagens-do-amor.jpg",
+  "o-desafio-de-amar": "/capas/o-desafio-de-amar.jpg",
+  "enquanto-estivermos-juntos": "/capas/enquanto-estivermos-juntos.jpg",
+  "deus-esta-no-controle": "/capas/deus-esta-no-controle.jpg",
 };
