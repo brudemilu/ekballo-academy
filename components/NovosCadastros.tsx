@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BotaoLiberarAcesso } from "@/components/BotaoLiberarAcesso";
+import { PiscaAtencao, PontoAtencao } from "@/components/PiscaAtencao";
 import { rotuloDeChegada } from "@/lib/novidades";
 import { aguardaLiberacao } from "@/lib/novos-cadastros";
 import { displayTelefone } from "@/lib/telefone";
@@ -23,12 +24,18 @@ export function NovosCadastros({ cadastros }: { cadastros: Cadastro[] }) {
     <section
       id="novos"
       aria-labelledby="novos-titulo"
-      className="mt-6 scroll-mt-24 rounded-2xl border border-amber-200 bg-amber-50/50 p-5 sm:p-6"
+      className="relative mt-6 scroll-mt-24 rounded-2xl border border-amber-200 bg-amber-50/50 p-5 sm:p-6"
     >
-      <h2 id="novos-titulo" className="font-serif text-2xl font-semibold text-mesa-800">
+      {/* Pisca só enquanto há alguém esperando; liberou todo mundo, sossega. */}
+      {pendentes > 0 && <PiscaAtencao />}
+      <h2
+        id="novos-titulo"
+        className="relative flex items-center gap-2 font-serif text-2xl font-semibold text-mesa-800"
+      >
+        {pendentes > 0 && <PontoAtencao />}
         Novos cadastros
       </h2>
-      <p className="mt-1 text-sm text-mesa-600">
+      <p className="relative mt-1 text-sm text-mesa-600">
         {pendentes > 0
           ? `${pendentes} ${pendentes === 1 ? "pessoa aguardando" : "pessoas aguardando"} a sua liberação.`
           : cadastros.length > 0
@@ -37,7 +44,7 @@ export function NovosCadastros({ cadastros }: { cadastros: Cadastro[] }) {
       </p>
 
       {cadastros.length > 0 && (
-        <ul className="mt-4 space-y-2">
+        <ul className="relative mt-4 space-y-2">
           {cadastros.map((c) => {
             const pendente = aguardaLiberacao(c);
             const nome = c.nome || "(sem nome)";
