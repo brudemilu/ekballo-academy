@@ -151,16 +151,25 @@ if [ $voltou -eq 0 ]; then
   exit 0
 fi
 
-# --- não voltou: deixar registrado ----------------------------------------
-# Não há para onde avisar: o canal de aviso (WhatsApp) é justamente o que
-# está fora, a plataforma não usa e-mail (issue #218) e não há assinatura de
-# push de admin cadastrada. O alerta fica anotado em whatsapp_vigia, que é o
+# --- não voltou: avisar gente de verdade ---------------------------------
+# Por push do próprio aplicativo: o canal natural de aviso (WhatsApp) é
+# justamente o que está fora, e a plataforma não usa e-mail (issue #218).
+# O push não passa pelo WhatsApp. Se nenhum admin ativou as notificações,
+# o aviso não tem para onde ir — isso fica escrito no histórico, que é o
 # que a aba Conexão de /admin/mensagens mostra.
 registrar_log "REPARO FALHOU — socket segue morto"
 ultimo_alerta=$(leia_marca "$ESTADO_DIR/ultimo_alerta")
 if [ $((agora - ultimo_alerta)) -ge $INTERVALO_ALERTA ]; then
   echo "$agora" > "$ESTADO_DIR/ultimo_alerta"
-  anotar alerta "$SONDA_ESTADO" "reparo não resolveu — precisa de intervenção manual"
-  registrar_log "alerta registrado"
+  resp=$(curl -s --max-time 25 -X POST "${APP_URL}/api/cron/alerta-whatsapp" \
+           -H 'Content-Type: application/json' -H "x-internal-secret: ${INTERNAL_SECRET}" -d '{}')
+  enviados=$(printf '%s' "$resp" | grep -o '"enviados":[0-9]*' | cut -d: -f2)
+  if [ "${enviados:-0}" -gt 0 ] 2>/dev/null; then
+    anotar alerta "$SONDA_ESTADO" "reparo não resolveu — admins avisados por push (${enviados})"
+    registrar_log "alerta enviado por push (${enviados})"
+  else
+    anotar alerta "$SONDA_ESTADO" "reparo não resolveu — push NÃO chegou a ninguém (nenhum admin com notificação ativa, ou o app não respondeu)"
+    registrar_log "alerta sem destinatário: ${resp:0:160}"
+  fi
 fi
 exit 0

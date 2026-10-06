@@ -152,6 +152,23 @@ test.describe("novos cadastros (admin)", () => {
   });
 });
 
+test.describe("alerta de queda do WhatsApp (admin)", () => {
+  // Issue #226: quando o WhatsApp cai, quem avisa é o push do aplicativo.
+  test("a aba Conexão deixa ativar o aviso e enviar um teste", async ({ page }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/mensagens");
+    await page.getByRole("button", { name: /conexão/i }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Aviso de queda no celular" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Enviar um aviso de teste" }).click();
+    await expect(page.getByText(/teste enviado/i)).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+});
+
 test.describe("Instagram do ministério (admin)", () => {
   test("o calendário abre na semana e guarda uma ideia nova", async ({ page }) => {
     const erros = vigiarErros(page);
