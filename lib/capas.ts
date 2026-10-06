@@ -262,4 +262,17 @@ export const CAPA_LIVRO: Record<string, string> = {
   "as-obras-da-carne-e-o-fruto-do-espirito":
     "/capas/as-obras-da-carne-e-o-fruto-do-espirito.jpg",
   "loucos-por-jesus": "/capas/loucos-por-jesus.jpg",
+  "a-travessia": "/capas/a-travessia.jpg",
+  "de-volta-a-cabana": "/capas/de-volta-a-cabana.jpg",
+  "as-mentiras-que-nos-contaram-sobre-deus":
+    "/capas/as-mentiras-que-nos-contaram-sobre-deus.jpg",
+  "anjos-heiser": "/capas/anjos-heiser.jpg",
+  "anjos-e-demonios": "/capas/anjos-e-demonios.jpg",
+  "em-defesa-do-criador": "/capas/em-defesa-do-criador.jpg",
+  "o-verdadeiro-evangelho": "/capas/o-verdadeiro-evangelho.jpg",
+  "quando-pecadores-dizem-sim": "/capas/quando-pecadores-dizem-sim.jpg",
+  "desconforme-se": "/capas/desconforme-se.jpg",
+  "a-predestinacao-wesley": "/capas/a-predestinacao-wesley.jpg",
+  "salvacao-pela-fe-wesley": "/capas/salvacao-pela-fe-wesley.jpg",
+  "romanos-9-wesley": "/capas/romanos-9-wesley.jpg",
 };
