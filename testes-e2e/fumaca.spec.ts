@@ -323,6 +323,13 @@ test.describe("Instagram do ministério (admin)", () => {
     ).toBeVisible();
     await expect(page.getByText(/× o seu normal/).first()).toBeVisible();
 
+    // Crescimento: os números que dizem se o perfil chega a gente nova.
+    await expect(page.getByRole("heading", { name: "Crescimento" })).toBeVisible();
+    await expect(page.getByText("Seguidores novos", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Envios por post" }),
+    ).toBeVisible();
+
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 

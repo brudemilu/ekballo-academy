@@ -32,6 +32,14 @@ export type PostPainel = {
   reach: number | null;
   permalink: string;
   interacoes: number;
+  /** Sinais de crescimento (lib/crescimento.ts). Ausentes quando o Instagram não informa. */
+  salvos?: number | null;
+  compartilhamentos?: number | null;
+  /** Quem passou a seguir a partir deste post. Só vem para feed, não para Reel. */
+  seguiu?: number | null;
+  visitasPerfil?: number | null;
+  /** É Reel? (o `mediaType` diz só "VIDEO") */
+  reel?: boolean;
 };
 
 const FORMATO: Record<string, string> = {

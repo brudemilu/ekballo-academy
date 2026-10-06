@@ -16,6 +16,11 @@ export type ContaInstagram = {
   usuario: string;
   seguidores: number | null;
   publicacoes: number | null;
+  /** Últimos 30 dias, da conta inteira; null quando o Instagram não informa. */
+  alcance30?: number | null;
+  visitasPerfil30?: number | null;
+  /** Saldo de quem passou a seguir menos quem deixou de seguir. */
+  seguidoresNovos30?: number | null;
 };
 
 export type DadosPainel = {
@@ -54,11 +59,79 @@ async function buscarConta(): Promise<ContaInstagram | null> {
       media_count?: number;
     };
     if (!j.username) return null;
+    const [alcance30, visitasPerfil30, seguidoresNovos30] = await Promise.all([
+      totalDaConta(id, token, "reach"),
+      totalDaConta(id, token, "profile_views"),
+      saldoDeSeguidores(id, token),
+    ]);
     return {
       usuario: j.username,
       seguidores: typeof j.followers_count === "number" ? j.followers_count : null,
       publicacoes: typeof j.media_count === "number" ? j.media_count : null,
+      alcance30,
+      visitasPerfil30,
+      seguidoresNovos30,
     };
+  } catch {
+    return null;
+  }
+}
+
+const TRINTA_DIAS_S = 29 * 86_400;
+
+function janela30(): string {
+  const agora = Math.floor(Date.now() / 1000);
+  return `since=${agora - TRINTA_DIAS_S}&until=${agora}`;
+}
+
+/** Um total da conta nos últimos 30 dias. Cada métrica é pedida sozinha: se o
+ * Instagram recusar uma (escopo, conta pequena), as outras continuam vindo. */
+async function totalDaConta(
+  id: string,
+  token: string,
+  metrica: string,
+): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `${GRAPH}/${id}/insights?metric=${metrica}&metric_type=total_value&period=day&${janela30()}&access_token=${encodeURIComponent(token)}`,
+      { signal: AbortSignal.timeout(10_000) },
+    );
+    if (!res.ok) return null;
+    const j = (await res.json()) as { data?: { total_value?: { value?: number } }[] };
+    const v = j.data?.[0]?.total_value?.value;
+    return typeof v === "number" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Quem passou a seguir menos quem deixou de seguir, em 30 dias. */
+async function saldoDeSeguidores(id: string, token: string): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `${GRAPH}/${id}/insights?metric=follows_and_unfollows&metric_type=total_value&breakdown=follow_type&period=day&${janela30()}&access_token=${encodeURIComponent(token)}`,
+      { signal: AbortSignal.timeout(10_000) },
+    );
+    if (!res.ok) return null;
+    const j = (await res.json()) as {
+      data?: {
+        total_value?: {
+          breakdowns?: {
+            results?: { dimension_values?: string[]; value?: number }[];
+          }[];
+        };
+      }[];
+    };
+    const resultados = j.data?.[0]?.total_value?.breakdowns?.[0]?.results;
+    if (!resultados?.length) return null;
+    let saldo = 0;
+    for (const r of resultados) {
+      const tipo = r.dimension_values?.[0] ?? "";
+      const v = typeof r.value === "number" ? r.value : 0;
+      // "FOLLOWER" = passou a seguir; "NON_FOLLOWER" = deixou de seguir.
+      saldo += tipo === "NON_FOLLOWER" ? -v : v;
+    }
+    return saldo;
   } catch {
     return null;
   }
@@ -124,6 +197,13 @@ function postsDeDemonstracao(): PostPainel[] {
       reach,
       permalink: "https://www.instagram.com/",
       interacoes: likes + comments,
+      // Sinais de crescimento de mentira, coerentes com o resto: o Reel é o
+      // mais enviado, o carrossel o mais salvo.
+      compartilhamentos: Math.round(reach / (mediaType === "VIDEO" ? 55 : 160)),
+      salvos: Math.round(reach / (mediaType === "CAROUSEL_ALBUM" ? 90 : 400)),
+      seguiu: mediaType === "VIDEO" ? null : Math.round(reach / 700),
+      visitasPerfil: mediaType === "VIDEO" ? null : Math.round(reach / 60),
+      reel: mediaType === "VIDEO",
     };
   });
 }
@@ -135,7 +215,14 @@ export async function carregarDadosPainel(): Promise<DadosPainel> {
     return {
       conectado: true,
       posts: postsDeDemonstracao(),
-      conta: { usuario: "ekballo.demo", seguidores: 1248, publicacoes: 86 },
+      conta: {
+        usuario: "ekballo.demo",
+        seguidores: 1248,
+        publicacoes: 86,
+        alcance30: 3120,
+        visitasPerfil30: 148,
+        seguidoresNovos30: 23,
+      },
       erro: null,
       lidoEm,
     };
