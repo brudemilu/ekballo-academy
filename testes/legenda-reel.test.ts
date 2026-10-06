@@ -6,6 +6,7 @@ import {
   MAX_LETRAS_POR_BLOCO,
   MAX_PALAVRAS_POR_BLOCO,
   type PalavraFalada,
+  quebrarTitulo,
   tempoASS,
 } from "@/lib/legenda-reel";
 
@@ -139,5 +140,42 @@ describe("gerarASS", () => {
     expect(ass).toContain("PlayResX: 1080");
     expect(ass).toContain("PlayResY: 1920");
     expect(ass).toContain("Style: Fala,Anton,");
+  });
+});
+
+describe("título fixo no topo", () => {
+  const opcoes = {
+    largura: 1080,
+    altura: 1920,
+    fonte: "Anton",
+    corDestaque: "#F2C230",
+  };
+
+  it("quebra em linhas curtas sem partir palavra, no máximo três", () => {
+    expect(quebrarTitulo("O barco era seguro. E era esse o problema.")).toEqual([
+      "O BARCO ERA SEGURO. E",
+      "ERA ESSE O PROBLEMA.",
+    ]);
+    expect(
+      quebrarTitulo("um dois três quatro cinco seis sete oito nove dez onze doze", 10),
+    ).toHaveLength(3);
+    expect(quebrarTitulo("   ")).toEqual([]);
+  });
+
+  it("entra como um evento que dura o vídeo todo, por cima da legenda", () => {
+    const ass = gerarASS(blocosDeLegenda(fala("pessoas não são")), {
+      ...opcoes,
+      titulo: "Pessoas não são descartáveis",
+    });
+    const titulo = ass.split("\n").find((l) => l.includes(",Titulo,"));
+    expect(titulo).toContain("PESSOAS NÃO SÃO\\NDESCARTÁVEIS");
+    expect(titulo?.startsWith("Dialogue: 1,0:00:00.00,")).toBe(true);
+  });
+
+  it("sem título não cria o evento; e chaves no título não viram comando", () => {
+    expect(gerarASS([], opcoes)).not.toContain(",Titulo,,");
+    const ass = gerarASS([], { ...opcoes, titulo: "{\\b1}Graça" });
+    expect(ass).toContain("B1GRAÇA");
+    expect(ass.split("\n").find((l) => l.includes(",Titulo,,"))).not.toContain("{");
   });
 });

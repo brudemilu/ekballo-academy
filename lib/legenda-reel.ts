@@ -109,7 +109,32 @@ export type OpcoesLegenda = {
   fonte: string;
   /** Cor da palavra que está sendo dita. */
   corDestaque: string;
+  /** Distância (px) da base do quadro até a legenda. Padrão: 27% da altura. */
+  margemLegenda?: number;
+  /** Frase fixa no topo, o tempo todo (o gancho do corte). Opcional. */
+  titulo?: string;
+  /** Distância (px) do topo do quadro até o título. */
+  margemTitulo?: number;
 };
+
+/** Quebra o título em linhas de até `max` letras, sem partir palavra. */
+export function quebrarTitulo(titulo: string, max = 22): string[] {
+  const linhas: string[] = [];
+  let atual = "";
+  for (const p of titulo.trim().toUpperCase().split(/\s+/).filter(Boolean)) {
+    if (atual && `${atual} ${p}`.length > max) {
+      linhas.push(atual);
+      atual = p;
+    } else atual = atual ? `${atual} ${p}` : p;
+  }
+  if (atual) linhas.push(atual);
+  return linhas.slice(0, 3);
+}
+
+/** Tira do texto o que o ASS leria como comando ({…}, \N). */
+function textoSeguro(t: string): string {
+  return t.replace(/[{}\\]/g, "");
+}
 
 /**
  * O arquivo ASS. Cada palavra vira um evento: o bloco inteiro aparece, com a
@@ -120,7 +145,9 @@ export function gerarASS(blocos: BlocoDeLegenda[], o: OpcoesLegenda): string {
   // No ASS o tamanho é a altura da linha, não da letra: 13% da largura dá uma
   // letra que se lê no celular sem tapar o rosto de quem fala.
   const tamanho = Math.round(o.largura * 0.13);
-  const margemV = Math.round(o.altura * 0.27);
+  const margemV = o.margemLegenda ?? Math.round(o.altura * 0.27);
+  const tamanhoTitulo = Math.round(o.largura * 0.085);
+  const margemTitulo = o.margemTitulo ?? Math.round(o.altura * 0.09);
   const destaque = corASS(o.corDestaque).replace("&H00", "&H");
   const cabecalho = [
     "[Script Info]",
@@ -133,11 +160,21 @@ export function gerarASS(blocos: BlocoDeLegenda[], o: OpcoesLegenda): string {
     "[V4+ Styles]",
     "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
     `Style: Fala,${o.fonte},${tamanho},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,0,0,0,0,100,100,1,0,1,${Math.round(tamanho * 0.075)},${Math.round(tamanho * 0.04)},2,60,60,${margemV},1`,
+    // O título: mesma fonte, menor, preso ao topo (alinhamento 8).
+    `Style: Titulo,${o.fonte},${tamanhoTitulo},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,0,0,0,0,100,100,1,0,1,${Math.round(tamanhoTitulo * 0.07)},${Math.round(tamanhoTitulo * 0.04)},8,70,70,${margemTitulo},1`,
     "",
     "[Events]",
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
   ];
   const eventos: string[] = [];
+  const fimDeTudo = Math.max(0, ...blocos.map((b) => b.fim)) + 2;
+  if (o.titulo?.trim()) {
+    const linhas = quebrarTitulo(textoSeguro(o.titulo));
+    if (linhas.length)
+      eventos.push(
+        `Dialogue: 1,${tempoASS(0)},${tempoASS(Math.max(fimDeTudo, 3600))},Titulo,,0,0,0,,${linhas.join("\\N")}`,
+      );
+  }
   for (const b of blocos) {
     b.palavras.forEach((p, i) => {
       const ate = b.palavras[i + 1]?.inicio ?? b.fim;
