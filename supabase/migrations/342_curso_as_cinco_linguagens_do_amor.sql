@@ -1,0 +1,2604 @@
+-- Curso: As Cinco Linguagens do Amor (Gary Chapman) — transcrição sem perguntas. Issue #233.
+do $migration$
+declare
+  v_curso_id uuid;
+  v_aula_id uuid;
+  v_next_ordem int;
+begin
+  select id into v_curso_id from public.cursos where slug = 'as-cinco-linguagens-do-amor';
+
+  if v_curso_id is null then
+    select coalesce(max(ordem), 0) + 1 into v_next_ordem from public.cursos;
+    insert into public.cursos
+      (slug, titulo, autor, descricao, imagem_url, is_pago, preco_centavos, categoria, ordem, publicado)
+    values (
+      'as-cinco-linguagens-do-amor',
+      $titulo$As Cinco Linguagens do Amor$titulo$,
+      $titulo$Gary Chapman$titulo$,
+      $desc$Leitura guiada de As Cinco Linguagens do Amor, de Gary Chapman. Em quatorze aulas: Gary Chapman mostra que cada pessoa expressa e recebe amor de um jeito — palavras de afirmação, qualidade de tempo, presentes, formas de servir, toque físico — e como falar a linguagem do cônjuge para manter cheio o seu tanque de amor. Cada aula traz a transcrição do texto, sem perguntas de reflexão.$desc$,
+      '/capas/as-cinco-linguagens-do-amor.jpg',
+      false,
+      0,
+      'pastoral',
+      v_next_ordem,
+      true
+    )
+    returning id into v_curso_id;
+  else
+    update public.cursos
+    set titulo = $titulo$As Cinco Linguagens do Amor$titulo$,
+        autor = $titulo$Gary Chapman$titulo$,
+        descricao = $desc$Leitura guiada de As Cinco Linguagens do Amor, de Gary Chapman. Em quatorze aulas: Gary Chapman mostra que cada pessoa expressa e recebe amor de um jeito — palavras de afirmação, qualidade de tempo, presentes, formas de servir, toque físico — e como falar a linguagem do cônjuge para manter cheio o seu tanque de amor. Cada aula traz a transcrição do texto, sem perguntas de reflexão.$desc$,
+        imagem_url = '/capas/as-cinco-linguagens-do-amor.jpg',
+        categoria = 'pastoral',
+        publicado = true
+    where id = v_curso_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 1;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 1 - O que Acontece com o Amor Após o Casamento?$t$, 1,
+$conteudo$Estávamos por volta de uns 12 mil metros de altitude, em algum lugar entre Buﬀalo e Dallas, quando o meu companheiro de viagem colocou a revista que lia na bolsa de seu banco, olhou em minha direção e perguntou:
+
+— Que tipo de trabalho você faz?
+
+— Sou conselheiro conjugal e dou seminários na área de família — respondi.
+
+Ele me disse então que há muito tempo gostaria de fazer uma pergunta para um conselheiro conjugal, e aproveitaria para formulá-la a mim, naquela hora. E perguntou:
+
+— O que acontece com o amor após o casamento? Desistindo de tentar tirar um cochilo, perguntei-lhe:
+
+— O que exatamente você quer dizer?
+
+— Bem, já me casei três vezes e em cada uma delas tudo era muito bonito até o enlace matrimonial. Em algum lugar, depois do sim, as coisas mudavam. Todo amor que eu imaginava que tinha por elas, e todo amor que elas pareciam ter por mim, evaporavam-se. Posso dizer que sou uma pessoa inteligente. Sou um empresário bem-sucedido nos meus negócios, mas não consigo entender o porquê dessa situação.
+
+Continuamos, então, a conversar:
+
+— Quanto tempo você ficou casado?
+
+— O primeiro casamento durou cerca de dez anos. O segundo, três, e o último, seis anos.
+
+— O amor evaporou-se imediatamente após o casamento, ou foi uma perda gradual?
+
+— Bem, o segundo casamento já não deu certo desde o começo. Não entendi o que aconteceu. Pensei que nós realmente nos amávamos! No entanto, a lua-de-mel foi um desastre e depois disso jamais nos recuperamos. Tivemos um período de seis meses de namoro, um romance arrebatador. Estávamos realmente entusiasmados. Mas… foi só nos casarmos, para que nossa vida virasse uma batalha sem trégua. No primeiro casamento, tivemos uns três ou quatro anos bons, antes que o primeiro filho nascesse. Daí em diante ela deu toda sua atenção para a criança e parecia que não precisava mais de mim!
+
+— Você disse isso a ela?
+
+— Disse sim! Mas ela respondeu que eu estava maluco e não compreendia o que era ser uma babá 24 horas por dia. Reclamou, inclusive, que eu deveria ser mais compreensivo e ajudá-la mais. Eu tentei, mas parecia que não fazia diferença alguma.
+
+Daquela época em diante afastamo-nos ainda mais. Depois de certo tempo não havia mais amor, só indiferença. Concordamos que o nosso casamento se acabara.
+
+— E seu último casamento?
+
+— O meu último casamento? Eu realmente pensei que ele seria diferente! Já estava divorciado há três anos. Namorei 24 meses com minha esposa. Achei que realmente sabíamos o que fazíamos e pela primeira vez na vida senti que realmente amava alguém. Pensei que ela me amasse de verdade!
+
+Ele prosseguiu:
+
+— Acredito que jamais mudei depois do casamento. Continuei a dizer-lhe que a amava, da mesma forma que fazia antes de nos casarmos. Declarava o quanto ela era bonita e como estava orgulhoso de ser seu marido. Porém… apenas alguns meses após o casamento ela começou a reclamar. No início era de coisas pequenas, tais como o fato de eu não levar o lixo para fora ou não guardar minhas roupas. Depois, começou a agredir o meu caráter, ao dizer-me que não podia confiar em mim e acusou-me de ser-lhe infiel.
+
+Tornou-se totalmente negativista. Antes de nos casarmos ela nunca fora pessimista; pelo contrário, era uma das pessoas mais otimistas que já conheci. E essa foi uma das características que mais me atraiu nela. Ela jamais reclamava de alguma coisa. Tudo que eu fazia era maravilhoso. Bastou casarmo-nos, para que de repente eu não fizesse mais nada certo! Então gradativamente perdi meu amor por ela e fiquei magoado. Era óbvio que ela não me amava mais. Concordamos que não havia mais motivo para continuarmos juntos e nos separamos.
+
+Ele fez uma pausa e continuou:
+
+— Isso foi há um ano. Minha pergunta, então, é: O que acontece com o amor após o casamento? Minha experiência é algo comum? É por isso que temos tantos divórcios? Não dá para acreditar que isso tenha acontecido três vezes comigo! E aqueles que não se separam? Eles aprendem a viver com o vazio em seus corações, ou o amor permanece vivo em algum casamento? Se isso sucede, como é que acontece?
+
+As perguntas feitas por meu companheiro de voo são as mesmas realizadas hoje em dia por milhares de pessoas, sejam casadas ou divorciadas. Algumas são dirigidas a amigos, outras a conselheiros, a pastores, e outras apenas a si mesmos. Algumas respostas são dadas em vocabulário técnico de psicologia, e são simplesmente incompreensíveis. Outras vezes são levadas para o lado do humor. A maioria das piadas e frases contém alguma verdade, mas, de forma geral, é como oferecer aspirina a uma pessoa com câncer.
+
+O desejo de ter-se um amor romântico no casamento está profundamente enraizado em nossa formação psicológica. A maioria das revistas populares possui pelo menos um artigo sobre como manter o amor vivo no casamento. Há uma infinidade de livros escritos sobre o mesmo tema. Televisão e rádio abordam esse assunto em programas e entrevistas. Manter o amor aceso em nossos casamentos é um assunto muito sério.
+
+Mesmo com tantos livros, revistas e ajuda disponível, por que aparentemente tão poucos casais parecem ter descoberto o segredo de manter vivo o amor após o casamento? Por que um casal que assiste a um curso de comunicação e ouve as maravilhosas ideias de como melhorar o diálogo, volta para casa e não consegue colocar em prática os exercícios aprendidos? O que acontece, se depois de lermos um artigo do tipo “100 Formas de Expressar Amor a Seu Cônjuge” e colocarmos em prática umas três formas, que nos parecem mais adequadas, nosso cônjuge ainda assim não reconhece nosso esforço? — Desistimos das outras 97 formas e retornamos ao cotidiano de nossas vidas.
+
+Devemos estar dispostos a aprender a primeira linguagem do amor de nossos cônjuges, se quisermos comunicar o amor de forma efetiva.
+
+A resposta às perguntas anteriores é o propósito desta obra. Não desejo afirmar que todos os livros e artigos já publicados não ajudem. O problema é que não levamos em conta uma verdade fundamental: As pessoas falam diferentes linguagens do amor.
+
+Na área da linguística há alguns grandes grupos de idiomas: japonês, chinês, espanhol, inglês, português, grego, alemão, francês e outros. A maioria de nós aprende somente a língua de nossos pais e irmãos, nossa primeira linguagem, ou seja, nosso vernáculo. Mais tarde, podemos até aprender outros idiomas, mas em geral com mais dificuldade. Então surge o que chamamos de nossa segunda linguagem. Falamos e compreendemos melhor nossa língua nativa. Sentimo-nos mais confortáveis ao falá-la.
+
+Mas quanto mais utilizarmos uma língua secundária, mais à vontade nos sentiremos para expressá-la. Se falarmos somente nosso idioma, e encontrarmos alguém que também só fale o seu (diferente do nosso), a comunicação entre nós será bem limitada. Será necessário apontar, murmurar, desenhar ou fazer mímica para comunicar a ideia que desejamos transmitir. Poderemos até nos entender, mas será uma comunicação bem rudimentar. As diferenças de linguagem fazem parte da cultura humana. Se quisermos ter um bom intercâmbio cultural, será necessário aprendermos a linguagem daquele com quem desejamos nos comunicar.
+
+O mesmo acontece no âmbito do amor. Sua linguagem emocional e a de seu cônjuge podem ser tão diferentes quanto é o idioma chinês do inglês. Não importa o tanto que você se esforce para manifestar seu amor em inglês, se seu cônjuge só entende chinês; jamais conseguirão entender o quanto se amam.
+
+O meu amigo do avião usava a linguagem das “palavras de afirmação” para sua terceira esposa quando disse a ela o quanto a achava bonita, o quanto a amava e o quanto se orgulhava de ser seu marido. Ele utilizava a linguagem do amor, e era sincero, mas ela não a entendia. Talvez ela procurasse o amor em seu comportamento, mas não o encontrou. Ser sincero não é o suficiente. Devemos estar dispostos a aprender a primeira linguagem de nosso cônjuge, se quisermos comunicar eficazmente o nosso amor.
+
+Minha conclusão, após vinte anos de aconselhamento conjugal, é que existem, basicamente, cinco linguagens do amor. Em linguística, um idioma pode ter inúmeros dialetos e variações. Semelhantemente, com as cinco linguagens emocionais básicas do amor, também há vários dialetos. Eles se encontram nos artigos das revistas, tais como:
+
+“Dez Formas de Demonstrar Amor à Sua Esposa”; “Vinte Maneiras de Segurar Seu Marido em Casa”; ou “365 Expressões do Amor Conjugal”. Não há dez, vinte, ou 365 linguagens básicas do amor. Em minha opinião, há somente cinco. No entanto, pode haver inúmeros dialetos. O número de formas de se expressar amor através da linguagem do amor é limitado apenas pela imaginação das pessoas. O mais importante é falar a mesma linguagem do amor de seu cônjuge.
+
+Já se sabe há bastante tempo que no período da primeira infância uma criança desenvolve formas emocionais únicas. Por exemplo, há algumas que possuem um padrão muito baixo de autoestima, ao passo que outras o têm muito elevado. Algumas desenvolvem padrões de insegurança, enquanto outras crescem sentindo-se seguras.
+
+Algumas se sentem amadas, queridas e apreciadas, e outras, malamadas, incompreendidas e desapreciadas.
+
+As crianças que se sentem amadas por seus pais e amigos desenvolvem a linguagem do amor emocional, com base em sua formação psicológica única e também de acordo com a forma que seus pais e outras pessoas próximas lhe deram carinho. Elas falarão e entenderão sua primeira linguagem do amor. Mais tarde elas poderão aprender outras línguas para se comunicarem, mas sempre se sentirão mais confortáveis com o primeiro idioma que aprenderam. Crianças que não se sentem amadas por seus pais e amigos também desenvolverão uma primeira linguagem do amor.
+
+O aprendizado dessa língua, porém, será distorcido e apresentará defeitos da mesma forma que alguém que recebe uma educação com falhas na gramática e desenvolve um vocabulário limitado. Essa limitação não significa que essas pessoas não venham a ser boas comunicadoras. Implica, sim, que terão de trabalhar mais diligentemente do que os que cresceram na atmosfera do amor saudável.
+
+É muito raro que marido e mulher tenham a mesma primeira linguagem emocional do amor. Nossa tendência é falar nossas primeiras linguagens do amor e ficamos confusos quando nosso cônjuge não compreende o que desejamos comunicar.
+
+Expressamos nosso amor, mas a mensagem não chega compreensível porque, para eles, o que falamos é uma língua desconhecida. Aí se encontra o problema. O propósito deste livro é oferecer uma solução para esta questão. Por isso me empenhei em escrever esta obra sobre o amor. Uma vez que conheçamos as cinco linguagens básicas do amor e compreendamos a nossa própria, como também a de nosso cônjuge, então teremos a informação necessária para que coloquemos em prática as ideias dos outros livros e artigos.
+
+Desde que você identifique e aprenda a falar a primeira linguagem do amor de seu cônjuge, creio que terá descoberto a chave para um amor conjugal duradouro. O amor não pode evaporar-se após o casamento! Para mantê-lo vivo, a maioria de nós terá de aprender uma segunda linguagem do amor. Não podemos confiar somente em nossa língua pátria, se nosso cônjuge não a compreende. Se quisermos que ele compreenda o amor que lhe desejamos comunicar, devemos expressá-lo na primeira linguagem do amor.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 2;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 2 - Cultivando o Amor que Agradece$t$, 2,
+$conteudo$Amor é o vocábulo mais importante em qualquer idioma — e também o que mais gera confusão! Pensadores, tanto seculares quanto religiosos, concordam que este sentimento ocupa um papel central em nossa vida. Diz-se que “o amor é uma coisa esplendorosa” e “o amor faz o mundo girar”. Milhares de livros, músicas, revistas e filmes existem pela inspiração dessa palavra. Inúmeros sistemas filosóficos e teológicos estabeleceram um lugar de destaque para esse sentimento. E o fundador da fé cristã coloca o amor como a característica que deve distinguir seus seguidores.
+
+Psicólogos concluíram que sentir-se amado é a principal necessidade do ser humano. Por amor, subimos montanhas, atravessamos mares, cruzamos desertos e enfrentamos todo tipo de adversidade. Sem amor, montanhas tornam-se insuperáveis, mares intransponíveis, desertos insuportáveis e dificuldades avolumam-se pela vida afora.
+
+O apóstolo dos gentios, Paulo, exaltou o amor ao afirmar que qualquer ato humano não motivado por esse sentimento é em si vazio e sem significado. Concluiu que na última cena do drama humano, somente três características permanecerão: “fé, esperança e amor. Porém, a maior delas, é o amor”.
+
+Se concordarmos que a palavra amor permeia a sociedade humana, tanto no passado, como no presente, devemos admitir que também é uma das mais confusas. Nós a utilizamos em milhares de formas. Dizemos: “Eu amo cachorro quente!” e, numa outra frase: “Eu amo minha mãe!” Nós a usamos para descrever atividades que apreciamos: nadar, patinar e caçar. Amamos objetos: comida, carros e casas. Amamos animais: cachorros, gatos e até tartarugas. Amamos a natureza: árvores, grama, flores e estações.
+
+Amamos pessoas: mãe, pai, filhos, esposas, maridos e amigos. Chegamos até a nos apaixonar pelo próprio amor.
+
+Como se isso tudo não fosse suficientemente confuso, também usamos a palavra amor para explicar determinados comportamentos: “Agi dessa forma porque a amo”. Essa explicação muitas vezes é dada como desculpa. Um homem que se envolve em adultério chama esse relacionamento de amor. O pastor, por sua vez, chama-o de pecado. A esposa de um alcoólatra recolhe os “pedaços” após o último “episódio” de seu marido. Ela chama essa atitude de amor; os psiquiatras, porém, tratam-na como codependente. Um pai que atende a todos os desejos de seu filho também chama essa atitude de amor. Um terapeuta familiar chamaria de paternidade irresponsável. O que é um comportamento amoroso?
+
+O propósito deste livro não é o de desfazer a confusão que gira em torno deste sublime sentimento, mas focalizar aquele tipo de amor que é essencial a nossa saúde emocional. Psicólogos infantis afirmam que toda criança possui necessidades emocionais básicas que devem ser supridas para que se possa atingir uma estabilidade emocional.
+
+Entre elas, nenhuma é tão essencial quanto o amor, a afeição e a necessidade de alguém sentir que pertence a outro e é querido. Com um suprimento adequado de afeição, uma criança tornar-se-á um adulto responsável. Sem esse amor essencial, ele ou ela ficará emocional e socialmente atrofiado.
+
+Logo que ouvi a metáfora que cito a seguir, gostei muito dela: “Dentro de cada criança há um ‘tanque emocional’ esperando para ser cheio com o amor. Se ela se sentir amada, desenvolver-se-á normalmente; porém, se seu “tanque de amor” estiver vazio, ela apresentará muitas dificuldades. Diversos dos problemas de comportamento de uma criança provêm do fato de seu ‘tanque de amor’ estar vazio”. Essa metáfora foi dada pelo Dr. Ross Campbell, um psiquiatra que se especializou no tratamento de crianças e adolescentes.
+
+Enquanto eu o ouvia falar, pensei nas centenas de pais que, em meu escritório, desfilavam as inúmeras reclamações sobre seus filhos. Até então, eu nunca pensara em uma criança daquelas como um “tanque de amor” vazio, mas sem dúvida via os resultados dessa situação. Os problemas de comportamento apresentados eram uma forma de procurar o amor que não recebiam. Eles buscavam o amor nos lugares e nas formas erradas.
+
+Lembrei-me de Ashley que aos treze anos de idade cuidava de uma doença sexualmente transmissível. Seus pais estavam chocados. Ficaram “uma fera” com a filha e também muito bravos com a escola, a qual culpavam por ensinarem sobre sexo. “Por que é que ela teve de fazer o que fez?”, perguntavam.
+
+No âmago da existência do ser humano encontra-se o desejo de intimidade e de ser amado. O casamento foi idealizado para suprir essas necessidades.
+
+Em minha conversa com Ashley, ela me falou do divórcio de seus pais quando tinha apenas seis anos de idade.
+
+“Eu pensei que meu pai tinha ido embora porque não gostava de mim! Quando minha mãe casou-se novamente eu estava com dez anos de idade. Então pensei que ela já tinha quem a amasse, e eu não possuía ninguém. Eu desejava tanto ser amada por alguém! E então conheci esse garoto lá na escola. Ele era bem mais velho, mas gostava de mim! Eu não conseguia acreditar! Ele era muito gentil comigo e, por um tempo, acreditei que ele realmente gostava de mim. Eu não queria fazer sexo, mas desejava desesperadamente ser amada!”
+
+O “tanque de amor” de Ashley ficou vazio durante muitos anos. Sua mãe e seu padrasto providenciavam tudo que ela necessitava em termos materiais, mas não perceberam a enorme carência emocional que havia dentro dela. Eles certamente a amavam e achavam que ela se sentia amada por eles. Já era quase tarde demais quando descobriram que não falavam a primeira linguagem do amor de Ashley.
+
+A necessidade de alguém ser amado emocionalmente, no entanto, não é uma característica unicamente infantil. Ela nos segue pela vida adulta; inclusive no casamento.
+
+Quando nos apaixonamos, temporariamente essa necessidade é suprida, mas ela se torna um “quebra-galho” e, como acabamos descobrindo mais tarde, com duração limitada e até prevista. Após despencarmos dos píncaros da paixão, a necessidade emocional de ser amado ressurge porque é inerente à nossa natureza. Está no centro de nossos desejos emocionais. Precisamos do amor antes de nos apaixonar e continuaremos a necessitar dele enquanto vivermos.
+
+A necessidade de sermos amados por nosso cônjuge está na essência dos anseios conjugais. Recentemente certo cidadão me disse:
+
+“De que adianta ter mansão, carros, casa na praia e tudo o mais, se sua esposa não o ama?!”
+
+Dá para entender o que ele realmente desejava dizer? Era:
+
+“Mais do que tudo, eu desejo ser amado por minha esposa!”
+
+As coisas materiais não podem substituir o amor humano e emocional. Uma esposa disse, certa vez:
+
+“Ele me ignora o dia inteirinho, mas à noite quer fazer sexo comigo. Eu odeio isso!”
+
+Ela não odeia sexo, mas precisa desesperadamente do amor emocional.
+
+Alguma coisa em nossa natureza clama por ser amado ou amada. O isolamento é devastador para a psique humana. É por esse motivo que o confinamento é considerado a mais cruel das punições. No âmago da nossa existência há o íntimo desejo de sermos amados. O casamento foi idealizado para atingir essa necessidade de intimidade e de amor. Por esse motivo os antigos registros bíblicos dizem que o homem e a mulher tornam-se uma só carne. Isso não significa que as pessoas perderão suas identidades; quer dizer que ambos entrarão nas vidas um do outro, de forma íntima e profunda. O Novo Testamento desafia os maridos e as esposas a amarem-se mutuamente. De Platão a Peck os escritores têm enfatizado a importância do amor no casamento.
+
+No entanto, esse amor que é tão importante, também é “escorregadio”. Tenho ouvido a confissão de muitos casais contando suas queixas secretas. Alguns chegam a mim porque a dor interior tornou-se praticamente insuportável. Outros, porque percebem que o comportamento que assumem perante as falhas do cônjuge poderá levar o casamento à destruição. Há também os que simplesmente vêm para falar que não querem mais continuar casados. Seus sonhos de “viverem felizes para sempre” espatifaram-se contra o duro muro da realidade. Repetidas vezes ouço as palavras:
+
+“Nosso amor terminou. O relacionamento morreu. Sentíamo-nos próximos um do outro, mas agora isso não existe mais. Não apreciamos mais ficar juntos. Não nos completamos mais um ao outro.”
+
+Essas histórias testificam que tanto os adultos como as crianças possuem
+
+“tanques de amor”.
+
+Será que lá no interior de cada um desses casais machucados existe um indicador invisível de um “tanque” vazio? Será que esses comportamentos inadequados, separações, palavras duras e espírito crítico acontecem devido a esse “tanque” vazio? Se pudermos achar uma forma de enchê-lo, será que o casamento renasceria? O “tanque”
+
+cheio possibilitaria que os casais criassem um clima emocional onde seria possível discutir as diferenças e resolver os conflitos? Será que esse “tanque” é a chave para que um casamento perdure?
+
+Essas perguntas levaram-me a uma longa viagem. Em plena estrada descobri os simples, porém poderosos pontos de vista registrados neste livro. Essa caminhada levou-me não somente através de mais de vinte anos de aconselhamento conjugal, mas também às mentes e corações de centenas de casais através da América do Norte. De Seattle a Miami, fui convidado a adentrar no recôndito do casamento de vários casais e conversamos francamente. As histórias apresentadas neste livro foram retiradas da vida real. Nomes e lugares foram trocados para proteger a privacidade das pessoas que falaram com toda a liberdade.
+
+Estou convencido de que manter cheio o “tanque de amor” do casamento é tão importante quanto manter o nível do óleo em um automóvel. Levar um casamento com o
+
+“tanque de amor” vazio pode ser até mais difícil do que tentar dirigir um carro sem combustível. O que você descobrirá nesta obra tem o potencial para salvar milhares de casamentos, podendo também melhorar o clima emocional de um matrimônio que já esteja indo bem. Qualquer que seja a qualidade de seu casamento, sempre pode melhorar.
+
+ADVERTÊNCIA: Compreender os cinco idiomas do amor e aprender a falar a primeira linguagem do amor de seu cônjuge pode alterar completamente o comportamento dele. As pessoas relacionam-se de forma diferente quando seu “tanque de amor” está cheio.
+
+Antes de examinarmos as cinco linguagens do amor, precisamos abordar um outro importante, porém confuso fenômeno: A eufórica experiência de apaixonar-se.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 3;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 3 - Apaixonando-se$t$, 3,
+$conteudo$Ela entrou em meu escritório sem hora marcada e perguntou à minha secretária se poderia falar comigo durante cinco minutos. Eu conhecia Janice há muito tempo. Ela estava com 36 anos e nunca se casara. Havia namorado vários rapazes no passar dos anos: um deles durante seis anos, outro durante três e diversos por curtos períodos de tempo. De vez em quando ela marcava uma consulta comigo para conversar sobre alguma dificuldade específica que estivesse atravessando em algum de seus relacionamentos. Ela era, por natureza, uma pessoa disciplinada, consciente, organizada, reflexiva e cuidadosa.
+
+Era completamente fora de suas características aparecer em meu escritório sem ter hora marcada. Eu pensei: “Só alguma crise terrível faria Janice vir aqui sem marcar hora!”
+
+Então, eu disse à minha secretária que a deixasse entrar. Eu realmente esperava vê-la debulhada em lágrimas, contando-me alguma trágica experiência logo ao abrir a porta. No entanto, ela literalmente pulou para dentro da sala, gritando animadamente. Perguntei-lhe:
+
+— Como vai, Janice?
+
+— Ótima! Nunca estive melhor em toda minha vida! Vou me casar!
+
+— É mesmo? (Eu disse demonstrando minha surpresa!)
+
+— Com quem? Quando?
+
+— Com David Gallespie, em setembro.
+
+— Isso é maravilhoso! Há quanto tempo vocês estão namorando?
+
+— Três semanas. Sei que é loucura, Dr. Chapman, depois de ter namorado tantos outros e de tantas vezes ter chegado perto do casamento. Eu mesma não consigo acreditar, mas sei que o David é o rapaz certo para mim! Pela primeira vez, nós dois descobrimos isso juntos. É claro que não falamos sobre esse assunto na primeira vez que saímos, mas uma semana depois ele me pediu em casamento. Eu sabia que ele me pediria e eu aceitaria. Nunca me senti assim antes, Dr. Chapman. O senhor conhece os relacionamentos que tive nesses anos todos e as lutas que enfrentei. Em cada um deles, alguma coisa não dava certo. Nunca tive a certeza de que deveria me casar com algum deles, mas agora sei que David é a pessoa preparada por Deus!
+
+Nesse momento Janice balançava-se para frente e para trás em sua cadeira, rindo e dizendo:
+
+— Sei que parece loucura, mas estou tão feliz! Nunca estive tão feliz em toda minha vida.
+
+O que acontecia com Janice? Ela estava apaixonada. Em sua mente, David era o homem mais maravilhoso que ela já conhecera. Ele era perfeito em todas as formas e também se tornaria o marido ideal. Ela pensava nele dia e noite. O fato de David já ter sido casado duas vezes, possuir três filhos e ter passado, somente no ano anterior, por três empregos diferentes, não lhe importava. Ela estava feliz e convencida de que seria feliz para sempre ao lado dele. Ela estava apaixonada.
+
+A maioria de nós entra para o casamento pela porta do amor. Ocorre de conhecermos alguém que possui características físicas e marcas em sua personalidade que disparam nosso sistema de alerta. Os sinos tocam, e iniciamos o processo da descoberta de quem é aquela pessoa. No primeiro encontro pode ser servido um hambúrguer ou um belo churrasco, dependendo do nosso orçamento, mas nosso real interesse não é a comida. Entramos em uma empreitada para conhecer o amor. “Será que esse sentimento ardente, borbulhante dentro de mim pode ser algo real?”
+
+Algumas vezes essas borbulhas desaparecem logo no primeiro encontro, ao descobrirmos que ela, ou ele, funga. Dessa forma, as borbulhas escorregam por nossos dedos e não queremos mais comer hambúrguer com aquela pessoa. Outras vezes, porém, as borbulhas aumentam mais ainda, após aquele lanche. Arrumamos vários outros encontros e, pouco tempo depois, o nível de intensidade chega a ponto de afirmarmos:
+
+“Acho que estou apaixonada(o)!” Pensando que o sentimento é algo real, contamos à outra pessoa esperando que isso seja recíproco. Se não é, as coisas dão uma esfriada, ou então redobramos nossos esforços para impressionar e acabamos, eventualmente, conquistando o amor de nosso(a) amado(a). Quando há reciprocidade começamos a falar sobre casamento, porque todos concordam que estar apaixonado é um alicerce necessário para se manter um bom casamento.
+
+Nossos sonhos, antes de nos casarmos, são de êxtase conjugal… É difícil pensar-se qualquer outra coisa, quando estamos apaixonados.
+
+Nesse patamar, estar apaixonado(a) é uma experiência eufórica. Um fica emocionalmente obcecado pelo outro. Dorme-se pensando nele (nela). Levanta-se e aquela pessoa é a primeira coisa que nos vem à mente. Ansiamos por estar juntos. Gastar tempo um com o outro é como estar na antecâmara do céu. Quando andamos de mãos dadas, é como se nossos corações batessem no mesmo compasso. Beijaríamos um ao outro para sempre, se não tivéssemos de ir à escola ou ao trabalho. O abraçar estimula sonhos de casamento e êxtase. O rapaz apaixonado tem a ilusão de que sua amada é perfeita. A mãe pode ver falhas, mas ele, não. A mãe diz:
+
+— Querido, você já considerou o fato de que ela esteve em tratamento psiquiátrico durante cinco anos?
+
+Ele, porém, replica:
+
+— Oh, mãe, dá um tempo! Já faz três meses que ela está de alta.
+
+Seus amigos também veem algumas falhas, mas não se atrevem a dizer nada, a menos que ele peça, e as chances disso acontecer são inexistentes porque, em sua cabeça, ela é perfeita e o que os outros pensam, não lhe importa.
+
+Nossos sonhos, antes de nos casarmos, são de êxtase conjugal:
+
+— Vamos fazer um ao outro superfelizes. Outros casais podem discutir e brigar, mas isso não acontecerá conosco! Nós nos amamos.
+
+Naturalmente, não ficamos de todo enganados. Sabemos, ao utilizar o racional, que teremos algumas diferenças. Porém, temos certeza de que conversaremos abertamente sobre elas, um de nós cederá e assim chegaremos a um denominador comum. É muito difícil pensar algo diferente quando se vive um clima de paixão.
+
+Somos levados a acreditar que, se realmente estivermos apaixonados, esse amor durará para sempre. Os maravilhosos sentimentos dos quais partilhamos no momento nos acompanharão até o fim de nossas vidas. Nada se interporá entre nós.
+
+Estamos enamorados e aprisionados pela beleza e charme da personalidade um do outro.
+
+Nosso amor é a melhor coisa da qual já desfrutamos. Notamos que alguns casais chegaram a perder esse sentimento, mas isso nunca acontecerá conosco. Fazemos, portanto, a seguinte colocação:
+
+“É possível que eles nunca tenham sentido um amor verdadeiro como o nosso!”
+
+Infelizmente, a eternidade da paixão é uma ficção e não um fato. A psicóloga Dorothy Tennov desenvolveu longos estudos sobre este fenômeno. Após estudar os comportamentos entre os casais, ela concluiu que o tempo médio de extensão da obsessão romântica é de dois anos. Se a paixão foi um fruto proibido, talvez dure um pouco mais. Eventualmente, todos nós descemos das nuvens e pisamos com nossos pés em terra novamente. Nossos olhos abrem-se e passamos a enxergar as “verrugas” da outra pessoa. Descobrimos que alguns de seus traços de personalidade são realmente irritantes. Seus padrões de comportamento aborrecem-nos. Possuem também capacidade para machucar e irar-se, e utilizam também palavras duras e julgamentos críticos. Esses traços que não percebemos quando estávamos apaixonados tornam-se agora enormes montanhas. Então nos recordamos das palavras ditas por nossa mãe e perguntamos a nós mesmos: “Como pude ser tão tolo?”
+
+Bem-vindos ao mundo real do casamento, onde fios de cabelo sempre estarão na pia e respingos brancos da pasta de dente estarão no espelho; discussões ocorrem por causa do lado de se colocar o papel higiênico: se a folha deve ser puxada por baixo ou por cima. E um mundo onde os sapatos não andam até o guarda-roupa e as gavetas não fecham sozinhas; os casacos não gostam de cabides e pés de meia somem quando vão para a máquina de lavar. Nesse mundo, um olhar pode machucar, uma palavra pode quebrar. Amantes podem tornar-se inimigos e o casamento um campo de batalha sem trégua.
+
+O que aconteceu com a paixão? Que coisa! Foi uma ilusão que nos enganou e levou-nos a assinar nossos nomes na linha pontilhada… na alegria e na tristeza. Não é de se admirar que tantos amaldiçoem o casamento e o ex-cônjuge, a quem um dia amaram.
+
+Além disso, se fomos enganados, temos o direito de ficar bravos. Será que foi realmente amor? Acho que sim. O problema é que houve falta de informação.
+
+A principal falha na informação é o falso conceito de que a paixão dura para sempre. Deveríamos saber disso. Uma simples observação é o bastante para concluirmos que, se as pessoas permanecessem obcecadas pela paixão, estaríamos em grandes apuros. As ondas da paixão iriam de encontro aos negócios, à indústria, à igreja, à educação e ao restante da sociedade. Por quê? Porque pessoas apaixonadas perdem o interesse nas outras coisas. Por esse motivo também chamamos a paixão de obsessão. O estudante colegial que entra em uma “paixão avassaladora”, vê suas notas despencarem. É difícil concentrar-se nos estudos quando se está apaixonado. Amanhã vai cair na prova a Segunda Guerra Mundial. Mas, quem se importa com essa guerra? Quando se está apaixonado(a), tudo o mais parece irrelevante. Um certo senhor me disse:
+
+— Dr. Chapman, meu trabalho é estafante! Eu, então, lhe perguntei:
+
+— O que você quer dizer com isso?
+
+— Eu conheci uma garota, apaixonei-me por ela e desde então não consigo fazer mais nada! Não consigo concentrar-me no serviço. Fico o dia inteiro sonhando com ela!
+
+A euforia do estado de paixão concede-nos a ilusão de que estamos em um relacionamento bem íntimo. Sentimos como se nos pertencêssemos um ao outro.
+
+Passamos a pensar que somos capazes de enfrentar qualquer problema que surja.
+
+Sentimo-nos altruístas em relação um ao outro. Um jovem disse a respeito de sua noiva:
+
+“Não consigo nem pensar em fazer algo que a magoe. Meu único desejo é vê-la feliz!”
+
+Essa obsessão dá-nos o falso sentimento de que nossas atitudes egocêntricas foram erradicadas e tornamo-nos um tipo de “Madre Teresa de Calcutá”, de tão desejosos que ficamos de fazer qualquer coisa para o bem de nosso(a) amado(a). A razão pela qual nos sentimos tão à vontade para fazer tais coisas, deve-se ao fato de sinceramente acreditarmos que a pessoa por quem estamos apaixonados sente o mesmo por nós.
+
+Cremos que ela também está comprometida em suprir nossas necessidades, e ama-nos tanto quanto a amamos e também nada fará para nos magoar.
+
+Esse modo de pensar é realmente uma utopia. Não é que sejamos hipócritas quanto ao que pensamos e sentimos, mas estamos dominados por expectativas irreais.
+
+Cometemos um erro de avaliação da natureza humana. Normalmente somos egoístas.
+
+Nosso mundo resume-se em nós mesmos. Ninguém é inteiramente altruísta. A euforia da paixão é que estabelece essa ilusão.
+
+Uma vez que a experiência da paixão siga seu rumo normal (é bom lembrar que, em média, a paixão dura por volta de uns dois anos), retornamos ao mundo real e começamos a nos impor. Ele expressa seus desejos, mas são diferentes dos dela. Ele deseja sexo, mas ela está muito cansada! Ele quer comprar um carro novo, mas ela diz que essa ideia é um absurdo. Ela quer visitar os pais, mas ele diz que não quer gastar tanto tempo com a família dela. Ele quer jogar futebol, mas ela diz:
+
+— Você gosta mais de futebol do que de mim!!
+
+Gradativamente a ilusão da intimidade dilui-se e os desejos individuais, as emoções, os pensamentos e os padrões de comportamento assumem seus lugares.
+
+Tornam-se duas pessoas. Suas mentes não se fundiram em uma só e suas emoções misturaram-se superficialmente no oceano do amor. Agora, então, as ondas da realidade começam a separá-los. Eles saem do domínio da paixão e nesse ponto muitos desistem e separam-se, divorciam-se e partem em busca de uma nova paixão; ou então desenvolvem o árduo trabalho de aprenderem a amar-se mutuamente sem a euforia da paixão.
+
+A experiência da paixão não possui enfoque em nosso próprio crescimento, nem no crescimento e desenvolvimento do cônjuge. Dificilmente também fornece o senso de realização.
+
+Alguns pesquisadores, entre eles o psiquiatra M. Scott Peck e a psicóloga Dorothy Tennov, chegaram à conclusão de que a experiência da paixão não deveria, de forma alguma, ser chamada de amor. Dr. Peck concluiu que o apaixonar-se não é amor verdadeiro, por três razões:
+
+Primeira, apaixonar-se não é um ato da vontade nem uma escolha consciente.
+
+Não importa o quanto desejemos, não conseguimos apaixonar-nos voluntariamente. Por outro lado, mesmo que não busquemos essa experiência, ela pode, simplesmente, acontecer em nossa vida. Muitas vezes apaixonamo-nos no momento errado e pela pessoa errada!
+
+Segunda, apaixonar-se não é amor verdadeiro porque não implica em nenhuma participação de nossa parte. Qualquer coisa que façamos apaixonados, requererá pouca disciplina e esforço. Os longos e dispendiosos telefonemas realizados, o dinheiro gasto em viagem para ficarmos juntos, os presentes, e todo trabalho envolvido, nada representam.
+
+Da mesma forma que os pássaros constroem instintivamente seus ninhos, a natureza da pessoa apaixonada impulsiona na realização de atos inusitados e não naturais, de um para com o outro.
+
+Terceira, a pessoa apaixonada não está genuinamente interessada em incentivar o crescimento pessoal daquela por quem nutre sua paixão. “Se temos algum propósito em mente ao nos apaixonarmos, é o de terminar nossa própria solidão e, talvez, assegurar essa solução através do casamento”. 3 A paixão não se focaliza em nosso crescimento pessoal e nem tampouco no da outra pessoa amada. Pelo contrário, a sensação é a de que já se chegou onde se deveria alcançar e não é necessário crescer mais. Encontramo-nos no ápice da felicidade e nosso único desejo é continuar lá. E nosso(a) amado(a), naturalmente, também não precisa mais crescer, pois já é perfeito(a). Esperamos somente que ele(ela) mantenha essa perfeição.
+
+Se apaixonar-se não é amor, então o que é? Dr. Peck afirma: “E um componente instintivo e geneticamente determinado do comportamento de acasalamento. Em outras palavras, um colapso temporário das reservas do ego que constituem o apaixonar-se; é uma reação estereotipada do ser humano a uma configuração de tendências sexuais internas e estimulações sexuais externas, as quais designam-se ao crescimento da probabilidade da união e elo sexual, tendo em vista a perpetuação da espécie”.
+
+Quer concordemos ou não com essa conclusão, os que dentre nós se apaixonaram e também saíram desse estado de paixão, concluirão que essa experiência arremessa-nos a uma órbita emocional diferente de qualquer outra que porventura experimentamos. A tendência é o rompimento com a nossa razão, o que nos leva a fazer e a dizer coisas que nunca faríamos, ou diríamos em momentos de maior sobriedade. De fato, quando saímos desse estado de paixão, questionamos como pudemos ter feito tais coisas. Quando a onda da emoção passa e voltamos ao mundo real, onde as diferenças são notórias, quantos de nós fizeram para si a pergunta:
+
+“Por que me casei? Não combinamos em nada!” No entanto, quando estávamos no auge da paixão, pensávamos que combinávamos em tudo — pelo menos, em tudo que era importante.
+
+Isso significa que, por termos sido “fisgados” dentro da ilusão da paixão, encontramo-nos agora frente a duas opções: 1 — estamos destinados a uma vida miserável com nosso cônjuge, ou 2 — devemos nos separar e tentar novamente? Nossa geração tem optado pela última decisão, ao passo que a anterior escolheu a primeira.
+
+Antes de concluirmos automaticamente o fato de que fizemos a melhor escolha, devemos examinar os dados. Atualmente, 40% dos primeiros casamentos, nos Estados Unidos, terminam em divórcio; 60% dos segundos e 75% dos terceiros, também. Pelo que se pode ver, a perspectiva de um segundo e terceiro casamentos felizes, não é muito atingida.
+
+As pesquisas realizadas parecem indicar que existe uma terceira e melhor alternativa: reconhecer que a paixão é o que é — um pico emocional temporário — e então desenvolver o amor verdadeiro com nosso cônjuge. Esse tipo de sentimento é de natureza emocional, mas não obsessivo. É o amor que une razão e emoção. Envolve um ato da vontade e requer disciplina, pois reconhece a necessidade de um crescimento pessoal.
+
+Nossa necessidade emocional básica não é apaixonar-se, mas ser genuinamente amado(a) pelo outro; é conhecer o amor que cresce com base na razão e na escolha e não no instinto. Preciso ser amado por alguém que escolheu me amar, que vê em mim algo digno de ser amado.
+
+Esse tipo de amor requer esforço e disciplina. É a escolha que fazemos de gastar nossa energia em benefício da outra pessoa, sabendo que, se sua vida é enriquecida por nosso esforço, também nos sentimos satisfeitos — a satisfação de termos realmente amado alguém. Não exige a euforia na experiência da paixão. Para falar a verdade, o amor verdadeiro não começa enquanto a experiência da paixão não tiver seguido seu curso.
+
+Amor racional, volitivo, é o tipo de amor para o qual os sábios nos conclamam.
+
+Não se deve levar em consideração os atos de bondade praticados por alguém que se encontre sob a influência da paixão obsessiva. Uma força instintiva impulsiona e suscita ações que vão além do comportamento normal. Porém, um retorno ao mundo real onde se inclui a escolha humana, permite optarmos por sermos gentis e generosos, o que é o amor verdadeiro.
+
+A necessidade emocional de amor deve ser suprida se formos emocionalmente saudáveis. Adultos casados desejam sentir-se amados por seus cônjuges. Sentimo-nos seguros quando nossos companheiros aceitam-nos, desejam-nos e estão comprometidos com nosso bem-estar. Durante o estágio da paixão sentimos todas essas emoções. É fantástico enquanto dura. Nosso erro é achar que ela nunca acabará.
+
+Essa obsessão, no entanto, não dura para sempre. Se equipararmos o casamento a um livro, poderemos compará-lo à introdução do mesmo. O âmago desta obra é o amor racional e volitivo. Esse é o tipo para o qual os sábios sempre nos conclamam. É um amor intencional.
+
+Essa é uma boa notícia aos casais que perderam seus sentimentos de paixão.
+
+Se o amor é uma opção, então eles possuem a capacidade de amar após a experiência da paixão haver passado e regressarem ao mundo real. Esse tipo de amor inicia-se com uma atitude — o modo de pensar. Amor é a atitude que diz: “Sou casado(a) com você e escolho lutar pelos seus interesses!” Então, os que optam por amar encontrarão formas apropriadas para demonstrar essa decisão.
+
+Alguém pode comentar: “Isso parece tão estéril! Amor como uma atitude e com um comportamento apropriado? Onde estão as estrelas cadentes e as fortes emoções? Onde ficam a ansiedade do encontro, a piscada de olho, a eletricidade do beijo e o entusiasmo do sexo? E a segurança emocional de se saber que ocupamos o primeiro lugar na mente da outra pessoa?”
+
+Este livro é exatamente sobre isso. Como suprir as profundas necessidades de amor de uma pessoa? Se aprendermos e optarmos por isso, então o amor que compartilharmos tornar-se-á melhor do que qualquer coisa que possamos sentir enquanto dominados pela paixão.
+
+Durante vários anos tenho compartilhado o conceito das cinco linguagens do amor em meus seminários e nas sessões de aconselhamento. Milhares de casais atestarão a validade do que você descobrirá através desta leitura. Meus arquivos estão lotados de cartas de pessoas com quem nunca me encontrei, dizendo: “Um amigo meu me emprestou uma de suas fitas sobre as linguagens do amor e sua mensagem revolucionou meu casamento. Tínhamos tentado há anos amar-nos, mas não conseguíamos. Agora que falamos as linguagens adequadas do amor, o clima emocional de nosso casamento tem melhorado muito!”
+
+Quando o “tanque do amor” emocional de seu cônjuge está cheio e ele se sente seguro de seu amor, o mundo todo fica mais claro e ele caminha para atingir o mais alto potencial de sua vida. Porém, quando este “reservatório” está vazio e ele se sente usado e não amado, o mundo todo parecerá escuro e não conseguirá utilizar seu potencial de vida.
+
+Nos próximos cinco capítulos explicarei as cinco primeiras linguagens emocionais do amor e então, no de número 9, ilustrarei como descobri-las, pois podem tornar seu esforço de amar mais produtivo.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 4;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 4 - A Primeira Linguagem do Amor: Palavras de Afirmação$t$, 4,
+$conteudo$Mark Twain disse certa vez: “Um bom elogio pode me manter vivo durante dois meses”. Se tomarmos suas palavras ao pé da letra, seis elogios por ano manteriam seu
+
+“tanque do amor” em nível operacional. Sua esposa, porém, provavelmente precisará de mais do que isso.
+
+Uma forma de se expressar o amor emocional é utilizar palavras que edificam.
+
+Salomão, um dos escritores da Bíblia, escreveu: “A morte e a vida estão no poder da língua; o que bem a utiliza come do seu fruto”. Muitos casais nunca aprenderam o tremendo poder de uma afirmação verbal mútua. Mais tarde, este rei acrescentou: “A ansiedade no coração do homem o abate, mas a boa palavra o alegra”.
+
+Elogios verbais e palavras de apreciação são poderosos comunicadores do amor.
+
+São os melhores comunicados em forma de expressão direta e simples, como:
+
+“Você ficou tão elegante com esse terno!” “Você está muito bem com esse vestido!” “Ninguém faz essas batatas melhor que você!”
+
+“Querido, muito obrigada por ter lavado a louça para mim esta noite!”
+
+“Muito obrigada por pagar mais um dia da faxineira esta semana. Quero que saiba que estou realmente grata!”
+
+“Muito obrigado por ter feito um jantar tão gostoso!”
+
+O que deverá acontecer ao clima emocional do casamento se o marido e a mulher ouvirem essas palavras de afirmação regularmente?
+
+Anos atrás eu estava em meu escritório com a porta aberta quando uma senhora apareceu de repente e perguntou:
+
+— O senhor tem um minuto?
+
+— Sim, claro — respondi. Ela se sentou e disse:
+
+— Dr. Chapman, estou com um problema. Não consigo fazer com que meu marido pinte o nosso quarto. Já faz nove meses que lhe peço diariamente, mas não tem adiantado. Já tentei tudo o que podia, mas não há jeito.
+
+Meu primeiro pensamento foi: “Minha senhora, parece que você bateu na porta errada. Não temos pintores aqui”. No entanto, virei-me para ela e disse:
+
+— Fale-me sobre isso. E ela começou a contar:
+
+— Bem, sábado passado foi um grande exemplo. Lembra-se como o dia estava lindo? Sabe o que meu marido fez o dia inteiro? Lavou e encerou o carro.
+
+— E o que a senhora fez?
+
+— Fui à garagem e disse:
+
+— Bob, não consigo entendê-lo. O dia hoje está perfeito para pintar o quarto e você está aqui lavando e encerando o carro!
+
+— E seu comentário deu certo? Ele foi pintar o quarto?
+
+— Não. O quarto encontra-se do jeito que estava, sem pintura. Não sei mais o que fazer!
+
+— Deixe-me fazer-lhe uma pergunta: A senhora é contra carros limpos e encerados?
+
+— Não, mas quero que meu quarto seja pintado!
+
+— A senhora tem certeza de que seu marido sabe que a senhora gostaria que ele pintasse o quarto?
+
+— Estou plenamente convicta. Tenho pedido isso a ele durante nove meses.
+
+— Deixe-me fazer-lhe mais uma pergunta: Seu marido faz alguma coisa bem feita?
+
+— Como o quê?
+
+— Coisas como recolher o lixo, limpar os vidros de seu carro, colocar combustível no automóvel, pagar a conta de luz, ajudá-la a vestir um casaco, etc.
+
+— Sim, ele faz muito bem algumas dessas coisas.
+
+— Então, tenho duas sugestões. Primeira, nunca mais mencione a pintura do quarto. Esqueça e jamais fale com ele sobre isso.
+
+Ela olhou para mim e disse:
+
+— Não vejo em que isso pode ajudar!
+
+O objetivo do amor não é você conseguir algo que deseje, mas fazer alguma coisa pelo bem-estar daquele a quem ama. No entanto, é fato que, quando recebemos elogios, dispomo-nos mais a retribuir a gentileza recebida.
+
+— Escute, você acabou de dizer que ele já sabe qual é o seu desejo: gostaria que ele pintasse o quarto. Não é mais preciso dizer-lhe isso. Ele já sabe. A segunda sugestão é a seguinte: na próxima vez que seu marido fizer alguma coisa bem feita, expresse isso a ele verbalmente, elogiando-o. Se ele levar o lixo para fora, diga-lhe algo como “Bob, quero que você saiba que sou muito grata por ter levado o lixo para fora”.
+
+— Não diga jamais:
+
+“Se demorasse mais para levar esse lixo para fora, as moscas fariam isso por você!”
+
+— Quando ele pegar as contas para pagar, diga algo como:
+
+“Obrigada por pagar nossas contas; há maridos que não fazem isso e quero que saiba que sou realmente muita grata!”
+
+— Todas as vezes que ele fizer algo de bom, elogie-o.
+
+— Não vejo como isso pode fazer com que ele pinte o quarto!
+
+— A senhora pediu meu conselho, eu o dei. Faça como achar melhor!
+
+Ela não estava muito satisfeita comigo quando foi embora. Três semanas mais tarde ela voltou a meu escritório e disse:
+
+— Deu certo!
+
+Ela aprendeu que as palavras elogiosas são realmente motivadoras.
+
+Não sugiro que use de bajulação para conseguir o que deseja de seu cônjuge. O objetivo do amor não é obter o que se quer, mas fazer algo pelo bem-estar daquele a quem se ama. É verdade, porém, que ao recebermos palavras elogiosas, de afirmação, tornamo-nos mais motivados a sermos recíprocos e a fazermos algo que nosso cônjuge deseje.
+
+PALAVRAS ENCORAJADORAS
+
+Elogio verbal é uma, entre as muitas formas de se expressar palavras de afirmação ao seu cônjuge. Outra maneira: as palavras encorajadoras. O termo encorajar significa “inspirar coragem”. Em determinadas fases da vida todos nós nos sentimos inseguros. Não possuímos a coragem necessária, e esse medo impede-nos de realizarmos certos atos positivos que gostaríamos de concretizar. O potencial latente de seu cônjuge, nestas áreas de instabilidade, talvez espere suas palavras de encorajamento.
+
+Allison sempre gostou de escrever. Mais tarde, na faculdade, fez alguns cursos de jornalismo. Percebeu rapidamente que seu entusiasmo em redigir superava, em muito, seu interesse pela História, que fora sua matéria predileta. Já era muito tarde para que mudasse de faculdade mas, após se formar e antes de seu primeiro filho, ela escreveu vários artigos. Apresentou um deles à redação de uma revista; porém, como não foi aceito, não teve mais coragem de tentar novamente em outro lugar. Agora, com os filhos já mais velhos e, com um pouco mais de tempo, ela resolveu voltar a escrever.
+
+O marido de Allison, Robert, prestara pouca atenção nos artigos dela nos primeiros anos de casamento. Ele se ocupara com sua própria carreira, pois desejava galgar todos os degraus de sua empresa. Ainda em tempo, Robert percebeu que o real significado da vida encontrava-se não em realizações, mas nos relacionamentos. Ele aprendeu a dar mais valor para Allison e aos interesses dela. Nesse ritmo, foi natural que, em uma das noites, ele pegasse um dos artigos escritos por sua esposa e o lesse. Ao terminar ele se dirigiu para onde Allison lia um livro. Muito entusiasmado, ele disse:
+
+— Desculpe interromper sua leitura, mas eu tenho que lhe dizer uma coisa: Acabei de ler seu artigo “Aproveite seu Feriado”. Allison, você é uma excelente escritora.
+
+Esta matéria precisa ser publicada. Você escreve de forma clara e usa palavras que faz com que o leitor consiga visualizar o que se relata. Seu estilo é fascinante. Você tem de levar este artigo para algumas revistas.
+
+— Você acha realmente? — ela perguntou um pouco hesitante.
+
+— Acho sim! Seu material é muito bom mesmo!
+
+Quando Robert saiu da sala, ela não continuou sua leitura. O livro ficou aberto em seu colo e ela sonhou acordada durante meia hora sobre o que o marido acabara de falar. Quis saber se outras pessoas veriam seu artigo da mesma forma que seu esposo o observara. Lembrou-se de quando lhe passaram um fax agradecendo, porém dispensando seu artigo. Mas agora era diferente. Seus textos estavam melhores. Ela havia amadurecido.
+
+Antes que levantasse para pegar um copo d’água, tomou uma decisão. Levaria seus artigos para a apreciação de algumas revistas. Iria atrás da possibilidade deles serem publicados.
+
+As palavras encorajadoras de Robert foram pronunciadas há catorze anos.
+
+Allison já possui vários artigos publicados desde então, e agora já tem um contrato para escrever. É uma excelente escritora. Porém, foram as palavras encorajadoras de seu marido que a inspiraram e impulsionaram a dar o primeiro passo no árduo processo de ter um artigo publicado.
+
+Talvez seu cônjuge possua alguma qualidade que tenha grande potencial, mas se encontra adormecida. Aquela capacidade talvez aguarde suas palavras encorajadoras.
+
+Quem sabe seja preciso que ele(ela) se matricule em algum curso para desenvolver esse potencial. Talvez seja necessário que ele(ela) se encontre com alguém da área em questão, para pegar algumas dicas do próximo passo a ser dado. Suas palavras podem dar a seu cônjuge a coragem necessária para ele ir atrás de seu sonho.
+
+Por favor, perceba que não falo para pressionar seu cônjuge a fazer alguma coisa que você queira que ele realize. Oriento sobre como encorajá-lo a desenvolver alguma aptidão que ele já possua. Por exemplo, alguns maridos pressionam suas esposas a fazer regime. Eles dizem que as encorajam, mas elas sentem isso como uma condenação.
+
+Somente quando a pessoa, por si, decide perder peso, é que você deve encorajá-la. Até que parta dela o desejo, suas palavras pesarão como um sermão. É muito raro esse tipo de discurso encorajador, pois soa mais como julgamento, destinado a estimular a culpa. Não expressa amor, mas rejeição.
+
+Encorajamento requer empatia que nos leva a enxergar o mundo segundo a perspectiva de nosso cônjuge. Devemos, em primeiro lugar, procurar saber o que é importante para ele.
+
+Se, no entanto, seu cônjuge lhe disser: “Estou pensando em fazer uma dieta neste verão!” Aí, então, você terá a oportunidade de transmitir-lhe palavras encorajadoras, algo como: “Se você fizer isso, posso dizer-lhe que será um sucesso! Essa é uma das coisas que gosto em você. Quando coloca algo na cabeça, dá um jeito de fazê-lo. Se isso é o que realmente deseja, farei o que puder para ajudá-lo(a). E não se preocupe com o preço do tratamento, pois daremos um jeito em relação ao dinheiro”. Tais palavras poderão dar coragem para que seu cônjuge ligue à clínica que promove aquela dieta.
+
+Encorajamento requer empatia que nos leva a ver o mundo da perspectiva de nosso cônjuge. Devemos, primeiramente, aprender o que é importante para ele(ela). Aí, então, seremos capazes de encorajá-lo(a). O encorajamento verbal comunica: “Eu sei. Eu me preocupo. Estou do seu lado. Como posso ajudá-lo?” É uma forma de dizer que acreditamos nele(a) e em suas habilidades. É dar crédito e louvor.
+
+A maioria de nós possui mais potencial do que poderíamos imaginar que tivéssemos. O que nos segura é, na maioria das vezes, a falta de coragem. Um cônjuge amoroso pode ser um importante catalisador. É natural que seja difícil elaborar e dizer palavras encorajadoras. Talvez não seja sua primeira linguagem. Pode ser que, para você, seja necessário grande esforço para aprender a falar essa segunda língua. Isso será especialmente difícil se você tem um padrão de palavras críticas e condenatórias. Porém, posso assegurar-lhe que seu esforço será recompensado.
+
+PALAVRAS BONDOSAS
+
+O amor é esplendoroso. Se desejamos comunicá-lo de forma verbal devemos utilizar palavras bondosas. Isso tem a ver com a forma através da qual nos expressamos.
+
+Uma mesma sentença pode ter dois diferentes significados, dependendo de como ela é apresentada. A frase “Eu amo você”, quando dita com bondade e ternura, pode ser uma genuína expressão de amor. O que dizer da mesma frase dita da seguinte forma: “Eu amo você?” O ponto de interrogação muda todo o significado. Algumas vezes nossas palavras dizem uma coisa, mas o tom de voz afirma outra completamente diferente. Enviamos mensagens dúbias. Nosso cônjuge, geralmente, interpretará a mensagem que lhe enviarmos com base na tonalidade da voz e não nas palavras que usarmos. A frase: “Eu faço questão de lavar a louça hoje a noite!”, dita em tom de voz cavernosa, não será recebida como uma expressão de amor. Por outro lado, podemos compartilhar mágoa, dor e mesmo raiva, de maneira meiga, e aquela mensagem ser uma manifestação de amor.
+
+Por exemplo: “Fiquei desapontada e magoada por você não haver se oferecido para me ajudar esta noite!”, dita de forma honesta, gentil, pode ser uma expressão de amor. A pessoa que fala quer ser conhecida por seu cônjuge. Ao compartilhar seus sentimentos dará um passo para aumentar a intimidade entre ambos. Solicitará uma oportunidade para conversar sobre uma dor, a fim de curá-la. A mesma palavra dita em voz alta, irritada, não será uma expressão de amor, mas sim de condenação e julgamento.
+
+A maneira como falamos é extremamente importante. O rei Salomão disse com toda sabedoria: “A resposta branda desvia o furor”. Quando seu cônjuge estiver bravo, deprimido e disser palavras agressivas, se você optar em permanecer gentil, não somente deixará de responder agressivamente, mas usará palavras brandas. Receba o que ele diz como uma comunicação de seu estado emocional. Permita que ele externe sua ira, raiva e sua percepção da situação. Procure enxergar de seu ponto de vista e então expresse de forma bondosa e gentil sua opinião sobre o porquê dele(a) se sentir daquela forma.
+
+Se você entender errado o motivo da alteração de suas emoções, reconheça o erro e peça perdão. Se a sua motivação for diferente da que ele percebe, explique-a de forma gentil. Você deverá procurar a compreensão e reconciliação e não provar seu ponto de vista como a única forma lógica para explicar o ocorrido. Isso é amor maduro, o tipo que devemos aspirar se buscarmos o crescimento em nossos casamentos.
+
+O amor jamais registra uma lista de erros. Ele não traz à tona fracassos passados. Nenhum de nós é perfeito. No casamento, nem sempre fazemos o melhor ou o mais certo. Fazemos e dizemos coisas duras a nossos cônjuges. Também jamais apaguemos o passado. Devemos confessar e concordar que agimos mal. Peçamos perdão e tentemos agir diferentemente no futuro. Após confessar a falta e solicitar o perdão, não poderei fazer mais nada para aliviar a dor causada a meu cônjuge. Quando erro com minha esposa e ela expressa que foi magoada e sugere que eu peça perdão, preciso fazer uma escolha: justiça ou perdão. Se eu escolher a justiça e tentar compensá-la, ou então fazê-la pagar por seu ato errado, farei de mim mesmo um juiz e ela uma ré. A intimidade torna-se impossível de ser restaurada. O perdão é o caminho do amor. Fico admirado como há pessoas que misturam o dia de hoje com o de ontem. Insistem em trazer para o presente os fracassos do passado e, ao fazerem isso, estragam um dia potencialmente maravilhoso.
+
+“Não posso acreditar que você tenha feito isso!’’ “Não sei se algum dia poderei esquecer isso!” “Você não tem a menor ideia de como me magoou!” “Não entendo como você pode ficar aí sentado(a) tão tranquilo(a) depois de ter me tratado dessa maneira!”
+
+“Você deveria se ajoelhar e implorar o meu perdão!” “Não sei se conseguirei perdoá-lo(la)!” Essas frases não são de amor, mas de amargura, ressentimento e vingança.
+
+Se desejamos desenvolver um relacionamento precisamos saber quais são os desejos da pessoa amada. Se queremos amar um ao outro, precisamos saber como fazê-lo.
+
+A melhor coisa que podemos fazer com os fracassos do passado é tornálos em simples história. Sim, eles ocorreram, e certamente machucaram. E talvez ainda magoem, mas ele reconheceu seu erro e pediu o seu perdão. Não conseguimos apagar o passado, mas podemos aceitá-lo como experiência de vida. Vivamos o dia de hoje livres das mágoas anteriores.
+
+O perdão não é um sentimento, mas um compromisso. É a opção de se mostrar misericórdia e não de se jogar a ofensa no rosto do ofensor. Perdão é uma expressão de amor.
+
+“Amo você. Preocupo-me com você e decido perdoá-lo(la). Mesmo que eu continue ainda por um tempo a sentir-me machucado(a), não permitirei que o ocorrido interponha-se entre nós. Espero que aprendamos com essa experiência. Você não é um fracassado porque teve um fracasso. Você é meu marido (esposa) e juntos continuaremos nossa caminhada.”
+
+Estas são palavras de afirmação, ditas no dialeto de palavras gentis.
+
+PALAVRAS HUMILDES
+
+O amor faz solicitações, não imposições. Quando dou ordens a meu cônjuge, torno-me pai (mãe) e ele(ela) filho(a). O pai diz ao filho de três anos o que ele deve fazer, ou melhor, o que ele precisa realizar. Isso é necessário porque uma criança nesta idade ainda não sabe como navegar nas traiçoeiras águas da vida. No casamento, no entanto, somos iguais, parceiros adultos. Não somos perfeitos, mas adultos e parceiros. Se vamos desenvolver um relacionamento íntimo, precisamos conhecer os desejos um do outro. Se queremos amar um ao outro, precisamos saber o que ele(ela) pretende.
+
+No entanto, a forma como expressamos esses desejos é muito importante. Se os colocamos como ordens, eliminamos as possibilidades da intimidade e afugentamos nosso cônjuge. Se, no entanto, expressarmos nossas necessidades e desejos como pedidos, apontaremos um caminho, mas não empurraremos ninguém para ele. O marido que diz:
+
+“Querida, sabe aquela torta de maçã deliciosa que você faz? Será que poderia preparar uma esta semana? Eu amo aquela sobremesa!”, concederá uma dica de como ela pode expressar-lhe amor e, dessa forma, ambos crescerão em intimidade. Por outro lado, o esposo que diz: “Desde que nosso filho nasceu, você nunca mais fez aquela torta de maçã.
+
+Pelo jeito, vou ficar sem comê-la por mais uns 18 anos”, deixou de ser adulto e tornou a comportar-se como um adolescente. Tais reclamações não constroem a intimidade.
+
+A esposa que diz: “Será que você poderia limpar a calha este final de semana?”, expressa amor ao fazer uma pergunta, um pedido. Porém, a que diz: “Se você não der um jeito de limpar logo essa calha, ela vai acabar despencando do telhado. Já existem brotos de árvore nela e espalham-se por todos os lados!”, não demonstra amor, mas sim torna-se uma mulher dominadora.
+
+Quando alguém faz um pedido a seu cônjuge, afirma as habilidades dele. Faz entender que ele(ela) possui, ou pode fazer algo, que é significativo ou valioso para o outro. No entanto, quando dá ordens, torna-se um tirano. Seu cônjuge não se sentirá afirmado, mas diminuído. O pedido implica no elemento escolha. Seu parceiro pode atender ou não o seu pedido, porque o amor é sempre uma decisão. É isso que o torna significativo. Saber que meu cônjuge ama-me a ponto de atender meu pedido comunica emocionalmente que ele(ela) se importa comigo, respeita-me, admira e deseja fazer algo que me agrade. Não há como desenvolver o amor emocional através de intimações. Meu cônjuge talvez obedeça às minhas ordens, mas isso não será uma expressão de seu amor.
+
+Será uma forma de medo, culpa ou de alguma outra emoção, mas jamais de amor. Então, um pedido cria uma oportunidade de se expressar amor, ao passo que uma ordem sufoca essa possibilidade.
+
+DIALETOS VARIADOS
+
+Palavras de Afirmação são uma das cinco linguagens básicas do amor. Dentro desse idioma, no entanto, há vários dialetos. Já falamos sobre alguns, mas ainda há muitos outros. Diversos livros e artigos já foram escritos sobre esse tema. Todos eles têm em comum o uso de palavras que afirmam o cônjuge. O psicólogo William James diz que, possivelmente, a mais profunda necessidade humana é a de ser apreciado(a). Palavras de Afirmação poderão suprir essa necessidade em muitas pessoas.
+
+Se você não é um homem, ou mulher que gosta de expressar palavras amorosas; se essa não é sua primeira linguagem mas acha que é a de seu cônjuge, sugiro que adquira uma caderneta e chame-a de “Palavras de Afirmação”. Quando você ler um artigo ou um livro romântico, escreva ali algumas palavras de afirmação que tenha gostado. Quando assistir a alguma palestra sobre amor, ou ouvir algum amigo dizer alguma coisa positiva sobre outra pessoa, anote. Com o tempo você terá colecionado uma lista de palavras para serem usadas ao transmitir amor a seu cônjuge.
+
+Outra coisa que se deve fazer é pronunciar palavras de afirmação de forma indireta, ou seja, dizer algo positivo sobre seu cônjuge, mesmo na ausência dele.
+
+Eventualmente, alguém transmitirá a ele(ela) o que você disse; e assim ganhará os bônus do amor. Diga a sua sogra que a filha dela é sensacional. Possivelmente, quando ela contar isso a sua esposa, com certeza aumentará alguma coisa e você acabará ganhando mais crédito. Também elogie seu cônjuge na frente dos outros quando ele, ou ela, estiver presente. E quando você for o alvo do elogio, certifique-se de repartir o crédito com seu cônjuge.
+
+Há muitas outras formas de se dizer palavras de afirmação, entre elas, escrevê-las. Frases escritas têm a vantagem de serem lidas várias vezes.
+
+Aprendi uma lição muito importante sobre palavras de afirmação e linguagens do amor em Little Rock, Arkansas. Minha visita a Bill e Betty Jo ocorreu em um belo dia da primavera. Eles moravam em um condomínio fechado, em uma casa com uma gradinha na frente, um gramado bem verde no jardim e canteiros de viçosas flores. Era uma visão idílica. Ao entrar, porém, percebi que o clima interior era bem diferente. O casamento deles desmoronara. Após vinte anos de matrimônio e possuidores de duas lindas crianças, perguntavam-se, primeiramente, por que haviam se casado. Discordavam de tudo. A única coisa com que concordavam é que ambos amavam os filhos. Ao desenrolar sua história, percebi que Bill era muito dedicado ao seu trabalho e muito pouco tempo oferecia a Betty Jo, sua esposa, a qual trabalhava meio período, possivelmente para não permanecer dentro de casa. A forma de convivência entre os dois era a de evitarem estar juntos. Tentavam ficar longe um do outro para que seus conflitos não assumissem proporções maiores. O ponteiro do mostrador do “tanque de amor” de cada um deles apontava para o termo
+
+“vazio”.
+
+Disseram que já tinham procurado aconselhamento; porém, em nada adiantara.
+
+Eles assistiriam ao meu seminário sobre casamento e eu partiria no dia seguinte. Aquele, portanto, seria meu único encontro com Bill e Betty. Resolvi, então, “colocar todos os ovos em uma cesta só”.
+
+Gastei uma hora em particular com cada um. Ouvi atentamente as versões de suas histórias. Percebi que, apesar do vazio existente no relacionamento deles e do desacordo reinante naquela convivência, havia certas coisas que apreciavam um no outro.
+
+Bob disseme:
+
+“Ela é uma boa mãe, uma excelente dona de casa e uma eximia cozinheira…
+
+quando resolve cozinhar. Porém, não demonstra a menor afeição por mim. Trabalho feito um louco e simplesmente não há por parte dela o menor reconhecimento”.
+
+Em minha conversa com Betty ela concordou que Bill era um excelente provedor. Ela, no entanto, reclamou:
+
+“Ele não move uma palha para me ajudar em casa e nunca tem tempo para mim. O que adianta ter esta casa, o carro novo e todas as outras coisas se não podemos curti-los juntos?”
+
+Obtive mais informações e então decidi focalizar meu aconselhamento em dar a mesma sugestão para cada um. Disse a Bob e a Betty Jo separadamente que eles possuíam a chave para mudar o clima emocional do casamento. Eu lhes afirmei:
+
+“Essa chave é expressar a apreciação pelas coisas que gosta nele (nela) e, no momento, suspender as reclamações sobre o que não se agrada.”
+
+Repassei com eles os comentários positivos que fizeram um do outro e ajudei-os a fazer uma lista desses traços positivos. A relação de Bill focalizava as atividades de Betty Jo como boa mãe, excelente dona de casa e exímia cozinheira. A lista de Betty Jo registrava a dedicação de Bill ao trabalho e sua provisão financeira à família. As relações foram feitas da forma mais detalhada possível. A lista de Betty Jo ficou assim: Ele não faltou um dia de trabalho em vinte anos. É um trabalhador dinâmico.
+
+Ele recebeu várias promoções nesses anos todos. E sempre deseja aumentar sua produtividade.
+
+Ele paga as prestações da casa mensalmente.
+
+Ele paga as contas de água, gás e luz em dia.
+
+Ele nos comprou um carro novo há três anos.
+
+Ele corta a grama, ou arruma alguém para fazê-lo, semanalmente, durante a primavera e o verão.
+
+Ele varre as folhas ou contrata alguém para fazê-lo durante o outono.
+
+Ele providencia bastante dinheiro para alimentação e roupas da família.
+
+Ele leva o lixo para fora nos dias de sua coleta.
+
+Ele me dá dinheiro para comprar presentes de Natal para toda a família.
+
+Ele concorda que eu gaste o dinheiro que recebo em meu emprego, da forma que eu desejar.
+
+A lista de Bill ficou assim:
+
+Ela arruma as camas todos os dias.
+
+Ela passa o aspirador na casa uma vez por semana.
+
+Ela leva diariamente as crianças para a escola, depois de dar-lhes um bom café da manhã.
+
+Ela faz janta três vezes por semana.
+
+Ela realiza as compras no supermercado. Ajuda as crianças a fazer seus deveres de casa.
+
+Ela leva e traz as crianças quando há atividades na escola e na igreja.
+
+Ela leciona para crianças pequenas na Escola Dominical.
+
+Ela leva minhas roupas ao tintureiro.
+
+Ela lava as roupas e passa quando é preciso.
+
+Sugeri que acrescentassem a essas listas coisas que percebessem nas semanas seguintes. Solicitei também que duas vezes por semana selecionassem alguma atitude positiva do outro e elogiassem. Dei-lhes ainda uma recomendação que se Bill a elogiasse, ela não lhe respondesse com outro elogio, mas deveria simplesmente recebê-lo e dizer:
+
+“Muito obrigada por suas palavras.”
+
+Disse a mesma coisa a Bill. Encorajei-os a proceder dessa maneira durante dois meses e, se achassem que funcionava, deveriam então continuar. Se, no entanto, a experiência não ajudasse a melhorar o clima emocional do casamento, eles deveriam simplesmente encarar tudo aquilo como outra tentativa que não dera certo.
+
+No dia seguinte peguei o avião e voltei para casa. Anotei em minha agenda para dois meses depois ligar a Bill e Betty, a fim de saber o que acontecera. Quando lhes telefonei, já em pleno verão, pedi para falar particularmente com cada um. Fiquei impressionado ao notar que Bill dera um grande passo à frente. Ele percebeu que eu concedera o mesmo conselho à sua esposa, mas encarara tudo de forma positiva. Para falar a verdade, ele achou ótimo! Ela expressava apreciação pelo seu trabalho duro e pela provisão que dava à família. Ele disse:
+
+“Ela realmente conseguiu fazer com que eu me sentisse um homem novamente.
+
+Ainda temos muito trabalho pela frente, Dr. Chapman, mas acredito francamente que estamos no caminho certo.”
+
+Quando conversei com Betty Jo, no entanto, achei que ela dera um passo muito pequeno. Ela me falou:
+
+“Alguma coisa melhorou, Dr. Chapman. Bill elogia-me, como o senhor sugeriu, e acredito que haja sinceridade nisso. Mas ele ainda não gasta nenhum minuto comigo.
+
+Trabalha o tempo todo e não tem uma hora para mim.”
+
+Enquanto eu ouvia Betty Jo, as “luzes” acenderam. Sabia que fizera uma grande descoberta. A linguagem do amor de uma pessoa não é necessariamente a mesma da outra. Era óbvio que a primeira linguagem do amor de Bill era “Palavras de Afirmação”. Ele era um trabalhador dedicado e apreciava seu emprego. O que ele mais queria de sua esposa era que ela expressasse admiração por isso. Aquele padrão foi provavelmente estabelecido em sua infância, e a necessidade de receber elogios ainda era premente em sua vida adulta. Betty Jo, por sua vez, possuía uma carência emocional em outra área.
+
+Era-lhe agradável receber elogios, mas ansiava por algo mais, exatamente a segunda linguagem do amor.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 5;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 5 - A Segunda Linguagem do Amor: Qualidade de Tempo$t$, 5,
+$conteudo$Era o meu dever perceber qual a primeira linguagem do amor de Betty Jo, logo no início, pelo que ela me disse naquela noite de primavera quando os visitei em Little Rock:
+
+“Bill é um bom provedor, mas não gasta tempo algum comigo! Do que me servem a casa, o carro novo e as demais coisas se não os “curtimos” juntos?”
+
+O que ela desejava? Ter um tempo de qualidade com seu marido. Ela queria que ele focalizasse nela a sua atenção, que lhe dedicasse mais tempo e pudessem realizar algumas atividades juntos.
+
+Quando digo “Qualidade de Tempo” desejo afirmar que você deve dedicar a alguém sua inteira atenção, sem dividi-la. Não significa sentar no sofá e assistir televisão.
+
+Quando o tempo é gasto dessa forma, quem recebe a atenção são as estações de TV, e não o cônjuge. O que pretendo afirmar é algo como sentar-se ao sofá com a televisão desligada, olhar um para o outro e conversar, no processo de dedicação mutua. É dar um passeio juntos, só os dois. É ambos saírem para comer fora, é um olhar nos olhos do outro e conversar. Você já percebeu que, nos restaurantes, é perfeitamente possível notar a diferença entre um casal de namorados e um de casados? Os namorados miram-se nos olhos e “batem papo”. Os casados sentam-se à mesa e olham ao redor do restaurante.
+
+Pode-se dizer que foram ali apenas para comer!
+
+Quando me sento ao sofá com minha esposa e dedico-lhe vinte minutos de minha inteira atenção e ela faz o mesmo por mim, concedemos um ao outro vinte minutos de nossa existência. Nunca mais teremos aquele tempo novamente! Entregamos ali parte de nossas vidas um ao outro. Esse é um poderoso comunicador do amor emocional.
+
+Um único remédio não pode curar todas as enfermidades existentes. Em meu aconselhamento para Bill e Betty Jo, cometi um erro muito sério, pois afirmei que palavras de afirmação teriam o mesmo significado para os dois. Esperava com isso que, se cada um deles desse ao outro uma afirmação verbal, o clima emocional mudaria e ambos sentir-se-iam amados. Isso funcionou para Bill. Seus sentimentos em relação a Betty Jo tornaram-se mais positivos. Ela passou a apreciar mais o trabalho duro que ele desempenhava. Porém, o mesmo não ocorreu com Betty Jo, porque “Palavras de
+
+Afirmação” não era sua primeira linguagem do amor, mas sim a qualidade de tempo.
+
+Peguei novamente o telefone, liguei para Bill e agradeci-lhe o esforço feito nos últimos dois meses. Disselhe que ele fizera um bom trabalho ao dizer palavras de afirmação para Betty Jo e ela as ouvira. Ele me disse:
+
+— Mas Dr. Chapman, ela ainda continua triste. Acho que as coisas não melhoraram muito para ela!
+
+E eu lhe respondi:
+
+— Você tem razão, Bill. E acho que sei o porquê. O problema é que sugeri a linguagem do amor errada!
+
+Bill não tinha a menor noção do que eu estava falando. Expliquei-lhe então que os motivos que levam uma pessoa a experimentar o amor emocional por outra não são necessariamente os mesmos.
+
+Ele concordou comigo que a sua linguagem do amor era realmente “Palavras de Afirmação”. Contou-me então que desde menino isso era importante para ele e estava contente ouvir Betty Jo expressar apreciação pelas coisas que ele fazia. Expliquei, então, que a linguagem de Betty Jo não era “Palavras de Afirmação”, mas sim qualidade de tempo. Passei-lhe também o conceito de dedicar atenção integral ao cônjuge, dizendo-lhe que não deveria ouvi-la enquanto lia jornal ou assistia televisão, mas sim olhá-la nos olhos e dedicar-lhe toda a atenção; fazer com o cônjuge algo que ele aprecia, e ser realmente sincero nessa atividade. Ele então me disse: “Algo como ir com ela a um concerto…” As luzes começavam a brilhar em Little Rock.
+
+— Dr. Chapman, ela sempre reclamou disso! Nós não temos atividades em comum. Realmente não gasto sequer um momento com ela. Betty Jo lembra-me o tempo todo que antes de nos casarmos, costumávamos passear e tínhamos várias atividades juntos, mas agora vivo ocupado demais. Essa é realmente sua linguagem do amor, sem sombra de dúvida. Mas… Dr. Chapman, o que eu posso fazer, se meu trabalho realmente exige muito de mim!?
+
+Pedi-lhe, então, que me falasse sobre seu serviço. Por dez minutos ele me contou a história de como subira os degraus de sua firma, de quão arduamente trabalhara para isso e orgulhava-se de seus feitos. Falou-me também de seus planos para o futuro e que, pelos seus cálculos, dentro de cinco anos chegaria ao posto que sonhava.
+
+Perguntei-lhe então:
+
+— Você quer chegar lá sozinho, ou deseja a companhia de Betty Jo e de seus filhos?
+
+— Quero que eles estejam comigo. É por isso que sofro tanto quando ela reclama do tempo que gasto no serviço. Realizo o que faço por nós. Quero que ela participe disso, mas Betty insiste em reagir negativamente.
+
+— Você começa a entender o porquê dela ser tão negativa Bill? A linguagem do amor de Betty Jo é “Qualidade de Tempo”. Você lhe dedica tão pouco tempo que o “tanque do amor” dela está vazio. Ela não sente segurança em seu amor. Por isso, em sua mente, ela rejeita o que o afasta dela, ou seja, seu trabalho. Ela realmente não odeia sua profissão. Ela detesta o fato de sentir tão pouco amor de sua parte. Só há uma solução para isso, Bill, e o preço é alto. Você terá de arrumar um tempo para gastar com Betty Jo. Você precisa amá-la na linguagem dela.
+
+— O senhor está certo, Dr. Chapman. Como devo começar?
+
+— Você ainda tem o caderno onde anotou as características positivas de Betty Jo?
+
+— Tenho, está bem aqui.
+
+— Ótimo. Faça uma outra lista. O quê, em sua opinião, Betty Jo gostaria de realizar em sua companhia? Procure lembrar-se de coisas que ela já mencionou ao longo dos anos.
+
+E a lista de Bill ficou assim:
+
+Pegar nosso carro novo e irmos para as montanhas passar uma semana (às vezes com as crianças, ou somente nós dois);
+
+Encontrá-la para almoçar (em um bom restaurante ou, algumas vezes, até no McDonald’s);
+
+Contratar uma babá para cuidar das crianças e juntos jantarmos fora (só nós dois);
+
+Todas as vezes que eu chegar em casa à noite, sentar e contar a ela sobre meu dia e ouvir o que ela tem a dizer sobre o dela (ela não gosta que eu veja televisão ou leia quando conversamos);
+
+Gastar um tempo com os filhos, e discutir a vida escolar deles; Gastar um tempo só brincando com as crianças;
+
+Fazer em um determinado sábado um piquenique com ela e as crianças e não reclamar das formigas e nem das moscas;
+
+Tirar férias com a família, pelo menos uma vez por ano; Sair para conversarmos, enquanto caminhamos (mas sem andar na frente dela).
+
+Ao terminar a lista, Bill disse:
+
+— São essas as coisas das quais me recordo, que ela fala ao longo de todos estes anos.
+
+— Você já sabe o que eu vou sugerir-lhe, não é, Bill?
+
+— Colocar essa lista em prática, não é? — respondeu ele.
+
+— É isso mesmo. Um tópico da lista por semana, durante os próximos dois meses. Como você vai arrumar tempo? Dê um jeito. Você é um homem inteligente e não estaria onde está se não soubesse tomar decisões importantes. Você possui a habilidade para planejar sua vida e incluir Betty Jo em seus planos.
+
+— Está certo. Vou dar um jeito.
+
+— Outra coisa, Bill. Tal projeto não implica na diminuição de seus alvos.
+
+Significa que, quando você chegar ao topo, Betty Jo e seus filhos estarão lá com você.
+
+O aspecto central da “Qualidade de Tempo” é estar próximo. Não quero dizer simples proximidade… O estar junto tem a ver com o focalizar a atenção.
+
+— É isso o que eu mais desejo! Esteja eu no topo ou não, quero que ela seja feliz e pretendo desfrutar a vida ao seu lado e das crianças.
+
+E os anos se passaram… Bill e Betty Jo chegaram ao topo, apesar de um pequeno revés na vida, graças à linguagem do amor. O mais importante, porém, é que alcançaram a vitória juntos. Os filhos já deixaram o ninho e eles concordam que vivem os melhores anos de suas vidas. Bill tornou-se um sincero apreciador de concertos e Betty Jo aumentou a lista dos tópicos que aprecia no esposo. Ele não se cansa de ir ao teatro.
+
+Começou recentemente sua própria companhia e está novamente próximo ao topo. Seu trabalho já não é uma ameaça para Betty Jo. Ela está animada e encoraja-o bastante. Ela sabe que está em primeiro lugar na vida do marido. Seu “tanque do amor” está cheio, e se começar a esvaziar, ela sabe que uma simples solicitação sua fará com que Bill conceda-lhe atenção irrestrita.
+
+ESTAR JUNTOS
+
+O aspecto central da “Qualidade de Tempo” é estar sempre juntos. Não quero dizer simples proximidade. Duas pessoas sentadas em uma mesma sala estão próximas, mas não necessariamente juntas. O estar junto tem a ver com o focalizar a atenção.
+
+Quando um pai está sentado no chão e brinca de bola com seu filho de dois anos, sua atenção está focalizada na criança e não na bola. Naquele momento, por mais breve que seja, enquanto durar, eles estão juntos. Se, no entanto, o pai fala ao telefone enquanto chuta a bola para o filho, sua atenção está dividida. Há maridos e esposas achando que gastam o tempo juntos mas, na realidade, simplesmente vivem próximos. Estão na mesma casa, ao mesmo tempo, mas não estão juntos. Um marido que assiste a uma sessão de esportes na televisão enquanto conversa com a esposa não lhe concede
+
+“Qualidade de Tempo”, pois ela não recebe sua total atenção.
+
+Dedicar “Qualidade de Tempo” não significa olhar nos olhos um do outro o tempo todo. Quer dizer fazer coisas juntos e conceder atenção total a quem está conosco.
+
+A atividade com a qual nos envolvemos é secundária. A importância é emocional e refere-se à atenção total que concedemos e recebemos. A atividade em si é um veículo que proporciona o sentimento da interação. O que é importante no fato do pai chutar a bola para o filho de dois anos, não é a atividade em si, mas as emoções suscitadas entre os dois.
+
+Da mesma forma, marido e esposa que jogam tênis juntos, a verdadeira
+
+“Qualidade de Tempo” focaliza não o jogo em si, mas o fato de que fazem algo em companhia um do outro. O importante é o que ocorre a nível emocional. Investir o tempo juntos em uma atividade em comum significa que nos importamos um com o outro, apreciamos estar próximos e gostamos de fazer coisas em conjunto.
+
+CONVERSA DE QUALIDADE
+
+Como as palavras de afirmação, a linguagem da “Qualidade de Tempo” também possui vários dialetos. Um dos mais utilizados é o da conversa de qualidade. Afirmo com isso a existência de um diálogo acolhedor onde duas pessoas compartilham experiências, pensamentos, emoções e desejos, de forma amigável, e em um contexto sem interrupções. A maioria das pessoas que reclamam que seus cônjuges não conversam, raramente não toma parte em algum diálogo mais íntimo. Se afirmam isso é porque nada falam, de forma literal. Querem dizer que se a primeira linguagem do amor de seu cônjuge for “Qualidade de Tempo”, esse tipo de diálogo é importantíssimo para sua parte emocional, no que diz respeito a sentir-se amado.
+
+Conversa de qualidade é bem diferente da primeira linguagem do amor. Palavras de afirmação focalizam o que afirmamos, ao passo que conversa de qualidade focaliza o que ouvimos. Se externo meu amor por você através da “Qualidade de Tempo” e gastamos esse tempo juntos, significa que este propósito estará em fazer você vir à tona, ouvir atentamente o que pretende dizer. Farei perguntas, não por obrigação, mas com o desejo genuíno de entender seus pensamentos, sentimentos e desejos.
+
+Conheci Patrick quando ele tinha 43 anos e estava casado há dezessete.
+
+Lembro-me bem dele porque suas primeiras palavras foram dramáticas. Ele se sentou na cadeira de couro de meu escritório e após uma breve apresentação inclinou-se para frente e disse tomado de grande emoção:
+
+— Dr. Chapman, tenho sido um idiota, um perfeito idiota! Perguntei-lhe:
+
+— O que o fez chegar a essa conclusão?
+
+— Tenho 17 anos de casado e, de repente, minha mulher me deixou. Só agora pude perceber como sou idiota!
+
+Ao ouvir suas palavras, mantive minha pergunta inicial:
+
+— De que forma você acha que tem sido um idiota?
+
+— Deixe-me explicar. Minha esposa chegou em casa após um dia de trabalho e contou-me que estava passando por alguns problemas em seu emprego. Eu a ouvi e disselhe o que ela deveria fazer. (Eu sempre lhe dei conselhos.) Então afirmei que ela mesma precisava confrontar aquela situação, pois os problemas não costumam sumir facilmente, e ela deveria conversar com as pessoas envolvidas ou o supervisor de seu departamento.
+
+Seria necessário que ela enfrentasse aquela situação. No dia seguinte, porém, ela chegou do serviço e falou dos mesmos problemas. Eu então perguntei se ela fizera o que eu sugerira no dia anterior. Ela sacudiu a cabeça e disse que não. Repeti, naquele momento, o mesmo conselho. Disselhe que aquela era a forma correta de lidar com a situação. No dia seguinte ela chegou em casa e apresentou novamente os mesmos problemas. Mais uma vez eu lhe perguntei se fizera o que eu propusera. Mais uma vez ela sacudiu a cabeça e disse que não. Após umas três ou quatro noites fiquei muito bravo e disselhe que não contasse mais comigo enquanto não fizesse o que eu lhe recomendara. Ela não precisava viver sob aquela pressão, pois resolveria seu problema se simplesmente fizesse o que eu lhe falara. Na próxima vez em que ela veio me falar sobre aquele problema, eu lhe disse:
+
+— Não quero mais ouvir sobre isso. Já lhe falei várias vezes o que fazer. Se você não quer ouvir meus conselhos, também não desejo mais ouvir falar sobre este assunto!
+
+Muitos de nós somos treinados a analisar problemas a fim de dar-lhes soluções.
+
+Esquecemos que o casamento é um relacionamento, e não um projeto a ser terminado ou um problema a ser resolvido.
+
+Ele prosseguiu o seu relato:
+
+— Eu me retirei e dirigi-me ao meu trabalho. Como fui idiota! Agora percebo que, quando ela me falava sobre suas lutas no trabalho, não desejava meus conselhos. Ela queria solidariedade. Desejava que eu a ouvisse, desse-lhe atenção, e dissesse-lhe que entendia a dor, a pressão e a tensão pelas quais passava. Ela queria ouvir que eu a amava e estava ao seu lado. Ela não desejava conselhos, porém a minha compreensão. Mas eu jamais tentei entendê-la. Estava muito afastado dela ao conceder-lhe apenas conselhos.
+
+Que louco fui eu! E agora ela foi embora. Por que a gente não percebe estas coisas quando estamos passando por elas? Eu estava completamente cego para o que acontecia. Só agora percebo como falhei com ela.
+
+A esposa de Patrick suplicava por uma conversa de qualidade. Emocionalmente, ela esperava que ele lhe desse ouvidos ao ouvir sua dor e frustração. Patrick, porém, não focalizava sua atenção em ouvir, mas em falar. Ele escutava somente o suficiente para perceber o problema e formular uma saída. Ele não a ouvia o tempo necessário para compreender sua súplica por apoio e compreensão.
+
+Nós somos como Patrick. Somos treinados para tomar conhecimento dos problemas e dar soluções. Esquecemos que o casamento é um relacionamento, não um projeto a ser terminado ou um problema a ser resolvido. Uma convivência a dois implica em simpatia, em ouvir com a intenção de entender o que o outro cônjuge pensa, sente e deseja. Devemos também estar dispostos a aconselhar, mas somente quando solicitados e jamais de forma arrogante. A maioria de nós não sabe ouvir. Somos mais eficientes em pensar e falar. Aprender a ouvir pode ser tão difícil quanto estudar uma língua estrangeira.
+
+Porém, se quisermos comunicar o amor, precisamos aprender. Isso é especialmente importante, se a primeira linguagem de seu cônjuge for “Qualidade de Tempo” e se o dialeto dele for conversa de qualidade. Felizmente, há muitos livros e artigos escritos sobre a arte de ouvir. Não repetirei o que já foi escrito em vários outros trechos, mas gostaria de dar algumas dicas que podem ajudar bastante: 1.
+
+Procure olhar nos olhos de seu cônjuge quando ele lhe falar alguma coisa. Essa atitude ajuda sua mente a não divagar e comunica que ele realmente recebe sua total atenção.
+
+2. Não faça outra coisa enquanto ouve seu cônjuge. Lembre-se: “Qualidade de Tempo” é dedicar ao que lhe fala sua total atenção. Se você porventura assistir TV, ler ou praticar qualquer outra atividade pela qual esteja muito envolvido, e não puder desviar a atenção imediatamente, diga isso a seu cônjuge: “Sei que você quer falar comigo agora, e estou interessado em ouvir-lhe. Só que gostaria de conceder-lhe mais atenção, e no momento não é possível. Se você me conceder dez minutos para eu terminar o que estou fazendo, sentaremos juntos e então ouvirei o que você tem a dizer.” A maioria dos (as) esposos (as) deverá atender a uma solicitação dessas.
+
+3. “Escute” o sentimento. Pergunte a você mesmo o tipo de emoção que seu cônjuge sente no momento. Quando achar que descobriu, confirme. Por exemplo: “Tenho a impressão que você está desapontado por eu ter esquecido de…” Essa é uma oportunidade para você certificar-se de seus sentimentos.
+
+Também comunica que ouve com atenção o que lhe é dito.
+
+4. Observe a linguagem corporal. Punhos cerrados, mãos trêmulas, lágrimas, cenho franzido e expressão dos olhos fornecem pistas do que seu cônjuge sente. Algumas vezes, a linguagem verbal diz uma coisa, enquanto a corporal afirma outra. Solicite um esclarecimento a fim de poder confirmar seus reais sentimentos.
+
+5. Recuse interrupções. Pesquisas recentes indicam que, em média, as pessoas ouvem apenas 17 segundos antes de interromperem para inserir na conversa as próprias ideias. Se eu lhe dedicar minha total atenção enquanto você fala, evitarei defender-me
+
+FIM
+
+de fazer-lhe acusações ou mesmo, dogmaticamente, evidenciar minha posição. Meu objetivo é perceber seus sentimentos e pensamentos. O alvo não é autodefender-me ou permitir que você ganhe uma discussão; a intenção é compreendê-lo(a).
+
+APRENDENDO A FALAR
+
+Uma conversa de qualidade requer não somente consideração ao ouvir, mas também disposição em expor-se. Quando uma esposa diz: “Gostaria tanto que meu marido conversasse comigo! Nunca sei o que ele pensa ou sente…” Ela clama por intimidade; quer sentir-se próxima de seu esposo. Mas, como sentir-se ao lado de alguém a quem não conhece? Para que ela se sinta amada, o marido precisa aprender a se expor. Se a primeira linguagem do amor dela for “Qualidade de Tempo” e seu dialeto, conversa de qualidade, seu tanque emocional nunca estará completo até que ele partilhe com ela seus pensamentos e sentimentos.
+
+Se você precisa aprender a linguagem da conversa de qualidade, comece a observar as emoções que sente quando está fora de casa.
+
+Para muitos de nós, o ato de expor-se não é nada fácil. Muitos adultos foram criados em lares onde a expressão dos pensamentos e sentimentos não só jamais foi encorajada, como também era condenada. Pedir um brinquedo era recebido com um sermão sobre a situação econômica familiar. A criança sentia-se culpada por causa daquele desejo e, então, rapidamente aprendia a não expressar mais seus desejos. Quando um filho ou filha expressava raiva, os pais repreendiam-no (na) severamente com palavras condenatórias. O que acontecia então? A criança aprendia que expressar sentimentos de raiva também não era algo apropriado. Se um deles passasse a sentir-se culpado por expressar seu desapontamento pelo fato de não poder ir ao supermercado com o pai, aprendia a guardar seu desagrado para si. Nós, adultos, ao atingirmos a maturidade, aprendemos a negar nossos sentimentos. Deixamos de ter contato com nosso ser emocional.
+
+Uma esposa pergunta a seu marido:
+
+— Como você se sentiu com a reação de Mark?
+
+E o marido responde:
+
+— Eu acho que ele está errado. Ele deveria ter feito assim, assim e assim…
+
+Note, porém, que ele não expressa seus sentimentos. Simplesmente manifesta seus pensamentos. Talvez ele tenha motivos para sentir-se triste, com raiva, ou desapontado. No entanto, vive a tanto tempo no nível do raciocínio, que nem ao menos reconhece a existência de seus sentimentos. O ato de aprender a linguagem da conversa de qualidade pode ser comparado ao aprendizado de uma língua estrangeira. O início sempre é uma aproximação dos sentimentos, e o aluno pouco a pouco torna-se consciente de que é uma criatura emocional, apesar do fato de ter ignorado aquela faceta de sua vida.
+
+Se você precisa aprender a linguagem da conversa de qualidade, comece a perceber os sentimentos que lhe ocorrem quando está longe de casa. Compre um bloquinho de rascunho e mantenha-o diariamente com você. Três vezes, durante o dia, faça a si mesmo as seguintes perguntas:
+
+Que emoções senti nas últimas três horas?
+
+O que senti a caminho do trabalho quando o motorista atrás de mim ficou o tempo todo colado em meu para-choque?
+
+Como eu me senti quando fui colocar combustível no carro e a bomba automática não funcionou e fez com que o tanque transbordasse, derramasse e molhasse de gasolina toda a parte de trás do carro?
+
+Como me senti quando, ao chegar ao escritório, soube que minha secretária fora requisitada para um outro projeto da empresa e não estaria presente toda a manhã?
+
+Como me senti quando meu supervisor me comunicou que o projeto no qual eu trabalhava teria de ser concluído em três dias, quando pensei que teria mais duas semanas?
+
+Escreva seus sentimentos no bloco de rascunho e, ao lado, coloque uma ou duas palavras para lembrá-lo do evento correspondente ao sentimento. Sua lista deve ficar mais ou menos assim:
+
+SITUAÇÃO SENTIMENTOS
+
+1. motorista colado atrás 1. raiva
+
+2. posto de gasolina 2. desagrado
+
+3. sem secretária
+
+3. desapontamento
+
+4. projeto em três dias
+
+4. frustração e ansiedade
+
+Faça este exercício três vezes ao dia e você descobrirá sua natureza emocional.
+
+Utilize seu bloquinho e comunique a seu cônjuge as emoções que experimentou, juntamente com as situações enfrentadas. Quanto mais você fizer isso, melhor será. Em algumas semanas sentir-se-á mais confortável para expressar suas emoções a ele(a).
+
+Finalmente, será também capaz de, mais à vontade, conversar sobre seus sentimentos em relação ao (à) esposo(a), aos filhos e a eventos que ocorram em casa. Lembre-se que as emoções em si não são certas nem erradas. São simplesmente nossas reações psicológicas aos acontecimentos da vida.
+
+Constantemente tomamos nossas decisões baseados em nossos pensamentos e emoções. Quando o motorista estava “grudado” em seu carro, a caminho do trabalho, e você ficou com raiva, será que alguns dos seguintes pensamentos passaram por sua cabeça?
+
+Gostaria que ele saísse da pista;
+
+Gostaria que ele me ultrapassasse;
+
+Se eu não corresse o risco de ser multado, gostaria de pisar fundo o acelerador e deixá-lo para trás, “comendo poeira”;
+
+Gostaria de dar uma boa freada de forma que ele entrasse com tudo na traseira de meu carro, e a seguradora tivesse de me dar um carro novo; Talvez eu deva sair para a direita e deixá-lo passar.
+
+Você, eventualmente, tomou alguma dessas decisões ou o outro motorista reduziu a marcha, ou ultrapassou seu carro e você conseguiu chegar seguro ao trabalho.
+
+Cada evento de nossa vida gera emoções, pensamentos, desejos e também ações. À expressão desse processo chamamos de auto-revelação. Se você optar em aprender o dialeto da conversa de qualidade, esse é o caminho pelo qual deverá trilhar.
+
+TIPOS DE PERSONALIDADE
+
+Nem todos estamos desconectados de nossas emoções, mas quando o assunto vem à tona, todos somos afetados por nossa maneira específica de ser. Tenho observado dois tipos básicos de personalidade. Ao primeiro, chamarei de “mar Morto”. Na pequena nação de Israel, o mar da Galileia segue rumo ao sul através do rio Jordão até o mar Morto. Este não vai a lugar nenhum. Ele recebe, mas nada retribui. Esse tipo de personalidade adquire muitas experiências, emoções e diversos pensamentos ao longo do dia. Possui um amplo reservatório onde armazena informações e sente-se absolutamente feliz em não falar. Se você perguntar à personalidade mar Morto:
+
+“O que há de errado? Por que você ainda não abriu a boca esta noite?”
+
+A resposta, muito provavelmente, será:
+
+“Nada há de errado. Por que você pensa assim?”
+
+E aquela resposta será absolutamente honesta. Ele está feliz por nada falar.
+
+Gostaria de fazer uma longa viagem, de norte a sul do país, para não dizer uma única palavra e estar sinceramente feliz.
+
+Em outro extremo, porém, encontra-se o “riacho rápido”. Esse tipo de personalidade pode ser descrita como aquela que, entre o que passa pelos olhos ou ouvidos leva no máximo sessenta segundos até que saia pela boca. Sobre o que veem, ou ouvem, falam rapidamente. De fato, se não houver ninguém em casa para que comentem a respeito, darão um jeito para falar com alguém:
+
+“Sabe quem eu vi hoje?”
+
+“Sabe o que eu ouvi hoje?”
+
+Se não conseguem conversar ao telefone, falam consigo mesmos, porque não possuem algum reservatório. É comum que o mar Morto e o riacho rápido casem-se. Isso ocorre porque, quando estão em pleno namoro, as características opostas tornam-se muito atraentes para ambos.
+
+Uma forma de se aprender novos padrões de comportamento é estabelecer, diariamente, um período no qual cada um poderá falar sobre três situações que ocorreram durante o dia e os sentimentos que tiveram em relação a elas.
+
+Se você for o mar Morto e sair com o riacho rápido, provavelmente terá uma noite maravilhosa. Não terá de se preocupar em iniciar uma conversa e nem em mantê-la.
+
+Para falar a verdade, não deve nem pensar sobre isso. Tudo o que fará será balançar sua cabeça e fazer “hum, hum…” e esta expressão preencherá a noite toda. Você chegará em casa e pensará: “Que noite! Que pessoa maravilhosa!” Por outro lado, se for um riacho rápido e sair com o mar Morto, também terá um encontro igualmente maravilhoso porque este reservatório é o melhor ouvinte do mundo. Você deve falar durante umas três horas.
+
+O mar Morto ouvirá atentamente o riacho rápido e, ao chegar em casa seu comentário será: “Que pessoa maravilhosa!” Haverá uma atração recíproca. Porém, cinco anos após o casamento, o riacho rápido acordará em uma bela manhã e dirá:
+
+“Estamos casados há cinco anos mas eu não o conheço!”
+
+O Mar Morto, por outro lado dirá:
+
+“Eu a conheço muito bem! Gostaria muito que ela interrompesse um pouco esse dilúvio de palavras e desse-me atenção”.
+
+A boa notícia, nisso tudo, é que o mar Morto provavelmente aprenderá a falar e o riacho rápido saberá ouvir. Somos influenciados mas não dominados por nossas personalidades.
+
+Uma forma de se aprender novos padrões de comportamento é estabelecer, diariamente, um período no qual cada um falará sobre três situações que ocorreram durante o dia e os sentimentos que tiveram em relação a elas. Chamo esse método de
+
+“Dose Mínima Diária” para um casamento saudável. Se você começar com esse período, em algumas semanas, ou meses, a conversa de qualidade fluirá mais livremente entre vocês.
+
+ATIVIDADES DE QUALIDADE
+
+Além da linguagem básica do amor “Qualidade de Tempo” — que é dedicar total atenção a seu cônjuge — há um outro dialeto que se chama atividades de qualidade. Em um recente seminário sobre casamento, pedi que os casais completassem a seguinte sentença: “Sinto mais amor por meu cônjuge quando ________”. Veja as respostas dadas por um jovem marido, casado há oito anos:
+
+“Sinto-me mais amado por minha esposa quando exercemos atividades em conjunto, ou seja, coisas que eu goste de fazer e ela também aprecie. Dessa forma conversamos mais. É como se estivéssemos namorando outra vez”.
+
+Essa é uma linguagem típica de pessoas cuja primeira linguagem do amor é
+
+“Qualidade de Tempo”. A ênfase é dada no estarem juntos, em realizarem ao lado um do outro as mesmas atividades, e em dedicarem atenção total às suas necessidades.
+
+Entende-se por atividades de qualidade qualquer coisa pela qual um ou os dois se interessem. A ênfase não está no que se faz, mas no porquê decidiu-se realizá-lo. O objetivo é terem uma experiência juntos, e terminá-la de forma a afirmarem: “Ele(ela) se interessa por mim. Ele quis fazer comigo algo que eu apreciava e realizou-o com uma atitude muito positiva”. Isso é amor e, para algumas pessoas, é a forma em que ele fala mais alto.
+
+Tracie cresceu em meio a concertos. Em toda sua infância, a casa sempre esteve repleta de música clássica. Pelo menos uma vez ao ano ela acompanhava seus pais a um festival. Larry, por outro lado, gostava de música “country”. Ele nunca fora a um concerto e seu rádio estava sempre ligado em estações de música popular. Ele chamava a preferência de sua esposa de sinfonia de elevador. Se ele não tivesse se casado com Tracie, teria atravessado sua vida sem jamais assistir a um concerto. Antes do casamento, enquanto atravessava a fase da paixão obcecada, ele chegou até a assistir a alguns espetáculos musicais. Porém, mesmo apaixonado, ele perguntou se ela chamava
+
+“aquilo” de música!
+
+Após o casamento, decidiu que nunca mais sairia de casa para ouvir um concerto. No entanto, quando anos mais tarde descobriu que “Qualidade de Tempo” era a primeira linguagem do amor de Tracie e ela apreciava de forma especial o dialeto das atividades de qualidade, quis acompanhá-la e o fez entusiasmado. Seu propósito era claro.
+
+Ele não ia para assistir ao concerto, mas para demonstrar amor a Tracie e falar alto em sua linguagem. Com o passar do tempo, chegou a apreciar os concertos e, ocasionalmente, a deleitar-se com um ou dois movimentos. Talvez ele nunca se torne um amante da música erudita, mas provavelmente diplomou-se em demonstrar amor à sua esposa.
+
+Um dos pontos positivos das atividades de qualidade é que elas possibilitam o armazenamento de um banco de memórias ao qual podemos nos reportar pelos anos futuros.
+
+Entre as atividades de qualidade citamos plantar um jardim, descobrir e ir a liquidações, colecionar antiguidades, ouvir música, fazer piqueniques, caminhar, lavar o carro juntos durante o verão, etc. Essas atividades limitam-se apenas pelo interesse e desejo de tentar, ou não, novas experiências. Os ingredientes especiais para uma atividade de qualidade, são:
+
+1. Desejo de fazê-la, proveniente de um dos dois.
+
+2. O outro estar disposto a executá-la.
+
+3. Ambos estarem conscientes porque devem realizá-la — expressar amor de forma a permanecerem juntos.
+
+Um dos pontos positivos das atividades de qualidade é que elas possibilitam o armazenamento de um banco de memórias ao qual podemos nos reportar pelos anos futuros. Feliz é o casal que se lembra de uma caminhada feita de manhã ao longo da praia; de uma árvore plantada no jardim; do tempo em que colocaram iscas para acabar com as formigas do pomar; do projeto de pintura dos quartos; da noite em que foram juntos ter aulas de patim e um deles caiu e quebrou a perna; dos passeios pelo parque; dos concertos; dos recitais e, como esquecer, do tempo gasto apreciando uma cascata após a longa caminhada de bicicleta até encontrá-la? Podem até sentir os respingos que caíram em seus rostos. Essas são memórias de amor, especialmente para aquelas pessoas cuja primeira linguagem for “Qualidade de Tempo”.
+
+E, como achar tempo para tais atividades, especialmente se ambos trabalham fora? Achamos a ocasião da mesma forma que a encontramos para almoçar e jantar. Por quê? Porque são tão essenciais para nosso casamento como as refeições o são para nossa saúde.
+
+Isso é difícil? É preciso planejamento?
+
+Sim!
+
+Implica em que tenhamos de abrir mão de algumas atividades particulares?
+
+Talvez!
+
+Significa que faremos algumas coisas que, particularmente, não apreciamos?
+
+Certamente!
+
+Será que compensa?
+
+Sem sombra de dúvida!
+
+O que posso aprender com isso?
+
+O prazer de viver com um cônjuge que é amado e sabe disso, pois compreende que o(a) esposo(a) aprendeu a falar sua primeira linguagem de forma fluente.
+
+Gostaria de dar uma palavra de agradecimento a Bill e Betty Jo, de Little Rock, que me ensinaram o valor da primeira linguagem do amor — “Palavras de Afirmação”, e também a segunda — “Qualidade de Tempo”.
+
+Agora, vamos até Chicago para encontrarmos a terceira linguagem do amor.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 6;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 6 - A Terceira Linguagem do Amor: Receber Presentes$t$, 6,
+$conteudo$Estudei antropologia em Chicago. Devido às detalhadas etnografias, visitei pessoas fascinantes por todo o mundo. Estive na América Central onde pesquisei as avançadas culturas dos maias e dos astecas. Cruzei o Pacífico e analisei as tribos da Melanésia e Polinésia. Estudei os esquimós das vegetações das tundras, ao norte; e os aborígines ainos do Japão. Examinei os padrões de cultura relativos ao amor e casamento, e descobri que em cada cultura, o ato de dar presentes faz parte deste processo.
+
+Os antropologistas, em geral, são apaixonados pelos padrões culturais que distinguem as culturas e eu também o sou. Será que o ato de presentear é uma expressão fundamental de amor que transcende barreiras culturais? Será que a atitude de amor está sempre acompanhada do ato de conceder? Essas perguntas são acadêmicas e de certa forma até filosóficas, mas a resposta a elas é sim. Podemos inclusive notar uma profunda implicação prática nos casais norte-americanos.
+
+Fiz uma viagem antropológica de campo à ilha de Dominica. Nosso propósito era estudar a cultura dos índios do Caribe. Foi nessa viagem que conheci Fred. Ele não era do Caribe, mas um jovem negro de 28 anos. Perdera uma de suas mãos com uma dinamite, em uma temporada de pesca. Devido ao acidente teve de abandonar sua carreira de pescador. Ele possuía muito tempo disponível e eu apreciei o fato de poder contar com sua companhia. Passamos muitas horas juntos e conversamos sobre sua cultura.
+
+Em minha primeira visita à sua casa, ele me perguntou:
+
+— Sr. Gary, o senhor aceitaria um suco?
+
+Ao que aceitei prontamente. Ele, então, virou-se para seu irmão mais novo e disse:
+
+— Pegue um suco para o senhor Gary.
+
+Seu irmão deu-nos as costas, saiu de casa, subiu em um coqueiro e trouxe um lindo coco verde em suas mãos. Fred recomendou-lhe que o abrisse. Com três rápidos movimentos de faca seu irmão furou-o, e fez uma abertura triangular na parte de cima.
+
+Fred entregou-me o coco e disse:
+
+— Aqui está seu suco.
+
+O líquido era esverdeado mas eu o bebi assim mesmo, todinho! Eu o tomei porque sabia que aquele fora um ato de amor. Eu era seu amigo e eu sabia que ali só se oferece suco aos companheiros.
+
+Ao final de algumas semanas, quando já se aproximava minha hora de partida daquela pequena ilha, Fred deu-me uma última prova de seu amor. Era uma enorme concha em espiral, que ele mesmo havia tirado do oceano. Tinha uma camada que, de tanto ser friccionada pelas rochas, lembrava, ao toque, uma seda macia. Ele me disse que aquele objeto encontrava-se naquelas praias há muitos anos e gostaria que eu o levasse como recordação daquela bela ilha. Ainda hoje, quando olho para aquela concha, quase posso ouvir o som das ondas do Caribe. Porém, ela é mais do que uma recordação das praias de Dominica; é uma demonstração de amor.
+
+Um presente é algo que você pode segurar em suas mãos e dizer:
+
+“Ele pensou em mim!” ou, “Ela se lembrou de mim!”
+
+Antes de comprarmos um presente para alguém, pensamos naquela pessoa. O objeto em si é um símbolo daquele pensamento. Não importa se foi caro ou barato. O importante é que ele seja a prova desse desejo. E não é somente a intenção em nível da mente que se conta, mas o pensamento demonstrado de forma concreta através de um presente que se torna uma expressão de amor.
+
+Muitas mães contam histórias de que seus filhos trouxeramlhes flores do quintal como presente. Elas se sentem amadas, mesmo que seja uma simples flor do jardim delas que não gostariam que fosse apanhada. Desde muito pequenas as crianças sentem-se inclinadas a dar alguma coisa a seus pais, e isto é uma boa indicação de que dar presentes é fundamental para o amor.
+
+Presentes são símbolos visuais do amor. A maioria das cerimônias de casamento inclui dar e receber alianças. A pessoa que realiza a cerimônia diz:
+
+“Estas alianças são os sinais visíveis dos elos espirituais que unem estes dois corações em um amor que nunca terminará”. Isso não é uma simples retórica. É a expressão de uma significante verdade — os símbolos possuem valores emocionais. Creio que isso pode ser bem exemplificado quando, perto da desintegração de um casamento, marido e mulher deixam de usar suas alianças. Esse é um sinal muito nítido de que o casamento está em sérios problemas. Certo esposo me disse o seguinte:
+
+“Quando ela atirou sua aliança contra mim e saiu cega de raiva batendo atrás de si a porta da casa, tornou-se evidente que nosso problema era seriíssimo. A aliança ficou no mesmo lugar onde foi jogada durante dois dias, porque eu não me abaixei para pegá-la. Quando finalmente a apanhei, caí em um pranto convulsivo.”
+
+As alianças são um símbolo do que o casamento deveria ser. Porém, aquela colocada na palma de mão dele, e não no dedo dela, funcionava como um lembrete visual de que aquele casamento desmoronara-se. A aliança solitária provocou profundas considerações e emoções naquele marido.
+
+Símbolos visuais de amor são mais importantes para uns do que para outros.
+
+Por esse motivo, existem os que após se casarem nunca mais tiram a aliança; porém, também há alguns que nem chegam a usá-la. Essa é outra evidência de que as pessoas possuem linguagens do amor diferentes. Se receber presentes é sua primeira linguagem do amor, então você dará enorme valor à aliança recebida e usa-la-á com grande orgulho. Ao longo da vida, outros presentes também serão motivo de grandes emoções. Você verá neles expressões de amor. Sem lembranças como símbolos visuais, o amor do cônjuge poderá até ser questionado.
+
+Existem presentes de todos os tamanhos, cores e formatos. Alguns são caros, outros baratos. Para aquela pessoa cuja primeira linguagem do amor é receber presentes, o preço pouco contará, a menos que haja uma enorme discrepância entre o que se deu e o que se poderia oferecer. Se um marido milionário concede regularmente à sua esposa presentes de somente um dólar, ela poderá questionar se aquela é realmente uma expressão de amor. Por outro lado, quando as finanças da família são reduzidas, um presente de um dólar significará tanto quanto um outro de um milhão de dólares.
+
+Se a primeira linguagem do amor de seu cônjuge for “Receber Presentes”, você pode se tornar expert nessa área. De fato, essa é uma das mais simples linguagens para se aprender.
+
+Presentes podem ser comprados, achados ou elaborados. O marido que pára ao longo de uma estrada e apanha para sua esposa uma rosa silvestre, achou ali uma singela expressão de amor, a menos que ela seja alérgica a flores do campo!! Para o esposo que pode pagar, há muitos cartões bonitos e tocantes e não são tão caros assim! Para aqueles que não podem fazer esta despesa, eles mesmos podem ter os seus, e sem pagar nada.
+
+Pegue uma folha de papel, uma tesoura, recorte em forma de coração e escreva no meio a frase: “Eu amo você!” Os presentes não precisam ser caros.
+
+Mas, como deve agir aquela pessoa que diz não saber dar presentes?
+
+“Não sei dar presentes. Durante toda minha infância e adolescência recebi poucos presentes. Não sei escolher o que oferecer às pessoas. Isso não é natural em mim!”
+
+Parabéns! Você acabou de fazer a primeira grande descoberta no caminho para se tornar um grande amante! Você e seu cônjuge possuem diferentes linguagens do amor.
+
+Agora que já sabe disso, comece a busca para descobrir sua segunda linguagem do amor.
+
+Se a primeira linguagem do amor de seu cônjuge é “Receber Presentes”, você poderá se tornar expert no assunto. De fato, essa é uma das mais simples linguagens para se aprender.
+
+Por onde começar? Faça uma lista de todos os presentes que na sua opinião seu cônjuge gostaria de receber. Podem ser lembranças já concedidas por você ou outras pessoas da família ou amigos. A lista poderá dar uma ideia dos presentes que seu cônjuge desejaria ganhar. Se você tiver dificuldade em fazer uma seleção destes objetos, consulte outros membros da família. Neste meio tempo, “chute”, mas faça uma lista com presentes que estejam mais à mão e adquira-os para seu cônjuge. Não espere por uma ocasião especial. Se “Receber Presentes” for a primeira linguagem do amor dela(dele), praticamente tudo o que você lhe conceder será recebido como expressão de amor. Se ela (ele) foi muito crítica em relação aos presentes que você ofereceu no passado, pois muitos deles não foram por ela (ele) apreciados, então essa é uma grande dica de que receber presentes, por certo, não é a primeira linguagem de amor do seu cônjuge.
+
+PRESENTES X DINHEIRO
+
+Se você está para se tornar um presenteador eficaz, deve mudar sua atitude em relação ao dinheiro. Cada um de nós possui uma percepção individual dos propósitos de nosso salário na vida, e temos várias emoções relacionadas à forma como ele é empregado. Alguns se sentem bem quando o gastam. Outros, porém, possuem uma perspectiva de economizar e poupar o máximo possível. Em geral, apreciamos o fato de economizar e gastar nosso dinheiro sabiamente.
+
+Se você aprecia gastar seu salário, praticamente não terá dificuldade em comprar presentes para seu cônjuge. Porém, se você for tipo “mão fechada”, sem dúvida experimentará uma resistência emocional à ideia de gastar seu dinheiro como expressão de amor. Você não compra algo nem para si, por que comprar para seu cônjuge? Essa atitude, porém, não revela que você, a bem da verdade, adquira algo para si mesmo. A economia e o investimento de seu dinheiro proporcionam-lhe segurança emocional.
+
+Você provê suprimento para sua própria segurança emocional na forma como lida com o seu salário. O que você realmente não faz é suprir as necessidades emocionais de seu cônjuge. Se porventura descobrir que a primeira linguagem do amor dele é realmente “Receber Presentes”, então talvez perceba que comprar presentes para ele, ou ela, é o melhor investimento que realizará! Você investirá em seu relacionamento e encherá o “tanque do amor” emocional de seu cônjuge. Com o “tanque cheio”, ele ou ela corresponderá ao seu amor emocional em uma linguagem que você por certo entenderá.
+
+Quando as necessidades emocionais de ambos são supridas, o casamento toma uma dimensão totalmente nova. Não se preocupe com seus investimentos. Você sempre será um poupador, mas investir no amor de seu cônjuge será como comprar a ação mais cara da bolsa de valores.
+
+O PRESENTE DA PRESENÇA
+
+Existe um tipo de presente que é intangível e muitas vezes fala mais alto do que qualquer outro que você possa ter nas mãos. Eu o chamo de presente da sua presença, ou presente de si mesmo. Estar ao lado de seu cônjuge quando este precisa de você fala mais alto do que aquele cuja primeira linguagem é receber presentes. Jan disseme certa vez:
+
+— Meu marido Donald gosta mais de futebol do que de mim!
+
+E eu então lhe perguntei:
+
+— Por que você diz isso?
+
+— No dia em que nosso filho nasceu, ele foi jogar bola. Eu fiquei a tarde toda sozinha, deitada em um leito da maternidade, enquanto ele se divertia com os colegas o tempo todo. Fiquei arrasada. Aquele era um dos momentos mais preciosos de nossas vidas. Queria que o desfrutássemos juntos. Desejava que ele estivesse ali comigo. Mas Don abandonou-me e foi jogar!
+
+Aquele marido poderia ter mandado dúzias de rosas para a esposa, mas elas de forma alguma falariam tão alto quanto se ele estivesse no hospital, ao lado da esposa.
+
+Posso afirmar que Jan ficou profundamente magoada com aquela experiência. O “bebê”
+
+tem agora 15 anos e ela ainda fala do ocorrido com todas as emoções presentes, como se tivesse acontecido no dia anterior. Procurei sondá-la com a seguinte pergunta:
+
+— Você baseou sua conclusão, de que Don aprecia mais a futebol do que a você, naquela experiência?
+
+— Não só, mas também. No dia do funeral de minha mãe, ele também foi jogar bola.
+
+— Mas ele foi ao funeral?
+
+— Foi. Mas assim que a cerimônia terminou, ele foi direto jogar. Eu não podia acreditar. Meus irmãos levaram-me para casa, pois meu marido tinha ido jogar futebol!
+
+Mais tarde tive a oportunidade de perguntar a Don sobre essas duas situações.
+
+Ele sabia exatamente do que eu falava:
+
+— É, eu sabia que ela falaria ao senhor sobre isso. Eu estava lá durante todo o trabalho de parto e também quando o bebê nasceu. Tirei fotos. Eu estava muito feliz e não via a hora de contar para os meus colegas do time a boa notícia. Mais tarde, quando voltei ao hospital, “minha bola murchou”! Ela estava furiosa comigo. Eu não podia acreditar que era ela quem me dizia todas aquelas coisas horrorosas! Achei que ela ficaria orgulhosa por eu ter prazer em querer dar a boa notícia ao time…
+
+A presença do(a) esposo(a) em tempo de crise é o maior presente que se pode dar a um cônjuge cuja primeira linguagem do amor seja “Receber Presentes”.
+
+Ele prosseguiu:
+
+— E quando a mãe dela morreu? Provavelmente não lhe contou que eu tirei uma semana de férias antes que minha sogra morresse e fiquei o tempo todo entre o hospital e a casa dela, fazendo reparos e ajudando no que era preciso. Após sua morte, terminando o funeral, achei que tinha feito tudo o que podia. Eu precisava de um descanso. Gosto muito de futebol e sabia que um joguinho ajudar-me-ia a relaxar e a aliviar um pouco a tensão dos últimos dias. Achei que ela compreenderia isso. Fiz tudo o que achei ser importante para ela, mas não foi suficiente. Ela nunca esquecerá e sempre jogará na minha cara aqueles dois dias. Ela diz que eu gosto mais de futebol do que dela. Isso é ridículo!
+
+Don era um marido sincero que falhou em compreender a tremenda importância de sua presença. A permanência dele era mais importante para ela do que qualquer outra coisa. A presença do(a) esposo(a) em tempos de crise é o maior presente que se pode dar a um cônjuge cuja primeira linguagem do amor seja “Receber Presentes”. A presença física torna-se o símbolo do amor. Retire esta presença e a percepção desta virtude evapora-se.
+
+Durante o aconselhamento, Don e Jan trataram das feridas e dos ressentimentos do passado. Ela conseguiu perdoá-lo e ele pôde compreender porque sua presença era tão importante para ela.
+
+Se a presença de seu cônjuge é muito importante para você, eu o(a) incentivo a expressar-lhe isso. Não espere que ele(ela) leia sua mente. E se porventura ouvir a expressão: “Gostaria muito que você estivesse lá comigo amanhã (hoje à noite, esta tarde, etc.)”; por favor, leve esse pedido a sério. Talvez, de seu ponto de vista, sua presença não seja tão importante, mas se você não atender a esta solicitação, poderá comunicar uma mensagem negativa. Um determinado esposo me disse certa vez:
+
+— Quando minha mãe morreu, o supervisor de minha esposa lhe disse que ela poderia se ausentar do emprego durante duas horas e depois desse período deveria voltar ao trabalho. Ela, então, disselhe que seu esposo precisava do apoio dela; por isso, não voltaria mais naquele dia.
+
+O supervisor então lhe disse:
+
+— Se você não voltar, poderá perder seu emprego. Minha esposa então replicou:
+
+— Meu esposo é mais importante do que meu trabalho.
+
+— Ela passou aquele dia comigo. De alguma forma, naquela oportunidade eu me senti mais amado por ela do que nunca antes. Jamais esqueci aquele seu ato. E sabe o que aconteceu? Ela não perdeu o emprego. Seu supervisor foi mandado embora e ela assumiu o posto que era dele.
+
+Aquela esposa falara a linguagem do amor de seu marido e ele jamais esqueceu disso.
+
+Quase toda literatura existente sobre o amor indica que em seu âmago encontra-se o espírito da entrega voluntária. Todas as cinco linguagens do amor desafiam-nos a doarmos nós mesmos a nossos cônjuges; no entanto, para alguns, receber presentes, símbolos visíveis do amor, é o que fala mais alto. A maior ilustração dessa verdade veio de Chicago, onde conheci Jim e Janice.
+
+Eles participaram de meu seminário sobre casamento e ficaram encarregados de me levar, na tarde de sábado, ao Aeroporto O’Hare. Tínhamos umas três horas antes de meu embarque e eles perguntaram se eu gostaria de ir a um restaurante. Como estava com fome, concordei alegremente. E naquela tarde, tive muito mais do que uma refeição grátis.
+
+Jim e Janice cresceram em fazendas da região de Illinois. Mudaram para Chicago logo após se casarem. Ela me contou um fato ocorrido quinze anos depois do feliz matrimônio e dos três filhos. Ela começou a falar assim que nos sentamos:
+
+— Dr. Chapman, o motivo de trazê-lo até o aeroporto foi para partilharmos com o senhor um milagre.
+
+Alguma coisa nesta palavra faz-me recuar, principalmente quando não conheço a pessoa que a usa. “O que será que vem por aí?”, pensei. Ocultando esses pensamentos para mim mesmo, dediquei toda minha atenção a ela. Eu não sabia, mas estava prestes a levar um choque.
+
+— Dr. Chapman, Deus usou o senhor para fazer um milagre em nosso casamento.
+
+Nossa, como me senti culpado! Um minuto atrás eu questionava o uso da palavra milagre, e agora, Janice dizia que eu era o veículo daquele milagre. Passei, então, a ouvir com mais interesse. Janice continuou:
+
+— Há três anos assistimos, pela primeira vez, um seminário do senhor aqui mesmo em Chicago. Eu estava desesperada. Pensava seriamente em deixar Jim e já havia dito isso a ele.
+
+Nosso casamento estava vazio há muito tempo. Eu já tinha desistido.
+
+Durante anos eu dizia a Jim que precisava de seu amor, mas ele não esboçava nenhuma reação. Eu amava as crianças e sabia que elas me adoravam também, mas não sentia nenhum amor da parte de Jim. Para ser sincera, naquela época eu praticamente o detestava. Ele era uma pessoa absolutamente metódica. Fazia tudo por hábito. Era tão previsível quanto um relógio e ninguém conseguia alterar aquela rotina.
+
+Ela continuou:
+
+— Durante muitos anos, tentei ser uma boa esposa. Eu cozinhava, lavava, passava… Colocava em prática tudo o que uma boa esposa deveria realizar. Fazia sexo porque sabia que era importante para ele. Porém, não havia jeito de me sentir amada por Jim. Sentia-me como se ele tivesse deixado de se interessar por mim após o casamento e simplesmente não me valorizava mais. Sentia-me usada e desvalorizada.
+
+— Quando falei com Jim sobre meus sentimentos, ele simplesmente riu e disse que nós tínhamos um casamento tão bom quanto qualquer outro da vizinhança. Ele não conseguia entender porque eu estava tão infeliz. Lembrou-me então que as contas estavam pagas, tínhamos uma bela casa, um carro novo, e eu podia me dar ao luxo de escolher trabalhar fora ou em casa, e deveria estar alegre ao invés de reclamar o tempo todo. Ele nem ao menos tentou compreender meus sentimentos, o que me fez sentir totalmente rejeitada. E foi assim que três anos atrás chegamos ao seu seminário.
+
+Ela suspirou e prosseguiu:
+
+— Até então, nunca havíamos participado de nenhum estudo sobre o casamento.
+
+Eu não sabia o que me esperava e, sinceramente, minhas expectativas eram negativas.
+
+Achei que nunca, nada nem ninguém mudaria Jim. Durante e depois do seminário, ele quase não falou. Aparentemente demonstrou gostar do assunto. Inclusive, achou o senhor muito engraçado. Mas não comentou comigo sobre nenhuma das ideias do seminário. Não esperava mesmo que o fizesse e tampouco lhe perguntei coisa alguma. Como já disse, eu já desistira de esperar alguma mudança. Como o senhor bem sabe, o seminário terminou no sábado à tarde. Naquele dia à noite e no domingo, as coisas foram como de costume.
+
+Porém, na segunda-feira à tarde, ele chegou do serviço e trouxe-me uma rosa.
+
+Fez uma nova pausa, para respirar fundo e prosseguiu:
+
+— Onde você arrumou isso? — eu perguntei. Ele respondeu:
+
+— Comprei de um vendedor de flores. Achei que você gostaria de ganhar uma rosa.
+
+— Eu comecei a chorar e agradeci comovida. Logo descobri que ele comprara a rosa de um vendedor em alguma esquina. De fato eu havia visto um naquele dia. Mas isso não importava, pois o que valia é que ele me trouxera aquela rosa. Na terça-feira à tarde ele me ligou do escritório e perguntou-me o que eu achava se ele trouxesse uma pizza para jantarmos. Ele pensou que eu apreciaria não cozinhar naquela noite.
+
+Disselhe que achava a ideia ótima e ele trouxe aquele lanche para casa. Nós curtimos muito aquela pizza. As crianças também gostaram muito e agradeceram-lhe por têla trazido. Dei-lhe um abraço e manifestei minha sincera apreciação por tudo.
+
+Fez uma pequena pausa e prosseguiu:
+
+— Ao chegar em casa na quarta-feira à noite trouxe para cada um de nossos filhos um pacote de biscoitos e uma plantinha para mim. Disse que a rosa logo morreria e achava que eu gostaria de algo que durasse mais tempo. Eu pensei que tivesse alucinações! Não podia acreditar que Jim fizesse aquelas coisas e nem o porquê delas. Na quinta-feira após o jantar ele me deu um cartão onde escrevera que, apesar de não saber dizer seu amor por mim, gostaria que eu soubesse o quanto eu significava para ele.
+
+Novamente chorei e sem relutância abracei-o e beijei-o. Nessa hora ele falou: “Por que não arrumamos uma babá para ficar em casa no sábado à noite e vamos nós dois jantar fora?” Meio fora de órbita respondi que seria maravilhoso. Na sexta-feira à noite, ao vir para casa, parou em uma loja de doce e trouxe para cada um de nós um pacotinho com nossos doces preferidos. De novo ele nos fez surpresa e disse que aquela era nossa sobremesa.
+
+Janice parou novamente para dar um profundo suspiro e prosseguiu:
+
+— No sábado à noite, eu estava em “alfa”. Não tinha ideia do que tinha acontecido a Jim, nem se aquilo duraria muito tempo. Só sabia que adorava cada minuto.
+
+Após nosso jantar naquele sábado, disselhe que não entendia aquela sua atitude e pedi que ele me contasse o que acontecera.
+
+Nesse momento, ela olhou para mim muito séria e disse:
+
+— Dr. Chapman, quero que o senhor entenda exatamente o que ocorreu. Este homem, depois que nos casamos, nunca mais me dera flor alguma. Jamais me dedicara um único cartão. Ele sempre dizia que comprá-los era um desperdício de dinheiro porque você olhava uma vez para os mesmos e depois os jogava fora. Acredite ou não, só saímos para jantar uma única vez em cinco anos. Nunca adquiriu algo para as crianças e esperava que eu comprasse somente o extremamente essencial. Jamais trouxe uma pizza para jantarmos. Esperava encontrar a comida pronta todas as noites, ao chegar em casa. Estou, então, desejosa de dizer que o que aconteceu foi uma mudança radical de comportamento.
+
+Nesse momento, virei-me para Jim e perguntei:
+
+— O que você respondeu quando, ainda no restaurante, ela lhe perguntou o que acontecera?
+
+— Disse a ela que, ao ouvir seu seminário sobre as linguagens do amor, compreendi que a linguagem dela era o “Receber Presentes’’. Nessa hora, também percebi que há muitos anos não lhe dava uma lembrança sequer. Para ser sincero, creio que não lhe ofereci algo desde nosso casamento. Lembro-me que quando namorávamos, costumava trazer-lhe flores e outros presentinhos, mas depois que nos casamos, achei que não deveria mais arcar com essa despesa. Contei-lhe então que decidira dar-lhe durante uma semana um presente por dia e observaria se aquilo causaria alguma mudança nela. Tenho de admitir que presenciei uma enorme diferença em suas atitudes durante aquela semana.
+
+Fez uma pequena pausa e prosseguiu:
+
+— Disselhe também que confirmava ser verdadeiras as palavras que o senhor dissera, e aprender a linguagem certa do amor era a chave para que o cônjuge se sentisse amado. Pedi perdão por ter ficado tão endurecido todos aqueles anos, falhando tanto em suprir sua necessidade de sentir-se amada. Disse a ela que realmente a amava e apreciava todas as coisas que ela fazia por mim e pelas crianças. Disselhe também que, com a ajuda de Deus, iria me tornar um expert em presentear e iria me aprimorar nisso por toda minha vida. Nessa hora, Janice me disse:
+
+— Mas, Jim, você não pode continuar a me comprar presentes todos os dias pelo resto de nossas vidas. Não há orçamento que aguente isso! Eu lhe respondi:
+
+— Pode ser que não dê para comprar todos os dias, mas pelo menos uma vez por semana, acho que sim. Isso soma 52 novos presentes por ano que você deixou de receber nos últimos cinco anos. E quem disse que terei de comprar todos eles? Posso muito bem fazer alguns. Posso utilizar a ideia do Dr. Chapman de, na primavera, apanhar uma flor do nosso jardim.
+
+Janice então o interrompeu:
+
+— Dr. Chapman, que eu me lembre, ele não falhou nenhuma semana já há três anos. Ele é um novo homem. O senhor não acredita como somos felizes! Nossos próprios filhos têm nos chamado de pombinhos apaixonados. Meu “tanque” tem transbordado de tão cheio!
+
+Virei-me então para Jim e perguntei:
+
+— E quanto a você, Jim, também se sente amado por Janice?
+
+— Eu sempre me senti amado por ela, Dr. Chapman. Ela é a melhor dona de casa do mundo! Cozinha como ninguém.
+
+Minhas roupas estão sempre limpas e passadas.
+
+Ela é ótima para lidar com as crianças. Sei que ela me ama.
+
+Ele sorriu e continuou:
+
+— Minha linguagem do amor está muito óbvia para o senhor, não é?
+
+Concordei com ele. E também com ela, ao lembrar da palavra milagre utilizada ao início de nossa conversa.
+
+Não é necessário que os presentes sejam caros e oferecidos semanalmente.
+
+Para algumas pessoas, o valor deles nada tem a ver com o preço, mas sim com o amor implícito.
+
+No capítulo sete, deixaremos mais clara a linguagem do amor de Jim.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 7;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 7 - A Quarta Linguagem do Amor: Formas de Servir$t$, 7,
+$conteudo$Antes de nos despedirmos de Jim e Janice, reexaminemos a resposta dele à minha pergunta:
+
+— Você se sente amado por Janice?
+
+— Eu sempre me senti amado por ela, Dr. Chapman. Janice é a melhor dona de casa do mundo! Cozinha como ninguém. Minhas roupas estão sempre limpas e passadas.
+
+Ela é ótima para lidar com as crianças. Sei que ela me ama.
+
+A primeira linguagem do amor de Jim é o que eu chamo de “Formas de Servir”, ou seja, aquilo que você sabe que seu cônjuge gostaria que você fizesse. É procurar agraciar realizando coisas que ele(ela) aprecia, expressando amor através de diversas
+
+“Formas de Servir”.
+
+Estas formas podem ser as mais variadas possíveis, tais como preparar uma boa refeição, pôr uma mesa bem arrumada, lavar a louça, passar o aspirador, arrumar a cômoda, limpar o pente, tirar os cabelos da pia, remover as manchinhas brancas do espelho (aquelas causadas por pasta de dente), tirar os insetos mortos do vidro do carro, levar o lixo para fora, trocar a fralda do bebê, pintar o quarto, aspirar a estante, manter o carro em boas condições de uso, limpar a garagem, cortar a grama, tirar o mato do jardim, retirar as folhas mortas, aspirar a persiana, levar o cachorro para passear, dar comida para o gato, trocar a água do aquário — todas formas de serviço. Para que sejam realizadas é necessário pensar, planejar e executar (dispêndio de força e energia). Se feitas com o espírito certo e positivo, são incontestáveis expressões de amor.
+
+Jesus Cristo deu uma ilustração simples, porém profunda, ao expressar amor através de uma forma de serviço quando lavou os pés dos discípulos. Em uma cultura onde as pessoas usavam sandálias e caminhavam por estradas poeirentas, era costume os servos da casa lavar os pés dos convidados que chegavam. Depois daquela simples expressão de amor, o Filho de Deus encorajou seus discípulos a seguirem seu exemplo.
+
+Anteriormente, Jesus dissera que, em seu Reino, os que desejavam ser grandes deveriam ser servos um dos outros. Na maioria das sociedades existentes, o maior reina sobre o menor, mas Cristo disse que os que quisessem ser grandes, deveriam servir aos outros. O apóstolo Paulo resumiu essa filosofia ao dizer: “Sirvam uns aos outros, em amor”.
+
+Pude observar o impacto de “Formas de Servir” em uma pequena cidade no Estado da Carolina do Norte, chamada China Grove. Ela fica na parte central daquela região, originalmente estabelecida junto às árvores chamadas “Chinaberry” (Fruta da China), perto da lendária Mayberry, Andy Griﬃth, distante uma hora e meia do Monte Pilot.
+
+Na época em que esta história aconteceu, China Grove era uma cidade têxtil, com uma população de 1.500 habitantes. Devido a meus estudos de antropologia, psicologia e teologia, estive fora daquela localidade durante mais de dez anos. Eu realizava uma das duas visitas anuais, que costumava fazer, para manter contato com minhas raízes.
+
+A maioria das pessoas que eu conhecia, com exceção do Dr. Shin, o médico local, e Dr. Smith, o dentista, trabalhava no moinho. Havia, naturalmente, o pregador Blackburn, dirigente da congregação evangélica local. Para a maioria das pessoas que moravam em China Grove, a vida centralizava-se no trabalho e na igreja. A conversa no moinho era sobre a última decisão do superintendente e como ela afetara, particularmente, seu próprio trabalho. Os cultos focalizavam principalmente as antecipadas alegrias do céu.
+
+Naquele primitivo local americano, descobri a linguagem do amor número quatro.
+
+Estava em pé debaixo de uma árvore Chinaberry, após o culto de domingo, quando Mark e Mary aproximaram-se de mim. Não reconheci nenhum deles. Deduzi que haviam nascido enquanto estivera fora. Apresentando-se, Mark disse:
+
+— Pelo que entendi, o senhor ministra estudo sobre aconselhamento conjugal, não é verdade?
+
+Sorri e lhes respondi:
+
+— Sim, estou começando. Ele então me interrogou:
+
+— É possível um casamento dar certo, se o casal discorda em tudo?
+
+Era uma daquelas perguntas teóricas a qual eu sabia que tinha um fundo pessoal.
+
+Desconsiderei a conotação teórica da pergunta e fiz-lhe uma interrogação pessoal:
+
+— Há quanto tempo vocês estão casados?
+
+— Há dois anos. E não concordamos em nada!
+
+— Dê-me algum exemplo:
+
+— Bem, para começar, Mary não gosta que eu vá caçar. Trabalho a semana inteira no moinho e, quando chegam os sábados, gosto de infiltrar-me na floresta. Não são todos os sábados, mas somente quando a temporada de caça está aberta.
+
+Mary, que estivera calada até então, disse:
+
+— Quando a estação de caça não está aberta ele vai pescar. E não é verdade que ele caça somente nos sábados. Ele sai do trabalho para ir caçar.
+
+— Uma, ou duas vezes por ano, tiro dois ou três dias de licença e, juntamente com outros colegas, vamos caçar nas montanhas. Não vejo mal algum nisso!
+
+— Em que mais vocês discordam? perguntei:
+
+— Bem, ela quer que eu vá à igreja o tempo todo. Não me importo de ir aos cultos aos domingos de manhã, mas, à noite, prefiro descansar. Tudo bem que ela queira ir, mas não acho que eu precise estar lá também.
+
+Mary novamente replicou:
+
+— Você também não quer que eu vá! Faz escândalo cada vez que eu passo pela porta em direção à igreja.
+
+Sabia que aquela conversa não deveria continuar ali, embaixo daquela árvore e em frente à igreja. Como um jovem aspirante a conselheiro, achei que me metia em algo muito complicado para mim, mas como tinha sido treinado para fazer perguntas e ouvir, continuei:
+
+— Em que mais vocês discordam? Dessa vez, Mary respondeu:
+
+— Ele quer que eu fique em casa o dia inteiro e faça todo o serviço doméstico.
+
+Fica simplesmente maluco se eu visito minha mãe, ou saio para fazer compras ou qualquer outra coisa.
+
+Ele imediatamente interrompeu:
+
+— Eu não me importo que ela visite sua mãe. No entanto, quando chego em casa, gosto de achar tudo em ordem. Há semanas em que ela não arruma nem a cama durante três ou quatro dias e nos outros, quando chego, ela nem ao menos começou o jantar. Trabalho duro e gostaria de alimentar-me logo ao chegar. Além disso, a casa está sempre na maior bagunça! Há brinquedos do bebê espalhados por todo lugar, e ele está sempre sujo. Não gosto de sujeira. Acho que ela se sentiria feliz se vivesse em um chiqueiro. Não somos ricos e moramos em uma pequena casa do moinho; mas pelo menos ela poderia ser limpa!
+
+Mary então perguntou:
+
+— O que o senhor acha de ele me dar uma ajuda em casa? Ele age como se os esposos não precisassem jamais ajudar. Tudo o que ele quer é trabalhar e caçar. Espera que eu faça todo o resto. Por ele, eu teria até de lavar o carro!
+
+Com o propósito de achar que seria melhor eu procurar alguma forma de ajudar e não de buscar mais problemas, perguntei a ele:
+
+— Mark, quando namoravam, antes de se casarem, você já ia caçar todos os sábados?
+
+— Na maioria deles. Mas eu sempre chegava em casa a tempo de vê-la no sábado à noite. Ainda tinha a oportunidade de lavar meu carro, antes de encontrá-la. Eu não gostava de sair com minha caminhonete suja.
+
+— Mary, quantos anos você tinha quando se casou? Eu perguntei.
+
+— Dezoito. Nós nos casamos assim que eu terminei o colegial. Mark formou-se um ano antes de mim, e já trabalhava.
+
+— No último ano do colegial, Mark via você constantemente?
+
+— Sim, ele me visitava quase todas as noites. Chegava à tarde e muitas vezes ficava para jantar com toda a família. Costumava ajudar-me nas tarefas da casa e depois nos sentávamos e conversávamos até a hora do jantar.
+
+— Mary, o que vocês dois faziam depois do jantar? Ela olhou em minha direção com um sorriso sem graça e disse:
+
+— Bem, o que os namorados costumam fazer… Mas, se eu tivesse algum trabalho escolar, ele sempre me ajudava. Algumas vezes estudávamos horas juntos. Certa vez eu fui encarregada de montar um projeto de Natal para a classe que se formaria. Ele me ajudou todas as tardes, durante três semanas. Ele foi sensacional!
+
+“Mudei de marcha” e engatei a terceira na área das discórdias.
+
+— Mark, quando os dois namoravam, você costumava ir com Mary à igreja aos domingos à noite?
+
+— Sim, eu ia. Se não fosse, não tinha como vê-la no domingo à noite. O pai dela era superexigente.
+
+— E ele nunca reclamou disso! Mary acrescentou. De fato, ele parecia gostar de ir. Até nos ajudou na programação de Natal! Quando terminamos o primeiro projeto, começamos a preparar o palco para a peça natalina. Ficamos umas duas semanas envolvidos naquilo. Ele é muito talentoso para pintar e montar cenários.
+
+Achei que começava a enxergar alguma luz no fim do túnel, mas temia que Mark e Mary não a vissem. Virei-me, então para ela e perguntei:
+
+— Quando você namorava Mark, o que a convenceu de que ele a amava? O que fez com que ele fosse diferente dos outros rapazes que você conhecia?
+
+— Foi a forma de como ele me ajudava a fazer as coisas. Ele tinha tanto entusiasmo em colaborar! Nenhum dos outros rapazes demonstrou esse tipo de interesse, mas parecia realmente natural em Mark. Ele chegava até a me ajudar a lavar a louça quando ia jantar em minha casa. Ele era a pessoa mais maravilhosa que eu já tinha conhecido. Mas foi só a gente casar, e tudo mudou! Ele não fez mais nada!
+
+Dirigindo-me novamente para Mark, perguntei:
+
+— Em sua opinião, por que você acha que fazia todas aquelas coisas para ela e com ela, antes de casarem?
+
+— Na época, para mim era natural fazê-las. É o que se espera que alguém nos faça, se esse alguém gosta de nós.
+
+— E por que você acha que parou de ajudá-la depois do casamento? Perguntei.
+
+— Eu acho que pensei ser como era em minha família. Meu pai trabalha e minha mãe toma conta da casa. Nunca o vi aspirar o pó, lavar louça ou fazer qualquer outro serviço doméstico. Em virtude de minha mãe não trabalhar fora, ela mantinha a casa sempre limpa, cozinhava, lavava e passava. Acho que simplesmente pensei que deveria agir como meu pai.
+
+Torcendo para que ele raciocinasse como eu, perguntei:
+
+— Mark, um minuto atrás o que você ouviu Mary responder, quando perguntei o que a fez sentir-se amada por você durante o namoro?
+
+Ele respondeu:
+
+— O fato de eu ajudá-la a fazer as coisas e realizá-las ao lado dela.
+
+Os pedidos direcionam o amor, mas cobranças impedem que ele seja liberado.
+
+Ainda dirigi-me a Mark e perguntei:
+
+— Dá para você entender como ela se sentiu rejeitada quando você parou de ajudá-la?
+
+Ele sacudiu a cabeça para cima e para baixo… Então afirmei:
+
+— Também é compreensível que você tenha seguido o modelo do casamento de seus pais. A maioria de nós faz isso, mas sua mudança de comportamento com Mary foi muito radical. Isso fez com que ela achasse que seu amor por ela havia terminado.
+
+Depois virei-me para Mary e disselhe:
+
+— O que você ouviu Mark responder, quando perguntei a ele o porquê dele ajudá-la na época de namoro?
+
+— Ele disse que são coisas as quais se espera que se façam quando uma pessoa gosta de outra. Ele realizava aquilo para demonstrar seu amor por mim.
+
+Ela acrescentou que aquilo era natural nele. Porque na mente dele era essa a forma de se demonstrar amor. Então lhe perguntei:
+
+— Quando os dois se casaram e foram morar em sua própria residência, ele esperou para ver o que você faria para demonstrar-lhe amor. Suas expectativas eram que mantivesse a casa limpa, cozinhasse, etc. Resumindo, ele aguardou que fizesse coisas por ele como expressão de seu amor. Você entende que, por não vê-la realizar o que esperava, ele passou a não sentir-se mais amado?
+
+Agora era Mary quem balançava a cabeça. E eu continuei:
+
+— Meu ponto de vista do porquê de ambos estarem tão infelizes é que nenhum de vocês demonstra amor um pelo outro, através de atos de bondade.
+
+Mary disse:
+
+— Acho que você está certo e o motivo pelo qual parei de fazer as coisas para ele, foi porque me ressenti de tanta cobrança. Era como se ele quisesse fazer com que eu ficasse igual à mãe dele.
+
+Eu concordei com ela:
+
+— Você está certa. Ninguém gosta de fazer as coisas forçadamente. O próprio amor é entregue espontaneamente. O amor não pode ser obrigatório. Podemos solicitar que os outros façam algumas coisas para nós, mas não devemos exigi-las. Pedidos direcionam o amor, mas cobranças impedem que ele seja liberado.
+
+Mark interrompeu-me e disse:
+
+— É isso mesmo, Dr. Chapman, ela está certa. Tenho realmente feito muitas cobranças e críticas a Mary porque estou desapontado com ela como esposa. Disse mesmo algumas coisas muito cruéis, que devem ter feito com que ela ficasse muito magoada comigo.
+
+Olhando para ambos, disselhes:
+
+— Acredito que as coisas agora podem ser consertadas. Tirei um bloco de papel do meu bolso e destaquei duas folhas:
+
+— Vamos tentar uma coisa. Quero que cada um de vocês se sente nos degraus da igreja e faça uma lista de pedidos. Mark, gostaria que preparasse uma relação de três ou quatro coisas que, se Mary resolvesse fazê-las, levariam você a se sentir amado quando chegasse à casa no final do dia. Se ter as camas arrumadas é muito importante, então coloque isso no papel.
+
+Virei-me para Mary e disselhe o mesmo:
+
+— Mary, quero que você faça uma lista de três ou quatro coisas com as quais realmente gostaria que Mark a ajudasse, atitudes que, se ele as praticasse, ajudariam você a acreditar que ele a ama. (Aprecio muito as listas. Elas nos forçam a pensar de forma concreta).
+
+Após cinco ou seis minutos, eles me entregaram suas listas. A de Mark ficou assim:
+
+1. Arrumar as camas diariamente;
+
+2. Lavar o rosto do bebê quando eu estiver para chegar em casa; 3. Colocar seus sapatos na sapateira antes que eu chegue em casa.
+
+4. Tentar, pelo menos, começar o jantar antes de eu chegar, de forma que possamos nos alimentar 30 a 45 minutos após a minha chegada.
+
+Li a lista de Mark em voz alta e disse:
+
+— Posso entender que, se Mary decidir fazer estas quatro coisas, você as verá como formas dela demonstrar amor por você?
+
+Ele respondeu:
+
+— É isso mesmo! Se ela fizer estas quatro coisas, isso certamente cooperará muito para que eu mude minha atitude para com ela.
+
+Em seguida, li a lista de Mary:
+
+1. Gostaria que ele lavasse o carro uma vez por semana e não esperasse isso de mim.
+
+2. Gostaria que ele trocasse a fralda do bebê quando chegasse em casa, especialmente quando estou atarefada na cozinha no preparo do jantar.
+
+3. Gostaria que ele passasse o aspirador na casa para mim, pelo menos uma vez por semana.
+
+4. Gostaria que, no verão, ele cortasse a grama todas as semanas a fim de não deixar que ela crescesse tanto, a ponto de eu ter vergonha do nosso jardim.
+
+Eu então disse:
+
+— Mary, entendo o que você deseja. Se Mark decidir fazer essas quatro coisas, você as receberá como formas genuínas de expressões de amor?
+
+— É isso mesmo. Seria maravilhoso se ele fizesse essas coisas para mim.
+
+— Essa lista parece razoável para você, Mark? — perguntei-lhe. Você poderia fazê-las, se assim decidisse?
+
+— Sim —, ele disse.
+
+— Mary, você acha os itens da lista de Mark razoáveis? Você poderia realizá-las, se assim decidisse?
+
+— Sim, eu posso fazer essas coisas. Mas eu me sinto frustrada porque não importa o quanto eu faça, pois nunca é suficiente.
+
+— Mark, você entende que proponho uma mudança do modelo de casamento que você tem?
+
+— Sabe de uma coisa, meu pai corta a grama e também lava o carro!
+
+acrescentou ele.
+
+— Mas pelo jeito ele nunca passou o aspirador na casa nem trocou fralda de nenhum dos filhos, estou certo?
+
+— Está!
+
+— Você não é obrigado a fazê-las. Quero deixar isso bem claro; porém, se as realizar, serão comunicadas como expressões de amor a Mary.
+
+Aquilo que fazemos um para o outro antes do casamento, não garante que continuaremos a realizá-lo depois de casados.
+
+E para Mary, eu disse:
+
+— Você também precisa entender que não é obrigada a fazer as coisas da lista, mas, se decidir realizá-las, estas serão quatro formas que realmente terão significado para ele.
+
+Virando-me então para ambos, disse:
+
+— Gostaria de sugerir que vocês tentassem esse novo procedimento por dois meses e então avaliassem se os ajudou ou não. Ao final deste período, talvez queiram acrescentar novos itens às suas listas e partilhá-las um com o outro. Eu, no entanto, recomendaria que não houvesse o acréscimo de mais de um item por mês.
+
+— Isso faz sentido — Mary replicou.
+
+— Acho que você nos deu uma grande ajuda — acrescentou Mark.
+
+Virando as costas, ambos saíram de mãos dadas e caminharam em direção ao carro.
+
+Ao ficar sozinho novamente, comecei a caminhar e disse em alta voz: “Acho que a igreja é para isso. Creio que vou gostar de trabalhar com aconselhamento!”
+
+E nunca mais esqueci o enfoque obtido embaixo daquela árvore.
+
+Após anos de pesquisa, percebi que a situação de Mark e Mary foi muito especial para mim. Raramente encontramos um casal onde ambos possuam a mesma linguagem do amor. Tanto para Mark como para Mary, “Formas de Servir” era sua primeira linguagem do amor. Centenas de pessoas identificam-se com uma ou outra e reconhecem que a principal forma através da qual sentem-se amadas por seus cônjuges, é através de
+
+“Formas de Servir”.
+
+Guardar os sapatos, trocar as fraldas do bebê, lavar louça ou o carro, aspirar o pó ou cortar a grama falam muito alto para aqueles cuja primeira linguagem do amor é
+
+“Formas de Servir”.
+
+Você talvez indague: “Mas se Mark e Mary tinham a mesma linguagem do amor, por que possuíam tantos problemas?” A resposta está no fato de que eles falavam dialetos diferentes. Eles faziam coisas um para o outro, mas não as que consideravam as mais importantes. Quando forçados a pensar de forma concreta, facilmente identificavam seus dialetos. Para Mary, era lavar o carro, trocar a fralda do bebê, aspirar o pó e cortar a grama, ao passo que para Mark era arrumar as camas, lavar o rosto do bebê, guardar os sapatos na sapateira e já ter o jantar começado ao chegar em casa. Quando começaram a falar os dialetos certos, os “tanques do amor” de ambos começaram a encher. Desde que a primeira linguagem do amor de ambos era “Formas de Servir”, aprender o dialeto específico de cada um foi relativamente fácil para eles.
+
+Antes de deixarmos para trás Mark e Mary, gostaria de fazer três observações.
+
+Primeira, eles ilustram claramente que o que fazemos um para o outro antes do casamento, não é garantia de que continuaremos a fazê-lo depois de casados. Antes do matrimônio somos levados pela força da paixão. Após o casamento, voltamos a ser as pessoas que éramos antes de nos apaixonarmos. Nossas ações são influenciadas pelo modelo de nossos pais, nossa própria personalidade, nossa percepção do amor, nossas emoções, necessidades e nossos desejos. Apenas uma coisa é certa sobre nosso comportamento: não será o mesmo da época em que estávamos apaixonados.
+
+E isso me leva à segunda verdade ilustrada por Mark e Mary. Amor é uma decisão, e não pode ser coagido. Mark e Mary criticavam o comportamento um do outro e não chegavam a lugar algum. A partir do ponto em que decidiram fazer pedidos um ao outro, e não cobranças, o casamento tomou outro rumo. Críticas e cobranças não levam a lugar algum. O excesso de observações pode levar um cônjuge a concordar com o outro.
+
+Ele(ela) pode fazer as coisas do modo dela(dele) mas, muito provavelmente, aquela não será uma expressão de amor. Você pode dar outra direção ao amor através de pedidos: Eu gostaria muito que lavasse o carro, trocasse a fralda do bebê, cortasse a grama; porém, não há como colocarmos em alguém a vontade para tal. Cada um de nós decide diariamente amar ou não nossos cônjuges. Se escolhermos gostar dele, então a expressão desse amor da forma que seu cônjuge solicita, torna-lo-á mais efetivo em termos emocionais.
+
+Há uma terceira verdade, que somente é ouvida pelos amantes mais maduros.
+
+As críticas de meu cônjuge sobre meu comportamento, fornecem-me dicas “quentes” a respeito de sua primeira linguagem do amor. As pessoas tendem a criticar mais seus cônjuges na área em que eles mesmos têm suas mais profundas necessidades emocionais. A observação que fazem é uma forma inútil de suplicar amor. Se conseguirmos entender essa característica, tornaremos estas críticas mais produtivas.
+
+Uma esposa poderá dizer a seu marido, após ser observada por ele:
+
+“Parece-me que isso é algo muito importante para você. Poderia explicar por que considera (tal coisa) tão crucial?”
+
+Críticas exigem explicações. Uma conversa poderá transformar a crítica mais em pedido do que em cobrança. A constante reprovação de Mary à caça de Mark não significava que ela odiava aquele esporte. Ela culpava isso por deixá-lo impossibilitado de lavar o carro, aspirar o pó e cortar a grama. Quando ele aprendeu a suprir sua necessidade de amor ao falar sua linguagem emocional, ela se libertou para também apoiá-lo em seu esporte favorito.
+
+CAPACHO OU AMANTE?
+
+“Eu o sirvo há vinte anos. Isso inclui todas as modalidades de serviço. Sou seu capacho porque ele simplesmente me ignora, maltrata-me e humilha-me na frente dos amigos e da família. Não o odeio. Não lhe desejo mal, mas estou profundamente magoada e não quero mais viver com ele”.
+
+Essa esposa utilizou “Formas de Servir” durante vinte anos, mas sem expressão de amor. Seus atos demonstravam medo, culpa e ressentimento.
+
+Devido às mudanças sociológicas dos últimos trinta anos, não há mais um estereótipo do papel do esposo e nem da esposa, na sociedade moderna.
+
+Um capacho é um objeto inanimado. Você pode limpar seus pés nele, chutá-lo, colocá-lo de lado, ou fazer qualquer outra coisa que deseje. Ele não tem vontade própria.
+
+Pode servir a seu dono, mas não amá-lo. Quando nós, homens, tratamos nossas esposas como objetos, excluímos a possibilidade de receber amor. Manipulação que utiliza a culpa (“Se você for realmente uma boa esposa, fará isso para mim”), não é uma linguagem do amor. Coação pelo medo (“Acho melhor você fazer isso para mim, senão se arrependerá”) também não tem nada a ver com o amor. Ninguém deve ser capacho. Podemos ser usados, mas somos criaturas que possuem emoções, pensamentos e desejos.
+
+Temos a habilidade de tomar decisões e de agir. Usar ou manipular outras pessoas não é um ato de amor, mas de traição. Você induz a quem manipula a desenvolver hábitos desumanos. O amor diz: “Pelo fato de eu amá-lo muito, não vou permitir que me trate desse jeito. Não é bom para você nem para mim”.
+
+SUPERANDO OS ESTEREÓTIPOS
+
+O aprendizado da linguagem do amor “Formas de Servir” implica que examinemos nossos estereótipos dos papéis de esposo e esposa. Mark fazia o que a maioria de nós, maridos, realiza normalmente. Seguia o modelo dos papéis assumidos pelos pais. Porém, nem isso ele realizava direito. Seu pai lavava o carro e cortava a grama. Mark não fazia nada disso, mas essa era a imagem mental que ele tinha a respeito do que um marido deveria realizar. Não resta a menor dúvida de que ele não se via limpando a casa nem trocando as fraldas do bebê. Ainda bem que ele teve boa vontade em quebrar seu estereótipo ao perceber como essas coisas eram importantes para Mary. Isso será necessário para todos nós se a primeira linguagem do amor de nossos cônjuges solicitar algo que pareça inadequado a nosso papel.
+
+Devido às mudanças sociológicas dos últimos trinta anos, não há mais um estereótipo comum dos papéis do esposo e da esposa na sociedade moderna. Isso não significa, contudo, que todos os estereótipos tenham desaparecido, mas que o número deles multiplicou. Antes da era da televisão, a imagem que as pessoas tinham de um esposo e de uma esposa e de como deveria ser esse relacionamento, era primeiramente influenciada pelos próprios pais. Com a invasão da televisão e com a proliferação da separação dos casais, o modelo desses papéis tornou-se grandemente influenciado por forças de fora do lar. Sejam quais forem suas percepções a respeito, é muito provável que seu cônjuge possua expectativas diferentes a respeito dos papéis conjugais. E necessário
+
+“vontade política” para examinar e mudar estereótipos, e assim expressar amor de forma mais efetiva. Lembre-se, não há recompensas para se manter esses estereótipos; por outro lado, há benefícios tremendos em atender às necessidades emocionais de seu cônjuge.
+
+Bem recentemente, uma esposa me disse:
+
+— Dr. Chapman, vou mandar todos meus amigos assistirem a seu seminário!
+
+E eu, então, lhe perguntei:
+
+— Por que você fará isso?
+
+— Porque meu casamento mudou radicalmente. Antes do seminário, Bob nunca me ajudava em nada. Nós dois começamos nossas carreiras após a faculdade, mas sempre coube a eu fazer tudo em casa. Era como se nunca tivesse passao pela cabeça dele realizar alguma coisa. Depois do seminário ele começou a me perguntar de que forma poderia me ajudar. Eu fiquei maravilhada! No início, nem acreditava que fosse verdade, mas essa postura tem persistido já por três semanas.
+
+Ela suspirou profundamente e continuou:
+
+— Tenho de admitir que houve situações cômicas, no percurso destas três semanas, porque ele não sabia fazer nada! A primeira vez em que colocou a roupa para lavar, ao invés de usar o detergente diluído, colocou o alvejante. Nossas toalhas azuis ganharam “lindas” bolas brancas. Depois, chegou a hora de ele utilizar pela primeira vez nosso triturador de lixo. Pareceu estranho quando começou a sair espuma de sabão na pia ao lado. Nós paramos o processo, e depois de desligar a máquina coloquei minha mão na abertura do aparelho. Tirei dali um quarto de um pedaço de sabão em barra que antes daquela aventura estava inteirinho. Mas ele me amava de acordo com a minha linguagem e meu “tanque do amor” enchia-se gradativamente! Agora ele já sabe fazer de tudo em casa e ajuda-me muito. Temos, também, bons momentos juntos porque não preciso trabalhar o tempo todo. E, “pode crer”, também aprendi a linguagem dele e mantenho seu “tanque”
+
+cheio.
+
+— Foi assim tão simples?
+
+Simples? Sim. Fácil? Não. Bob teve de trabalhar duro para quebrar o estereótipo com o qual convivera durante trinta e cinco anos. Não foi do “dia para a noite”, mas ele com certeza poderá dizer que aprender a primeira linguagem do amor de sua esposa e decidir-se por utilizá-la fez uma diferença tremenda no clima emocional de seu casamento.
+
+Passemos, agora, para a linguagem do amor número cinco.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 8;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 8 - A Quinta Linguagem do Amor: Toque Físico$t$, 8,
+$conteudo$Há muito se sabe que o toque físico é uma forma de se comunicar o amor emocional. Inúmeras pesquisas na área do desenvolvimento infantil chegaram às seguintes conclusões: Os bebês que são tomados nos braços, beijados e abraçados desenvolvem uma vida emocional mais saudável do que os que são deixados durante um longo período de tempo sem contato físico. A importância do toque no que se refere às crianças não é uma ideia moderna. Durante o ministério terreno de Cristo, os hebreus que moravam na Palestina reconheciam que Jesus era um grande mestre e levavam seus filhos até ele para que tocasse neles. Como podemos nos lembrar, seus discípulos repreenderam aos pais daquelas crianças, pois acharam que o Filho de Deus estava ocupado demais para aquela atividade tão “frívola”. Porém, as Escrituras afirmam-nos que Jesus se indignou com os seus seguidores e disse: “Deixai vir a mim os pequeninos, não os embaraceis, porque dos tais é o Reino dos Céus. Em verdade vos digo: Quem não receber o reino de Deus como uma criança, de maneira nenhuma entrará nele. Então, tomando-as nos braços e impondolhes as mãos, as abençoava.”
+
+Pais sábios, em qualquer cultura, também tocam seus filhos de forma amorosa.
+
+O toque físico é também um poderoso veículo de comunicação para transmitir o amor conjugal. Andar de mãos dadas, beijar, abraçar e manter relações sexuais são formas de se comunicar o amor emocional para o cônjuge.
+
+Os antigos costumavam dizer: “O caminho para se conquistar o coração de um homem é através de seu estômago”. Muitos deles engordaram tanto a ponto de correrem risco de vida, devido às esposas serem adeptas desta filosofia. Naturalmente, os antigos não se referiam ao coração físico, mas ao centro do romantismo. Seria mais adequado dizer: “A forma de alcançar o coração de alguns homens é através de seus estômagos”.
+
+Lembro-me bem das palavras de um certo marido:
+
+“Dr. Chapman, minha esposa é uma cozinheira de forno e fogão. Ela gasta horas cozinhando. Faz os pratos mais elaborados que existem. E quanto a mim? Sou um daqueles homens que apreciam purê e carne moída. Vivo dizendo que ela está gastando muito tempo na cozinha. Eu adoro comida simples. Ela fica aborrecida e diz que não gosto dela. Mas eu a amo! Só desejaria que ela facilitasse as coisas para si mesma e não gastasse muito tempo com pratos tão trabalhosos. Dessa forma, passaríamos mais tempo juntos e ela teria mais energia para fazer outras coisas”.
+
+Obviamente, essas “outras coisas” chegavam mais perto de seu coração do que refeições sofisticadas.
+
+A esposa daquele homem era emocionalmente frustrada. Ela crescera em uma família onde a mãe era uma excelente cozinheira e o pai sabia apreciar seus esforços. Ela se lembrava de seu pai ter dito à sua mãe: “Quando me sento à mesa com uma refeição como esta diante de mim, torna-se fácil amá-la”. Seu pai diariamente elogiava os quitutes feitos por sua mãe. Em particular e em público ele elogiava os dotes culinários da esposa.
+
+Aquela filha aprendera direitinho o modelo deixado por sua mãe. O problema é que ela não estava casada com o seu próprio pai. Seu esposo possuía uma linguagem do amor muito diferente.
+
+Em minha conversa com aquele esposo, não levou muito tempo até eu descobrir que as “outras coisas” às quais ele se referia era sexo. Quando a esposa respondia positivamente no tocante a relação sexual, ele sentia segurança em seu amor. No entanto, quando por qualquer motivo ela se esquivava sexualmente do marido, nem toda sua habilidade culinária era suficiente para convencê-lo de que ela o amava. Ele não era contra os pratos elaborados, mas em seu coração eles não poderiam, de forma alguma, substituir aquilo que ele considerava “amor”.
+
+A relação sexual, porém, é somente um dialeto na linguagem do toque físico.
+
+Dos cinco sentidos, o do toque diferencia-se dos outros quatro, pois não se limita a uma localização específica no nosso organismo. Pequenos receptores táteis acham-se espalhados ao longo de todo o corpo. Quando esses receptáculos são tocados ou apertados, os nervos carregam esses impulsos para o cérebro. Este os interpreta e percebemos o objeto do toque como quente ou frio, áspero ou macio. Causam dor ou prazer. Também os interpretamos como amorosos ou hostis.
+
+O toque físico pode iniciar ou terminar um relacionamento. Pode comunicar ódio ou amor.
+
+Algumas partes do corpo são mais sensíveis do que outras. A diferença deve-se ao fato dos pequenos receptores táteis não estarem espalhados aleatoriamente pelo nosso organismo, mas sim distribuídos em grupos. Portanto, a ponta da língua é altamente sensível ao toque, ao passo que atrás dos ombros é uma das partes mais insensíveis. As pontas dos dedos e a ponta do nariz também são áreas extremamente sensíveis. Nosso objetivo, no entanto, não é entender as bases neurológicas das sensações do toque, mas sim sua importância psicológica.
+
+O toque físico pode iniciar ou terminar um relacionamento. Pode comunicar ódio ou amor. A pessoa cuja primeira linguagem do amor é “Toque Físico” receberá uma mensagem que irá muito além das palavras “Eu odeio você” ou “Eu amo você”. Um tapa no rosto é algo difícil para qualquer criança enfrentar, mas para aquela que possuir o “Toque Físico” como primeira linguagem do amor, será devastador. Um abraço afetivo comunica amor a qualquer criança, mas aquela que possuir o “Toque Físico” como primeira linguagem do amor, desfrutará de forma mais intensa aquele gesto, sentindo-se amada e segura. A mesma atitude é válida para os adultos.
+
+No casamento, o toque de amor existe em várias formas. Levando-se em conta que os receptores ao toque localizam-se por todo o corpo, um afago amoroso em qualquer parte pode comunicar amor a seu cônjuge. Isso não significa que todos os toques sejam iguais. Seu cônjuge apreciará a alguns mais do que a outros. Seu melhor professor, sem dúvida alguma, será seu(sua) próprio(a) esposo(a). Afinal de contas, ele(ela) é a quem você demonstrará amor. Ele(ela) sabe exatamente o tipo de toque que mais lhe agrada.
+
+Não insista em tocá-la(o) de seu jeito e em seu tempo. Aprenda a falar o dialeto dele(dela), pois alguns toques podem ser considerados desconfortáveis ou irritantes. A insistência em praticar tais atos pode comunicar o oposto ao amor. Talvez afirme que você não é sensível às necessidades dele(dela) e não se importa com a sua percepção de prazer. Não caia no erro de achar que o que lhe traz prazer também trará a seu cônjuge.
+
+Toques amorosos podem ser explícitos e exigir sua completa atenção, como afago nas costas e jogos sexuais que terminem em uma relação. Por outro lado, também podem ser implícitos e breves, como um toque nos ombros ao encher uma xícara de café, ou um rápido roçar no corpo ao passar pela cozinha. Toques explícitos, naturalmente, levam mais tempo, não somente a prática deles em si, como também a percepção de como progredir quando se visa comunicar amor dessa forma ao cônjuge. Se uma massagem nas costas comunica eficazmente seu amor a seu(sua) esposo(a), então, todo tempo, dinheiro e energia que você gastar para aprender a ser um(a) bom(boa) massagista será, sem dúvida, um bom investimento. Se a relação sexual for o primeiro dialeto de seu parceiro, leia e converse sobre a arte do amor sexual de forma a aprimorar sua expressão de amar.
+
+Toques implícitos de amor levam menos tempo; porém desenvolvem o treinamento, especialmente se o ‘Toque Físico” não for sua primeira linguagem do amor, e se você cresceu em uma família onde as pessoas não se expressavam dessa forma.
+
+Sentar-se pertinho um do outro no sofá para assistirem televisão, não exigirá tempo extra e poderá comunicar amor de forma abundante.
+
+Pequenos toques ao passar por seu cônjuge implicam frações de segundos.
+
+Afagos ao sair e ao chegar em casa podem envolver beijos e abraços ligeiros mas falarão muito alto para seu(sua) esposo(a).
+
+Uma vez que você descubra que o ‘Toque Físico” é a primeira linguagem do amor de seu cônjuge, sua única limitação é sua própria imaginação, quanto às formas de expressar amor. Descobrir novas formas e lugares de toque pode ser um excitante desafio. Se você não for alguém que tem o hábito de “tocar sob a mesa”, descobrirá que essa prática poderá acender fagulhas quando jantarem fora. Você poderá encher o “tanque do amor” de seu cônjuge, se caminharem de mãos dadas até chegarem ao carro, mesmo que você não tenha o hábito de fazer isso em público. Se você, normalmente, não beija seu cônjuge ao entrar no carro, poderá descobrir que esse gesto tornará sua viagem mais atraente. Abraçar sua esposa antes dela sair para as compras poderá, além de expressar amor, trazê-la mais rápido para casa. Tente novos toques em novos lugares e pergunte a seu cônjuge o que sentiu: se os achou prazerosos ou não. Lembre-se: a última palavra é dele(dela). Você está aprendendo a falar a língua dele(dela).
+
+O CORPO EXISTE PARA SER TOCADO
+
+Tudo o que há em mim reside em meu corpo. Tocar em mim significa afagá-lo.
+
+Afastar-se dele é distanciar-se de mim, emocionalmente. Em nossa sociedade, um aperto de mão comunica acordo e exclusividade. Quando, em raras ocasiões, um homem recusa apertar a mão de outro, a mensagem que essa atitude comunica é que as coisas não vão bem naquela amizade. Todas as sociedades possuem formas de toque físico como cumprimento social. A maioria dos homens americanos não se sente confortável com fortes abraços e beijos, mas na Europa eles têm a mesma função de um aperto de mão.
+
+Em cada sociedade há formas adequadas e inadequadas de se tocar as pessoas do sexo oposto. A recente atenção voltada para os assédios sexuais tem evidenciado as formas inapropriadas. No casamento, entretanto, tudo isso é determinado pelo casal, dentro de algumas amplas diretrizes. Abuso físico é, naturalmente, condenado pela sociedade e existem organizações sociais cujo objetivo é ajudar tanto esposas quanto esposos vítimas dos excessos. Nossos corpos foram feitos para toques, mas não para abusos.
+
+Se a primeira linguagem do amor de seu cônjuge for o “Toque Físico”, nada será mais importante do que abraçá-la(o) quando ela (ele) chorar.
+
+Este século caracteriza-se como a era da abertura e liberdade sexual. Essa conquista, porém, tem demonstrado que o casamento onde ambos os cônjuges são livres para ter relações sexuais com outros parceiros é uma ilusão. Os que não discordam disso por motivos morais, não aceitam por razões emocionais. Há alguma coisa em nossa necessidade por intimidade e amor que não nos permite dar tal liberdade a nosso cônjuge.
+
+A dor emocional é profunda e a intimidade evapora-se quando tomamos conhecimento de que nosso cônjuge está envolvido sexualmente com outra pessoa. Os arquivos dos conselheiros estão repletos de registros de esposos e esposas que tentam superar o trauma emocional de um cônjuge infiel. Esse problema, entretanto, é multiplicado para aquele cuja primeira linguagem do amor é o ‘Toque Físico”. É por isso que machuca tanto
+
+— o “Toque Físico” como expressão do amor — agora é dado a outra pessoa. Não é que o tanque emocional tenha se esvaziado; o fato é que ele explodiu! Serão necessários inúmeros reparos para que aquelas necessidades emocionais sejam supridas.
+
+AS CRISES E O TOQUE FÍSICO
+
+De forma mais ou menos instintiva, abraçamos uns aos outros em tempos de crise. Por quê? Pois o “Toque Físico” é um poderoso comunicador de amor. Em épocas difíceis, mais do que em qualquer outra, precisamos nos sentir amados. Nem sempre devemos mudar as situações, mas podemos superá-las se nos sentirmos amados.
+
+Todos os casamentos atravessam crises. A morte dos pais é inevitável.
+
+Acidentes automobilísticos aleijam e matam centenas de pessoas anualmente.
+
+Enfermidades não respeitam ninguém. Desapontamentos fazem parte da vida. A coisa mais importante a ser feita por seu cônjuge quando este atravessar alguma crise na vida, é amá-lo. Se a primeira linguagem do amor de seu(sua) esposo(a) for o “Toque Físico”, nada será mais importante do que abraçá-lo(a) quando ele(a) chorar. Suas palavras talvez não tenham muita importância, mas o toque físico comunicará que você se preocupa com ele(ela). As crises propiciam uma oportunidade singular para se expressar amor. Toques afetuosos serão lembrados muito tempo ainda após as dificuldades terem passado. Porém, a ausência de seu toque talvez jamais seja esquecida.
+
+Desde minha primeira visita a West Palm Beach, na Flórida, muitos anos atrás, recebo com alegria os convites para voltar e dar meus seminários naquela região. Em uma dessas ocasiões, conheci Pete e Patsy. Eles não eram originários da Flórida (poucos o são), mas já moravam ali há vinte anos e sentiam-se em casa. Meu seminário fora promovido pela igreja local, e no percurso do aeroporto para a igreja o pastor comunicou-me que Pete e Patsy haviam solicitado que eu passasse a noite na casa deles. Procurei demonstrar contentamento, mas sabia de experiências anteriores que aquele tipo de solicitação implicaria em uma sessão de aconselhamento até altas horas da madrugada. No entanto, eu me surpreenderia mais de uma vez naquela noite.
+
+Quando o pastor e eu adentramos aquela espaçosa casa estilo espanhol, decorada com muito bom gosto, fui apresentado a Patsy e Charlie, o gato da família. Ao olhar ao redor pude aferir que ou os negócios de Pete iam muito bem, ou seus pais deixaram-lhe uma grande fortuna, ou ele estava enterrado em dívidas. Depois descobri que meu primeiro palpite estava correto. Quando me levaram ao quarto de hóspedes, Charlie, o gato, antecipou-se e pulou na cama onde eu dormiria, e esticou-se muito à vontade. Eu pensei: Esse gato está com tudo!
+
+Pete chegou logo depois e comemos um delicioso lanche. Ficou combinado que jantaríamos após o seminário. Várias horas mais tarde, enquanto ceávamos, eu aguardava o momento em que a sessão de aconselhamento começaria. Mas não começou. Ao contrário do que imaginei, Pete e Patsy formavam um casal saudável e feliz. Para um conselheiro isso é uma raridade. Estava curioso para descobrir qual era o segredo deles, mas me encontrava exausto, e como sabia que ambos me levariam no dia seguinte ao aeroporto, decidi fazer minha sondagem ao amanhecer. Eles, então, conduziram-me a meu quarto.
+
+Charlie, o gato, foi muito gentil em deixar o quarto quando eu cheguei. Saltando da cama ele procurou outro local e eu, em poucos minutos, assumi seu lugar naquele confortável leito. Após uma rápida reflexão sobre aquele dia, adormeci. Antes, porém, que perdesse o contato com a realidade, a porta do quarto foi escancarada e um monstro pulou sobre mim! Eu ouvira falar sobre o escorpião da Flórida, mas aquele não era um deles. Sem pensar sacudi o lençol que me cobria e com um grito lancinante atirei-o contra a parede. Ouvi seu corpo bater, seguido de um silêncio. Pete e Patsy correram, acenderam a luz e nós três olhamos para Charlie, ainda estendido no chão.
+
+Pete e Patsy sempre se recordam disso e eu jamais me esquecerei. Charlie recobrou-se em alguns minutos e saiu rapidinho dali. Para falar a verdade, Pete e Patsy contaram-me que ele nunca mais entrou naquele quarto!
+
+Após meu episódio com Charlie, não sabia se Pete e Patsy ainda me levariam ao aeroporto e nem se teriam algum interesse por mim. Meus temores, no entanto, desapareceram quando após o seminário ele me disse:
+
+“Dr. Chapman, já cursei vários seminários mas nunca ouvi alguma descrição tão clara a respeito de Patsy e de mim como a que o senhor fez. A linguagem do amor é realmente uma verdade. Não vejo a hora de lhe contar nossa história!”
+
+Após despedir-me das pessoas presentes ao seminário, saímos a caminho do aeroporto, em nosso percurso de aproximadamente 45 minutos. Pete e Patsy começaram, então, a contar-me sua história. Nos primeiros anos de seu casamento tiveram grandes problemas. Porém, 22 anos atrás, seus amigos disseram-lhes que eles formavam o casal perfeito. Pete e Patsy realmente acreditavam que seu matrimônio “fora realizado nos céus”.
+
+Eles cresceram na mesma comunidade, frequentaram a mesma igreja e estudaram no mesmo colégio. Seus pais tinham estilos de vida e valores semelhantes.
+
+Pete e Patsy apreciavam muitas coisas em comum. Ambos gostavam muito de jogar tênis, velejar e sempre conversavam a respeito de como possuíam os mesmos interesses.
+
+Eles, aparentemente, tinham todas as similaridades que se acredita necessários para se diminuir os conflitos em um casamento.
+
+Começaram o namoro no segundo ano da faculdade. Faziam cursos diferentes, mas davam sempre um jeito de se encontrar pelo menos uma vez por mês e em algumas ocasiões especiais. Ainda na escola estavam convencidos de que “haviam nascido um para o outro”. Ambos, no entanto, concordaram em terminar a faculdade antes de se casarem.
+
+Pelos três anos seguintes tiveram um relacionamento idílico. Um final de semana ele a visitava em seu campus, e no outro era a vez dela retribuir a visita dele. No final de semana seguinte eles iam para suas casas visitar suas famílias, mas a maior parte do tempo também ficavam juntos. No quarto final de semana de cada mês, no entanto, ambos concordaram que não se veriam e utilizariam o tempo para desenvolver atividades de seus interesses pessoais. Com exceção de eventos especiais como aniversários, realmente respeitavam esse planejamento. Três semanas após receberem seus diplomas, ele em economia e ela em sociologia, casaram-se. Dois meses depois, mudaram para a Flórida onde apareceu uma ótima chance de emprego para Pete. Eles estavam a 3.200 quilômetros de distância do parente mais próximo, e podiam desfrutar de uma eterna lua de mel.
+
+Os primeiros três meses foram emocionantes — mudar, achar um apartamento e curtir um ao outro. O único motivo de conflito que tinham era a louça para lavar. Pete achava que ele possuía uma técnica mais eficiente para aquela tarefa. Patsy, no entanto, não concordava com aquela ideia. Chegaram, então, a conclusão de que quem fosse lavar a louça, utilizaria a forma que desejasse. E aquela discussão foi desfeita. Eles tinham uns seis meses de casamento quando Patsy achou que Pete estava se afastando dela.
+
+Trabalhava horas além do expediente normal e, ao chegar em casa, gastava tempo demais no computador. Quando finalmente conseguiu manifestar a sua desconfiança a Pete, ele respondeu que não a estava evitando, mas sim tentava manter-se no auge de seu emprego. Disse também que ela não compreendia a pressão que ele sofria em seu trabalho, e quão importante era que ele se saísse bem no primeiro ano de atividade. Patsy não ficou muito satisfeita, mas resolveu dar-lhe o espaço solicitado.
+
+Ao final do primeiro ano, Patsy estava desesperada.
+
+Patsy fez amizade com diversas senhoras que moravam no mesmo condomínio onde ela residia. Quando sabia que Pete trabalharia até mais tarde, fazia compras com suas amigas ao invés de ir direto para casa após o trabalho. Algumas vezes ela ainda estava ausente quando ele chegava. Aquilo o aborrecia muito e ele passou a acusá-la de negligência e irresponsabilidade. Patsy respondia:
+
+— Parece o roto falando do rasgado! Quem é o irresponsável? Você não se dá ao luxo nem de me telefonar para avisar a que hora chegará em casa… Como eu posso esperá-lo, se nem ao menos sei quando virá?! E, quando chega, fica o tempo todo colado naquela droga de computador. Você não precisa de uma esposa; tudo o que necessita é de um computador.
+
+Pete, então, respondeu em um tom de voz mais alto:
+
+— Eu PRE-CI-SO de uma ES-PO-SA. Será que você não entende? O ponto é exatamente esse. Eu PRE-CI-SO de uma ES-PO-SA!
+
+Mas Patsy não conseguia entender. Ela estava muito confusa. Em sua busca por respostas foi a uma biblioteca pública e leu vários livros sobre casamento. Ela pensava:
+
+“O casamento não pode ser desse jeito! Eu tenho que achar uma resposta para a nossa situação”. Quando ele ia para o computador, ela pegava firme no livro. Durante várias noites lia direto até meia-noite. Pete, ao se deitar, percebia o que ela fazia e lá vinham comentários sarcásticos, do tipo:
+
+— Se você tivesse lido todos esses livros quando estava na faculdade, teria tirado “A” em todas as matérias!
+
+Patsy respondia:
+
+— Só que eu não estou na faculdade. Encontro-me casada e, no momento, ficaria muito satisfeita com um “C”!
+
+Pete então ia para a cama sem abrir mais a boca; apenas a olhava.
+
+Ao final do primeiro ano, Patsy estava desesperada. Ela já falara com Pete sobre isso, mas dessa vez comunicou-lhe calmamente:
+
+— Vou procurar um conselheiro conjugal. Você gostaria de ir comigo?
+
+Pete então respondeu:
+
+— Não preciso de um conselheiro conjugal. Não tenho tempo para isso e nem posso pagar uma consulta!
+
+— Então, eu vou sozinha — disse Patsy.
+
+— Tudo bem, é você mesmo quem precisa de conselhos.
+
+A conversa terminou. Patsy sentiu-se totalmente abandonada e sozinha, mas na semana seguinte ela marcou uma consulta com um conselheiro conjugal. Após três semanas aquele psicólogo entrou em contato com Pete e perguntou se ele poderia conversar com ele sobre suas perspectivas a respeito do casamento. Pete concordou e o processo de cura começou. Seis meses depois eles deixavam o consultório do conselheiro com o casamento renovado.
+
+Eu, então, perguntei a Pete e Patsy:
+
+— O que foi que vocês aprenderam no aconselhamento que favoreceu essa virada em seu casamento?
+
+Pete então respondeu:
+
+— Em resumo, Dr. Chapman, aprendemos a falar a primeira linguagem do amor um do outro. O conselheiro não usou esse vocabulário, mas quando o senhor falou hoje em seu seminário, as luzes se acenderam. Minha mente voltou à época de nosso aconselhamento e percebi que foi exatamente isso que aconteceu conosco. Nós finalmente aprendemos a falar a linguagem do amor um do outro.
+
+Eu então perguntei:
+
+— E qual é sua linguagem do amor, Pete?
+
+— “Toque Físico” —, ele respondeu sem titubear.
+
+— Sem a menor sombra de dúvida! Acrescentou Patsy. Voltei-me então para ela:
+
+— E qual a sua linguagem do amor, Patsy?
+
+— “Qualidade de Tempo”, Dr. Chapman. Era isso que eu pedia quando ele gastava todo aquele tempo com o trabalho e o computador.
+
+— Como você descobriu que o “Toque Físico” era a linguagem do amor de Pete?
+
+— Levou um tempo. Pouco a pouco, essa característica começou a surgir durante as sessões de aconselhamento. No começo, acho que Pete nem se apercebeu.
+
+Pete então completou:
+
+— É isso mesmo. Eu estava tão inseguro em minha autoestima que levou um tempão até que eu identificasse e percebesse que a ausência do toque de Patsy havia feito com que eu me afastasse dela. Eu nunca disse que precisava do toque dela. Em nossa época de namoro e noivado, eu sempre tomava a iniciativa de abraçar, beijar, andar de mãos dadas, e ela sempre foi receptiva. Isso fazia com que eu achasse que ela me amava. Após nosso casamento houve situações em que eu a procurei fisicamente e ela não correspondeu. Achei que ela estivesse muito cansada devido às suas responsabilidades no novo emprego. Eu não percebi, mas concluí isso pessoalmente. Sentime como se ela não me achasse mais atraente. Então, decidi que não tomaria mais a iniciativa para não me sentir mais rejeitado. E esperei, para ver quanto tempo demoraria até que ela decidisse beijar-me, tocar-me ou demonstrar uma nova experiência sexual. Cheguei a esperar seis semanas por um toque. Aquilo foi insuportável. Eu me afastava para ficar longe da dor que apertava quando estava com ela. Sentia-me rejeitado, dispensado e mal-amado. Então Patsy acrescentou…
+
+— Eu não tinha a menor ideia de que ele se sentia dessa forma. Sabia que não me procurava mais. Não nos abraçávamos, nem nos beijávamos como antes, mas achei que, desde que estávamos casados, isso não era mais tão importante para ele.
+
+Compreendia também que estava sob pressão no trabalho. Não tinha, porém, a menor ideia que ele desejava que eu tomasse a iniciativa.
+
+Fez uma pausa e prosseguiu:
+
+— E foi exatamente como ele disse. Eu vivi semanas sem tocá-lo. Isso nem passava por minha mente. Eu preparava as refeições, mantinha a casa limpa, colocava a roupa para lavar e tentava não atrapalhá-lo. Honestamente, eu não sabia o que mais poderia fazer. Não entendia o afastamento nem a falta de atenção dele. Não é que eu não apreciasse tocá-lo. É que para mim isso não era tão importante. Receber sua atenção, seu tempo é o que me fazia sentir amada. Não importava se nos beijássemos ou abraçássemos. Desde que ele me desse sua atenção, eu me sentia querida.
+
+Respirou fundo e continuou:
+
+— Levou um bocado de tempo até que localizássemos a raiz do problema e, ao descobrirmos que não supríamos a necessidade de amor um do outro, demos uma virada em nosso relacionamento. Quando comecei a tomar a iniciativa de tocá-lo, foi impressionante o que aconteceu. Sua personalidade e seu ânimo mudaram drasticamente.
+
+Eu ganhei um novo marido. Quando ele se convenceu de que eu realmente o amava, então começou a ficar mais sensível às minhas necessidades.
+
+— Ele ainda tem computador em casa? — perguntei.
+
+— Tem sim. Mas raramente o usa e, quando o faz, está tudo bem porque eu sei que ele não está “casado” com o computador. Fazemos tantas coisas juntos, que se tornou fácil para mim dar-lhe a liberdade para usar o computador quando quiser.
+
+Pete então disse:
+
+— O que me deixou pasmo no seminário hoje foi a forma como sua palestra sobre as linguagens do amor reportou-me aos anos passados. O senhor disse em vinte minutos o que levamos seis meses para aprender.
+
+— Bem, não importa a rapidez com que se aprende uma coisa, mas sim o quanto se desfruta dela. E, obviamente, vocês assimilaram isso muito bem.
+
+Pete é uma das pessoas que possuem o “Toque Físico” como a primeira linguagem do amor. Emocionalmente, este tipo anseia que seu cônjuge o toque fisicamente. Um gostoso cafuné na cabeça ou nas costas, andar de mãos dadas, abraços apertados ou não, relações sexuais — tudo isto e outros “toques de amor” fazem parte das necessidades emocionais de quem possui o “Toque Físico” como sua primeira linguagem do amor.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 9;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 9 - Descobrindo sua Primeira Linguagem do Amor$t$, 9,
+$conteudo$Descobrir a primeira linguagem do amor de seu cônjuge é essencial para você manter sempre cheio o seu “tanque do amor”. Porém, vamos primeiramente nos certificar de que você sabe qual é a sua própria linguagem. Após conhecer as cinco: Palavras de Afirmação;
+
+Qualidade de Tempo;
+
+Receber Presentes;
+
+Formas de Servir;
+
+Toque Físico, algumas pessoas saberão instantaneamente a primeira linguagem tanto delas como a de seus cônjuges. Outros, porém, não terão tanta facilidade. Alguns são como Bob, de Parma Heights, Ohio, que após ouvir sobre as cinco linguagens do amor, disseme:
+
+— Não sei, não… Estou em dúvida entre duas dessas linguagens. Não sei onde me encaixar.
+
+— Quais delas? — perguntei.
+
+— Toque Físico e Palavras de Afirmação —, respondeu Bob.
+
+— O que você entende por Toque Físico? — perguntei.
+
+— Bem, principalmente, sexo — Bob respondeu. Procurei sondá-lo um pouco mais, por intermédio de mais perguntas:
+
+— Você não aprecia quando sua esposa passa a mão em seu cabelo, faz uma massagem em suas costas, dá-lhe beijos e abraços, mesmo fora da relação sexual?
+
+— Eu gosto disso tudo, e jamais rejeito isso; porém o mais importante para mim é a relação sexual. Só assim sinto que minha esposa realmente me ama.
+
+Mudando do Toque Físico para Palavras de Afirmação, perguntei:
+
+— Quando você diz que Palavras de Afirmação também são importantes, a quais se refere?
+
+— A palavras positivas. Quando ela diz que estou bem arrumado e sou um profissional competente; quando ela expressa apreciação pelas coisas que faço em casa; quando elogia o tempo que fico com as crianças; quando diz que me ama — todas essas coisas são realmente importantes para mim.
+
+— Você costumava ouvir esse tipo de elogio de seus pais em sua infância e juventude?
+
+— Raramente — Bob respondeu. O que eu sempre ouvia de meus pais eram críticas ou cobranças. Pensando bem, acho que essa foi a primeira coisa que me atraiu em Carol. Ela sempre me dizia Palavras de Afirmação.
+
+— Deixe-me perguntar-lhe mais uma coisa: Se Carol supre suas necessidades, ou seja, se os dois tiverem relações sexuais de “alta qualidade” todas as vezes que você desejar, mas por outro lado ela o criticar e fizer uma série de cobranças e, algumas vezes, até o desprezar perante amigos, você acha que ainda se sentiria amado por ela?
+
+— Acho que não. Sentir-me-ia traído, profundamente magoado e deprimido.
+
+Então lhe disse:
+
+— Bob, acho que sua primeira linguagem do amor é Palavras de Afirmação.
+
+Relações sexuais são extremamente importantes para você e seu senso de intimidade com Carol. Porém, as Palavras de Afirmação que ela lhe diz são mais necessárias para sua parte emocional. Veja bem: se ela fosse verbalmente crítica o tempo todo, chegaria uma hora em que você não teria mais desejo de ter relações com ela, porque estaria muito magoado.
+
+Bob cometeu um erro comum a muitos outros: assumir que o Toque Físico é a sua primeira linguagem do amor, devido ao intenso desejo por sexo que possui. Para o homem, o prazer sexual tem base física. Ou seja, as relações sexuais são estimuladas pela formação das células dos espermas e do fluido nos canais seminais. Quando eles estão cheios, há um impulso para liberá-los. Portanto, o desejo sexual masculino tem raiz fisiológica.
+
+A maioria dos problemas sexuais no casamento tem pouco a ver com técnicas físicas, mas tudo a ver com o suprimento das necessidades emocionais.
+
+Para a mulher, entretanto, o desejo pelo sexo baseia-se nas emoções e não na fisiologia. Não há alguma base física que a motive e impulsione para ter relações sexuais.
+
+O prazer feminino tem sua motivação no emocional. Se ela se sentir amada, admirada e apreciada por seu marido, então terá o desejo de ter intimidade com ele. Porém, sem a proximidade emocional, ela terá pouco desejo físico.
+
+Devido ao fato do homem possuir impulsos físicos a serem liberados em bases regulares, ele automaticamente assume que essa é sua primeira linguagem do amor. Mas, se ele não aprecia toques físicos em outros momentos que não no interlúdio sexual, essa é uma grande indicação de que o toque físico não seja sua primeira linguagem do amor. O desejo sexual é muito diferente de suas necessidades emocionais de ser amado. Isso não significa que a relação sexual não seja importante para ele — é extremamente necessária
+
+— mas, apenas o relacionamento sexual não suprirá sua necessidade de ser amado. Sua esposa, da mesma forma, deverá aprender a falar sua primeira linguagem do amor.
+
+Quando a esposa fala a primeira linguagem do amor do marido, e enche assim seu “tanque do amor”, e ele fala a primeira linguagem do amor dela, de forma que seu
+
+“tanque do amor” também esteja cheio, o fator sexual desse relacionamento ocorrerá de forma automática. A maioria dos problemas sexuais no casamento tem pouco a ver com técnicas físicas, mas tudo a ver com o suprimento das necessidades emocionais.
+
+Após conversarmos mais um pouco, Bob refletiu e disse:
+
+— É, acho que o senhor está certo. Palavras de Afirmação é definitivamente minha primeira linguagem do amor. Quando ela é ríspida e crítica comigo, minha tendência é me afastar sexualmente dela e fantasiar com outra mulher. Mas, quando ela diz que me admira e gosta de mim, meus desejos sexuais automaticamente se voltam para ela.
+
+Bob fizera ali, em nossa breve conversa, uma descoberta muito significativa.
+
+Qual é a sua primeira linguagem do amor? O que faz com que você se sinta mais amado(a) por seu cônjuge? O que você mais deseja? Se a resposta a essas perguntas não surge imediatamente em sua cabeça, talvez eu o possa ajudar a dar uma olhada na utilização negativa das linguagens do amor:
+
+O que seu cônjuge faz, ou diz, ou deixa de expressar ou realizar, que mais o(a) magoa? Se, por exemplo, o que mais o(a) aborrece forem críticas e julgamentos, então talvez sua linguagem do amor seja Palavras de Afirmação. Se a sua primeira linguagem do amor for usada de forma negativa por seu cônjuge, ou seja, se ele realizar exatamente o contrário daquilo que deveria fazer para encher seu “tanque do amor”, então aquela atitude machuca-lo-á mais do que a outra pessoa, pois além de negligenciar o fato de falar sua primeira linguagem, utiliza-a como uma faca para feri-lo(la).
+
+Lembro-me de Mary, em Kitchener, Ontario, quando me disse:
+
+“Dr. Chapman, o que mais me fere é Ron, meu marido, nunca levantar uma palha para me ajudar em casa. Ele assiste televisão enquanto realizo todo trabalho. Não entendo como pode fazer isso, se diz que me ama!”
+
+O fato dela ficar tão magoada por Ron não a ajudar com as coisas da casa era a chave para se perceber sua primeira linguagem do amor: Formas de Servir. Se você fica muito triste porque faz muito tempo que seu cônjuge não lhe dá um presente, então, talvez, sua primeira linguagem do amor seja Receber Presentes. Se sua maior dor é proveniente de que seu cônjuge raramente lhe dedica um momento de atenção, então Qualidade de Tempo é sua primeira linguagem do amor.
+
+Outra forma de se descobrir sua primeira linguagem do amor é olhar para o passado do seu casamento e perguntar:
+
+“O que eu mais solicitei de meu cônjuge?”
+
+Aquilo que você mais requisitou é, possivelmente, algo que faz parte de sua linguagem do amor. Tais solicitações que, provavelmente, foram interpretadas por seu cônjuge como “superficiais”, são, no entanto, tentativas de assegurar o amor dele para com você.
+
+Elizabeth, que mora em Maryville, Indiana, utilizou-se dessa forma para descobrir sua primeira linguagem do amor. Ela partilhou comigo, ao final de uma sessão do seminário:
+
+“Ao olhar para trás, aos dez anos de meu casamento e perguntar a mim mesma o que mais solicitei de Peter, minha linguagem do amor tornou-se óbvia. Tenho, quase sempre, requisitado dele “Qualidade de Tempo”. Repetidamente sugiro que façamos um piquenique; passemos um fim de semana na praia; desliguemos a televisão e conversemos por, pelo menos uma hora; caminhemos juntos e assim por diante. Sinto-me negligenciada e mal-amada porque ele raramente aceita minhas propostas. Tenho recebido lindos presentes em meu aniversário e em ocasiões especiais e Peter não entende por que não tenho demonstrado mais entusiasmo com eles.”
+
+Fez uma pequena pausa e continuou:
+
+“Durante seu seminário, surgiu uma luz no fim do túnel e nós dois percebemos isso. Durante o intervalo, meu marido pediu-me perdão por, durante todos estes anos, ter sido tão duro e resistente às minhas solicitações. Ele prometeu que as coisas serão diferentes daqui para frente, e eu acredito que sim.”
+
+Outra forma para seu cônjuge descobrir sua primeira linguagem do amor é observando o que você faz e diz para expressar amor a ele. Há grandes chances de que o que realiza por ele(ela), seja exatamente aquilo que gostaria que ele(ela) fizesse por você.
+
+Se, porventura, constantemente se utiliza de Formas de Servir para com seu cônjuge, talvez (nem sempre) essa seja sua linguagem do amor. Se Palavras de Afirmação fazem com que você se sinta amado(a), há grandes chances de que as utilize para transmitir amor ao seu cônjuge. Portanto, você pode descobrir sua própria linguagem do amor ao perguntar-se: Como, de forma consciente, expresso amor a meu cônjuge?
+
+Mas… lembre-se de que essa é apenas uma possível dica para se descobrir sua linguagem do amor; não é um indicador infalível. Por exemplo: um marido que aprendeu com seu pai a expressar amor à esposa através de presentes, faz isso por seguir os passos de seu pai. No entanto, Receber Presentes talvez não seja sua primeira linguagem.
+
+Ele, simplesmente, faz o que via seu pai praticar.
+
+Dê uma parada e escreva em um papel, o que, em sua opinião, é sua linguagem do amor.
+
+Depois aliste as outras quatro em ordem de importância.
+
+São três as sugestões para se descobrir a primeira linguagem do amor:
+
+1. O que seu cônjuge faz, ou deixa de realizar, que mais o(a) magoa? O oposto a isso é, provavelmente, sua linguagem do amor.
+
+2. O que você mais solicita de seu cônjuge? Aquilo que mais requisita dele, é provavelmente o que faz você sentir-se mais amado(a).
+
+3. Qual a forma mais frequente de você expressar amor a seu cônjuge? Essa pode ser uma indicação de que, através da mesma, também se sentiria amado(a).
+
+Ao utilizar estas três indicações, provavelmente será possível descobrir sua primeira linguagem do amor. Se ficar em dúvida entre duas delas, e achar que qualquer uma poderia ser a sua, existe a possibilidade de você ser bilíngue. Desta forma, as coisas ficam mais fáceis para seu cônjuge. Agora, ele tem duas escolhas em que ambas lhe comunicarão amor de forma mais profunda.
+
+Dois tipos de pessoa terão dificuldade em descobrir suas primeiras linguagens do amor. A primeira delas é a que mantém seu “tanque do amor” cheio durante longo tempo. O cônjuge expressa seu amor através de várias formas e ele não tem certeza sobre qual delas faz com que se sinta mais amado(a). Ele simplesmente sabe que é amado(a). O segundo tipo é aquele cujo “tanque do amor” está vazio há tanto tempo, e não se lembra mais o que o(a) faz sentir-se amado(a).
+
+Em ambos os casos, se voltarem à época em que se apaixonaram e perguntarem-se a si mesmos: O que me atraía nele (nela) naquela época? O que ele(ela) fazia, ou dizia, que me motivava a querer ficar ao seu lado? Se você conseguir “cavoucar”
+
+essas reminiscências, obterá uma ideia de qual seja sua primeira linguagem do amor.
+
+Outro método seria o de perguntar-se a si mesmo(a): Que tipo de esposo/esposa seria melhor para mim? Se fosse possível ter um cônjuge perfeito, como ele seria? A imagem que você projetar do(a) esposo(a) ideal pode lhe dar alguma dica de qual seja sua primeira linguagem do amor.
+
+Depois disso tudo, gostaria de sugerir que gastasse um pouco de tempo e escrevesse a respeito de qual você acha ser sua primeira linguagem do amor. Depois, aliste as outras quatro, em ordem de importância. Registre, também, qual, em sua opinião, é a primeira linguagem do amor de seu cônjuge. Se desejar, relacione também as outras quatro em ordem de importância. Sente-se com seu(sua) esposo(a) e conversem sobre qual, em sua opinião, é a primeira linguagem do amor dele/dela. Daí, digam um ao outro quais vocês acham ser suas próprias linguagens do amor.
+
+Uma vez que tenham compartilhado essas informações, sugiro que “brinquem”
+
+três vezes por semana um jogo chamado “Checagem de Tanque”. Divirtam-se da seguinte maneira: Ao chegarem em casa, perguntem um ao outro:
+
+“Em uma escala de zero a dez, como está seu 'tanque do amor' hoje à noite?”
+
+Zero significa vazio e 10 quer dizer cheio até a boca e não há mais como colocar algo. Faça uma leitura em seu próprio “tanque do amor” — 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 ou 0. Seu cônjuge, então, deverá perguntar:
+
+“O que farei para ajudar a enchê-lo?”
+
+E aí você faz a sugestão — algo que gostaria que seu(sua) esposo(a) fizesse ou dissesse naquela noite. E o melhor que puder, ele deverá atender sua solicitação. Depois, invertam a situação e repitam o mesmo esquema de forma que ambos tenham oportunidade de ler as condições de cada “tanque do amor” e fazer sugestões de como enchê-lo. Se “jogarem” assim durante três semanas, ficarão motivados a continuar, de maneira informal, esta sincera e prática forma de expressar amor.
+
+Um marido me disse:
+
+— Não gostei da brincadeira do “tanque do amor”. Eu o joguei com minha esposa. Cheguei em casa e perguntei a ela em que ponto em uma escala de zero a dez achava-se o “tanque” dela naquela noite. Ela respondeu que em torno de 7. Daí, perguntei-lhe de que forma eu poderia ajudar para que ele enchesse mais um pouco. Sabe o que ela me respondeu?
+
+— A melhor coisa que você poderia fazer para mim esta noite era lavar a roupa.
+
+E ele mesmo concluiu:
+
+— Amor e roupa para lavar? Não dá para entender… Então eu lhe disse:
+
+— O problema é exatamente esse! Você não entende a linguagem do amor de sua esposa. Qual é a sua?
+
+Sem pestanejar ele disse:
+
+— Toque Físico e especialmente no campo sexual do casamento.
+
+— Então escute bem o que eu vou lhe dizer: O amor que você desfruta quando sua esposa o ama através do toque físico, é o mesmo que ela sente quando lhe pede para lavar a roupa.
+
+— Então ela pode trazer toda a roupa que tiver que eu lavo já! Lavo roupa todas as noites se isso fizer com que ela se sinta tão bem!, ele gritou.
+
+Se por acaso você ainda não descobriu sua primeira linguagem do amor, faça anotações das vezes em que jogaram “Checagem do Tanque”. Quando seu cônjuge lhe perguntar o que ele poderá fazer para encher seu tanque do amor, sua sugestão, provavelmente, será uma indicação de sua primeira linguagem do amor. Suas solicitações poderão ser provenientes de qualquer uma das cinco linguagens, mas a maior parte delas possivelmente virá de sua primeira linguagem do amor.
+
+Talvez alguns de vocês estejam, a esta altura, pensando o que um casal de Zion, Illinois, Raymond e Helen, me disse:
+
+“Dr. Chapman, tudo isso parece muito lindo, mas o que fazer se a primeira linguagem de nosso cônjuge for uma que não seja natural a nós?”
+
+Falarei sobre isso no capítulo dez.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 10;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 10 - Amar é um Ato de Escolha$t$, 10,
+$conteudo$Como falaremos a linguagem do amor um do outro, quando nossos corações estão cheios de mágoa, raiva e ressentimento por fracassos anteriores? A resposta a esta pergunta encontra-se na essência de nossa humanidade. Somos criaturas que fazemos escolhas. Isso significa que temos a capacidade de tomar decisões erradas, o que todos nós já fizemos. Já criticamos pessoas e situações e magoamos muita gente. Não nos orgulhamos dessas escolhas apesar de, no momento, termos justificativas para tê-las feito. Más atitudes realizadas no passado não implicam que devamos tornar a fazê-las no futuro. Ao invés disso, podemos dizer:
+
+“Desculpe, eu sei que lhe magoei, mas quero mudar minha atitude. Desejo amá-la(o) em sua linguagem. Quero suprir suas necessidades.” Tenho visto casamentos que estavam à beira do divórcio serem resgatados após o casal tomar a decisão de se amarem na linguagem um do outro.
+
+O amor não apaga o passado, mas altera o futuro. Quando escolhemos expressar nosso amor de forma mais ativa, e utilizamos para isso a primeira linguagem de nosso cônjuge, criamos um clima emocional que pode curar as feridas dos conflitos e fracassos de nosso passado.
+
+Brent estava em meu escritório. Parecia uma estátua sem sentimentos. Ele fora até lá, não por iniciativa própria, mas a meu pedido. Uma semana antes, sua esposa Becky sentara-se na mesma poltrona onde ele estava e chorara descontroladamente. Entre um soluço e outro ela conseguiu me contar que ele lhe dissera não mais a amar e tomara a decisão de ir embora. Ela estava arrasada.
+
+Quando conseguiu se controlar, ela disse:
+
+“Trabalhamos tanto nestes últimos três anos. Sei que não gastamos juntos o mesmo tempo que costumávamos, mas achei que batalhávamos com o mesmo objetivo em mente. Não aceito que ele me diga estas coisas. Ele sempre foi muito bom e carinhoso. É um ótimo pai. Como é que ele pode fazer isso conosco?”
+
+Ouvi enquanto ela descreveu seus doze anos de matrimônio. A mesma história que já se repetiu tantas e tantas vezes. Tiveram um namoro muito “curtido” e casaram-se muito apaixonados. Experimentaram uma adaptação normal nos primeiros anos do casamento e também perseguiram o “sonho americano”. Após um determinado período, a nuvem da paixão dissipou-se, mas eles não aprenderam o suficiente para falar a primeira linguagem do amor um do outro. Ela vivia, nos últimos anos, com o “tanque do amor”
+
+apenas pela metade, mas recebia expressões de amor suficientes, a fim de pensar que tudo estava bem. Porém, o “tanque do amor” de Brent estava vazio.
+
+Eu disse a Becky que conversaria com Brent. Liguei para ele e falei:
+
+— Como você sabe, Becky esteve em meu consultório e contou-me o esforço que ela está fazendo para salvar o casamento de vocês. Gostaria de ajudá-la; mas para isso preciso saber o que você pensa a respeito.
+
+Brent concordou sem a menor hesitação e agora encontrava-se sentado à minha frente. Sua aparência externa era exatamente o oposto da de Becky. Ela havia chorado descontroladamente, mas ele estava inabalável. A impressão que eu tive dele é que havia chorado há semanas ou meses atrás e agora existia uma dor interior. A história que Brent contou confirmou minhas suspeitas.
+
+— Eu simplesmente não a amo mais. E isso já ocorre há muito tempo. Não gostaria de magoá-la, mas não há mais proximidade entre nós. Nosso relacionamento esvaziou-se. Não tenho mais prazer com a companhia dela. Não tenho mais sentimento algum por ela.
+
+Brent pensava e sentia o que centenas de maridos imaginam através dos anos: A famosa frase “não a amo mais”, slogan mental que tem fornecido liberdade emocional para que muitos esposos procurem envolver-se com outras mulheres. O mesmo ocorre com esposas que se utilizam da mesma desculpa.
+
+Entendi Brent porque eu já passara por aquela situação. Milhares de esposos e esposas também já enfrentaram isso: o vazio emocional; querem fazer a coisa certa, não desejam machucar alguém, mas, devido às carências emocionais, sentem-se compelidos a buscar o amor fora do matrimônio. Felizmente, ainda nos primeiros anos de casamento descobri a diferença entre “paixão” e “necessidade emocional” de sentir-se amado. A maior parte de nossa sociedade ainda não descobriu essa diferença. Os filmes, as novelas, as revistas e os livros românticos unificaram esses dois tipos de amor, para aumentar nossa confusão. No entanto, eles são completamente diferentes.
+
+A experiência do apaixonar-se, estudada no capítulo três, está a nível dos instintos. Não é premeditada; simplesmente acontece em um contexto normal do relacionamento entre o macho e a fêmea. Pode ser fomentado ou abafado, mas não surge com base em uma escolha consciente. É de vivência curta (em geral dois anos ou menos), e parece servir à humanidade com a mesma função da chamada para o acasalamento dos gansos selvagens.
+
+A paixão supre, temporariamente, a carência emocional do amor. Passa-nos a sensação de que alguém se preocupa conosco, admira-nos e aprecia-nos. Nossas emoções enlevam-se por pensarmos que ocupamos o primeiro lugar na vida de alguém e que ele, ou ela, está disposto a dedicar tempo e energia exclusivamente ao nosso relacionamento. Por um curto período, ou por quanto tempo durar, nossa necessidade emocional por amor está suprida. Nosso “tanque” está cheio; podemos conquistar o mundo. Nada é impossível. Para muitos, essa é a primeira vez em que o “tanque” emocional fica cheio, e isso leva à euforia.
+
+Suprir a necessidade de amor de minha esposa é uma escolha que faço a cada dia. Se eu sei qual é sua primeira linguagem do amor e escolho utilizá-la, suas mais profundas necessidades emocionais serão supridas e ela se sentirá segura em meu amor.
+
+Em tempo, no entanto, descemos das alturas para o mundo real. Se nosso cônjuge aprendeu a falar nossa primeira linguagem do amor, nossa necessidade de sermos amados continuará a ser satisfeita. Se, por outro lado, ele, ou ela, não fala nossa linguagem, nosso “tanque” aos poucos secará, e deixaremos de nos sentir amados. Suprir essa necessidade de nosso cônjuge é, definitivamente, uma decisão. Se eu aprender a linguagem do amor emocional de minha esposa e falá-la frequentemente, minha esposa continuará a sentir-se amada. Quando a paixão terminar, isto quase não será percebido por ela, pois seu “tanque” emocional será sempre preenchido. No entanto, se eu não compreender sua primeira linguagem, ou optar por não utilizá-la, quando ela colocar os pés no chão, terá os anseios naturais de quem não possui as carências emocionais supridas.
+
+Em razão de viver alguns anos com o “tanque” do amor vazio, talvez venha a apaixonar-se novamente por outra pessoa e o ciclo outra vez se repetirá.
+
+Suprir a necessidade de amor de minha esposa é uma escolha que faço a cada dia. Se eu sei qual é sua primeira linguagem do amor e escolho utilizá-la, suas mais profundas necessidades emocionais serão supridas e ela se sentirá segura em meu amor.
+
+Se ela fizer o mesmo comigo, minhas necessidades emocionais serão supridas e nós dois viveremos com os “tanques” cheios. Em estado de contentamento emocional, ambos conseguiremos canalizar nossas energias criativas para vários projetos de vida, e ao mesmo tempo manteremos nosso casamento excitante e em processo de crescimento.
+
+Com estas coisas em mente, olhei para a face empedernida de Brent e imaginei se eu conseguiria ajudá-lo. Pensei se ele já não se apaixonara por outra pessoa. Em caso afirmativo, se estaria no início ou no ápice da paixão. Poucos homens, que estejam com seus “tanques do amor” vazios, abandonam seus casamentos quando têm perspectivas de ver aquela necessidade suprida em outra fonte, sem precisar abandonar a família.
+
+Brent foi honesto e revelou-me que se apaixonara por alguém há vários meses.
+
+Disseme, no entanto, que aquele sentimento iria embora e tinha esperanças de resolver tudo com sua esposa. Mas o relacionamento em casa piorou e seu amor pela outra mulher só aumentava. Ele já não conseguia viver sem seu novo amor.
+
+Interessei-me por Brent e pelo dilema que enfrentava. Ele, sinceramente, não desejava magoar sua esposa e filhos, mas, por outro lado, achava que merecia ser feliz.
+
+Eu lhe passei as estatísticas sobre os segundos casamentos (60% terminam em divórcio).
+
+Ficou surpreso em ouvir aquilo, mas estava convencido de que isso não aconteceria com ele. Disselhe também sobre os efeitos do divórcio nos filhos, mas estava certo de que sempre seria um bom pai para seus filhos e logo superariam o trauma da separação.
+
+Conversei com Brent sobre os assuntos deste livro, e expliquei a diferença entre a experiência de se apaixonar e a necessidade profunda de sentir-se amado. Transmiti-lhe as cinco linguagens do amor e desafiei-o a dar mais uma chance ao seu casamento. Eu sabia que meu enfoque racional e intelectual do matrimônio, comparados com os picos emocionais que ele experimentava, eram como uma pistola de água comparada a uma arma automática de verdade. Brent agradeceu minha preocupação e pediu que eu fizesse o possível para ajudar Becky. Naquele momento, ele afirmou que não via esperança alguma para seu casamento.
+
+Um mês mais tarde recebi um telefonema de Brent. Ele disse que gostaria de conversar comigo novamente. Desta vez, ao entrar em meu escritório, ele estava visivelmente perturbado. Não era mais o homem calmo e controlado que eu vira anteriormente. Sua amante começava a descer das nuvens e a observar coisas que não apreciava em Brent. Ela se esquivava do relacionamento sexual e ele estava desesperado.
+
+Lágrimas vertiam de seus olhos. Ele disseme o quanto ela significava para ele e o quanto estava sendo insuportável passar por aquela rejeição.
+
+Ouvi, condoído, sua história durante uma hora inteirinha, até que ele pediu meu conselho. Disselhe que compreendia seu sofrimento, e a dor emocional que ele experimentava era natural de uma perda, e aquele tipo de sofrimento não passava da noite para o dia. Expliquei-lhe, também, que aquela experiência era inevitável. Lembrei-lhe da natureza temporária da paixão, e que cedo ou tarde ela despenca-se das alturas para o mundo real. Alguns passam por isso até antes do casamento; outros, após. Ele concordou que era melhor agora do que mais tarde.
+
+Aproveitei a oportunidade para sugerir que talvez aquela crise fosse uma boa oportunidade para que ele e sua esposa fizessem um aconselhamento conjugal. Eu o lembrei de que o amor emocional verdadeiro e duradouro é uma escolha e este poderia renascer, se ele e sua esposa aprendessem a amar um ao outro na linguagem certa de cada um. Ele concordou em ter o aconselhamento conjugal, e nove meses mais tarde Brent e Becky deixaram meu escritório com o matrimônio renovado. Quando, há três anos, vi Brent, ele contou-me que seu casamento ia muito bem e agradeceu-me novamente por tê-lo ajudado naquela fase tão crucial de sua vida. Disseme que a dor pela perda do outro amor durou ainda uns dois anos. Depois, sorriu e disse:
+
+“Meu “tanque” nunca esteve tão cheio e Becky é a mulher mais feliz que o senhor já conheceu!”
+
+Ainda bem que Brent foi beneficiado por aquilo que chamo de desequilíbrio da paixão. As coisas são assim mesmo… Dificilmente uma pessoa apaixona-se no mesmo dia que a outra e, quase nunca, desapaixonam-se juntas também. Não é necessário sermos cientistas sociais para chegarmos a tal conclusão. Basta ouvirmos as músicas sertanejas.
+
+Neste caso específico, a amante de Brent desapaixonou-se em tempo muito oportuno!
+
+Nos nove meses em que aconselhei Brent e Becky, trabalhamos com vários conflitos que eles jamais haviam parado para resolver. A chave, porém, para o renascer daquele casamento, foi a descoberta da primeira linguagem do amor um do outro e a escolha de aprender a falá-la frequentemente.
+
+Quando determinada atitude não é espontânea em você, torna-se uma expressão de amor muito maior.
+
+Deixe-me voltar à pergunta que levantei no capítulo nove:
+
+“O que fazer se a primeira linguagem de nosso cônjuge não for algo natural a nós?”
+
+Sempre me fazem essa pergunta em meus seminários e a minha resposta é:
+
+“E que problema haverá nisso?”
+
+A linguagem do amor de minha esposa é “Formas de Servir”. Uma das coisas que sempre faço para ela como expressão de meu amor é passar o aspirador na casa.
+
+Vocês acham que fazer isso é algo natural para mim? Minha mãe costumava mandar que eu limpasse a nossa residência. Durante o tempo todo de escola, até o final do colegial, eu não podia ir jogar bola aos sábados enquanto não terminasse de limpar a casa toda.
+
+Naquela época eu dizia para mim mesmo: “Quando eu me casar, nunca mais vou tocar em um aspirador! Vou arrumar uma esposa que faça isso!”
+
+Hoje, no entanto, limpo nossa casa e faço-o frequentemente. Existe somente uma razão para isso: Amor. Por dinheiro algum eu limparia qualquer outra residência; mas faço o que faço por amor. Daí, conclui-se que, quando você precisa fazer algo que não é natural para si, essa expressão de amor torna-se muito maior e mais significativa. Minha esposa sabe que, quando limpo a casa, aquilo é nada menos que 100% do mais puro e genuíno amor, e realmente assumo o crédito disso!
+
+Alguém pode chegar e dizer o seguinte:
+
+“Mas Dr. Chapman isso é diferente! Eu sei que a primeira linguagem de meu cônjuge é o “Toque Físico”, mas eu não estou acostumado(a) a isso. Nunca vi meus pais se abraçarem e eles também nunca me afagaram! Eu não sei nem como começar. O que eu faço?”
+
+Minha resposta é a seguinte:
+
+“Você tem duas mãos? Consegue colocá-las juntas? Ótimo! Agora imagine que seu cônjuge esteja no meio do círculo formado por seus braços. Puxe-o(a) até você.
+
+Aposto que se abraçá-lo(la) três mil vezes, ficará mais confortável continuar a fazê-lo.
+
+Mas conforto não é a questão. Falamos sobre amor, algo que se faz para outra pessoa e não para nós mesmos. A maioria de nós faz, diariamente, muitas coisas que não são naturais. Para alguns, o próprio levantar pela manhã já é algo difícil. Porém, lutamos contra nossos sentimentos e saímos da cama. Por quê? Acreditamos que algo naquele dia compensará aquele “sacrifício”. E, normalmente, antes que o dia termine, sentimo-nos bem por termos tomado aquela decisão. Nossas ações precedem nossas emoções.”
+
+O mesmo ocorre com o amor. Descobrimos a primeira linguagem do amor de nosso cônjuge e tomamos a decisão de aprender a falá-la, quer ela nos seja natural ou não. Não reivindicamos sentimentos ardentes e delirantes. Simplesmente, escolhemos fazê-lo para o bem daquele(a) a quem amamos. Desejamos suprir as necessidades emocionais de nosso cônjuge e dispomo-nos a falar sua linguagem do amor. Com isso, seu
+
+“tanque do amor” enche-se e há chances de que a recíproca também ocorra de forma que ele também fale a nossa primeira linguagem. Nesse processo nossas emoções retornam e nosso “tanque do amor” começa a encher.
+
+Amar é uma decisão. E cada cônjuge pode iniciar esse processo hoje mesmo.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 11;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 11 - O Amor Faz a Diferença$t$, 11,
+$conteudo$O amor não é a nossa única necessidade emocional. Psicólogos têm observado que entre nossas carências básicas encontram-se a segurança, a autovalorização e o significado. O amor, no entanto, relaciona-se com todas elas.
+
+Se me sinto amado(a) por meu cônjuge, consigo relaxar, pois confio que seu amor não me fará mal algum. Acho-me seguro(a) em sua presença. Posso enfrentar muitas incertezas em meu emprego e ter inimigos em outras áreas de minha vida, mas sinto segurança em relação a meu cônjuge.
+
+Meu senso de autovalorização é alimentado pelo fato de saber que meu cônjuge me ama. O amor que ele me dedica aumenta minha autoestima.
+
+A necessidade de significado é a força emocional por trás da maior parte de nossos atos. A existência humana é pautada pelo desejo de sucesso. Queremos que nossas vidas valham a pena. Temos nossas próprias ideias de onde encontrar esse significado e trabalhamos duro para atingir nossos alvos. Ser amado(a) por nosso cônjuge aumenta nosso senso de significado. Concluímos: “Se alguém me ama, então devo significar algo para essa pessoa”.
+
+Tenho significado porque sou a obra-prima da criação. Possuo a habilidade de pensar em termos abstratos, comunicar meus pensamentos por meio de palavras e tomar decisões. Através da palavra escrita ou gravada, posso beneficiar-me com os pensamentos daqueles que me precederam. Sou enriquecido pelas experiências de outros, mesmo que tenham vivido em épocas e culturas diferentes. Com a morte de meus familiares e amigos, experimento o fato de que há uma existência além do material. Concluo que, em todas as culturas, as pessoas acreditam no mundo espiritual. Meu coração afirma que isso é verdade, mesmo que minha mente, treinada em observação científica, levante questionamentos a esse respeito.
+
+Tenho significado. A vida possui um sentido. Existe um propósito mais alto.
+
+Quero acreditar nisso, mas não consigo encontrar esse significado até que alguém expresse amor por mim. Quando meu cônjuge, de forma amorosa, investe tempo, energia e esforço em minha pessoa, acredito que tenho significado. Sem amor, passo a vida inteira na busca do significado, da autovalorização e da segurança. Porém, quando experimento o amor, ele impacta positivamente todas estas necessidades. Torno-me então livre para desenvolver meu potencial. Sinto-me mais seguro em minha autoestima e posso canalizar meus esforços para outra direção ao invés de ficar obcecado com minhas próprias necessidades. O amor verdadeiro sempre resulta em libertação.
+
+No contexto do casamento, se não nos sentimos amados, as diferenças tornam-se ampliadas. Observamos um ao outro como ameaça à própria felicidade. Lutamos por autovalorização e significado e o casamento torna-se mais um campo de batalha do que um porto seguro.
+
+O amor não oferece resposta para tudo, mas cria um clima de segurança no qual podemos buscar soluções para as questões que nos aborrecem. Na convicção do amor os casais podem conversar sobre diferenças sem condenação.
+
+Conflitos podem ser resolvidos. Duas pessoas diferentes podem aprender a viver juntas em harmonia. Descobrimos como fazer surgir o melhor de cada um. Podemos chamar a isso tudo de recompensas do amor.
+
+A decisão de amar seu cônjuge encerra um tremendo potencial. Aprender a primeira linguagem do amor dele transforma este potencial em realidade. O amor realmente “faz o mundo girar”. Pelo menos, isso é afirmado no que diz respeito a Jean e Norman.
+
+Eles viajaram três horas para chegar em meu escritório. Era óbvio que Norman estava contrariado. Jean “torcera seu braço” com a ameaça de deixá-lo. (Não sou a favor e nem recomendo esta atitude, mas as pessoas não podem saber disso antes que nos encontremos.) Estavam casados há trinta e cinco anos e nunca haviam tido um aconselhamento conjugal.
+
+Jean iniciou a conversa.
+
+— Dr. Chapman, gostaria que o senhor soubesse de duas coisas. Em primeiro lugar, não temos problemas financeiros. Li uma revista que afirmava ser o dinheiro o maior problema no casamento. Este, porém, não é o nosso caso. Nós dois trabalhamos a vida toda, a casa está paga e os carros também. Realmente não temos dificuldades financeiras. Em segundo lugar, o senhor precisa saber que nós não brigamos. Ouço sempre meus amigos dizer das brigas que tiveram. Nós nunca discutimos. Não consigo nem me lembrar da última vez em que tivemos uma discussão. Nós dois concordamos que brigas não levam a nada, então não brigamos.
+
+Como conselheiro, apreciei o fato de Jean jogar um pouco de luz para começarmos. Sabia que ela iria direto ao ponto. Ela demonstrou que agiria assim logo em suas primeiras palavras. Queria ter certeza de que não nos ateríamos ao que não fosse necessário, pois seu objetivo era utilizar o horário que tinha de forma sábia.
+
+Ela continuou:
+
+— O problema é o seguinte: sinto que meu marido não me ama. A vida tornou-se rotineira para nós. Levantamos pela manhã e vamos ao trabalho. De tarde, dedico-me aos meus afazeres e ele aos dele. Costumamos jantar juntos, mas não conversamos. Ele assiste televisão enquanto comemos. Após o jantar refugia-se no porão e dorme em frente à TV, até que o acordo e digo-lhe que já é hora de ir para a cama. Essa é nossa vida cinco dias por semana. Aos sábados ele joga golfe na parte da manhã, trabalha no jardim às tardes e, às noites, saímos para jantar com um casal de amigos. Ele dialoga com eles, mas quando entramos no carro para retornar à nossa casa, a conversa simplesmente termina. Quando chegamos, ele dorme em frente à TV até a hora de ir para a cama. Aos domingos pela manhã vamos à igreja. Nós vamos à igreja toda manhã de domingo. Ela enfatizou e prosseguiu:
+
+— Depois, almoçamos fora com alguns amigos. Ao chegarmos em casa, ele dorme em frente à televisão a tarde toda. À noite vamos à igreja; depois voltamos para o lar, comemos pipoca e vamos para a cama. Fazemos isso todas as semanas. E é só isso.
+
+Somos como dois colegas que moram na mesma casa. Não há nada de especial entre a gente. Não sinto, de forma alguma, que ele me ame. Não há calor, não há emoção. E só vazio, só morte. Não sei se consigo mais continuar desse jeito.
+
+Àquela altura, Jean chorava. Dei-lhe um lenço de papel e olhei para Norman.
+
+Suas primeiras palavras foram:
+
+— Não consigo entendê-la! Tenho feito tudo o que posso para demonstrar que a amo, especialmente nos últimos dois ou três anos, quando ela começou a reclamar mais.
+
+Nada parece agradá-la. Não importa o que eu faça pois ela continua a reclamar que não se sente amada. Não sei mais o que fazer!
+
+Era nítido que Norman estava frustrado e muito irritado. Então eu lhe perguntei:
+
+— O que você tem feito para demonstrar seu amor por Jean?
+
+— Bem, para começar, eu chego em casa antes dela e todas as noites adianto o jantar. Para falar a verdade, quatro vezes por semana, eu tenho o jantar quase pronto quando ela chega à nossa residência. Na quinta noite da semana, saímos para comer fora.
+
+Depois do jantar, três vezes por semana lavo a louça. Em uma das quatro noites tenho uma reunião, mas por três noites lavo toda a louça. Limpo a casa toda porque ela tem problema de coluna. Faço todo o trabalho de jardinagem porque ela é alérgica ao pólen das flores. Retiro a roupa da secadora e em seguida dobro-a.
+
+E ele prosseguiu a dizer todas as outras coisas que fazia por Jean. Quando terminou de falar, pensei: Esse homem realiza tudo em casa, e o que sobra para a esposa fazer? Não sobrava quase nada para ela!
+
+Norman continuou:
+
+— Faço todas estas coisas para demonstrar meu amor por ela e ainda a ouço lhe dizer a mesma coisa que me afirma há uns dois ou três anos: não se sente amada por mim. Não sei mais o que fazer por ela!
+
+Quando me virei novamente para Jean, ela disse:
+
+— Tudo bem dele fazer todas essas coisas. Mas eu quero que ele se sente no sofá e converse comigo! Nós nunca dialogamos. Há trinta anos que nós não conversamos.
+
+Ele está sempre ocupado em lavar a roupa, limpar a casa, cortar a grama. Ele está sempre ocupado em alguma coisa. Quero que ele se sente ao meu lado e dê-me um pouco de seu tempo, olhe para mim, fale comigo sobre nós e nossas vidas.
+
+Jean mais uma vez chorou. Era óbvio para mim que sua primeira linguagem do amor era “Qualidade de Tempo”. Ela clamava por atenção. Queria ser tratada como gente, não como um objeto. Todo o trabalho de Norman não supria sua necessidade emocional.
+
+Mais tarde, quando conversei com ele, descobri que também não se sentia amado, mas simplesmente não falava sobre isso. Disseme:
+
+— Se você já está casado há 35 anos, tem suas contas pagas, não brigam um com o outro, o que mais pode esperar?
+
+Ele estava neste ponto, quando lhe perguntei:
+
+— Que tipo de mulher seria ideal para você? Se fosse possível ter uma esposa perfeita, como ela deveria proceder?
+
+Ele, pela primeira vez, olhou-me nos olhos e perguntou:
+
+— O senhor quer mesmo saber?
+
+Respondi-lhe que sim. Ele então sentou-se no sofá, cruzou seus braços e disse:
+
+— Tenho sonhado sobre isso. A esposa perfeita seria aquela que às tardes fizesse o jantar para mim, enquanto eu trabalhasse no jardim, chamasse-me e dissesse que o jantar estava na mesa. Após o jantar, ela lavaria a louça. Eu, possivelmente a ajudaria, mas arrumar a cozinha seria responsabilidade dela. Ela também pregaria os botões de minhas camisas quando eles caíssem.
+
+Jean não conseguiu mais se conter. Virou-se para o marido e disse:
+
+— Não acredito no que ouço. Você me disse que gostava de cozinhar!
+
+Norman então respondeu:
+
+— Eu não me importo de cozinhar. Ele apenas perguntou como seria para mim a esposa ideal.
+
+Percebi, também, sem que fossem necessários mais dados, a primeira linguagem do amor de Norman — “Formas de Servir”. Por que você acha que ele fazia todas aquelas coisas para Jean? Porque aquela era a sua linguagem do amor. Em sua mente, aquela era a forma de se demonstrar amor a uma pessoa: através das várias
+
+“Formas de Servir”. O problema era que “Formas de Servir” não era a primeira linguagem de amor de Jean. Não tinha, para ela, o significado emocional que existiria para ele, se ela utilizasse para com ele “Formas de Servir”.
+
+Quando a luz brilhou na mente de Norman, a primeira coisa que ele disse foi:
+
+— Por que ninguém me falou sobre isso trinta anos atrás? Eu teria me sentado no sofá ao lado dela durante quinze minutos, todas as noites, ao invés de fazer todas aquelas coisas.
+
+Ele, então, virou-se para Jean e disse:
+
+— Pela primeira vez em minha vida, entendo o seu sofrimento quando fala que não dialogamos. Eu não conseguia entender isso. Na minha forma de enxergar as coisas, nós conversávamos. Eu sempre perguntava se você dormira bem, e achava que aquilo era uma diálogo. Mas agora compreendo tudo. Você quer que sentemos no sofá por uns quinze minutos às noites, olhemos um para o outro e conversemos. Só agora entendo o que você desejava dizer, e porque isso é tão importante. É sua linguagem do amor emocional, e vamos começar hoje à noite mesmo. Vou lhe dedicar quinze minutos naquele sofá, pelo resto de minha vida. Você pode contar com isso!
+
+Jean virou-se para Norman e disse:
+
+— Seria maravilhoso, e também não me importo de fazer o jantar para você.
+
+Vai ficar pronto um pouco mais tarde, porque chego do serviço depois de você, mas não me importo em cozinhar. E vou adorar pregar seus botões. Você nunca os deixa soltos o tempo suficiente para que eu possa pregá-los… Também vou lavar a louça pelo resto de minha vida, se isso faz com que você se sinta amado.
+
+Jean e Norman voltaram para casa e começaram a amar-se na linguagem certa um do outro. Em menos de dois meses, achavam-se em uma segunda lua de mel. Eles me ligaram das Bahamas para contar sobre a mudança radical que o casamento deles passara. É possível o amor emocional renascer em um casamento? Pode apostar! A chave é aprender a primeira linguagem do amor de seu cônjuge e decidir utilizá-la.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 12;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 12 - Amando a Quem não Merece Nosso Amor$t$, 12,
+$conteudo$Era um lindo sábado de setembro. Minha esposa e eu caminhávamos pelo Jardim Reynolds, “curtindo” a flora, que continha vários exemplares provenientes de diversos países do mundo. Os pomares foram originariamente cultivados por R. J. Reynolds, o magnata do tabaco, como parte de sua propriedade rural. Agora, fazem parte do campus da Universidade Wake Forest. Acabávamos de passar pelo jardim das rosas quando vimos Ann, uma senhora a quem eu começara a aconselhar duas semanas atrás, a qual caminhava em nossa direção. Ela olhava para baixo, para as pedras dispostas ao longo do chão, formando o corredor por onde andávamos. Parecia estar completamente abstraída.
+
+Quando a cumprimentei, teve inicialmente um sobressalto, mas depois olhou para cima e sorriu. Apresentei-a Karolyn e trocamos alguns cumprimentos. De repente, ela de chofre fez uma das perguntas mais profundas que já me foram formuladas:
+
+— Dr. Chapman, é possível amar alguém a quem odiamos? Eu sabia que aquela pergunta tinha brotado de uma profunda ferida e merecia uma resposta bem avaliada. Eu tinha horário marcado com ela para outra sessão de aconselhamento na semana seguinte.
+
+Então lhe disse:
+
+— Ann, essa é uma pergunta que precisa ser muito bem pensada antes de ser respondida. Que tal conversarmos sobre ela na semana que vem?
+
+Ela concordou e Karolyn e eu continuamos nosso passeio. A pergunta que ela fizera, porém, não nos abandonou. Mais tarde, enquanto dirigia para casa, Karolyn e eu falamos sobre aquela interrogação. Começamos a nos lembrar dos primeiros anos de nosso casamento e de como, por várias vezes, tivemos o sentimento de ódio. As palavras condenatórias que dirigíamos um ao outro estimularam a mágoa e, no calcanhar da mesma, a ira, que abrigada no interior transformou-se em ódio. O que foi diferente em nosso caso? Ambos fizemos a escolha de amar e percebemos que, se continuássemos aquele trajeto de cobranças e condenação, destruiríamos nosso casamento.
+
+Felizmente, após um período de um pouco mais de um ano, aprendemos como discutir nossas diferenças sem condenarmos um ao outro; a tomar decisões sem destruir nossa unidade; a dar sugestões construtivas ao invés de fazermos cobranças; e, eventualmente, a falarmos a primeira linguagem do amor um do outro. (Muitos desses itens foram descritos em um outro de nossos livros — Toward a Growing Marriage, Moody Press — “Em Busca de um Casamento Maduro”, publicado pela Editora Moody.) Nossa decisão de amar foi feita em meio a sentimentos negativos mútuos. Quando começamos a falar a primeira linguagem do amor um do outro, os sentimentos negativos provenientes da mágoa e do ódio foram desfeitos.
+
+Nossa situação, no entanto, era diferente da que Ann enfrentava. Karolyn e eu estávamos abertos para aprender e crescer. O marido de Ann, porém, não concordava. Ela me dissera ainda na semana anterior, que implorara para ele fazer um aconselhamento, ler um livro ou ouvir alguma fita sobre casamento. No entanto, ele recusara todas estas alternativas. Segundo ela, a postura que ele assumira era:
+
+“Não tenho qualquer dificuldade. Você é quem possui os problemas aqui.”
+
+Na mente dele, ele estava certo e ela errada — e isto era simples. Os sentimentos de amor que ela nutria por ele foram mortos através dos anos de crítica e condenação constantes. Após dez anos de casamento, sua energia emocional esgotara-se e sua autoestima praticamente se destruíra. Haveria esperança para o casamento de Ann?
+
+Ela conseguiria gostar de um marido indigno de ser amado? Será que, algum dia, ele corresponderia ao seu amor?
+
+Eu sabia que Ann era profundamente religiosa e frequentava regularmente sua igreja. Deduzi, então, que a única esperança que ela possuía para seu casamento residia em sua fé. No dia seguinte, com meus pensamentos nela, comecei a ler a vida de Cristo no evangelho de Lucas. Sempre gostei da forma deste evangelista escrever sobre Jesus, pois, como médico, dava muita atenção a detalhes e ainda no primeiro século fez um relato cronológico dos ensinos e do estilo da vida do Filho de Deus. Naquele que muitos consideram o melhor sermão de Jesus, li as seguintes palavras, às quais chamo de grande desafio do amor:
+
+“Digo-vos, porém, a vós outros que me ouvis: Amai os vossos inimigos, fazei o bem aos que vos odeiam; bendizei aos que vos maldizem, orai pelos que vos caluniam.
+
+Como quereis que os homens vos façam, assim fazei-o vós também a eles. Se amais os que vos amam, qual é a vossa recompensa? Porque até os pecadores amam aos que os amam. ”
+
+Pareceu-me que aquele profundo desafio escrito há quase dois mil anos era o caminho que Ann procurava. Mas… ela poderia “dar conta daquele recado”? Será que alguém conseguiria? Seria possível amar um cônjuge que se tornou um inimigo? Seria possível amar alguém que pragueja contra você, maltrata-o(a), e dedica-lhe desprezo e ódio? E, se na melhor das hipóteses, ela conseguir, será que ele de alguma forma lhe retribuiria? Seria possível que aquele marido mudasse e começasse a expressar amor e cuidado por ela? Fiquei espantado com as próximas palavras de Jesus ditas naquele antigo sermão: “Dai e dar-se-vos-á; boa medida, recalcada, sacudida, transbordante generosamente vos darão: porque com a medida com que tiverdes medido vos medirão também. ”
+
+Será que aquele princípio de amar a quem não merece nosso amor funcionaria em um casamento no ponto em que estava o de Ann? Decidi fazer uma experiência.
+
+Tomei como hipótese o fato de que se ela aprendesse a primeira linguagem do amor de seu marido e utilizasse-a por um período de tempo de forma que as necessidades emocionais dele fossem atendidas, eventualmente, ele se tornaria recíproco e começaria a demonstrar amor por Ann. Imaginei… Será que vai funcionar? Encontrei-me com ela na semana seguinte e ouvi-a novamente enquanto falava sobre os horrores de seu casamento.
+
+Ao final de seu resumo, repetiu o que dissera no Reynolds Gardens. Dessa vez, porém, ela colocou em forma de afirmação.
+
+— Dr. Chapman, simplesmente não sei se voltarei a amá-lo depois do que ele fez comigo.
+
+— Você já conversou sobre sua situação com alguns de seus amigos? — perguntei.
+
+Ela respondeu:
+
+— Com umas duas amigas mais chegadas e, por cima, com outras pessoas.
+
+— E o que elas lhe disseram?
+
+Todos são unânimes em dizer que devo me separar dele, porque ele nunca vai mudar, e esta demora só prolonga a agonia. Dr. Chapman, ocorre que eu não consigo fazer isso! Talvez eu devesse, mas não quero acreditar que esta é a coisa mais certa a se fazer.
+
+Eu então lhe disse:
+
+— Parece-me que você está em um dilema. Por um lado sua crença religiosa e a moral, lhe dizem ser errado desmanchar um casamento; e por sua dor emocional lhe afirma ser o rompimento a sua única forma de sobreviver.
+
+— É exatamente isso, Dr. Chapman. É desta maneira que me sinto. Não sei o que fazer!
+
+Quando o tanque (emocional) está baixo… não temos sentimentos de amor por nosso cônjuge e, simplesmente, experimentamos dor e vazio.
+
+— Estou realmente solidário com sua dor. Sei que você enfrenta uma situação verdadeiramente difícil. Gostaria de poder oferecer-lhe uma resposta fácil mas, infelizmente, não a possuo. Qualquer uma das alternativas que você mesma mencionou — continuar ou desistir de seu casamento — certamente lhe acarretará muita dor. Antes que tome uma decisão, gostaria de conceder-lhe uma ideia. Não posso garantir que funcionará, mas desejaria que, pelo menos, fizesse uma tentativa. Pelo que me disse, percebo que sua fé é muito importante para você e também respeita muito os ensinos de Jesus.
+
+Ela balançou a cabeça afirmativamente e eu continuei:
+
+— Gostaria de ler para você algumas coisas ditas: pelo próprio Jesus, que acredito tenham a ver com seu casamento.
+
+Li, então, devagar e pausadamente.
+
+“Digo-vos, porém, a vós outros que me ouvis: Amai os vossos inimigos, fazei o bem aos que vos odeiam; bendizei aos que vos maldizem, orai pelos que vos caluniam.
+
+Como quereis que os homens vos façam, assim fazei-o vós também a eles. Se amais os que vos amam, qual é a vossa recompensa? Porque até os pecadores amam aos que os amam.”
+
+— Estas palavras lembram seu marido? Ele a tem tratado mais como inimiga do que como amiga? — perguntei.
+
+Ela balançou sua cabeça afirmativamente.
+
+— Ele já praguejou contra você?
+
+— Muitas vezes.
+
+— Ele já a maltratou?
+
+— Sempre o faz.
+
+— Ele já expressou que a odeia?
+
+— Sim.
+
+Ann, se você concordar, gostaria de tentar um coisa. Desejaria ver o que aconteceria se aplicássemos este princípio em seu casamento. Deixe-me explicar melhor.
+
+Comecei a explicar a Ann o conceito do tanque emocional e o fato de que, quando ele está baixo como o dela se encontrava, não temos sentimentos de amor por nosso cônjuge e, simplesmente, experimentamos dor e vazio. Desde que o amor é uma profunda necessidade emocional, a falta dele possivelmente também é a nossa mais profunda dor emocional. Disselhe, então, que se pudéssemos aprender a falar a primeira linguagem do amor um ao outro, a necessidade emocional estaria suprida e sentimentos positivos seriam novamente gerados.
+
+— Isso faz sentido para você? — perguntei-lhe.
+
+Dr. Chapman, o senhor acabou de descrever a minha vida. Nunca, antes, enxerguei de forma tão clara. Apaixonamo-nos antes de nos casarmos. Não muito tempo depois de nosso casamento, caímos das nuvens e nunca aprendemos a falar a linguagem do amor um ao outro. Meu tanque está vazio há anos, e estou certa que o dele também.
+
+Dr. Chapman, se eu compreendesse antes este conceito, talvez nada disso nos teria acontecido.
+
+Não podemos voltar no tempo, Ann. Tudo o que podemos tentar é fazer o futuro diferente. Gostaria de propor-lhe uma experiência de seis meses.
+
+Estou disposta a tentar qualquer coisa — disse Ann.
+
+Apreciei seu espírito positivo, mas eu não estava muito certo de que ela entendera o alto grau de dificuldade daquela experiência. Então sugeri:
+
+— Estabeleçamos então nossos objetivos. Se em seis meses você pudesse ter seu desejo romântico realizado, qual seria?
+
+Ann ficou um tempo sentada em silêncio. Depois, ainda pensativa, ela disse:
+
+— Gostaria de ver Glenn amar-me novamente e demonstrar isso através de algum momento gasto comigo; desejaria realizar diversas atividades juntos; queria sair, eu e ele sozinhos, para passear; gostaria muito que houvesse interesse da parte dele pelo meu mundo; apreciaria demais que conversássemos um com o outro quando saíssemos para jantar fora; desejaria que ele me ouvisse; gostaria de sentir que ele valoriza minhas ideias. Seria tão bom se pudéssemos novamente viajar e nos divertir juntos. E, mais do que qualquer outra coisa, desejaria saber que ele valoriza nosso casamento.
+
+Ann fez uma pausa e depois continuou:
+
+— De minha parte, gostaria muito de voltar a ter sentimentos calorosos e positivos por ele. Desejaria sentir orgulho dele. No momento, não nutro estes desejos.
+
+Eu escrevia enquanto Ann falava. Quando ela terminou, li alto o que ela me dissera e comentei:
+
+— Estes objetivos parecem-me difíceis de ser alcançados. É isso mesmo o que você deseja, Ann?
+
+— Concordo que, para o momento, eles pareçam praticamente impossíveis. Mas é o que desejo acima de tudo.
+
+— Então estabeleçamos que estes serão nossos objetivos. Em seis meses, queremos ver você e Glenn possuir esse tipo de amor em seu relacionamento. Gostaria de levantar uma hipótese. O objetivo de nossa experiência será provar se ela é ou não verdadeira. Suponhamos que você consiga falar a primeira linguagem do amor de Glenn, de forma consistente durante seis meses. Digamos também que em algum ponto desse período sua necessidade emocional de amor comece a ser suprida, o tanque do amor encha-se e ele comece a corresponder seu amor. Esta hipótese baseia-se na ideia de que nossa necessidade de amor emocional é a carência mais profunda que possuímos, e quando essa necessidade é suprida, a tendência natural é respondermos positivamente à pessoa que nos supriu.
+
+E eu continuei.
+
+— Você compreendeu que esta proposta coloca toda iniciativa em suas mãos?
+
+Glenn não faz questão de trabalhar para salvar este casamento, mas você sim. Esta hipótese implica em que, se conseguir canalizar suas energias para a direção certa, haverá grandes possibilidades de que seu esposo venha a lhe corresponder.
+
+Li a outra parte do sermão de Jesus conforme registrado em Lucas, o médico.
+
+“Dai e dar-se-vos-á; boa medida, recalcada, sacudida, transbordante generosamente vos darão: porque com a medida com que tiverdes medido vos medirão também”.
+
+Se entendi bem, Jesus estabelece aqui um princípio, e não uma forma de manipular pessoas. De modo geral, se formos bondosos e amorosos, todos também terão a tendência de sê-lo conosco. Isto não significa que sejamos pessoas boas e que todos necessitam ser bons para conosco. Somos agentes independentes. Portanto, não há garantias de que Glenn venha a ser recíproco a suas manifestações de amor. Só podemos dizer que existe uma boa possibilidade disso vir a acontecer. (Um conselheiro nunca pode predizer com absoluta certeza o comportamento humano individual. Com base em pesquisas e em estudos dos tipos de personalidade, ele pode deduzir uma reação em determinada situação.)
+
+Após ela concordar com a hipótese, eu disse a Ann:
+
+— Conversemos agora sobre a primeira linguagem do amor, tanto a sua como a dele. Declaro, pelo que você me contou, que “Qualidade de Tempo” seja sua primeira linguagem do amor. O que você acha?
+
+— Eu concordo com o senhor, Dr. Chapman. Logo no início, quando gastávamos algum tempo juntos e Glenn ou via-me, conversávamos por horas a fio e fazíamos muitas coisas em companhia um do outro, eu me sentia amada. Acima de qualquer outra coisa, esta é a parte de nosso casamento a qual gostaria que voltasse. Quando ficamos algum momento juntos, sinto-me como se ele realmente se importasse comigo; porém, quando se dedica somente a outras coisas, e nunca tem tempo para conversarmos nem para realizarmos algumas atividades juntos, sinto como se os negócios e outros assuntos fossem muito mais importantes do que eu.
+
+Nesse momento, perguntei:
+
+— E qual você acha que é a primeira linguagem do amor de Glenn?
+
+— Acho que é o “Toque Físico”, especialmente a parte íntima do casamento.
+
+Noto que, quando nossas relações sexuais ficam mais ativas, ele assume uma atitude mais positiva e eu chego a sentir-me mais amada. É, acho que o “Toque Físico” é a primeira linguagem do amor dele, Dr. Chapman.
+
+— Ele reclama da forma como você fala com ele?
+
+— Bem, ele diz que eu o critico o tempo todo. Também afirma que eu não o apoio e sou sempre contra suas ideias.
+
+— Creio, então, que podemos dizer que o “Toque Físico” seja sua primeira linguagem do amor e que “Palavras de Afirmação”, a segunda. Se ele reclama das palavras negativas que lhe são ditas então, pelo que tudo indica, as positivas devem ser importantes para ele.
+
+Fiz uma pequena pausa e escrevi as seguintes sugestões:
+
+— Deixe-me sugerir um plano para testar nossa hipótese. Que tal você chegar em casa e dizer a Glenn: “Tenho pensado muito sobre nós e quero que você saiba que eu gostaria de ser a melhor esposa do mundo. Então, se tiver alguma sugestão de como eu posso melhorar como companheira, gostaria de saber isso agora e quero dizer-lhe que estou aberta para isso. Você pode me declarar agora, ou então pensar um pouco e dar-me sua opinião depois. Gostaria, porém, que soubesse desta minha decisão de ser a melhor esposa do mundo”. Seja qual for a resposta dada, negativa ou positiva, aceite simplesmente como uma informação. Esta colocação mostrará a ele que algo diferente está para acontecer no relacionamento entre vocês dois.
+
+— Em seguida — continuei —, com base em sua opinião de que a primeira linguagem do amor de Glenn é “Toque Físico”, e em minha suposição de que a segunda seja “Palavras de Afirmação”, focalize sua atenção nestas duas áreas por um mês. Se Glenn conceder-lhe uma sugestão do que você deve fazer para ser uma melhor esposa, aceite essa informação e insira-a em seu plano. Procure traços positivos nele e manifeste apreciação por eles. Neste meio tempo, pare com as críticas. Se neste mês você tiver motivos para reclamar, escreva-os em sua caderneta de anotações, ao invés de dizer qualquer coisa a Glenn.
+
+— E finalmente — concluí —, tome mais iniciativa em tocá-lo fisicamente e também no envolvimento sexual. Surpreenda-o e seja mais agressiva, não simplesmente para corresponder às investidas dele. Coloque um alvo de, nas primeiras duas semanas, ter relações sexuais pelo menos uma vez a cada sete dias e nas duas seguintes, duas vezes em cada semana.
+
+Ann me contara que, durante os últimos seis meses, ela e Glenn tiveram somente uma ou duas relações sexuais. Imaginei que este plano tiraria as coisas do marasmo em que se encontravam em menos tempo.
+
+Se você afirmar ter sentimentos que não nutre, isso ê hipocrisia. Porém, expressar um ato de amor em benefício, ou para o prazer de outra pessoa, é um ato de escolha.
+
+Ann então disse:
+
+— Dr. Chapman, isso será realmente difícil! É quase impossível corresponder-me sexualmente com ele, pois ignora-me o tempo todo. Sinto-me usada e não amada em nossas relações sexuais. Ele me trata como se eu fosse totalmente insignificante em outras áreas e, de repente, quer ir para a cama e usar meu corpo. Magôo-me muito com isso e esta deve ser a razão de termos tão pouco envolvimento sexual nos últimos anos.
+
+Respondi então a Ann, com real compreensão pelo que ela passava:
+
+— Sua reação é absolutamente natural e normal. Para a maioria das esposas, o desejo de ter relações sexuais com os maridos é decorrente do fato de serem amadas por eles. Se elas se sentem prestigiadas, então querem ter relações sexuais. Se não, sentem-se usadas no contexto sexual. É por este motivo que amar a quem não nos ama é extremamente difícil. É algo que vai além de nossas tendências normais. É preciso confiar profundamente em Deus para poder fazer isso. Creio que Ele a ajudará, se você ler novamente o sermão de Jesus sobre o amar os inimigos, ou seja, a quem nos odeia e nos usa. Depois, peça a Deus ajuda para colocar em prática os ensinos de Cristo.
+
+Dava para perceber que Ann concordava com o que eu lhe dizia. De vez em quando ela balançava a cabeça afirmativamente, mas seus olhos afirmavam que ela estava com muitas dúvidas:
+
+— Mas Dr. Chapman, não é uma hipocrisia demonstrar amor sexual quando se tem tantos sentimentos negativos por uma pessoa?
+
+Minha resposta foi:
+
+— Acho que seria bom conversarmos um pouco sobre a diferença entre amor como sentimento e amor como ação. Se você afirmar ter sentimentos que não nutre, isso é hipocrisia e esta comunicação falsa não é uma boa forma para se construir um relacionamento íntimo. Porém, se você expressar um ato de amor em benefício ou para o prazer de outra pessoa, é um ato de escolha. Você não atribuirá àquele ato um profundo envolvimento emocional. Creio que foi exatamente isto que Jesus quis dizer.
+
+Fiz uma pequena pausa e prossegui:
+
+— Certamente não dá para termos sentimentos calorosos por quem nos odeia.
+
+Isso não seria normal, mas, por outro lado, podemos realizar atos de amor por eles. E isso é uma decisão nossa. Esperamos que tais atos de amor produzam efeitos positivos em suas atitudes, seu comportamento e tratamento. Pelo menos, escolhemos fazer algo positivo por eles.
+
+Minha resposta, aparentemente, satisfez a Ann, pelo menos naquele momento.
+
+Fiquei com a sensação de que precisaríamos conversar sobre isso novamente. Eu também sentia que, se aqueles planos fossem postos em prática, seriam devido à profunda fé que ela nutria em Deus. Tornei a dizer-lhe:
+
+— Eu gostaria que, depois de um mês, perguntasse a Glenn se você melhorou ou não. Coloque em suas próprias palavras, mas pergunte a ele algo como: “Glenn, lembra-se quando umas semanas atrás eu lhe disse que gostaria de ser a melhor esposa do mundo?
+
+Seria possível você me dizer o que tem achado?”
+
+Prossegui com outras propostas:
+
+— Seja qual for a resposta de Glenn, aceite-a como uma informação. Ele pode ser sarcástico, frívolo, hostil ou positivo. Seja qual for a resposta que ele lhe der, não argumente, aceite-a e assegure-lhe que você fala sério e realmente quer ser a melhor esposa do mundo, e se ele tiver sugestões, você está aberta para elas. Além do mais — prossegui —, mantenha o hábito de interrogá-lo nesse sentido uma vez por mês, durante os seis primeiros meses. Quando Glenn lhe der o primeiro retorno positivo, e disser algo como: “É… tenho de admitir que quando você me falou que gostaria de tentar ser a melhor esposa do mundo, eu quase morri de rir; no entanto, tenho de aceitar que as coisas têm andado diferentes por aqui!”; você saberá que seus esforços começam a modificá-lo emocionalmente. Ele talvez lhe conceda um retorno positivo depois do primeiro mês, do segundo ou mesmo do terceiro. Uma semana depois de você receber o primeiro retorno positivo, quero que faça um pedido a Glenn — algo que gostaria que ele fizesse, e esteja relacionado com sua primeira linguagem do amor. Por exemplo, numa bela noite você poderia virar-se para ele e dizer algo parecido com: “Glenn, sabe o que eu estou com vontade de fazer? Você se lembra de como nós costumávamos jogar “Scrabble”12 juntos?) Eu gostaria tanto que jogássemos juntos, só nós dois, na quinta-feira à noite! As crianças vão ficar na casa da Mary. Você acha que seria possível?”
+
+— Ann — prossegui —, coloque esse pedido de forma específica, não geral. Não diga algo como: “Sabe, gostaria muito que a gente pudesse gastar mais tempo juntos”.
+
+Isso é muito vago. Como é que você saberá se ele fará ou não o que pediu? Mas… se fizer um pedido específico, ele saberá exata mente o que você quer e com certeza reagirá.
+
+Quando ele o fizer, será pela escolha de realizar algo que a agrade. E finalmente, faça, a cada mês, um pedido específico. Se ele a atender, ótimo; se não concordar, não se importe. Uma coisa é certa: quando atender seu pedido, você saberá que ele procura satisfazer a sua necessidade. Nesse processo, você o ensinará a falar sua primeira linguagem do amor, porque os pedidos que fará com certeza são parte dela. Se ele decidir amá-la através de sua primeira linguagem do amor, suas emoções positivas relativas a ele despontarão na superfície. Seu “tanque” emocional começará a encher e, a seu tempo, o casamento renascerá.
+
+Ann então disse:
+
+— Dr. Chapman, eu faria qualquer coisa se isso fosse possível.
+
+Talvez você precise de um milagre em seu casamento. Por que não tenta colocar em prática a experiência de Ann?
+
+— Bem. Dará um bocado de trabalho, mas acredito que compensa uma tentativa. Eu, pessoalmente, estou muito interessado em ver se esta experiência dará certo e se esta hipótese comprovar-se-á. Gostaria que nos encontrássemos sistematicamente durante este processo; talvez a cada dois meses, e você fizesse anotações das palavras de afirmação que disser a Glenn a cada semana. Gostaria, também, que me trouxesse a lista das reclamações anotadas em sua caderneta; aquelas que você não vai revelar para Glenn. Pode ser que, através destas reclamações, eu consiga ajudá-la a formular pedidos que possam ir ao encontro do suprimento destas frustrações.
+
+Finalmente, gostaria que você aprendesse como compartilhar suas frustrações e irritações de forma construtiva e os dois conseguissem lidar com isso. Mas, durante estes seis meses de experiência, quero que você as anote sem nada dizer a Glenn.
+
+Ann levantou-se e acredito que já com a resposta à famosa pergunta que me fizera: “É possível amar alguém a quem se odeia?”
+
+Nos seis meses que se seguiram, Ann viu uma tremenda mudança na atitude e no tratamento de Glenn para com ela. Nos primeiros 30 dias ele estava frívolo e lidou com a situação de forma superficial. Porém, após o segundo mês, ela já recebeu dele o retorno positivo de seus esforços. Nos últimos quatro meses, ele respondeu positivamente a quase todos os seus pedidos, e seus sentimentos para com ela começaram a sofrer uma drástica mudança. Glenn nunca apareceu para o aconselhamento, mas ouviu algumas de minhas fitas e discutiu-as com Ann. Chegou mesmo a encorajá-la a continuar suas sessões de aconselhamento, o que durou por mais três meses após o final da experiência.
+
+Atualmente, Glenn segreda a seus amigos que eu sou um “milagreiro”. Sei, no entanto, que o amor é que faz milagres.
+
+Talvez você precise de um milagre em seu casamento. Por que não tenta colocar em prática a experiência de Ann? Diga a seu cônjuge o que tem pensado sobre o casamento dos dois, e que gostaria de fazer o possível para suprir da forma melhor suas necessidades. Peça sugestões de como melhorar. As propostas que forem dadas servirão de dicas para que se descubra sua primeira linguagem do amor. Se ele(ela) não fizer alguma sugestão, tente descobrir sua primeira linguagem do amor através das reclamações feitas ao longo dos anos. Então, durante seis meses, focalize sua atenção naquela linguagem. Ao final de cada mês, solicite um retorno de como você evolui por intermédio de outras sugestões.
+
+Quando seu cônjuge demonstrar melhoras, espere uma semana e então faça um pedido específico. A solicitação deverá ser de algo que realmente apreciaria que ele(ela) fizesse por você. Se ele(ela) decidir atendê-la(o), saberá que ele(ela) tomará aquela atitude com o objetivo de suprir suas necessidades. Se ele não atender seu pedido, continue a amá-lo. Talvez no próximo mês você receba uma resposta positiva. Se seu cônjuge começar a falar sua linguagem do amor através do atendimento a seus pedidos, as emoções positivas sobre ele(ela) voltarão e, a seu tempo, seu casamento renascerá. Não posso garantir os resultados, mas são muitas as pessoas a quem aconselhei que experimentaram os milagres do amor.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 13;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 13 - Os Filhos e as Linguagens do Amor$t$, 13,
+$conteudo$O conceito das linguagens do amor também pode ser aplicado aos filhos?
+
+Essa pergunta sempre me é feita por aqueles que participam de meus seminários sobre casamento. Minha resposta genérica é sim. Quando as crianças são pequenas, não há como saber a primeira linguagem do amor delas. Portanto, use todas as cinco e você terá mais possibilidades de descobri-la. Outra dica: ao observar o comportamento de seus filhos, será possível desvendar, mais facilmente, a primeira linguagem do amor deles.
+
+Bobby tem seis anos de idade. Quando seu pai chega em casa à noite, após o trabalho, ele pula em seu colo e despenteia os cabelos dele. O que esta criança quer dizer com isso?
+
+“Quero ser tocado.”
+
+Ele toca em seu pai porque também deseja ser acariciado. A primeira linguagem do amor de Bobby, muito possivelmente, é “Toque Físico”.
+
+Patrick é vizinho de Bobby. Ele tem cinco anos e meio e ambos brincam juntos.
+
+O seu pai, no entanto, encontra uma situação completamente diferente ao chegar em casa do trabalho. Patrick diz entusiasmado:
+
+— Venha cá, papai. Quero lhe mostrar uma coisa. Paiê, vem cá!
+
+E o pai responde:
+
+— Espere um pouco, Patrick! Deixa eu dar uma olhada no jornal, primeiro.
+
+O menino vai ao seu quarto, mas volta em quinze segundos, e diz:
+
+— Papai, venha até o meu quarto. Eu quero mostrar-lhe uma coisa. Papai, quero mostrar-lhe agora!!
+
+O pai responde:
+
+— Só um instante, filho. Deixe-me terminar de ler o jornal.
+
+A mãe de Patrick aparece neste momento e passa-lhe um “pito”. Ela lhe diz que o pai está cansado, e ele deve deixá-lo ler o jornal sossegado. Ele então diz:
+
+— Mas mamãe, eu quero mostrar para o papai aquilo que eu fiz.
+
+— Eu sei, mas “dê um tempo” para o seu pai ler o jornal — a mãe responde.
+
+Um minuto mais tarde, Patrick vai em direção de seu pai e pula em cima do jornal e ri. O pai fica bravo e pergunta:
+
+— O que é que você está fazendo, Patrick?
+
+Patrick responde:
+
+— Quero que você vá ao meu quarto comigo, ver o que eu fiz!
+
+O que Patrick então solicita?
+
+“Qualidade de Tempo”. Ele quer a atenção total de seu pai e não vai parar enquanto não a conseguir, mesmo que para isso tenha de fazer uma bela cena.
+
+Se o seu(sua) filho(a) pegar algum objeto, embrulhá-lo e der a você com um brilho todo especial nos olhos, a primeira linguagem do amor dele, provavelmente, é
+
+“Receber Presentes”. Ele(ela) os concede, porque gostaria de receber algo em troca. Se você observar seu filho, ou filha, sempre desejoso(a) de ajudar os irmãozinhos, isso provavelmente significa que a linguagem dele(dela) é “Formas de Servir”. Se ele ou ela tiver o hábito de elogiá-lo(a) constantemente, ao afirmar que você está muito elegante, é um bom pai ou uma boa mãe e que bom trabalho você fez, são fortes indicadores de que a primeira linguagem do amor dele(dela) é “Palavras de Afirmação”.
+
+Tudo isso se passa a nível do inconsciente da criança, ou seja, ela propositadamente não pensa: “Se eu der um presente a meus pais, eles também me darão outro; se eu os tocar, também serei acariciado”; mas o comportamento dela é motivado por seus desejos emocionais. Talvez tenha aprendido, por experiência própria, que ao falar ou dizer determinadas coisas, recebe um padrão de reação dos pais. Portanto, o que ela faz ou diz tem o objetivo de suprir suas necessidades emocionais. Se tudo prosseguir normalmente e suas necessidades emocionais forem supridas, tudo se encaminhará para que se tornem adultos responsáveis. Porém, se a carência emocional não for suprida, podem chegar a violar determinados padrões, ou expressar a ira contra seus pais, por eles não terem suprido suas necessidades. Isto também os levará a procurar amor em lugares inadequados.
+
+Dr. Ross Campbell, o psiquiatra que me falou pela primeira vez do “tanque do amor” emocional, diz que durante os muitos anos em que tratou de adolescentes envolvidos em comportamentos sexuais irregulares, havia entre eles algo cuja carência afetiva deveria ter sido suprida pelos pais. Sua opinião era que praticamente toda conduta sexual irregular em adolescentes tinha sua raiz em um “tanque” do amor emocional vazio.
+
+Por que, quando os filhos ficam mais velhos, nossas “Palavras de Afirmação” tornam-se palavras de condenação?
+
+Você já reparou esse tipo de coisa ocorrer em sua comunidade? Um adolescente foge de casa. Os pais levantam suas mãos para o alto e perguntam:
+
+“Como ele pôde fazer isso comigo, depois de tudo o que realizei por ele?”
+
+Aquele adolescente, porém, à vários quilômetros de distância, abre o seu coração para algum conselheiro e diz:
+
+“Meus pais não me amam. Eles nunca gostaram de mim. Eles amam meu irmão, mas jamais gostaram de mim.”
+
+Será que estes pais amam aquele adolescente? Na maioria dos casos, sim.
+
+Então, onde está o problema? Quase sempre este tipo de situação ocorre quando os pais não sabem comunicar seu amor em uma linguagem que o filho possa entender. Talvez eles comprem luvas de boxe e bicicletas para mostrar seu amor, mas talvez o filho grite:
+
+“Por favor, alguém deseja jogar bola comigo!?”
+
+A diferença entre comprar uma bola e jogar com seu filho pode ser um “tanque”
+
+do amor cheio ou vazio. Os pais procuram, sinceramente, amar seus filhos (a maioria deles age assim), mas somente sinceridade não adianta. Precisamos aprender a falar a primeira linguagem do amor de nossos filhos, se quisermos suprir-lhes sua necessidade emocional de amor.
+
+Olhemos para as cinco linguagens do amor, no propósito de compreendermos nossos filhos:
+
+PALAVRAS DE AFIRMAÇÃO
+
+Normalmente os pais dizem “Palavras de Afirmação” a seus filhos quando eles ainda são pequenos. Mesmo antes que entendam a linguagem verbal, já lhes dizem coisas como: “Que narizinho lindo! Que olhinhos mais brilhantes! Que cabelo mais macio”, etc.
+
+Quando o bebê começa a engatinhar, elogiamos cada gesto e “esbanjamos” “Palavras de Afirmação”. Quando ele começa a andar e apoia-se com uma das mãozinhas no sofá, ficamos alguns passos à sua frente, estendemos as mãos em sua direção e dizemos:
+
+“Vem, vem, vem. Isso mesmo… andando, vem até aqui, vem!”. O bebê dá meio passo em sua direção e cai. O que dizemos a ele?
+
+Certamente não é nada como “Seu burro! Será que você não consegue nem andar?!” Muito pelo contrário, nossas palavras costumam ser: “Isso mesmo, muito bem!”
+
+E dessa forma, a criança levanta-se e tenta novamente.
+
+Por que, quando os filhos ficam mais velhos, nossas “Palavras de Afirmação”
+
+tornam-se de condenação? Quando um deles tem sete anos, entramos em seu quarto e dizemos-lhe que guarde os brinquedos na caixa. Digamos que haja doze objetos pelo chão.
+
+Voltamos ao quarto em cinco minutos e somente sete estão na caixa. O que então falamos a ele?
+
+“Eu lhe disse para guardar esses brinquedos! Se você não fizer isso agora, eu vou…”
+
+“Venha cá… e os sete brinquedos que já estavam guardados?!” Por que não dizemos:
+
+“Muito bem, Johnny, você colocou sete brinquedos na caixa. Muito bem!”
+
+Preste atenção, pois certamente os outros cinco brinquedos também “pularão”
+
+em um instante para a caixa! À medida em que os filhos ficam mais velhos, a nossa tendência é condená-los mais por seus erros do que “condecorá-los” por seus sucessos.
+
+Para a criança que possui “Palavras de Afirmação” como sua primeira linguagem do amor, nossas palavras negativas, críticas e desanimadoras aterrorizam sua psique.
+
+Centenas de adultos por volta dos 35 anos ainda ouvem retinir em seus ouvidos, palavras de condenação proferidas há mais de vinte anos:
+
+“Você é muito gorda! Ninguém vai querer namorar você!”
+
+“Você não estuda! Se continuar assim, poderá ser expulso da escola. Não dá para acreditar que seja tão burro!”
+
+“Você é um irresponsável e nunca será capaz de fazer nada direito na vida!”
+
+Muitos adultos lutam com sua autoestima e não se sentem amados durante toda suas vidas, quando sua primeira linguagem do amor é violada de forma tão destrutiva.
+
+QUALIDADE DE TEMPO
+
+“Qualidade de Tempo” significa dedicar aos filhos atenção total. Para uma criança pequena, a forma de falar essa linguagem é sentar-se ao chão com ela e rolar uma bola para lá e para cá. Estamos falando de brincar com carrinhos ou bonecas, de entrar em sua caixa de areia e ajudá-la a construir um castelo; devemos, portanto, penetrar em seu mundo, fazer as coisas com ela. Talvez você, como adulto, viva em um mundo computadorizado, mas seu filho está no mundo da fantasia. Você precisa descer ao nível de uma criança, se quiser conduzi-la ao mundo adulto.
+
+À medida em que a criança cresce e muda seus interesses, você precisa descobrir quais são eles, se deseja suprir suas necessidades. Se o seu novo prazer for basquete, então interesse-se por este tipo de esporte. Se for piano, talvez você precise assistir algumas aulas para ter noções deste instrumento musical ou, pelo menos, ouvir atentamente enquanto ele treina os exercícios. O fato de dedicar-se atenção total a um filho significa que você se importa com ele, e é importante estar ao seu lado, pois aprecia estar junto dele.
+
+São muitos os adultos que, ao olharem para trás, para sua infância, não se lembram do que seus pais lhes disseram, mas se lembram do que lhes fizeram. Uma rapaz de 21 anos certa vez me disse:
+
+“Eu me lembro que meu pai nunca perdia meus jogos na escola. Eu sabia que ele se interessava pelo que eu fazia.”
+
+Para aquele homem, “Qualidade de Tempo” era um comunicador de amor extremamente importante.
+
+Se “Qualidade de Tempo” for a primeira linguagem do amor de seu filho(a) e você usar esta linguagem para comunicar-se com ele(ela), haverá grandes chances de que, mesmo na adolescência, permita que você gaste mais tempo com ele. Se você não lhe dedicar “Qualidade de Tempo” nos anos de infância, provavelmente na adolescência ele procurará os amigos da turma e afastar-se-á dos pais, os quais, nessa época, vão desejar desesperadamente gastar mais tempo com ele.
+
+RECEBER PRESENTES
+
+Há muitos pais e avós que falam excessivamente a Linguagem dos Presentes.
+
+De fato, quando visitamos uma loja de brinquedos concluímos que muitos acham que dar presentes é a única linguagem do amor. Se eles têm dinheiro, a tendência é comprar brinquedos em excesso para os filhos. Há alguns que acham que, realmente, aquela é a melhor forma de demonstrar-se amor por uma criança. Alguns pais tentam fazer por seus filhos o que seus pais não puderam realizar por eles. Compram para eles coisas que desejaram ter quando crianças, mas nunca ganharam. Mas, a menos que “Receber Presentes” seja realmente a primeira linguagem do amor de seu filho, os presentes terão pouco significado emocional para ele. Os pais podem até ter boas intenções, mas nem sempre é através de um presente que se supre a necessidade emocional de um filho.
+
+Se os brinquedos que você dá a seu filho são rapidamente postos de lado; se ele raramente lhe agradece; se a criança não valoriza o que recebeu, há grandes indícios de que “Receber Presentes” não seja a primeira linguagem do amor dele. No entanto, se ele(ela) lhe agradece efusivamente; se mostra o presente ganho a outros e diz como você costuma dar-lhe bons presentes; se ele é cuidadoso com seus brinquedos, pois guarda-os em lugar de honra no quarto, mantém-nos limpos e brinca bastante tempo com eles, talvez “Receber Presentes” seja a primeira linguagem do amor dele.
+
+O que fazer, se você tiver um filho cuja primeira linguagem do amor é “Receber Presentes”, e não tiver dinheiro suficiente para comprar vários brinquedos para ele? Tenha em mente que não é a qualidade ou o custo do mesmo que se conta. Muitos presentes podem ser feitos manualmente e, às vezes, as crianças gostam mais desse tipo do que de outros sofisticados. A realidade é essa: Já reparou como as crianças pequenas chegam a brincar mais com a caixa do que com o presente que vem dentro dela? Outra possibilidade é trabalhar com brinquedos quebrados e reconstituí-los. Reformar um deles pode ser um projeto tanto para os pais como para os filhos. Você não precisa ter “rios de dinheiro” para dar presentes ao seu filho.
+
+FORMAS DE SERVIR
+
+Quando os filhos são pequenos, os pais continuamente utilizam-se de “Formas de Servir” para se relacionar com eles. Se não o fizerem, as crianças às vezes adoecem.
+
+Tomar banho, ser alimentado e vestido, tudo isso requer um bom tempo de trabalho nos primeiros anos da vida de um bebê. Além disso, é necessário cozinhar, lavar e passar.
+
+Depois chega a época das lancheiras, dos ônibus escolares e da ajuda nas lições de casa.
+
+Tais coisas não são muito valorizadas por algumas crianças, mas para outras comunicam amor.
+
+Observe seus filhos. Note como eles demonstram amor por outras pessoas. Isso é uma boa dica para se descobrir a primeira linguagem do amor deles.
+
+Se o seu filho costuma demonstrar apreciação por pequenas coisas que se façam por ele, é uma dica de que elas são emocionalmente importantes para ele(ela).
+
+Através de “Formas de Servir” você lhe comunica amor de forma significativa. Quando você o ajuda com um projeto de ciências, isso significa mais do que uma boa nota. O significado é “meu pai (minha mãe) me ama”. Quando você conserta uma bicicleta, o que faz é muito mais do que devolver-lhe “as rodas”. Permite que ele saia com o tanque cheio.
+
+Se o seu filho constantemente se oferece para ajudá-lo com seus projetos de consertos, provavelmente significa que, dessa forma, ele expressa amor, e “Formas de Servir”
+
+possivelmente seja sua primeira linguagem do amor.
+
+TOQUE FÍSICO
+
+Há anos tomamos conhecimento que o “Toque Físico” é um excelente comunicador emocional para crianças. Pesquisas têm mostrado que bebês que recebem bastante colo desenvolvem-se emocionalmente melhor do que os que não têm este privilégio. Normalmente, os pais e os outros adultos seguram o bebê, apertam-no, beijam-no, afofamno e dizem-lhe palavras carinhosas. Muito antes de entender o significado da palavra amor, ele já se sente amado. Abraços, beijos, cafunés, andar de mãos dadas, são formas de comunicar amor a uma criança. O abraçar e beijar um adolescente já é diferente do abraçar e beijar uma criança. Ele não gostará disso se você tomar esta iniciativa na frente de seus amigos, mas não significa que não queira receber afagos, especialmente se o “Toque Físico” for sua primeira linguagem do amor.
+
+Se seu filho adolescente costuma chegar por trás de você e abraçá-lo(a), empurrá-lo(a), agarrar seu tornozelo ao andar, mexer com você, essas são indicações de que “Toque Físico” é importante para ele.
+
+Observe seus filhos. Note como demonstram amor para os outros. Essa é uma boa pista para se descobrir a linguagem do amor deles. Anote os pedidos que lhe fizerem.
+
+Muitas vezes estarão relacionados com a primeira linguagem do amor deles. Note as coisas que mais gostam, pois também são indicadores para descobrirmos sua primeira linguagem do amor.
+
+A linguagem do amor de nossa filha é “Qualidade de Tempo”; portanto, enquanto ela crescia, sempre fazíamos longas caminhadas juntos. Durante o período em que ela estudava na Academia Salém, uma das mais antigas escolas para moças de nosso país, passeávamos pelo pitoresco bairro da Salém antiga. Os moravianos restauraram a cidade que possui mais de duzentos anos de idade. Caminhar pelas ruas de pedra transportavanos para os tempos passados de nossa história. Andar pelo antigo cemitério comunicavanos a realidade entre a vida e a morte. Naqueles anos percorríamos aqueles locais três tardes por semana e conversávamos muito entre as austeras construções. Ela se formou em medicina, e sempre que vem à nossa casa, faz a famosa pergunta:
+
+“Papai, que tal sairmos para dar uma volta?”
+
+Nunca recusei seus convites.
+
+Meu filho, porém, jamais caminhou comigo. Ele diz:
+
+“Caminhar é muito chato! Você não vai a lugar nenhum. Se quiser ir a algum local específico, vá de carro.”
+
+A primeira linguagem do amor dele nada tem a ver com “Qualidade de Tempo”
+
+dela. Como pais, sempre tentamos colocar nossos filhos na mesma forma. Vamos a conferências sobre as crianças, lemos livros sobre como ser melhores pais, aprendemos algumas boas ideias e queremos chegar logo em casa para colocá-las em prática com cada um deles. O problema é que cada filho é diferente e o que comunica amor para um, necessariamente não transmite ao outro. Forçar uma criança a caminhar a seu lado para que você possa ter “Qualidade de Tempo” com ela não comunicará amor. Precisamos aprender a linguagem do amor de nossos filhos se quisermos que eles se sintam amados.
+
+Acredito que a maioria dos pais realmente ama seus filhos. Também admito que milhares de pais não conseguiram comunicar amor na linguagem certa e milhares de crianças em nosso país vivem com o “tanque” emocional vazio. Acho que grande parte das crianças com comportamento inadequado tem por trás um tanque vazio.
+
+Nunca é tarde demais para se demonstrar amor. Se seus filhos são mais velhos e você percebe que durante anos falou com eles na linguagem errada, por que não comunicar isso a eles? Que tal falar-lhes assim:
+
+“Sabe de uma coisa, li um livro sobre como se demonstra amor e percebi que, durante anos, nunca expressei carinho por você da forma mais adequada. Tenho tentado demostrar meu amor através de _____; porém, agora percebo que essa forma provavelmente não lhe comunicou meu carinho, pois sua linguagem do amor é outra. Chego à conclusão que sua linguagem do amor possivelmente seja _____. Como você sabe muito bem, eu sempre o(a) amei, e espero que no futuro consiga expressar-lhe isso da melhor maneira possível.”
+
+Talvez você queira até explicar as cinco linguagens do amor para eles e conversar sobre a sua e a deles.
+
+Talvez seja você quem não se sinta amado(a) por seus filhos mais velhos. Se forem maduros o suficiente para entender o conceito das linguagens do amor, sua conversa poderá abrir-lhes os olhos. É bem provável que se surpreenda com a boa vontade deles em tentar falar sua linguagem do amor e, quando o fizerem, surpreender-se-á como seus sentimentos e atitudes para com eles começarão a mudar. Quando os membros de uma família começam a falar a primeira linguagem do amor um ao outro, o clima emocional aumenta grandemente.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 14;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 14 - Uma Palavra Pessoal$t$, 14,
+$conteudo$No capítulo dois, preveni o leitor que entender as cinco linguagens do amor emocional e aprender a falar a primeira linguagem do amor de seu cônjuge, poderiam afetar radicalmente o comportamento dele ou dela. Agora, eu pergunto: O que você acha?
+
+Li vários livros sobre este assunto, acompanhei as vidas de vários casais, visitei pequenas e grandes cidades, recebi em meu escritório de aconselhamento diversas pessoas e conversei com várias delas em restaurantes, etc. Estes conceitos também poderiam alterar radicalmente o clima emocional de seu casamento! O que aconteceria se você descobrisse a primeira linguagem de seu cônjuge e resolvesse falá-la de forma consistente?
+
+Nem você nem eu podemos responder a esta pergunta sem primeiramente testá-la. Posso dizer que vários dos casais que ouviram estes conceitos em meus seminários, disseram que o fato de escolherem amar e expressar carinho na linguagem do amor de seu cônjuge provocou uma enorme diferença em seus casamentos. Quando a necessidade emocional de ser amado(a) é suprida, cria-se um clima onde o casal consegue lidar com as outras áreas da vida de forma muito mais produtiva.
+
+Cada um de nós chega ao casamento com diferentes histórias e personalidades.
+
+Levamos nossa bagagem emocional para nossos relacionamentos conjugais. Cada um chega com expectativas diferentes, com diversos enfoques das situações e muitas opiniões sobre o que realmente importa na vida. Em um casamento saudável esta variedade de perspectivas deve ser harmonizada. Não precisamos concordar em tudo, mas devemos achar uma forma de lidar com cada uma de nossas diferenças de forma que elas não se tornem fatores de separação. Com “tanques” do amor vazios os casais tornam-se ausentes e até agressivos, seja verbal ou fisicamente, ao colocarem seus argumentos em jogo. Porém, quando o “tanque” do amor está cheio, cria-se um clima de amizade, compreensão e boa vontade perante as diferenças, um clima propenso às negociações dos problemas que surgem no dia a dia do casal. Estou convencido de que nenhuma outra área do casamento afeta tanto o relacionamento a dois quanto o suprir a necessidade do amor emocional.
+
+A habilidade de amar, especialmente quando o cônjuge não corresponde, parece ser impossível para alguns. Esse tipo de amor pode exigir que utilizemos nossos recursos espirituais. Muitos anos atrás, quando me deparei com meus próprios problemas conjugais, tornei a descobrir que precisava de Deus. Como antropologista, fui treinado a examinar dados. Decidi, pessoalmente, fazer escavações nas raízes da fé cristã. Examinei os registros históricos do nascimento, vida, morte e ressurreição de Cristo; passei a ver sua morte como expressão de amor e sua ressurreição como uma profunda evidência de seu poder. Tornei-me um cristão sincero. Entreguei-lhe minha vida e descobri que ele nos provê a energia espiritual interior para amar, mesmo quando o amor não é correspondido.
+
+Gostaria de encorajá-lo a fazer sua própria investigação sobre aquele que, ao morrer, orou pelos que o mataram: “Pai, perdoa-lhes porque não sabem o que fazem”.
+
+Esta é a principal expressão do amor.
+
+A alta taxa de divórcio em todo o mundo evidencia o fato de que milhares de casais vivem com o “tanque” do amor emocional vazio. O número crescente de adolescentes que fogem de suas casas e quebram lei após lei indica que, muitos pais, apesar de bem intencionados e de tentarem sinceramente expressar amor a seus filhos, ainda falam com eles a linguagem do amor errada. Acredito que os conceitos deste livro podem causar um impacto sobre os casamentos e as famílias de quem o ler.
+
+Não escrevi este livro para ser um tratado acadêmico e guardado nas bibliotecas dos colégios e faculdades, apesar de esperar que professores de sociologia e psicologia o considerem como ajuda na área do casamento e da vida familiar. Eu o elaborei, não para os que estudam o casamento, mas para os casados, que passaram pela experiência eufórica da paixão, entraram no matrimônio com sublimes sonhos de fazer um ao outro extremamente feliz, mas que, com a realidade do dia a dia estão até em perigo de um rompimento total. É minha esperança que milhares destes casais não somente reencontrem seus sonhos, mas também descubram o caminho para que seus ideais tornem-se realidade.
+
+Sonho com o dia em que o potencial dos casamentos seja aproveitado para o bem do próprio homem, quando maridos e mulheres puderem viver a vida com seus
+
+“tanques” do amor emocional lotados, de forma a apoiarem-se para conseguir alcançar não somente o potencial pessoal de cada um, como também o conjugal. Sonho com o dia em que as crianças cresçam em lares cheios de amor e segurança, onde a energia progressiva seja canalizada em aprendizado e em serviço, ao invés de irem atrás do amor que não receberam em casa. É meu desejo que este livro reavive as chamas do amor em seu casamento e em outros milhares de matrimônios.
+
+Se fosse possível, eu mesmo daria um exemplar deste livro a todos os casais do mundo e diria:
+
+Escrevi este livro para vocês. Espero que ele cause mudanças em suas vidas. E, se isso realmente ocorrer, por favor dê outro exemplar a mais alguém.
+
+Contudo, como não posso fazer isso, ficaria muito grato se você, que o leu, presenteasse, com uma cópia, os seus familiares, irmãos e irmãs; seus filhos casados; seus funcionários; seus colegas de clube, igreja ou sinagoga. Quem sabe, juntos, veremos nosso sonho tornar-se realidade.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+end;
+$migration$;
