@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AlertaDeQueda } from "@/components/AlertaDeQueda";
 import { AutomacaoCampanhas } from "@/components/AutomacaoCampanhas";
 import { TemplatesMensagemManager } from "@/components/TemplatesMensagemManager";
 import { WhatsAppFilaPainel } from "@/components/WhatsAppFilaPainel";
@@ -170,7 +171,12 @@ export function CentralMensagens({ alunos, cursos, templates, mensagens }: Props
         />
       )}
       {aba === "historico" && <Historico mensagens={mensagens} />}
-      {aba === "conexao" && <Conexao status={status} onMudou={carregarStatus} />}
+      {aba === "conexao" && (
+        <>
+          <Conexao status={status} onMudou={carregarStatus} />
+          <AlertaDeQueda />
+        </>
+      )}
     </div>
   );
 }
