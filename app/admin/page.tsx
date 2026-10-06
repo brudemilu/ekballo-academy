@@ -277,6 +277,33 @@ export default async function AdminPage() {
         </Link>
       )}
 
+      {/* Gente nova esperando liberação: sem isto o líder só descobre se
+          alguém avisar por fora (issue #217). */}
+      {stats.cadastrosPendentes > 0 && (
+        <Link
+          href="/admin/alunos#novos"
+          className="lift mb-10 flex items-center justify-between gap-4 rounded-2xl border border-amber-300 border-l-[6px] border-l-amber-500 bg-white p-6 shadow-sm transition hover:border-amber-400 hover:shadow-md"
+        >
+          <div className="min-w-0">
+            <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-amber-700">
+              Novos cadastros
+            </p>
+            <p className="font-serif text-2xl font-semibold leading-tight text-mesa-800">
+              {stats.cadastrosPendentes}{" "}
+              {stats.cadastrosPendentes === 1
+                ? "pessoa aguardando a sua liberação"
+                : "pessoas aguardando a sua liberação"}
+            </p>
+            <p className="mt-1 text-sm text-mesa-600">
+              Ver quem chegou e liberar o acesso.
+            </p>
+          </div>
+          <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-amber-500 text-xl text-white shadow-sm">
+            →
+          </span>
+        </Link>
+      )}
+
       <ContinuandoLeitura itens={emLeitura} />
 
       {/* Recém-chegados: o master vê aqui o resultado das levas que subiu.

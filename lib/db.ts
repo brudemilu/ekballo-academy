@@ -576,10 +576,13 @@ export async function getAdminStats() {
       totalCursos: MOCK_CURSOS.length,
       totalRespostas: MOCK_RESPOSTAS.length,
       respostasSemComentario: MOCK_RESPOSTAS.filter((r) => !r.comentario_lider).length,
+      cadastrosPendentes: MOCK_ALUNOS.filter(
+        (a) => !a.is_admin && a.acesso_liberado === false,
+      ).length,
     };
   }
   const supabase = await createClient();
-  const [a, c, r, sc] = await Promise.all([
+  const [a, c, r, sc, cp] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("cursos").select("*", { count: "exact", head: true }),
     supabase.from("respostas").select("*", { count: "exact", head: true }),
@@ -587,12 +590,19 @@ export async function getAdminStats() {
       .from("respostas")
       .select("*", { count: "exact", head: true })
       .is("comentario_lider", null),
+    // Quem se cadastrou e ainda espera o líder liberar (issue #217).
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("is_admin", false)
+      .not("acesso_liberado", "is", true),
   ]);
   return {
     totalAlunos: a.count || 0,
     totalCursos: c.count || 0,
     totalRespostas: r.count || 0,
     respostasSemComentario: sc.count || 0,
+    cadastrosPendentes: cp.count || 0,
   };
 }
 
@@ -908,7 +918,7 @@ export async function listAllAlunos(): Promise<
   if (isMockMode()) {
     return MOCK_ALUNOS.map((a) => ({
       ...a,
-      acesso_liberado: true,
+      acesso_liberado: a.acesso_liberado !== false,
       respostasCount: MOCK_RESPOSTAS.filter((r) => r.aluno_id === a.id).length,
       tematicas: MOCK_MATRICULAS.filter((m) => m.aluno_id === a.id)
         .map((m) => MOCK_CURSOS.find((c) => c.id === m.curso_id)?.titulo)
