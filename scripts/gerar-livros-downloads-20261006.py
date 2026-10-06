@@ -834,7 +834,10 @@ def main() -> None:
             "capa": f"/capas/{book['slug']}.jpg",
             "aulas": aulas,
         }
-        (DEST / f"{book['slug']}.json").write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+        # Indentado e com quebra final: e o formato que o Biome cobra no CI.
+        (DEST / f"{book['slug']}.json").write_text(
+            json.dumps(dados, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
         nome = f"{book['migration']}_curso_{book['slug'].replace('-', '_')}.sql"
         (MIGRATIONS / nome).write_text(migration_sql(book, aulas, desc), encoding="utf-8")
         capa(book, livro)
