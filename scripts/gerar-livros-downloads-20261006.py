@@ -36,6 +36,9 @@ ORIGENS = [Path.home() / "Downloads" / "Livros subidos", Path.home() / "Download
 DEST = ROOT / "tmp/livros"
 COVERS = ROOT / "public/capas"
 MIGRATIONS = ROOT / "supabase/migrations"
+ISSUE = 230  # as levas seguintes reaproveitam este modulo e trocam BOOKS e ISSUE
+
+fitz.TOOLS.mupdf_display_errors(False)  # epub sem a fonte embutida enche o terminal de aviso
 
 # (titulo da mesa, primeira pagina, ultima pagina) — paginas do PDF, base 1.
 BOOKS = [
@@ -368,7 +371,7 @@ def achar_arquivo(prefixo: str) -> Path:
             continue
         achados = [
             p for p in origem.iterdir()
-            if p.suffix.lower() in (".pdf", ".mobi") and simplify(p.name).startswith(alvo)
+            if p.suffix.lower() in (".pdf", ".mobi", ".epub") and simplify(p.name).startswith(alvo)
         ]
         if len(achados) == 1:
             return achados[0]
@@ -492,6 +495,17 @@ class Livro:
                     palavras = palavras[:-1]
                 self.vocab.update(w.lower() for w in palavras)
         self.corpo = tamanhos.most_common(1)[0][0]
+        # Conversao que muda o corpo do texto no meio do livro: o que e titulo
+        # passa a ser medido contra o corpo dominante de cada pagina.
+        self.corpo_livro = self.corpo
+        self.corpo_pagina = {}
+        if book.get("corpo_por_pagina"):
+            for n, linhas in self.paginas.items():
+                da_pagina: Counter[float] = Counter()
+                for linha in linhas:
+                    da_pagina[linha["tamanho"]] += len(linha["texto"])
+                if sum(da_pagina.values()) >= 300:
+                    self.corpo_pagina[n] = da_pagina.most_common(1)[0][0]
         self.titulo_min = book.get("titulo_min", 1.12)
         self.corpo_min = book.get("corpo_min", 0)
         self.descartar = [re.compile(p, re.IGNORECASE) for p in book.get("descartar", [])]
@@ -525,6 +539,7 @@ class Livro:
         cheias = 0
         total = 0
         for n, linhas in self.paginas.items():
+            self.corpo = self.corpo_pagina.get(n, self.corpo_livro)
             xs = [round(l["x1"]) for l in linhas if self._eh_corpo(l["tamanho"]) and len(l["texto"]) > 40]
             if not xs:
                 self.direita[n] = 0
@@ -535,6 +550,7 @@ class Livro:
             cheias += sum(1 for x in xs if abs(x - self.direita[n]) <= 4)
             total += len(xs)
         self.justificado = total > 0 and cheias / total > 0.55
+        self.corpo = self.corpo_livro
 
     def _ruido(self, linha: dict) -> bool:
         texto = linha["texto"]
@@ -586,6 +602,7 @@ class Livro:
         for n in range(inicio, fim + 1):
             if acabou:
                 break
+            self.corpo = self.corpo_pagina.get(n, self.corpo_livro)
             linhas = [l for l in self.paginas[n] if not self._ruido(l)]
             # Trecho que nao vira prosa (tabela de referencias): sai, e fica
             # uma nota no lugar para o leitor saber que havia algo ali.
@@ -621,9 +638,16 @@ class Livro:
             anterior = None
             for linha in limpas:
                 if de is not None:
-                    if de.search(linha["texto"]):
-                        de = None
-                    continue
+                    achou = de.search(linha["texto"])
+                    if not achou:
+                        continue
+                    de = None
+                    # Conversao que achatou o titulo na primeira linha do texto:
+                    # o que sobra depois do titulo ja e o capitulo.
+                    resto = linha["texto"][achou.end():].strip()
+                    if not resto:
+                        continue
+                    linha["texto"] = resto
                 if ate is not None and ate.search(linha["texto"]):
                     acabou = True
                     break
@@ -632,7 +656,9 @@ class Livro:
                     continue
                 eh_titulo = self._titulo(linha)
                 if abertura:
-                    if eh_titulo or (
+                    if self.book.get("manter_abertura"):
+                        pass  # coletanea: o titulo de cada leitura fica no texto
+                    elif eh_titulo or (
                         self.book.get("pular_titulo_caixa_alta")
                         and linha["texto"].upper() == linha["texto"]
                         and len(linha["texto"]) < 80
@@ -663,6 +689,15 @@ class Livro:
                         novo = True
                     elif anterior["texto"].endswith("-") and re.match(r"^[-a-zà-ÿ]", linha["texto"]):
                         novo = False  # palavra partida nao atravessa paragrafo
+                    elif self.book.get("centralizado"):
+                        # Livro inteiro centralizado: nao ha margem nem recuo. Fecha
+                        # paragrafo a linha curta que termina frase, ou a que
+                        # termina na referencia do versiculo ("Efesios 4:2").
+                        maior = max(l["x1"] - l["x0"] for l in limpas)
+                        curta = anterior["x1"] - anterior["x0"] < 0.8 * maior
+                        fecha = anterior["texto"].endswith(FIM_DE_FRASE) and curta
+                        versiculo = re.search(r"\d:\d+(?:-\d+)?\)?$", anterior["texto"])
+                        novo = espaco > 0.45 * altura or fecha or bool(versiculo)
                     elif (not self._eh_corpo(linha["tamanho"]) and mesmo_corpo) or (centrada and ultimo["centrada"]):
                         # Destaque em corpo proprio ou epigrafe centralizada: so o espaco separa.
                         novo = espaco > 0.45 * altura
@@ -674,7 +709,15 @@ class Livro:
                         # bloco tem margem direita propria.
                         largura = min(direita, max(ultimo["x1"], linha["x1"]))
                         curta = self.justificado and anterior["x1"] < largura - 0.1 * (largura - margem)
-                        novo = recuo or curta or espaco > 0.45 * altura
+                        salto = espaco > 0.45 * altura
+                        if self.book.get("salto_exige_frase"):
+                            # Conversao com entrelinha irregular: espaco no meio da
+                            # frase nao e paragrafo.
+                            salto = salto and (
+                                anterior["texto"].endswith(FIM_DE_FRASE)
+                                or not re.match(r"^[a-zà-ÿ]", linha["texto"])
+                            )
+                        novo = recuo or curta or salto
                 elif paragrafos and anterior is None:
                     # Virada de pagina: continua o paragrafo se ele ficou aberto.
                     ultimo = paragrafos[-1]
@@ -750,7 +793,7 @@ def migration_sql(book: dict, aulas: list[dict], desc: str) -> str:
     slug = book["slug"]
     capa = f"/capas/{slug}.jpg"
     partes = [
-        f"-- Curso: {book['titulo']} ({book['autor']}) — transcrição sem perguntas. Issue #230.",
+        f"-- Curso: {book['titulo']} ({book['autor']}) — transcrição sem perguntas. Issue #{ISSUE}.",
         "do $migration$",
         "declare",
         "  v_curso_id uuid;",
