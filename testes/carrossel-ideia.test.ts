@@ -55,7 +55,25 @@ describe("systemCarrosselDaIdeia", () => {
     expect(s).not.toContain("QUEM ESTÁ FALANDO");
     expect(
       systemCarrosselDaIdeia("carrossel", "NÃO ENTRE NESTES ASSUNTOS: política"),
-    ).toContain("QUEM ESTÁ FALANDO\nNÃO ENTRE NESTES ASSUNTOS: política");
+    ).toMatch(/QUEM ESTÁ FALANDO[^\n]*\nNÃO ENTRE NESTES ASSUNTOS: política/);
+  });
+
+  it("o assunto é a ideia do pastor; o perfil dá só a voz (issue #223)", () => {
+    // Pediram "família" e saiu "o discipulado começa na sua mesa": o contexto
+    // do ministério tinha virado o tema. A regra precisa estar no pedido.
+    const comPerfil = systemCarrosselDaIdeia(
+      "unico",
+      "OBJETIVO: levar à mesa de discipulado",
+    );
+    expect(comPerfil).toContain("A IDEIA é o ASSUNTO do post");
+    expect(comPerfil).toMatch(/NÃO troque o tema pedido/);
+    expect(comPerfil).toMatch(
+      /QUEM ESTÁ FALANDO \(dá a voz e os limites; o assunto é a ideia do pastor\)/,
+    );
+    // …e vem ANTES do contexto do perfil, que é o que puxava o assunto.
+    expect(comPerfil.indexOf("A IDEIA é o ASSUNTO")).toBeLessThan(
+      comPerfil.indexOf("QUEM ESTÁ FALANDO"),
+    );
   });
 });
 

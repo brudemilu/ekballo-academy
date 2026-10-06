@@ -534,8 +534,10 @@ function Editorial({ p }: { p: EditorialPayload }) {
         {/* topo: a série e a assinatura */}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
+            {/* Sem rótulo próprio, a assinatura ocupa o lugar — nunca um tema
+                fixo ("mesa de discipulado") num post que fala de outra coisa. */}
             <Rotulo
-              texto={p.top || "Mesa de discipulado"}
+              texto={p.top || "Ekballo Academy"}
               cor={TINTA}
               tamanho={32}
               espaco={9}
@@ -551,7 +553,9 @@ function Editorial({ p }: { p: EditorialPayload }) {
             />
           </div>
           <div style={{ display: "flex", width: 150 }}>
-            <Rotulo texto="Ekballo Academy" cor={TINTA} tamanho={17} espaco={5} />
+            {p.top ? (
+              <Rotulo texto="Ekballo Academy" cor={TINTA} tamanho={17} espaco={5} />
+            ) : null}
           </div>
         </div>
 
@@ -589,12 +593,9 @@ function Editorial({ p }: { p: EditorialPayload }) {
                 backgroundColor: p.cor,
               }}
             />
-            <Rotulo
-              texto={p.ref || "Discipulado à mesa"}
-              cor={p.cor}
-              tamanho={38}
-              espaco={9}
-            />
+            {p.ref ? (
+              <Rotulo texto={p.ref} cor={p.cor} tamanho={38} espaco={9} />
+            ) : null}
           </div>
           {/* seta ↗ desenhada: dois lados de um quadrado e a diagonal */}
           <div

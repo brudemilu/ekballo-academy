@@ -2875,6 +2875,24 @@ export async function setPendenteWhatsApp(p: PendenteWhatsApp): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/** O modelo e a cor do post mais recente — para o próximo não sair igual. */
+export async function ultimoVisualUsado(): Promise<{ modelo: string; tema: string }> {
+  const vazio = { modelo: "", tema: "" };
+  const posts = isMockMode()
+    ? listMockCarrosseis()
+    : ((
+        await agendaSR()
+          .from("instagram_carrosseis")
+          .select("slides")
+          .order("criado_em", { ascending: false })
+          .limit(1)
+      ).data ?? []);
+  const slide = (
+    posts[0]?.slides as { modelo?: string; tema?: string }[] | undefined
+  )?.[0];
+  return slide ? { modelo: slide.modelo ?? "", tema: slide.tema ?? "" } : vazio;
+}
+
 /** O post, lido pelo cliente de serviço (o webhook não tem sessão). */
 export async function getCarrosselInstagram(
   id: string,

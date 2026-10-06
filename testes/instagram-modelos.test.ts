@@ -4,7 +4,9 @@ import {
   itensDoChecklist,
   lerModelo,
   MAX_ITENS_CHECKLIST,
+  MODELOS_AUTOMATICOS,
   palavrasDoSlide,
+  sortearDiferente,
   tamanhoPorTexto,
   tamanhoQueCabe,
 } from "@/lib/instagram-modelos";
@@ -139,5 +141,35 @@ describe("instrucaoDoModelo", () => {
 
   it("a manchete limita as palavras", () => {
     expect(instrucaoDoModelo("manchete")).toMatch(/MÁXIMO 8 palavras/);
+  });
+});
+
+describe("sortearDiferente · o post seguinte não sai igual ao anterior", () => {
+  it("nunca devolve o que acabou de ser usado", () => {
+    for (let i = 0; i < 20; i++) {
+      expect(sortearDiferente(MODELOS_AUTOMATICOS, "cinema", i / 20)).not.toBe(
+        "cinema",
+      );
+    }
+  });
+
+  it("cobre todas as opções ao longo do sorteio", () => {
+    const vistos = new Set(
+      Array.from({ length: 40 }, (_, i) =>
+        sortearDiferente(MODELOS_AUTOMATICOS, null, i / 40),
+      ),
+    );
+    expect(vistos.size).toBe(MODELOS_AUTOMATICOS.length);
+  });
+
+  it("sem anterior conhecido, ou com sorteio no limite, ainda devolve uma opção válida", () => {
+    expect(MODELOS_AUTOMATICOS).toContain(
+      sortearDiferente(MODELOS_AUTOMATICOS, undefined, 0),
+    );
+    expect(MODELOS_AUTOMATICOS).toContain(
+      sortearDiferente(MODELOS_AUTOMATICOS, "x", 1),
+    );
+    // Lista de um item só: não há como ser diferente, devolve o que tem.
+    expect(sortearDiferente(["cinema"], "cinema", 0.5)).toBe("cinema");
   });
 });
