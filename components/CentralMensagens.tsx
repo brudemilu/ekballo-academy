@@ -1,13 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { WhatsAppFilaPainel } from "@/components/WhatsAppFilaPainel";
-import { TemplatesMensagemManager } from "@/components/TemplatesMensagemManager";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AutomacaoCampanhas } from "@/components/AutomacaoCampanhas";
+import { TemplatesMensagemManager } from "@/components/TemplatesMensagemManager";
+import { WhatsAppFilaPainel } from "@/components/WhatsAppFilaPainel";
 
-type Aluno = { id: string; nome: string | null; email: string; telefone: string | null };
-type Curso = { id: string; titulo: string; matriculados: number; alunosComTelefone?: number };
+type Aluno = {
+  id: string;
+  nome: string | null;
+  email: string;
+  telefone: string | null;
+};
+type Curso = {
+  id: string;
+  titulo: string;
+  matriculados: number;
+  alunosComTelefone?: number;
+};
 type Template = { id: string; titulo: string; corpo: string; descricao: string | null };
 type MensagemHist = {
   id: string;
@@ -20,7 +30,12 @@ type MensagemHist = {
   total_destinatarios: number;
 };
 type Grupo = { JID?: string; Jid?: string; jid?: string; Name?: string; name?: string };
-type Status = { connected: boolean; loggedIn: boolean; nome?: string | null; mock?: boolean };
+type Status = {
+  connected: boolean;
+  loggedIn: boolean;
+  nome?: string | null;
+  mock?: boolean;
+};
 
 type Props = {
   alunos: Aluno[];
@@ -29,7 +44,14 @@ type Props = {
   mensagens: MensagemHist[];
 };
 
-type Aba = "enviar" | "agendadas" | "automacao" | "fila" | "templates" | "historico" | "conexao";
+type Aba =
+  | "enviar"
+  | "agendadas"
+  | "automacao"
+  | "fila"
+  | "templates"
+  | "historico"
+  | "conexao";
 type DestinoClasse = "discipulos" | "grupo" | "numero";
 type Escopo = "todos" | "curso" | "aluno";
 
@@ -185,18 +207,21 @@ function Compositor({
   const [assunto, setAssunto] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [midiaUrl, setMidiaUrl] = useState("");
-  const [midiaTipo, setMidiaTipo] = useState<"image" | "video" | "audio" | "document">("image");
+  const [midiaTipo, setMidiaTipo] = useState<"image" | "video" | "audio" | "document">(
+    "image",
+  );
   const [legenda, setLegenda] = useState("");
   const [filename, setFilename] = useState("");
 
   // canais (só discípulos)
-  const [cEmail, setCEmail] = useState(false);
   const [cWhats, setCWhats] = useState(true);
   const [cPush, setCPush] = useState(false);
 
   const [agendarPara, setAgendarPara] = useState(""); // datetime-local; vazio = enviar agora
   const [enviando, setEnviando] = useState(false);
-  const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null);
+  const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(
+    null,
+  );
 
   const ehDireto = classe === "grupo" || classe === "numero";
 
@@ -229,7 +254,7 @@ function Compositor({
           .replace(/\{\{\s*nome\s*\}\}/gi, "")
           .replace(/\{\{\s*curso\s*\}\}/gi, "")
           .replace(/\s{2,}/g, " ")
-          .trim()
+          .trim(),
       );
     } else {
       setMensagem(t.corpo);
@@ -241,7 +266,7 @@ function Compositor({
     escopo === "todos"
       ? alunos.length
       : escopo === "curso" && escopoId
-        ? cursos.find((c) => c.id === escopoId)?.matriculados ?? 0
+        ? (cursos.find((c) => c.id === escopoId)?.matriculados ?? 0)
         : escopo === "aluno" && escopoId
           ? 1
           : 0;
@@ -249,7 +274,7 @@ function Compositor({
     escopo === "todos"
       ? alunos.filter((a) => !!a.telefone).length
       : escopo === "curso" && escopoId
-        ? cursos.find((c) => c.id === escopoId)?.alunosComTelefone ?? 0
+        ? (cursos.find((c) => c.id === escopoId)?.alunosComTelefone ?? 0)
         : escopo === "aluno" && escopoId
           ? alunos.find((a) => a.id === escopoId)?.telefone
             ? 1
@@ -274,7 +299,6 @@ function Compositor({
 
     if (classe === "discipulos") {
       const canais: string[] = [];
-      if (cEmail) canais.push("email");
       if (cWhats) canais.push("whatsapp");
       if (cPush) canais.push("push");
       if (!canais.length) {
@@ -285,7 +309,10 @@ function Compositor({
         setResultado({ ok: false, texto: "Selecione o curso/discípulo." });
         return;
       }
-      const corpoHtml = mensagem.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n/g, "<br>\n");
+      const corpoHtml = mensagem
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/\n/g, "<br>\n");
       tipoAg = "broadcast";
       payload = {
         destino_tipo: escopo,
@@ -301,14 +328,24 @@ function Compositor({
     } else {
       const destinatario = classe === "grupo" ? grupoJid : numero;
       if (!destinatario.trim()) {
-        setResultado({ ok: false, texto: classe === "grupo" ? "Escolha um grupo." : "Informe o número." });
+        setResultado({
+          ok: false,
+          texto: classe === "grupo" ? "Escolha um grupo." : "Informe o número.",
+        });
         return;
       }
       tipoAg = "direto";
       payload =
         conteudo === "texto"
           ? { tipo: "texto", destinatario, mensagem }
-          : { tipo: "midia", destinatario, url: midiaUrl, midia_tipo: midiaTipo, legenda, filename };
+          : {
+              tipo: "midia",
+              destinatario,
+              url: midiaUrl,
+              midia_tipo: midiaTipo,
+              legenda,
+              filename,
+            };
       descricao = `${classe === "grupo" ? "Grupo" : "Número"} ${grupoNome || destinatario} · ${conteudo}`;
     }
 
@@ -337,7 +374,10 @@ function Compositor({
         if (!r.ok) {
           setResultado({ ok: false, texto: d.erro || `HTTP ${r.status}` });
         } else {
-          setResultado({ ok: true, texto: `📅 Agendado para ${quando.toLocaleString("pt-BR")}.` });
+          setResultado({
+            ok: true,
+            texto: `📅 Agendado para ${quando.toLocaleString("pt-BR")}.`,
+          });
           setMensagem("");
           setAgendarPara("");
         }
@@ -358,7 +398,10 @@ function Compositor({
           const fila = d.whatsapp_enfileirados
             ? ` · ${d.whatsapp_enfileirados} na fila do WhatsApp (1/min)`
             : "";
-          setResultado({ ok: true, texto: `Enviado para ${d.total_enviados}/${d.total_destinatarios}${fila}.` });
+          setResultado({
+            ok: true,
+            texto: `Enviado para ${d.total_enviados}/${d.total_destinatarios}${fila}.`,
+          });
           setMensagem("");
         }
       } else {
@@ -372,11 +415,17 @@ function Compositor({
           setResultado({ ok: true, texto: "Enviado!" });
           if (conteudo === "texto") setMensagem("");
         } else {
-          setResultado({ ok: false, texto: d.erro || JSON.stringify(d.evolution_body || d) });
+          setResultado({
+            ok: false,
+            texto: d.erro || JSON.stringify(d.evolution_body || d),
+          });
         }
       }
     } catch (e) {
-      setResultado({ ok: false, texto: e instanceof Error ? e.message : "erro de rede" });
+      setResultado({
+        ok: false,
+        texto: e instanceof Error ? e.message : "erro de rede",
+      });
     } finally {
       setEnviando(false);
     }
@@ -390,13 +439,15 @@ function Compositor({
       <div className="space-y-5">
         {/* DESTINO */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-mesa-700">Para</label>
+          <p className="mb-2 block text-sm font-medium text-mesa-700">Para</p>
           <div className="grid gap-2 sm:grid-cols-3">
-            {([
-              { v: "discipulos", label: "Discípulos" },
-              { v: "grupo", label: "Grupo do WhatsApp" },
-              { v: "numero", label: "Número avulso" },
-            ] as { v: DestinoClasse; label: string }[]).map((o) => (
+            {(
+              [
+                { v: "discipulos", label: "Discípulos" },
+                { v: "grupo", label: "Grupo do WhatsApp" },
+                { v: "numero", label: "Número avulso" },
+              ] as { v: DestinoClasse; label: string }[]
+            ).map((o) => (
               <label
                 key={o.v}
                 className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition ${
@@ -437,17 +488,26 @@ function Compositor({
                 <option value="aluno">Discípulo específico</option>
               </select>
               {escopo === "curso" && (
-                <select value={escopoId} onChange={(e) => setEscopoId(e.target.value)} className={inputCls}>
+                <select
+                  value={escopoId}
+                  onChange={(e) => setEscopoId(e.target.value)}
+                  className={inputCls}
+                >
                   <option value="">Selecione a temática…</option>
                   {cursos.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.titulo} ({c.matriculados} matriculado{c.matriculados === 1 ? "" : "s"})
+                      {c.titulo} ({c.matriculados} matriculado
+                      {c.matriculados === 1 ? "" : "s"})
                     </option>
                   ))}
                 </select>
               )}
               {escopo === "aluno" && (
-                <select value={escopoId} onChange={(e) => setEscopoId(e.target.value)} className={inputCls}>
+                <select
+                  value={escopoId}
+                  onChange={(e) => setEscopoId(e.target.value)}
+                  className={inputCls}
+                >
                   <option value="">Selecione o discípulo…</option>
                   {alunos.map((a) => (
                     <option key={a.id} value={a.id}>
@@ -485,9 +545,17 @@ function Compositor({
                       disabled={carregandoGrupos || !conectado}
                       className="rounded-full border border-mesa-200 bg-white px-4 py-2 text-xs font-medium text-mesa-700 hover:bg-mesa-50 disabled:opacity-50"
                     >
-                      {carregandoGrupos ? "Carregando…" : grupos ? "Recarregar grupos" : "Carregar grupos"}
+                      {carregandoGrupos
+                        ? "Carregando…"
+                        : grupos
+                          ? "Recarregar grupos"
+                          : "Carregar grupos"}
                     </button>
-                    {!conectado && <span className="self-center text-xs text-mesa-500">conecte o WhatsApp na aba Conexão</span>}
+                    {!conectado && (
+                      <span className="self-center text-xs text-mesa-500">
+                        conecte o WhatsApp na aba Conexão
+                      </span>
+                    )}
                   </div>
                   {grupos && grupos.length > 0 && (
                     <>
@@ -501,8 +569,10 @@ function Compositor({
                         {grupos
                           .filter((g) =>
                             buscaGrupo.trim()
-                              ? nomeG(g).toLowerCase().includes(buscaGrupo.trim().toLowerCase())
-                              : true
+                              ? nomeG(g)
+                                  .toLowerCase()
+                                  .includes(buscaGrupo.trim().toLowerCase())
+                              : true,
                           )
                           .slice(0, 60)
                           .map((g) => (
@@ -543,8 +613,18 @@ function Compositor({
         {/* TEMPLATE */}
         {templates.length > 0 && (
           <div>
-            <label className="mb-2 block text-sm font-medium text-mesa-700">Template (opcional)</label>
-            <select value={templateId} onChange={(e) => aplicarTemplate(e.target.value)} className={inputCls}>
+            <label
+              htmlFor="msg-template"
+              className="mb-2 block text-sm font-medium text-mesa-700"
+            >
+              Template (opcional)
+            </label>
+            <select
+              id="msg-template"
+              value={templateId}
+              onChange={(e) => aplicarTemplate(e.target.value)}
+              className={inputCls}
+            >
               <option value="">Escrever do zero…</option>
               {templates.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -578,8 +658,14 @@ function Compositor({
         {/* ASSUNTO (só discípulos) */}
         {classe === "discipulos" && (
           <div>
-            <label className="mb-2 block text-sm font-medium text-mesa-700">Assunto</label>
+            <label
+              htmlFor="msg-assunto"
+              className="mb-2 block text-sm font-medium text-mesa-700"
+            >
+              Assunto
+            </label>
             <input
+              id="msg-assunto"
               value={assunto}
               onChange={(e) => setAssunto(e.target.value)}
               placeholder="Ex.: Continue sua leitura"
@@ -591,8 +677,14 @@ function Compositor({
         {/* MENSAGEM ou MÍDIA */}
         {conteudo === "texto" ? (
           <div>
-            <label className="mb-2 block text-sm font-medium text-mesa-700">Mensagem</label>
+            <label
+              htmlFor="msg-corpo"
+              className="mb-2 block text-sm font-medium text-mesa-700"
+            >
+              Mensagem
+            </label>
             <textarea
+              id="msg-corpo"
               value={mensagem}
               onChange={(e) => setMensagem(e.target.value)}
               rows={5}
@@ -602,12 +694,14 @@ function Compositor({
             {classe === "discipulos" && (
               <p className="mt-1 text-xs text-mesa-500">
                 <code className="rounded bg-mesa-100 px-1">{"{{nome}}"}</code> e{" "}
-                <code className="rounded bg-mesa-100 px-1">{"{{curso}}"}</code> são trocados no envio.
+                <code className="rounded bg-mesa-100 px-1">{"{{curso}}"}</code> são
+                trocados no envio.
               </p>
             )}
             {usaPlaceholderEmGrupo && (
               <p className="mt-1 text-xs text-amber-700">
-                ⚠️ Em grupo/número, {"{{nome}}"} e {"{{curso}}"} não são preenchidos — edite o texto.
+                ⚠️ Em grupo/número, {"{{nome}}"} e {"{{curso}}"} não são preenchidos —
+                edite o texto.
               </p>
             )}
           </div>
@@ -653,18 +747,24 @@ function Compositor({
         {/* CANAIS (só discípulos) */}
         {classe === "discipulos" && (
           <div>
-            <label className="mb-2 block text-sm font-medium text-mesa-700">Canais</label>
+            <p className="mb-2 block text-sm font-medium text-mesa-700">Canais</p>
             <div className="flex flex-wrap gap-3 text-sm text-mesa-700">
               <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" checked={cWhats} onChange={(e) => setCWhats(e.target.checked)} className="h-4 w-4 rounded" />
+                <input
+                  type="checkbox"
+                  checked={cWhats}
+                  onChange={(e) => setCWhats(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
                 WhatsApp
               </label>
               <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" checked={cEmail} onChange={(e) => setCEmail(e.target.checked)} className="h-4 w-4 rounded" />
-                Email
-              </label>
-              <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" checked={cPush} onChange={(e) => setCPush(e.target.checked)} className="h-4 w-4 rounded" />
+                <input
+                  type="checkbox"
+                  checked={cPush}
+                  onChange={(e) => setCPush(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
                 Push (app)
               </label>
             </div>
@@ -672,7 +772,12 @@ function Compositor({
               <p className="mt-2 rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-xs text-mesa-700">
                 📨 O WhatsApp sai 1 por minuto (proteção contra bloqueio). {comTelefone}{" "}
                 {comTelefone === 1 ? "mensagem" : "mensagens"} ≈{" "}
-                <strong>{comTelefone < 60 ? `${comTelefone} min` : `${Math.round((comTelefone / 60) * 10) / 10} h`}</strong>.
+                <strong>
+                  {comTelefone < 60
+                    ? `${comTelefone} min`
+                    : `${Math.round((comTelefone / 60) * 10) / 10} h`}
+                </strong>
+                .
               </p>
             )}
           </div>
@@ -680,11 +785,15 @@ function Compositor({
 
         {/* AGENDAR (opcional) */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-mesa-700">
+          <label
+            htmlFor="msg-agendar"
+            className="mb-2 block text-sm font-medium text-mesa-700"
+          >
             Agendar para (opcional)
           </label>
           <div className="flex flex-wrap items-center gap-2">
             <input
+              id="msg-agendar"
               type="datetime-local"
               value={agendarPara}
               onChange={(e) => setAgendarPara(e.target.value)}
@@ -701,8 +810,8 @@ function Compositor({
             )}
           </div>
           <p className="mt-1 text-xs text-mesa-500">
-            Deixe em branco para enviar na hora. Com data/hora, a mensagem fica agendada e
-            dispara sozinha no horário (veja na aba <strong>Agendadas</strong>).
+            Deixe em branco para enviar na hora. Com data/hora, a mensagem fica agendada
+            e dispara sozinha no horário (veja na aba <strong>Agendadas</strong>).
           </p>
         </div>
 
@@ -710,7 +819,9 @@ function Compositor({
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-mesa-100 pt-5">
           <div className="text-sm">
             {classe === "discipulos" && totalEscopo > 0 && (
-              <span className="text-mesa-500">Estimativa: {totalEscopo} discípulo(s)</span>
+              <span className="text-mesa-500">
+                Estimativa: {totalEscopo} discípulo(s)
+              </span>
             )}
             {resultado && (
               <span className={resultado.ok ? "text-oliveira-700" : "text-red-700"}>
@@ -729,7 +840,9 @@ function Compositor({
           </button>
         </div>
         {ehDireto && !conectado && (
-          <p className="text-right text-xs text-mesa-500">Conecte o WhatsApp (aba Conexão) para enviar a grupos/números.</p>
+          <p className="text-right text-xs text-mesa-500">
+            Conecte o WhatsApp (aba Conexão) para enviar a grupos/números.
+          </p>
         )}
       </div>
     </div>
@@ -774,7 +887,7 @@ function AgendadasPainel() {
     <div className="space-y-3">
       <div className="rounded-xl border border-mesa-200 bg-mesa-50 p-4 text-sm text-mesa-600">
         🗓️ Mensagens programadas para o futuro. Elas disparam sozinhas no horário
-        (e-mail, WhatsApp e push, conforme você escolheu). Cancele aqui se mudar de ideia.
+        (WhatsApp e push, conforme você escolheu). Cancele aqui se mudar de ideia.
       </div>
       {itens.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-12 text-center">
@@ -820,7 +933,9 @@ function Historico({ mensagens }: { mensagens: MensagemHist[] }) {
   if (mensagens.length === 0) {
     return (
       <div className="rounded-2xl border-2 border-dashed border-mesa-200 bg-white py-16 text-center">
-        <p className="font-serif text-lg text-mesa-500">Nenhuma mensagem enviada ainda.</p>
+        <p className="font-serif text-lg text-mesa-500">
+          Nenhuma mensagem enviada ainda.
+        </p>
       </div>
     );
   }
@@ -831,29 +946,44 @@ function Historico({ mensagens }: { mensagens: MensagemHist[] }) {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex flex-wrap items-center gap-2">
-                <h3 className="font-serif text-lg font-semibold text-mesa-800">{m.assunto}</h3>
-                <span className="rounded-full bg-mesa-100 px-2 py-0.5 text-xs text-mesa-600">{m.destino_label}</span>
+                <h3 className="font-serif text-lg font-semibold text-mesa-800">
+                  {m.assunto}
+                </h3>
+                <span className="rounded-full bg-mesa-100 px-2 py-0.5 text-xs text-mesa-600">
+                  {m.destino_label}
+                </span>
                 {m.canais.map((c) => (
-                  <span key={c} className="rounded-full bg-laranja-100 px-2 py-0.5 text-xs text-laranja-700">
+                  <span
+                    key={c}
+                    className="rounded-full bg-laranja-100 px-2 py-0.5 text-xs text-laranja-700"
+                  >
                     {c}
                   </span>
                 ))}
               </div>
-              <p className="text-xs text-mesa-500">{new Date(m.enviada_em).toLocaleString("pt-BR")}</p>
+              <p className="text-xs text-mesa-500">
+                {new Date(m.enviada_em).toLocaleString("pt-BR")}
+              </p>
             </div>
             <div className="flex items-center gap-5 text-sm">
               <div className="text-right">
-                <p className="font-serif text-xl font-semibold text-oliveira-700">{m.total_enviados}</p>
+                <p className="font-serif text-xl font-semibold text-oliveira-700">
+                  {m.total_enviados}
+                </p>
                 <p className="text-xs text-mesa-500">enviados</p>
               </div>
               {m.total_erros > 0 && (
                 <div className="text-right">
-                  <p className="font-serif text-xl font-semibold text-red-700">{m.total_erros}</p>
+                  <p className="font-serif text-xl font-semibold text-red-700">
+                    {m.total_erros}
+                  </p>
                   <p className="text-xs text-mesa-500">erros</p>
                 </div>
               )}
               <div className="text-right">
-                <p className="font-serif text-xl font-semibold text-mesa-700">{m.total_destinatarios}</p>
+                <p className="font-serif text-xl font-semibold text-mesa-700">
+                  {m.total_destinatarios}
+                </p>
                 <p className="text-xs text-mesa-500">total</p>
               </div>
               <Link
@@ -877,7 +1007,10 @@ function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => vo
   const [qr, setQr] = useState<string | null>(null);
   const [conectando, setConectando] = useState(false);
   const [reativando, setReativando] = useState(false);
-  const [resultadoWebhook, setResultadoWebhook] = useState<{ ok: boolean; texto: string } | null>(null);
+  const [resultadoWebhook, setResultadoWebhook] = useState<{
+    ok: boolean;
+    texto: string;
+  } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const conectado = !!status?.loggedIn;
 
@@ -894,16 +1027,22 @@ function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => vo
       if (d.ok) {
         setResultadoWebhook({
           ok: true,
-          texto: "✅ Recebimento reativado! Mande um áudio (ou 'agenda …') na conversa Você e veja se confirma.",
+          texto:
+            "✅ Recebimento reativado! Mande um áudio (ou 'agenda …') na conversa Você e veja se confirma.",
         });
       } else {
         setResultadoWebhook({
           ok: false,
-          texto: "Não deu pra confirmar o registro. Detalhe técnico: " + JSON.stringify(d).slice(0, 500),
+          texto:
+            "Não deu pra confirmar o registro. Detalhe técnico: " +
+            JSON.stringify(d).slice(0, 500),
         });
       }
     } catch {
-      setResultadoWebhook({ ok: false, texto: "Erro de rede ao reativar. Tente de novo." });
+      setResultadoWebhook({
+        ok: false,
+        texto: "Erro de rede ao reativar. Tente de novo.",
+      });
     } finally {
       setReativando(false);
     }
@@ -947,8 +1086,12 @@ function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => vo
     <div className="rounded-2xl border border-mesa-200 bg-white p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-sm text-mesa-700">
-          <span className={`inline-block h-2.5 w-2.5 rounded-full ${conectado ? "bg-oliveira-600" : "bg-red-500"}`} />
-          {conectado ? `Conectado${status?.nome ? ` como ${status.nome}` : ""}` : "Desconectado"}
+          <span
+            className={`inline-block h-2.5 w-2.5 rounded-full ${conectado ? "bg-oliveira-600" : "bg-red-500"}`}
+          />
+          {conectado
+            ? `Conectado${status?.nome ? ` como ${status.nome}` : ""}`
+            : "Desconectado"}
         </p>
         <div className="flex gap-2">
           <button
@@ -976,7 +1119,11 @@ function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => vo
               disabled={conectando}
               className="rounded-full bg-laranja-600 px-5 py-2 text-xs font-medium text-white hover:bg-laranja-700 disabled:opacity-50"
             >
-              {conectando ? "Gerando QR…" : qr ? "Gerar novo QR" : "Conectar / Gerar QR"}
+              {conectando
+                ? "Gerando QR…"
+                : qr
+                  ? "Gerar novo QR"
+                  : "Conectar / Gerar QR"}
             </button>
           )}
         </div>
@@ -986,8 +1133,10 @@ function Conexao({ status, onMudou }: { status: Status | null; onMudou: () => vo
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qr} alt="QR code para conectar o WhatsApp" className="h-64 w-64" />
           <p className="max-w-sm text-center text-sm text-mesa-600">
-            No celular: <strong>WhatsApp → Aparelhos conectados → Conectar um aparelho</strong> e aponte para o
-            código. Ele expira em ~30s — se sumir, clique em <em>Gerar novo QR</em>.
+            No celular:{" "}
+            <strong>WhatsApp → Aparelhos conectados → Conectar um aparelho</strong> e
+            aponte para o código. Ele expira em ~30s — se sumir, clique em{" "}
+            <em>Gerar novo QR</em>.
           </p>
         </div>
       )}

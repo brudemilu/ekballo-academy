@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { Logo } from "@/components/Logo";
+import { createClient } from "@/lib/supabase/client";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -52,7 +52,7 @@ function LoginForm() {
         setErro("E-mail ou senha incorretos.");
       } else if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
         setErro(
-          "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada (e a pasta de spam) pelo link que enviamos no cadastro."
+          "Sua conta ainda não foi ativada. Fale com a liderança para liberar o acesso.",
         );
       } else if (msg.includes("too many") || msg.includes("rate")) {
         setErro("Muitas tentativas seguidas. Aguarde 1 minuto e tente de novo.");
@@ -72,9 +72,16 @@ function LoginForm() {
     // Recusa só quem está EXPLICITAMENTE pendente. Se a consulta falhar, entra:
     // ver a nota em lib/supabase/middleware.ts — essa checagem já trancou a
     // plataforma inteira quando a coluna ainda não existia no banco.
-    if (!erroPerfil && profileData && !profileData.is_admin && profileData.acesso_liberado === false) {
+    if (
+      !erroPerfil &&
+      profileData &&
+      !profileData.is_admin &&
+      profileData.acesso_liberado === false
+    ) {
       await supabase.auth.signOut();
-      setErro("Seu acesso ainda está pendente. O administrador precisa liberar seu cadastro antes de entrar.");
+      setErro(
+        "Seu acesso ainda está pendente. O administrador precisa liberar seu cadastro antes de entrar.",
+      );
       setLoading(false);
       return;
     }
@@ -94,7 +101,8 @@ function LoginForm() {
 
         {MOCK && (
           <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <strong>Modo demonstração ativo.</strong> Login está liberado — só clique em &ldquo;Entrar&rdquo; pra entrar como Lucas (admin).
+            <strong>Modo demonstração ativo.</strong> Login está liberado — só clique em
+            &ldquo;Entrar&rdquo; pra entrar como Lucas (admin).
           </div>
         )}
 
@@ -114,7 +122,8 @@ function LoginForm() {
 
           {acessoPendente && (
             <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Seu acesso ainda não foi liberado. Aguarde a aprovação do administrador para entrar na plataforma.
+              Seu acesso ainda não foi liberado. Aguarde a aprovação do administrador
+              para entrar na plataforma.
             </div>
           )}
 

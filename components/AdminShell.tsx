@@ -18,7 +18,6 @@ export type AdminTab =
   | "alunos"
   | "mensagens"
   | "whatsapp"
-  | "templates"
   | "imagens"
   | "instagram"
   | "youtube"
@@ -93,14 +92,7 @@ const ITEMS: Item[] = [
     key: "mensagens",
     label: "Mensagens",
     href: "/admin/mensagens",
-    hint: "Email, WhatsApp e grupos",
-    grupo: "comunicacao",
-  },
-  {
-    key: "templates",
-    label: "Templates",
-    href: "/admin/templates",
-    hint: "Emails automáticos",
+    hint: "WhatsApp, push e grupos",
     grupo: "comunicacao",
   },
   {
@@ -142,7 +134,6 @@ const ICONE: Partial<Record<AdminTab, string>> = {
   respostas: "💬",
   alunos: "👥",
   mensagens: "✉️",
-  templates: "📝",
   imagens: "🖼️",
   instagram: "📸",
   youtube: "🎬",

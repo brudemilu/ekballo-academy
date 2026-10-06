@@ -151,22 +151,16 @@ if [ $voltou -eq 0 ]; then
   exit 0
 fi
 
-# --- não voltou: avisar gente de verdade ---------------------------------
-# Por e-mail, não por WhatsApp: o canal natural de aviso é justamente o que
-# está fora. Push não serve — não há assinatura de push de admin cadastrada.
+# --- não voltou: deixar registrado ----------------------------------------
+# Não há para onde avisar: o canal de aviso (WhatsApp) é justamente o que
+# está fora, a plataforma não usa e-mail (issue #218) e não há assinatura de
+# push de admin cadastrada. O alerta fica anotado em whatsapp_vigia, que é o
+# que a aba Conexão de /admin/mensagens mostra.
 registrar_log "REPARO FALHOU — socket segue morto"
 ultimo_alerta=$(leia_marca "$ESTADO_DIR/ultimo_alerta")
 if [ $((agora - ultimo_alerta)) -ge $INTERVALO_ALERTA ]; then
   echo "$agora" > "$ESTADO_DIR/ultimo_alerta"
-  db=$(container_db)
-  emails=$(docker exec -i "$db" psql -U postgres -d postgres -tAc \
-            "select email from public.profiles where is_admin and coalesce(email,'') <> '';" 2>/dev/null)
-  for e in $emails; do
-    curl -s --max-time 25 -o /dev/null -X POST "${SUPABASE_FUNCTIONS_URL}/enviar-email" \
-      -H 'Content-Type: application/json' -H "x-internal-secret: ${INTERNAL_SECRET}" \
-      -d "{\"destinatario\":\"${e}\",\"assunto\":\"⚠️ WhatsApp da plataforma fora do ar\",\"html\":\"<p>O vigia detectou o socket do WhatsApp morto e recriar o container <b>não</b> resolveu.</p><p>Enquanto isso <b>nada sai</b>: devocional dos grupos, lembrete da agenda, boas-vindas e recuperação de senha ficam parados.</p><p>Abra <a href='${APP_URL}/admin/mensagens'>/admin/mensagens</a>. Se estiver pedindo QR, o número foi desvinculado e precisa ser pareado de novo.</p>\"}"
-  done
-  anotar alerta "$SONDA_ESTADO" "reparo não resolveu — admins avisados por e-mail"
-  registrar_log "alerta enviado"
+  anotar alerta "$SONDA_ESTADO" "reparo não resolveu — precisa de intervenção manual"
+  registrar_log "alerta registrado"
 fi
 exit 0
