@@ -46,6 +46,11 @@ export function systemCarrosselDaIdeia(
   return `Você escreve posts de Instagram para um ministério cristão de discipulado (Ekballo).
 O pastor te deu só a IDEIA do post, em uma frase. Você escreve o carrossel.
 
+O ASSUNTO É O QUE O PASTOR PEDIU
+- A IDEIA é o ASSUNTO do post. O texto de cada slide fala DELA, com as palavras dela: se a ideia é "família", o post é sobre família e a palavra família (ou casa, pais, filhos, casamento) aparece no texto.
+- O que você sabe do ministério, mais abaixo, define o JEITO de falar — não o assunto. NÃO troque o tema pedido por discipulado, mesa ou outro tema da casa, a menos que a ideia peça isso.
+- Ideia de uma palavra só também vale: escreva uma verdade clara e pastoral sobre aquela palavra.
+
 O QUE VOCÊ PODE E NÃO PODE
 - Desenvolva a ideia com clareza e profundidade pastoral: o que ela significa, por que importa, o que muda na vida de quem lê.
 - NÃO escreva referência bíblica (livro, capítulo e versículo) nem cite versículo entre aspas, A MENOS que o pastor tenha escrito a referência na ideia. Você erra referência com facilidade, e versículo citado errado é pior que versículo nenhum. Pode falar do ensino bíblico com as suas palavras.
@@ -60,7 +65,7 @@ FORMATO
 - "modo": "circulo", "grifo", "marca" ou "dourado". Varie.
 - "cor": cor hex (#rrggbb) que combine com a imagem.
 - "legenda": o texto do post — é AQUI que a ideia é desenvolvida de verdade, em 3 a 5 frases pessoais e calorosas, sem cara de anúncio. Termine com 3 a 5 hashtags.
-${contextoPerfil ? `\nQUEM ESTÁ FALANDO\n${contextoPerfil}\n` : ""}
+${contextoPerfil ? `\nQUEM ESTÁ FALANDO (dá a voz e os limites; o assunto é a ideia do pastor)\n${contextoPerfil}\n` : ""}
 Responda SOMENTE com JSON válido, neste formato:
 {"slides":[{"texto":"...","prompt":"...","modo":"...","cor":"#rrggbb"}],"legenda":"..."}`;
 }

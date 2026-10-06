@@ -157,6 +157,29 @@ describe("interpretarComando · aprovar, refazer, cancelar", () => {
       alvo: "carrossel",
       motivo: "já falei disso",
     });
+    // Depois de vírgula ou ponto vem o motivo, mesmo sem "porque" — foi assim
+    // que o Bruno escreveu, e o robô ficou mudo (issue #223).
+    expect(
+      interpretarComando(
+        "Cancelar, quando eu falar algo como família tem que ser algum texto neste sentido.",
+      ),
+    ).toEqual({
+      tipo: "cancelar",
+      alvo: "rascunho",
+      motivo: "quando eu falar algo como família tem que ser algum texto neste sentido",
+    });
+    expect(interpretarComando("Cancela. As imagens estão muito iguais")).toEqual({
+      tipo: "cancelar",
+      alvo: "rascunho",
+      motivo: "As imagens estão muito iguais",
+    });
+    expect(interpretarComando("cancelar - porque ficou genérico")).toEqual({
+      tipo: "cancelar",
+      alvo: "rascunho",
+      motivo: "ficou genérico",
+    });
+    // Sem pontuação, continua sendo assunto da agenda.
+    expect(interpretarComando("cancelar a consulta de amanhã")).toBeNull();
     // Ter um "porque" não transforma assunto da agenda em comando nosso.
     expect(interpretarComando("cancelar a reunião porque vou viajar")).toBeNull();
   });
