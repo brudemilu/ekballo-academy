@@ -106,24 +106,6 @@ export type Destaque = {
   criado_em: string;
 };
 
-export type EmailTemplateChave =
-  | "novo-cadastro"
-  | "boas-vindas-curso"
-  | "lembrete-inatividade";
-
-export type EmailTemplate = {
-  id: string;
-  chave: EmailTemplateChave;
-  descricao: string;
-  assunto: string;
-  corpo_html: string;
-  corpo_texto: string | null;
-  variaveis_disponiveis: string[];
-  ativo: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
 export type MensagemDestinoTipo = "todos" | "curso" | "aluno";
 export type MensagemCanal = "email" | "whatsapp";
 export type MensagemStatus = "pendente" | "enviado" | "erro" | "pulado";

@@ -286,6 +286,7 @@ where email = 'brunosantospmb@gmail.com';
 
 ## Conventions worth knowing
 
+- **No e-mail, for anything.** Bruno's decision (Oct/2026, issue #218): every notification to the leader and every message to a disciple goes out by WhatsApp (`whatsapp_fila`), and anything he needs to follow up also shows in a panel inside the system. Do not propose e-mail, not even as a fallback channel. Signup has no e-mail confirmation (`GOTRUE_MAILER_AUTOCONFIRM=true` on the box); access is gated by `acesso_liberado`.
 - All user-facing strings, domain terms, comments, and many identifiers are in Brazilian Portuguese. Keep new copy in Portuguese unless the user asks otherwise.
 - Server components do data fetching via `lib/db.ts`; client components ("use client") handle form state and writes. Don't import `@/lib/supabase/server` from a client component.
 - After a client write, call `router.refresh()` so the server re-renders the unlock state — see [components/MultiplaEscolhaForm.tsx](components/MultiplaEscolhaForm.tsx) for the pattern.

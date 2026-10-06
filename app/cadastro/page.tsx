@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Logo } from "@/components/Logo";
+import { createClient } from "@/lib/supabase/client";
 import { formatTelefoneBR, normalizeTelefoneBR } from "@/lib/telefone";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
@@ -48,10 +48,9 @@ export default function CadastroPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
-      options: {
-        data: { nome, telefone: telefoneNorm },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
-      },
+      // Sem confirmação por e-mail: a conta nasce pronta e fica aguardando a
+      // liberação do líder, que é avisado pelo WhatsApp (issues #215 e #218).
+      options: { data: { nome, telefone: telefoneNorm } },
     });
 
     if (error) {
@@ -63,9 +62,7 @@ export default function CadastroPage() {
         msg.includes("over_email_send") ||
         msg.includes("email rate limit")
       ) {
-        setErro(
-          "Limite temporário de envio de e-mails atingido. Tente novamente em ~30 minutos, ou peça pro Pr. Bruno te liberar manualmente."
-        );
+        setErro("Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.");
       } else if (msg.includes("password") && msg.includes("weak")) {
         setErro("Escolha uma senha mais forte (use letras, números, mais caracteres).");
       } else if (msg.includes("invalid") && msg.includes("email")) {
@@ -103,17 +100,26 @@ export default function CadastroPage() {
           </div>
           <div className="rounded-2xl border border-mesa-200 bg-white p-10 shadow-xl shadow-mesa-700/5">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-oliveira-100">
-              <svg className="h-8 w-8 text-oliveira-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.704 5.296a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8.5 12.086l6.79-6.79a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg
+                className="h-8 w-8 text-oliveira-600"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.704 5.296a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8.5 12.086l6.79-6.79a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <h1 className="mb-3 font-serif text-2xl font-semibold text-mesa-800">
               Conta criada!
             </h1>
             <p className="mb-6 text-mesa-600">
-              Te enviamos um e-mail de confirmação para <strong>{email}</strong>. Abra
-              sua caixa de entrada e clique no link para ativar sua conta. Depois disso,
-              seu acesso ficará pendente até que o administrador faça a liberação.
+              Seu cadastro foi recebido e o líder já foi avisado. O acesso fica pendente
+              até a liberação — assim que ela sair, é só entrar com o e-mail{" "}
+              <strong>{email}</strong> e a senha que você acabou de criar. Não precisa
+              confirmar nada por e-mail.
             </p>
             <Link
               href="/login"
@@ -138,7 +144,8 @@ export default function CadastroPage() {
 
         {MOCK && (
           <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <strong>Modo demonstração ativo.</strong> Cadastro simulado — qualquer dado entra como visitante.
+            <strong>Modo demonstração ativo.</strong> Cadastro simulado — qualquer dado
+            entra como visitante.
           </div>
         )}
 
@@ -152,7 +159,10 @@ export default function CadastroPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="nome" className="mb-1.5 block text-sm font-medium text-mesa-700">
+              <label
+                htmlFor="nome"
+                className="mb-1.5 block text-sm font-medium text-mesa-700"
+              >
                 Como você quer ser chamado(a)
               </label>
               <input
@@ -167,7 +177,10 @@ export default function CadastroPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-mesa-700">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium text-mesa-700"
+              >
                 E-mail
               </label>
               <input
@@ -182,7 +195,10 @@ export default function CadastroPage() {
             </div>
 
             <div>
-              <label htmlFor="telefone" className="mb-1.5 block text-sm font-medium text-mesa-700">
+              <label
+                htmlFor="telefone"
+                className="mb-1.5 block text-sm font-medium text-mesa-700"
+              >
                 Celular (WhatsApp) <span className="text-laranja-600">*</span>
               </label>
               <input
@@ -197,13 +213,16 @@ export default function CadastroPage() {
                 placeholder="(11) 99999-8888"
               />
               <p className="mt-1.5 text-xs text-mesa-500">
-                Obrigatório. Usamos pra te avisar sobre novas temáticas e devolutivas
-                e pra recuperar sua senha pelo WhatsApp.
+                Obrigatório. Usamos pra te avisar sobre novas temáticas e devolutivas e
+                pra recuperar sua senha pelo WhatsApp.
               </p>
             </div>
 
             <div>
-              <label htmlFor="senha" className="mb-1.5 block text-sm font-medium text-mesa-700">
+              <label
+                htmlFor="senha"
+                className="mb-1.5 block text-sm font-medium text-mesa-700"
+              >
                 Senha (mínimo 6 caracteres)
               </label>
               <input
