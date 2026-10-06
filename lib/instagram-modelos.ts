@@ -61,8 +61,38 @@ export function lerModelo(v: unknown): ModeloSlide {
     : "foto";
 }
 
-/** O modelo dos posts que ninguém desenhou à mão: piloto, pacote da semana, WhatsApp. */
-export const MODELO_AUTOMATICO: ModeloSlide = "cinema";
+/**
+ * Os modelos e as cores dos posts que ninguém desenhou à mão (piloto, pacote
+ * da semana, WhatsApp). São sorteados a cada post: um perfil em que tudo sai
+ * no mesmo modelo e na mesma cor cansa — foi a queixa do Bruno (issue #223).
+ */
+export const MODELOS_AUTOMATICOS: ModeloSlide[] = [
+  "cinema",
+  "bloco",
+  "cartaz",
+  "editorial",
+];
+export const TEMAS_AUTOMATICOS = [
+  "dourado",
+  "terracota",
+  "azul",
+  "verde",
+  "vinho",
+] as const;
+
+/**
+ * Sorteia um item da lista, diferente do que foi usado por último. `sorteio`
+ * (0 a 1) existe para o teste poder escolher.
+ */
+export function sortearDiferente<T extends string>(
+  lista: readonly T[],
+  evitar: string | null | undefined,
+  sorteio = Math.random(),
+): T {
+  const opcoes = lista.filter((x) => x !== evitar);
+  const de = opcoes.length ? opcoes : lista;
+  return de[Math.min(de.length - 1, Math.floor(sorteio * de.length))];
+}
 
 export type Palavra = { t: string; destaque: boolean; riscada?: boolean };
 

@@ -54,6 +54,10 @@ function plano(t: string): string {
 const RE_CRIAR =
   /^(?:(?:cri[ae]|faz|faca|fazer|monta|montar|gera|gerar)\s+(?:um\s+|uma\s+)?(?:post|postagem|carrossel|stor(?:y|ies))|post(?:ar|agem)?|carrossel|stor(?:y|ies)|instagram)\b[\s:,.-]*(?:(?:sobre|de|do|da|com|para)\b[\s:,-]*)?/;
 
+// "Cancelar, <motivo>" / "Cancela. <motivo>" / "cancelar - <motivo>"
+const RE_CANCELAR_PONTUADO =
+  /^(?:cancel[ae]r?|vet[ae]r?|descart[ae]r?)\s*[,.;:!–—-]+\s*(?:(?:porque|pois)(?![\p{L}])[\s:,-]*)?(\S[\s\S]*)$/iu;
+
 // "…porque está formal demais", "…pois já falei disso"
 const RE_MOTIVO = /\b(?:porque|pois)\b[\s:,-]*([\s\S]+)$/i;
 
@@ -103,6 +107,17 @@ export function interpretarComando(texto: string): ComandoInstagram | null {
   );
   if (cancelar) {
     const resto = cancelar[1];
+    // "Cancelar, quando eu falar família…" — depois de vírgula, ponto ou
+    // travessão vem o motivo, mesmo sem "porque". Sem essa pontuação continua
+    // valendo a regra de baixo ("cancelar a reunião" é da agenda).
+    const pontuado = original.match(RE_CANCELAR_PONTUADO);
+    if (pontuado) {
+      return {
+        tipo: "cancelar",
+        alvo: "rascunho",
+        motivo: pontuado[1].replace(/[.!?]+$/, "").trim(),
+      };
+    }
     // O motivo sai do texto ORIGINAL: é ele que a IA vai ler depois, com acento.
     const motivo = (original.match(RE_MOTIVO)?.[1] ?? "").replace(/[.!?]+$/, "").trim();
     if (/^(?:tudo|todos|todas)/.test(resto))

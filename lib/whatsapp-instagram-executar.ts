@@ -22,12 +22,17 @@ import {
   reagendarCarrosselInstagram,
   salvarCarrosselInstagram,
   setPendenteWhatsApp,
+  ultimoVisualUsado,
 } from "@/lib/db";
 import { gerarCarrosselIA } from "@/lib/instagram";
 import { ehStory, ogUrlDoSlide, type SlidePub } from "@/lib/instagram-imagens";
-import { instrucaoDoModelo, MODELO_AUTOMATICO } from "@/lib/instagram-modelos";
+import {
+  instrucaoDoModelo,
+  MODELOS_AUTOMATICOS,
+  sortearDiferente,
+  TEMAS_AUTOMATICOS,
+} from "@/lib/instagram-modelos";
 import { instagramConfigurado } from "@/lib/instagram-publish";
-import { TEMA_PADRAO } from "@/lib/instagram-render";
 import { podeVetar, quandoPorExtenso } from "@/lib/piloto";
 import { siteBase } from "@/lib/site-url";
 import { enviarImagemWhatsApp, enviarTextoWhatsApp } from "@/lib/whatsapp-enviar";
@@ -112,11 +117,17 @@ async function criar(
   formato: FormatoPost = "carrossel",
 ): Promise<void> {
   const perfil = await getPerfilConteudo(true).catch(() => null);
+  // Modelo e cor diferentes dos do post anterior: é o que impede o perfil de
+  // ficar todo com a mesma cara. Escolhido ANTES do texto, porque cada modelo
+  // pede a frase num formato.
+  const ultimo = await ultimoVisualUsado().catch(() => ({ modelo: "", tema: "" }));
+  const modelo = sortearDiferente(MODELOS_AUTOMATICOS, ultimo.modelo);
+  const tema = sortearDiferente(TEMAS_AUTOMATICOS, ultimo.tema);
   const carrossel = await gerarCarrosselIA(
     `IDEIA DO PASTOR: ${ideia}${ajuste ? `\n\nAJUSTE PEDIDO PELO PASTOR (obrigatório): ${ajuste}` : ""}`,
     // Story é uma imagem só, como o post único; muda o tamanho e onde é publicado.
     formato === "carrossel" ? "carrossel" : "unico",
-    `${systemCarrosselDaIdeia(formato === "carrossel" ? "carrossel" : "unico", perfil ? contextoDoPerfil(perfil) : "")}\n\n${instrucaoDoModelo(MODELO_AUTOMATICO)}`,
+    `${systemCarrosselDaIdeia(formato === "carrossel" ? "carrossel" : "unico", perfil ? contextoDoPerfil(perfil) : "")}\n\n${instrucaoDoModelo(modelo)}`,
   );
   const slides: SlidePub[] = carrossel.slides.map((s) => ({
     ...s,
@@ -124,9 +135,9 @@ async function criar(
     top: "",
     ref: "",
     seed: Math.floor(Math.random() * 1_000_000),
-    tema: TEMA_PADRAO,
+    tema,
     tom: "escuro",
-    modelo: MODELO_AUTOMATICO,
+    modelo,
     ...(formato === "story" ? { formato: "story" } : {}),
   }));
   const { id } = await salvarCarrosselInstagram(

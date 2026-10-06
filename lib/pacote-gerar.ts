@@ -10,8 +10,17 @@ import {
   type PerfilConteudo,
   type ReferenciaConteudo,
 } from "@/lib/conteudo-perfil";
-import { instrucaoDoModelo, MODELO_AUTOMATICO } from "@/lib/instagram-modelos";
-import { TEMA_PADRAO } from "@/lib/instagram-render";
+import {
+  instrucaoDoModelo,
+  type ModeloSlide,
+  sortearDiferente,
+  TEMAS_AUTOMATICOS,
+} from "@/lib/instagram-modelos";
+
+// O pacote pede o texto antes de saber o modelo, então sorteia entre os dois
+// que usam o mesmo formato de frase curta.
+const MODELOS_DO_PACOTE: ModeloSlide[] = ["cinema", "editorial"];
+
 import { chamarLLMLendo } from "@/lib/llm";
 import {
   normalizarPacote,
@@ -60,7 +69,7 @@ export async function gerarPecasDaFonte(
   const [pecasR, roteiroR] = await Promise.allSettled([
     comPecas
       ? chamarLLMLendo(
-          `${systemPacote(contextoDoPerfil(perfil))}\n\n${instrucaoDoModelo(MODELO_AUTOMATICO)}`,
+          `${systemPacote(contextoDoPerfil(perfil))}\n\n${instrucaoDoModelo("cinema")}`,
           usuarioPacote(fonte, foco),
           2400,
           normalizarPacote,
@@ -89,6 +98,10 @@ export async function gerarPecasDaFonte(
 
 /** Os slides do carrossel no formato que o estúdio e a publicação esperam. */
 export function slidesParaSalvar(pecas: PecasPacote) {
+  // Um modelo e uma cor por carrossel (não por slide): varia de um post para
+  // o outro, mas o carrossel fica coeso.
+  const modelo = sortearDiferente(MODELOS_DO_PACOTE, null);
+  const tema = sortearDiferente(TEMAS_AUTOMATICOS, null);
   return pecas.carrossel.slides.map((s) => ({
     ...s,
     cor: "#C9A961",
@@ -96,8 +109,8 @@ export function slidesParaSalvar(pecas: PecasPacote) {
     top: "",
     ref: "",
     seed: Math.floor(Math.random() * 1_000_000),
-    tema: TEMA_PADRAO,
+    tema,
     tom: "escuro",
-    modelo: MODELO_AUTOMATICO,
+    modelo,
   }));
 }
