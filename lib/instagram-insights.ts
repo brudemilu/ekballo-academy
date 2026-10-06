@@ -26,6 +26,12 @@ export type PostMetrica = {
   permalink: string;
   /** likes + comentários (sinal simples e explicável de engajamento). */
   interacoes: number;
+  /** Sinais de crescimento; null quando o Instagram não informa para o post. */
+  salvos?: number | null;
+  compartilhamentos?: number | null;
+  seguiu?: number | null;
+  visitasPerfil?: number | null;
+  reel?: boolean;
 };
 
 export type PerfilResumo = {
@@ -62,25 +68,64 @@ type MediaRaw = {
   id: string;
   caption?: string;
   media_type?: string;
+  /** FEED | REELS | STORY */
+  media_product_type?: string;
   timestamp?: string;
   like_count?: number;
   comments_count?: number;
   permalink?: string;
 };
 
-/** Tenta o alcance (reach) de uma mídia. Retorna null se o escopo faltar. */
-async function buscarReach(id: string, token: string): Promise<number | null> {
+type MetricasDoPost = {
+  reach: number | null;
+  salvos: number | null;
+  compartilhamentos: number | null;
+  seguiu: number | null;
+  visitasPerfil: number | null;
+};
+
+const SEM_METRICAS: MetricasDoPost = {
+  reach: null,
+  salvos: null,
+  compartilhamentos: null,
+  seguiu: null,
+  visitasPerfil: null,
+};
+
+/**
+ * Alcance e sinais de crescimento de uma mídia. O Instagram recusa o pedido
+ * inteiro se uma métrica não existe para o tipo: "seguiu" e "visitas ao
+ * perfil" só existem para feed, então o Reel pede uma lista menor. Qualquer
+ * falha (escopo faltando, post antigo) degrada para null, sem derrubar o painel.
+ */
+async function buscarMetricas(
+  id: string,
+  reel: boolean,
+  token: string,
+): Promise<MetricasDoPost> {
+  const metricas = reel
+    ? "reach,saved,shares"
+    : "reach,saved,shares,follows,profile_visits";
   try {
-    const url = `${GRAPH}/${id}/insights?metric=reach&access_token=${encodeURIComponent(token)}`;
+    const url = `${GRAPH}/${id}/insights?metric=${metricas}&access_token=${encodeURIComponent(token)}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) return null;
+    if (!res.ok) return SEM_METRICAS;
     const json = (await res.json()) as {
-      data?: { values?: { value?: number }[] }[];
+      data?: { name?: string; values?: { value?: number }[] }[];
     };
-    const v = json?.data?.[0]?.values?.[0]?.value;
-    return typeof v === "number" ? v : null;
+    const valor = (nome: string): number | null => {
+      const v = json?.data?.find((d) => d.name === nome)?.values?.[0]?.value;
+      return typeof v === "number" ? v : null;
+    };
+    return {
+      reach: valor("reach"),
+      salvos: valor("saved"),
+      compartilhamentos: valor("shares"),
+      seguiu: valor("follows"),
+      visitasPerfil: valor("profile_visits"),
+    };
   } catch {
-    return null;
+    return SEM_METRICAS;
   }
 }
 
@@ -95,7 +140,8 @@ export async function listarPostsComMetricas(limit = 25): Promise<PostMetrica[]>
     throw new Error("Instagram não conectado (faltam IG_USER_ID e META_ACCESS_TOKEN).");
   }
 
-  const campos = "id,caption,media_type,timestamp,like_count,comments_count,permalink";
+  const campos =
+    "id,caption,media_type,media_product_type,timestamp,like_count,comments_count,permalink";
   const url = `${GRAPH}/${igUserId}/media?fields=${campos}&limit=${limit}&access_token=${encodeURIComponent(token)}`;
   // Sem limite de tempo, uma API lenta prendia a página inteira do painel.
   const res = await fetch(url, { signal: AbortSignal.timeout(12_000) });
@@ -108,7 +154,7 @@ export async function listarPostsComMetricas(limit = 25): Promise<PostMetrica[]>
     throw new Error(`Não consegui ler seus posts: ${msg}`);
   }
 
-  const base = json.data.map((m): Omit<PostMetrica, "reach"> => {
+  const base = json.data.map((m): Omit<PostMetrica, keyof MetricasDoPost> => {
     const likes = typeof m.like_count === "number" ? m.like_count : 0;
     const comments = typeof m.comments_count === "number" ? m.comments_count : 0;
     return {
@@ -120,12 +166,15 @@ export async function listarPostsComMetricas(limit = 25): Promise<PostMetrica[]>
       comments,
       permalink: typeof m.permalink === "string" ? m.permalink : "",
       interacoes: likes + comments,
+      reel: m.media_product_type === "REELS",
     };
   });
 
-  // Alcance é opcional: tenta em paralelo, cada um degrada pra null sozinho.
-  const reaches = await Promise.all(base.map((p) => buscarReach(p.id, token)));
-  return base.map((p, i) => ({ ...p, reach: reaches[i] }));
+  // As métricas são opcionais: em paralelo, cada post degrada pra null sozinho.
+  const metricas = await Promise.all(
+    base.map((p) => buscarMetricas(p.id, Boolean(p.reel), token)),
+  );
+  return base.map((p, i) => ({ ...p, ...metricas[i] }));
 }
 
 function capitalizar(s: string): string {

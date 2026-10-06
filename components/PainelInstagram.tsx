@@ -128,6 +128,7 @@ export function PainelInstagram({
   melhorMomento,
   formatoTop,
   totalPosts,
+  crescimento,
 }: {
   conectado: boolean;
   erro: string | null;
@@ -140,6 +141,8 @@ export function PainelInstagram({
   melhorMomento: string;
   formatoTop: string;
   totalPosts: number;
+  /** A seção de crescimento, já montada (só quando há dados do Instagram). */
+  crescimento?: React.ReactNode;
 }) {
   return (
     <div className="space-y-6">
@@ -201,6 +204,9 @@ export function PainelInstagram({
 
       {conectado && !erro && (
         <>
+          {/* Crescimento vem primeiro: é o objetivo, o resto é meio. */}
+          {crescimento}
+
           <section>
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-serif text-xl font-semibold text-mesa-800">

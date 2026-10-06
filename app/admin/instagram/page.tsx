@@ -5,6 +5,7 @@ import { AssistenteConteudo } from "@/components/AssistenteConteudo";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { ComentariosAuto } from "@/components/ComentariosAuto";
 import { CortesConteudo } from "@/components/CortesConteudo";
+import { CrescimentoInstagram } from "@/components/CrescimentoInstagram";
 import { ImagensConteudo } from "@/components/ImagensConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
@@ -16,6 +17,12 @@ import { RoteirosConteudo } from "@/components/RoteirosConteudo";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
 import { travado } from "@/lib/cortes";
+import {
+  diagnostico,
+  porFormato,
+  postsQueMaisCresceram,
+  resumoDoCrescimento,
+} from "@/lib/crescimento";
 import {
   getComentariosAtivo,
   getCurrentSession,
@@ -235,6 +242,25 @@ export default async function AdminInstagramPage({
           melhorMomento={resumoPerfil.melhorHorario}
           formatoTop={resumoPerfil.formatoTop}
           totalPosts={postsDoPeriodo.length}
+          crescimento={
+            <CrescimentoInstagram
+              resumo={resumoDoCrescimento(
+                dadosPainel.posts,
+                hoje,
+                dadosPainel.conta?.seguidores ?? null,
+              )}
+              seguidoresNovos30={dadosPainel.conta?.seguidoresNovos30 ?? null}
+              visitasPerfil30={dadosPainel.conta?.visitasPerfil30 ?? null}
+              alcance30={dadosPainel.conta?.alcance30 ?? null}
+              formatos={porFormato(dadosPainel.posts, hoje)}
+              achados={diagnostico(
+                dadosPainel.posts,
+                hoje,
+                dadosPainel.conta?.seguidores ?? null,
+              )}
+              melhores={postsQueMaisCresceram(dadosPainel.posts, hoje)}
+            />
+          }
         />
       ) : aba === "roteiros" ? (
         <RoteirosConteudo

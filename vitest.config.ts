@@ -57,6 +57,7 @@ export default defineConfig({
         "lib/calendario-cristao.ts",
         "lib/comentarios-auto.ts",
         "lib/painel.ts",
+        "lib/crescimento.ts",
       ],
       thresholds: {
         // Piso, não meta. Serve para acusar remoção de teste, não
