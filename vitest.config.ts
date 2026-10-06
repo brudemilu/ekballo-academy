@@ -21,6 +21,11 @@ export default defineConfig({
     // Mesmo "@/" do tsconfig, senão o import quebra dentro do teste.
     alias: { "@": resolve(__dirname, ".") },
   },
+  // O tsconfig do Next pede `jsx: preserve` (quem transforma é o Next). O
+  // Vite 8, que veio com o Vitest 5, passou a obedecer isso e a entregar JSX
+  // cru para o analisador de imports — que não lê JSX e quebrava todo teste
+  // que importa um `.tsx`. Aqui o JSX é transformado de fato.
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
     environment: "node",
     include: ["testes/**/*.test.ts"],
