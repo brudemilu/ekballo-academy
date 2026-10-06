@@ -123,6 +123,35 @@ test.describe("acessibilidade mínima", () => {
   });
 });
 
+test.describe("novos cadastros (admin)", () => {
+  // Issue #217: o líder precisa ver quem chegou sem procurar na lista.
+  test("a lista de discípulos mostra quem aguarda liberação e deixa liberar", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/alunos");
+
+    await expect(page.getByRole("heading", { name: "Novos cadastros" })).toBeVisible();
+    await expect(page.getByText(/1 pessoa aguardando a sua liberação/i)).toBeVisible();
+
+    await page
+      .getByRole("button", { name: /liberar acesso de lucas fernandes/i })
+      .click();
+    await expect(page.getByText(/acesso liberado/i)).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
+  test("o painel do admin avisa que há cadastro esperando", async ({ page }) => {
+    await page.goto("/admin");
+    const aviso = page.getByRole("link", {
+      name: /pessoa aguardando a sua liberação/i,
+    });
+    await expect(aviso).toBeVisible();
+    await expect(aviso).toHaveAttribute("href", "/admin/alunos#novos");
+  });
+});
+
 test.describe("Instagram do ministério (admin)", () => {
   test("o calendário abre na semana e guarda uma ideia nova", async ({ page }) => {
     const erros = vigiarErros(page);

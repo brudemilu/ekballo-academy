@@ -91,6 +91,8 @@ export const MOCK_ALUNOS: Profile[] = [
     email: "lucas.f@email.com",
     telefone: "5511999990008",
     is_admin: false,
+    // Único cadastro ainda sem liberação: alimenta o painel de novos cadastros.
+    acesso_liberado: false,
     turma: "Mesa 03",
     created_at: "2026-05-02T11:30:00Z",
   },

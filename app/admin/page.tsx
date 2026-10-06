@@ -9,6 +9,7 @@ import {
 } from "@/components/ContinuandoLeitura";
 import { Logo } from "@/components/Logo";
 import { NovidadesEstante } from "@/components/NovidadesEstante";
+import { PiscaAtencao, PontoAtencao } from "@/components/PiscaAtencao";
 import { SeloOffline } from "@/components/SeloOffline";
 import UltimasRespostasLista from "@/components/UltimasRespostasLista";
 import { textoBuscavelDoLivro } from "@/lib/busca";
@@ -272,6 +273,35 @@ export default async function AdminPage() {
             </p>
           </div>
           <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-amber-500 text-xl text-white shadow-sm">
+            →
+          </span>
+        </Link>
+      )}
+
+      {/* Gente nova esperando liberação: sem isto o líder só descobre se
+          alguém avisar por fora (issue #217). */}
+      {stats.cadastrosPendentes > 0 && (
+        <Link
+          href="/admin/alunos#novos"
+          className="lift relative mb-10 flex items-center justify-between gap-4 rounded-2xl border border-amber-300 border-l-[6px] border-l-amber-500 bg-white p-6 shadow-sm transition hover:border-amber-400 hover:shadow-md"
+        >
+          <PiscaAtencao />
+          <div className="relative min-w-0">
+            <p className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-amber-700">
+              <PontoAtencao />
+              Novos cadastros
+            </p>
+            <p className="font-serif text-2xl font-semibold leading-tight text-mesa-800">
+              {stats.cadastrosPendentes}{" "}
+              {stats.cadastrosPendentes === 1
+                ? "pessoa aguardando a sua liberação"
+                : "pessoas aguardando a sua liberação"}
+            </p>
+            <p className="mt-1 text-sm text-mesa-600">
+              Ver quem chegou e liberar o acesso.
+            </p>
+          </div>
+          <span className="relative flex h-12 w-12 flex-none items-center justify-center rounded-full bg-amber-500 text-xl text-white shadow-sm">
             →
           </span>
         </Link>
