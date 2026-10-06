@@ -58,6 +58,7 @@ export default defineConfig({
         "lib/comentarios-auto.ts",
         "lib/painel.ts",
         "lib/crescimento.ts",
+        "lib/legenda-reel.ts",
       ],
       thresholds: {
         // Piso, não meta. Serve para acusar remoção de teste, não
