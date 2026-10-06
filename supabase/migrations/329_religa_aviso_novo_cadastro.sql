@@ -11,10 +11,14 @@
 --     fica sabendo que alguém se cadastrou e a pessoa fica esperando
 --     liberação (quatro cadastros ficaram parados entre set e out/2026).
 --
--- O aviso também muda de canal. Ele saía só por e-mail (Brevo), e o
--- e-mail do box está respondendo 401 — sem falar que tudo o mais chega
--- ao líder pelo WhatsApp. Agora o aviso entra na whatsapp_fila; o
--- e-mail continua sendo tentado, mas deixou de ser o único caminho.
+-- O aviso também muda de canal: sai pelo WhatsApp (whatsapp_fila), não
+-- mais por e-mail. Decisão do Bruno (out/2026): a plataforma não usa
+-- e-mail para nada. Pelo mesmo motivo esta migration desliga os outros
+-- dois e-mails que o banco disparava sozinho:
+--   - boas-vindas a cada matrícula (o convite já sai por WhatsApp e
+--     push, em lib/matricula.ts);
+--   - lembrete diário de inatividade.
+-- Os dois já não chegavam a ninguém: a Brevo do box responde 401.
 --
 -- Idempotente.
 -- =============================================================
@@ -55,21 +59,6 @@ begin
     raise warning 'tg_notificar_novo_cadastro: erro ao enfileirar WhatsApp — %', sqlerrm;
   end;
 
-  -- E-mail: segue como segundo canal.
-  begin
-    perform public.enviar_email(
-      'novo-cadastro',
-      'brunosantospmb@gmail.com',
-      jsonb_build_object(
-        'nome_aluno', v_nome,
-        'email_aluno', new.email,
-        'link_admin', v_link
-      )
-    );
-  exception when others then
-    raise warning 'tg_notificar_novo_cadastro: erro ao enviar email — %', sqlerrm;
-  end;
-
   return new;
 exception when others then
   -- Nunca deixa um erro de aviso quebrar o signup
@@ -89,3 +78,22 @@ drop trigger if exists on_auth_user_created_notificar_admin on auth.users;
 create trigger on_auth_user_created_notificar_admin
   after insert on auth.users
   for each row execute function public.tg_notificar_novo_cadastro();
+
+-- -------------------------------------------------------------
+-- Desliga os e-mails automáticos do banco.
+-- As funções ficam (nada mais as chama) — só o disparo é removido.
+-- -------------------------------------------------------------
+drop trigger if exists on_matricula_inserted_boas_vindas on public.matriculas;
+
+do $$
+declare
+  v_jobid bigint;
+begin
+  if to_regclass('cron.job') is null then
+    return;
+  end if;
+  select jobid into v_jobid from cron.job where jobname = 'lembrete-inatividade-diario';
+  if v_jobid is not null then
+    perform cron.unschedule(v_jobid);
+  end if;
+end $$;
