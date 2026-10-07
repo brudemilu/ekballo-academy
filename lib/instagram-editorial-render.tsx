@@ -594,7 +594,13 @@ function Editorial({ p }: { p: EditorialPayload }) {
               }}
             />
             {p.ref ? (
-              <Rotulo texto={p.ref} cor={p.cor} tamanho={38} espaco={9} />
+              // Referência longa ("Livro: …") encolhe para não encostar na seta.
+              <Rotulo
+                texto={p.ref}
+                cor={p.cor}
+                tamanho={p.ref.length > 22 ? 27 : 38}
+                espaco={p.ref.length > 22 ? 6 : 9}
+              />
             ) : null}
           </div>
           {/* seta ↗ desenhada: dois lados de um quadrado e a diagonal */}
