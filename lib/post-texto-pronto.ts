@@ -26,7 +26,12 @@ const RE_MARCA = /^(?:o\s+)?texto\s*[:–—-]\s*/i;
  * "bloco" tiram a palavra destacada do lugar — servem para a frase que a IA
  * escreve já pensando neles, não para o texto do pastor.
  */
-export const MODELOS_TEXTO_PRONTO: ModeloSlide[] = ["cinema", "editorial"];
+export const MODELOS_TEXTO_PRONTO: ModeloSlide[] = [
+  "cinema",
+  "editorial",
+  "impacto",
+  "recorte",
+];
 
 /** Tira acento e caixa, para comparar. */
 function plano(t: string): string {

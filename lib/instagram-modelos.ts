@@ -30,6 +30,16 @@ export const MODELOS = {
     nome: "Editorial",
     detalhe: "Fundo claro, letra enorme e legendas pequenas nos cantos. Sem foto.",
   },
+  impacto: {
+    nome: "Impacto",
+    detalhe:
+      "Foto em movimento com a frase branca, enorme, encostada à esquerda embaixo.",
+  },
+  recorte: {
+    nome: "Recorte",
+    detalhe:
+      "Cada linha numa tira de papel recortado, levemente torta, por cima da foto.",
+  },
   foto: {
     nome: "Papel (antigo)",
     detalhe: "O desenho anterior: foto com papel, pincelada e moldura.",
@@ -71,6 +81,8 @@ export const MODELOS_AUTOMATICOS: ModeloSlide[] = [
   "bloco",
   "cartaz",
   "editorial",
+  "impacto",
+  "recorte",
 ];
 export const TEMAS_AUTOMATICOS = [
   "dourado",
@@ -103,13 +115,33 @@ export function ehModeloDeTexto(m: ModeloSlide): m is ModeloDeTexto {
 }
 
 /** Os modelos novos (lib/instagram-editorial-render.tsx). */
-export type ModeloEditorial = "cinema" | "bloco" | "cartaz" | "editorial";
+export type ModeloEditorial =
+  | "cinema"
+  | "bloco"
+  | "cartaz"
+  | "editorial"
+  | "impacto"
+  | "recorte";
 export function ehModeloEditorial(m: ModeloSlide): m is ModeloEditorial {
-  return m === "cinema" || m === "bloco" || m === "cartaz" || m === "editorial";
+  return (
+    m === "cinema" ||
+    m === "bloco" ||
+    m === "cartaz" ||
+    m === "editorial" ||
+    m === "impacto" ||
+    m === "recorte"
+  );
 }
 
 /** Modelos que usam foto de fundo (IA, banco ou foto enviada). */
-export const MODELOS_COM_FOTO: ModeloSlide[] = ["cinema", "bloco", "cartaz", "foto"];
+export const MODELOS_COM_FOTO: ModeloSlide[] = [
+  "cinema",
+  "bloco",
+  "cartaz",
+  "impacto",
+  "recorte",
+  "foto",
+];
 
 /**
  * As palavras do slide, marcando as que vieram entre {chaves}. A frase
@@ -241,6 +273,10 @@ export function instrucaoDoModelo(modelo: ModeloSlide): string {
       return `FORMATO DOS SLIDES (obrigatório): cada "texto" começa com 1 ou 2 palavras {entre chaves} (curtas, de até 6 letras cada, que viram o título gigante) seguidas de uma frase de apoio de 4 a 10 palavras. ${CENA_DOCUMENTAL}`;
     case "bloco":
       return `FORMATO DOS SLIDES (obrigatório): cada "texto" tem de 10 a 22 palavras, como fala de pregação, com 1 ou 2 palavras {destacadas} e, se couber, uma expressão final de 1 a 2 palavras ((manuscrita)). ${CENA_DOCUMENTAL}`;
+    case "impacto":
+      return `FORMATO DOS SLIDES (obrigatório): cada "texto" é UMA frase de 6 a 14 palavras, afirmativa e forte, com 1 ou 2 palavras {destacadas}. Sem ((manuscrita)). ${CENA_DOCUMENTAL}`;
+    case "recorte":
+      return `FORMATO DOS SLIDES (obrigatório): cada "texto" é UMA frase de 5 a 12 palavras, em tom de conversa, com 1 ou 2 palavras {destacadas}. Sem ((manuscrita)). ${CENA_DOCUMENTAL}`;
     case "foto":
       return "";
   }
