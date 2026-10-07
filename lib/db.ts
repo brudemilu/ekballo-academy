@@ -2985,6 +2985,7 @@ export type AtualizarCarrosselInput = {
 export async function atualizarConteudoCarrosselInstagram(
   id: string,
   patch: AtualizarCarrosselInput,
+  servico = false,
 ): Promise<void> {
   if (isMockMode()) {
     const c = listMockCarrosseis().find((x) => x.id === id);
@@ -3002,7 +3003,7 @@ export async function atualizarConteudoCarrosselInstagram(
   if (patch.legenda !== undefined) fields.legenda = patch.legenda;
   if (patch.videoUrl !== undefined) fields.video_url = patch.videoUrl;
   if (!Object.keys(fields).length) return;
-  const supabase = await createClient();
+  const supabase = await banco(servico);
   const { error } = await supabase
     .from("instagram_carrosseis")
     .update(fields)

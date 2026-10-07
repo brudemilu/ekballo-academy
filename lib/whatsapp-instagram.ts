@@ -12,6 +12,11 @@
  * agenda de compromissos — por isso aqui se diz "publicar terça 19h".
  */
 import { proximaOcorrencia } from "@/lib/piloto";
+import {
+  ehTextoMarcado,
+  marcarTextoPronto,
+  pareceTextoPronto,
+} from "@/lib/post-texto-pronto";
 
 /**
  * Toda mensagem que o robô manda começa com isto. As respostas saem pela conta
@@ -36,6 +41,9 @@ export type ComandoInstagram =
   | { tipo: "formato"; formato: FormatoPost }
   | { tipo: "publicar"; quando: string }
   | { tipo: "refazer"; ajuste: string }
+  // Mexe no rascunho que está na tela, sem gerar outro (issue #239). Quem
+  // decide que a mensagem é um ajuste é o webhook, que sabe se há rascunho.
+  | { tipo: "ajustar"; pedido: string }
   | {
       tipo: "cancelar";
       alvo: "rascunho" | "carrossel" | "reel" | "tudo";
@@ -92,7 +100,11 @@ const RE_STORY_NA_IDEIA =
  * Entende um comando de Instagram. Devolve null quando a mensagem não é para
  * o Instagram — o webhook então segue para a agenda, como antes.
  */
-export function interpretarComando(texto: string): ComandoInstagram | null {
+export function interpretarComando(
+  texto: string,
+  /** Veio de áudio: a transcrição pontua tudo, então ponto final não diz nada. */
+  falado = false,
+): ComandoInstagram | null {
   const original = (texto || "").trim();
   if (ehDoRobo(original)) return null;
   const t = plano(original).replace(/[.!?]+$/, "");
@@ -170,7 +182,24 @@ export function interpretarComando(texto: string): ComandoInstagram | null {
       formato = "unico";
       ideia = ideia.slice(unico[0].length).trim();
     }
-    return ideia.length >= 4 ? { tipo: "criar", ideia, formato } : { tipo: "ajuda" };
+    if (ideia.length < 4) return { tipo: "ajuda" };
+    // O pastor mandou o TEXTO do post, e não um tema? Então vai na íntegra
+    // (issue #239). "post sobre família" é tema: quem escreve é a IA.
+    if (ehTextoMarcado(ideia)) return { tipo: "criar", ideia, formato };
+    if (falado) return { tipo: "criar", ideia, formato };
+    // O gatilho engole a preposição ("post de fé"). Num texto pronto ela é a
+    // primeira palavra da frase ("story De quem é a escada…"): volta para o lugar.
+    const cabecalho = original.slice(0, original.length - ideia.length);
+    const prep = cabecalho.match(/(?:^|\s)(sobre|de|do|da|com|para)[\s:,-]*$/i);
+    if (prep && plano(prep[1]) === "sobre") return { tipo: "criar", ideia, formato };
+    const inteira = prep
+      ? original.slice(cabecalho.length - prep[0].trimStart().length).trim()
+      : ideia;
+    return {
+      tipo: "criar",
+      ideia: pareceTextoPronto(inteira) ? marcarTextoPronto(inteira) : ideia,
+      formato,
+    };
   }
   return null;
 }
@@ -227,9 +256,12 @@ export const AJUDA_INSTAGRAM = [
   "• *post* + a ideia — pergunto o formato, monto e te mando a prévia",
   "   ex.: _post por que o discipulado acontece à mesa_",
   "   já dizendo o formato: _post único sobre fé_, _carrossel sobre fé_ ou _story sobre fé_",
+  "• *story texto:* + a frase — a sua frase vai na imagem na íntegra, sem eu mexer",
+  "   (vale para _post único texto: …_ também; a última linha pode ser a referência)",
   "• *publicar* — vai ao ar agora",
   "• *publicar terça 19h* — fica agendado",
   "• *refazer* — faço outra versão (*refazer mais curto* também vale)",
+  '• *ajustar* + o que mudar — mexo só nisso: _ajustar texto: …_, _destacar "eu descerei" em amarelo_, _outra foto_',
   "• *cancelar* — descarto o rascunho",
   "• *cancelar porque…* — descarto e aprendo o motivo para as próximas",
   "• *cancelar carrossel*, *cancelar reel* ou *cancelar tudo* — tiro da fila o que o piloto agendou",

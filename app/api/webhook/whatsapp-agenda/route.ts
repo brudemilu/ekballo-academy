@@ -2,7 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { transcreverAudio } from "@/lib/agenda-audio";
 import { lerImagem } from "@/lib/agenda-imagem";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
-import { addCompromisso } from "@/lib/db";
+import { addCompromisso, getPendenteWhatsApp } from "@/lib/db";
+import { pareceAjuste } from "@/lib/post-texto-pronto";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 import { chatEhDoDono } from "@/lib/whatsapp-agenda-auth";
 import {
@@ -11,7 +12,10 @@ import {
   interpretarComando,
   interpretarFormato,
 } from "@/lib/whatsapp-instagram";
-import { executarComandoInstagram } from "@/lib/whatsapp-instagram-executar";
+import {
+  executarComandoInstagram,
+  rascunhoNaTela,
+} from "@/lib/whatsapp-instagram-executar";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -177,11 +181,18 @@ export async function POST(req: NextRequest) {
   // formato — quem confere isso é o executor, que ignora a mensagem se não houver.
   const dito = text || falado;
   const formato = hasImagem ? null : interpretarFormato(dito);
-  const comando: ComandoInstagram | null = hasImagem
+  let comando: ComandoInstagram | null = hasImagem
     ? null
     : formato
       ? { tipo: "formato", formato }
-      : interpretarComando(dito);
+      : interpretarComando(dito, !text);
+  // "corrige…", "troca a foto", "destaca tal palavra": só é ajuste do post se
+  // houver um rascunho recém-mostrado. Sem isso, segue para a agenda como antes.
+  if (!comando && !hasImagem && pareceAjuste(dito)) {
+    const pendente = await getPendenteWhatsApp().catch(() => null);
+    if (rascunhoNaTela(pendente, new Date()))
+      comando = { tipo: "ajustar", pedido: dito };
+  }
   if (comando) {
     void executarComandoInstagram(comando, numero);
     return NextResponse.json({ ok: true, instagram: comando.tipo });
