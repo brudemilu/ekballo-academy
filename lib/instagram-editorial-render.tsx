@@ -7,8 +7,11 @@
  * em cima. O encaixe das linhas usa as medidas reais das fontes
  * (lib/instagram-letras.ts), porque o Satori não mede texto.
  *
+ * "Impacto" e "recorte" vieram da segunda leva de referências (issue #241).
+ *
  * Fontes esperadas no ImageResponse: "Condensada" (Anton), "Grotesca"
- * (Inter 800), "Legenda" (Inter 500) e "Script" (manuscrita).
+ * (Inter 800), "Legenda" (Inter 500), "Script" (manuscrita) e "Serifada"
+ * (DM Serif, só no recorte).
  *
  * Lembretes do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — top/left/width/height por extenso.
@@ -20,14 +23,18 @@ import {
   tamanhoParaCaber,
   textoDaLinha,
 } from "@/lib/instagram-letras";
-import { type Palavra, palavrasDoSlide } from "@/lib/instagram-modelos";
+import {
+  type ModeloEditorial,
+  type Palavra,
+  palavrasDoSlide,
+} from "@/lib/instagram-modelos";
 
 const TINTA = "#0C0C0C";
 const CLARO = "#F6F5F1";
 const CREME = "#F3E9CF";
 
 export type EditorialPayload = {
-  modelo: "cinema" | "bloco" | "cartaz" | "editorial";
+  modelo: ModeloEditorial;
   texto: string;
   /** Cor de destaque do tema (hex). */
   cor: string;
@@ -644,10 +651,265 @@ function Editorial({ p }: { p: EditorialPayload }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Impacto — foto em movimento, frase branca enorme encostada à esquerda
+// ---------------------------------------------------------------------------
+
+function Impacto({ p }: { p: EditorialPayload }) {
+  const fonte: FonteMedida = "inter800";
+  const { palavras } = palavrasDoSlide(p.texto, true);
+  const margem = 64;
+  const util = p.largura - margem * 2;
+  const total = textoDaLinha(palavras).length;
+  // Linhas curtas: é a letra grande, e não a largura cheia, que dá o peso.
+  const linhasAlvo =
+    total > 130
+      ? 8
+      : total > 100
+        ? 7
+        : total > 72
+          ? 6
+          : total > 48
+            ? 5
+            : total > 26
+              ? 4
+              : 3;
+  const linhas = quebrarEmLinhas(
+    palavras,
+    fonte,
+    alvoParaLinhas(palavras, fonte, linhasAlvo),
+  );
+  const aperto = -0.055;
+  // A frase ocupa no máximo ~55% da altura; a foto respira em cima.
+  const tetoPelaAltura = Math.floor((p.altura * 0.55) / (linhas.length * 0.95));
+  const tamanho = Math.min(
+    tetoPelaAltura,
+    ...linhas.map((l) => tamanhoParaCaber(textoDaLinha(l), fonte, util, 150, aperto)),
+  );
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#0B0907",
+      }}
+    >
+      <Fundo
+        p={p}
+        veu="linear-gradient(180deg, rgba(8,6,4,0.10) 0%, rgba(8,6,4,0.05) 35%, rgba(8,6,4,0.62) 62%, rgba(8,6,4,0.90) 100%)"
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: p.largura,
+          height: p.altura,
+          padding: `${margem}px ${margem}px ${Math.round(margem * 1.3)}px`,
+        }}
+      >
+        {/* o convite pequeno, em três linhas curtas, como na referência */}
+        <div style={{ display: "flex", width: 330, marginBottom: 26 }}>
+          <div
+            style={{
+              display: "flex",
+              fontFamily: "Grotesca",
+              fontSize: 23,
+              lineHeight: 1.22,
+              letterSpacing: 0.5,
+              color: "#FFFFFF",
+            }}
+          >
+            {(p.top || "Compartilhe essa mensagem com mais alguém").toUpperCase()}
+          </div>
+        </div>
+        {linhas.map((l, i) => (
+          <Linha
+            key={`${i}-${textoDaLinha(l)}`}
+            palavras={l}
+            familia="Grotesca"
+            tamanho={tamanho}
+            cor="#FFFFFF"
+            corDestaque={p.cor}
+            espaco={Math.round(tamanho * aperto)}
+            entrelinha={0.95}
+          />
+        ))}
+        {p.ref ? (
+          <div style={{ display: "flex", marginTop: 30 }}>
+            <Rotulo
+              texto={p.ref}
+              cor="rgba(255,255,255,0.82)"
+              tamanho={24}
+              espaco={6}
+            />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Recorte — cada linha numa tira de papel, levemente torta, sobre a foto
+// ---------------------------------------------------------------------------
+
+const PAPEL_CLARO = "#F3EBDA";
+const PAPEL_AMARELO = "#F2D27A";
+
+/** A tinta que se lê sobre a cor do papel (preto no claro, creme no escuro). */
+function tintaSobre(hex: string): string {
+  const n = Number.parseInt(hex.replace("#", ""), 16);
+  if (Number.isNaN(n)) return TINTA;
+  const luz = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return luz > 0.55 ? TINTA : "#FBF6EA";
+}
+
+function Recorte({ p }: { p: EditorialPayload }) {
+  // A serifada não tem tabela de medidas; a grotesca é um pouco mais larga,
+  // então medir por ela deixa folga em vez de estourar.
+  const fonte: FonteMedida = "inter800";
+  const { palavras } = palavrasDoSlide(p.texto);
+  const margem = 56;
+  const util = Math.round(p.largura * 0.82);
+  // Trecho destacado ganha a tira só dele; o resto vai em tiras de ~16 letras.
+  const tiras: { palavras: Palavra[]; forte: boolean }[] = [];
+  let pendentes: Palavra[] = [];
+  const despejar = () => {
+    if (!pendentes.length) return;
+    const alvo = alvoParaLinhas(
+      pendentes,
+      fonte,
+      Math.ceil(textoDaLinha(pendentes).length / 17),
+    );
+    for (const l of quebrarEmLinhas(pendentes, fonte, alvo))
+      tiras.push({ palavras: l, forte: false });
+    pendentes = [];
+  };
+  let forte: Palavra[] = [];
+  for (const w of palavras) {
+    if (w.destaque) {
+      despejar();
+      forte.push(w);
+      continue;
+    }
+    if (forte.length) {
+      tiras.push({ palavras: forte, forte: true });
+      forte = [];
+    }
+    pendentes.push(w);
+  }
+  if (forte.length) tiras.push({ palavras: forte, forte: true });
+  despejar();
+
+  const recheio = 34; // respiro lateral dentro da tira
+  const medir = (teto: number) =>
+    tiras.map((t) =>
+      Math.max(
+        34,
+        tamanhoParaCaber(
+          textoDaLinha(t.palavras),
+          fonte,
+          util - recheio * 2,
+          t.forte ? Math.round(teto * 1.45) : teto,
+        ),
+      ),
+    );
+  const altoDisponivel = Math.round(p.altura * 0.74);
+  let teto = 96;
+  let tamanhos = medir(teto);
+  while (teto > 40 && tamanhos.reduce((s, t) => s + t * 1.5 + 10, 0) > altoDisponivel) {
+    teto -= 6;
+    tamanhos = medir(teto);
+  }
+  // Giro fixo por posição: o mesmo texto sai sempre igual.
+  const giros = [-2.2, 1.4, -1.1, 2, -1.6, 0.9, -2, 1.2];
+  const papeis = [PAPEL_CLARO, PAPEL_AMARELO];
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#1A1712",
+      }}
+    >
+      <Fundo
+        p={p}
+        veu="linear-gradient(180deg, rgba(8,6,4,0.18) 0%, rgba(8,6,4,0.0) 40%, rgba(8,6,4,0.35) 100%)"
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          position: "absolute",
+          top: Math.round(p.altura * 0.07),
+          left: margem,
+          width: p.largura - margem * 2,
+        }}
+      >
+        {tiras.map((t, i) => {
+          const papel = t.forte ? p.cor : papeis[i % papeis.length];
+          return (
+            <div
+              key={`${i}-${textoDaLinha(t.palavras)}`}
+              style={{
+                display: "flex",
+                marginTop: i ? 10 : 0,
+                // tiras alternadas entram um pouco, como papel colado à mão
+                marginLeft: i % 3 === 1 ? 46 : i % 3 === 2 ? 14 : 0,
+                padding: `${Math.round(tamanhos[i] * 0.12)}px ${recheio}px ${Math.round(tamanhos[i] * 0.2)}px`,
+                backgroundColor: papel,
+                boxShadow: "6px 8px 0 rgba(0,0,0,0.28)",
+                transform: `rotate(${giros[i % giros.length]}deg)`,
+                fontFamily: "Serifada",
+                fontSize: tamanhos[i],
+                lineHeight: 1.12,
+                color: tintaSobre(papel),
+              }}
+            >
+              {textoDaLinha(t.palavras)}
+            </div>
+          );
+        })}
+      </div>
+      {/* a assinatura (ou a referência) numa tira pequena, embaixo */}
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          left: margem,
+          bottom: Math.round(p.altura * 0.06),
+          padding: "12px 22px",
+          backgroundColor: PAPEL_CLARO,
+          boxShadow: "4px 5px 0 rgba(0,0,0,0.28)",
+          transform: "rotate(-1.2deg)",
+        }}
+      >
+        <Rotulo
+          texto={p.ref || p.top || "Ekballo Academy"}
+          cor={TINTA}
+          tamanho={22}
+          espaco={5}
+        />
+      </div>
+    </div>
+  );
+}
+
 /** Desenha um slide em um dos modelos novos. */
 export function renderSlideEditorial(p: EditorialPayload) {
   if (p.modelo === "cinema") return <Cinema p={p} />;
   if (p.modelo === "bloco") return <Bloco p={p} />;
   if (p.modelo === "cartaz") return <Cartaz p={p} />;
+  if (p.modelo === "impacto") return <Impacto p={p} />;
+  if (p.modelo === "recorte") return <Recorte p={p} />;
   return <Editorial p={p} />;
 }

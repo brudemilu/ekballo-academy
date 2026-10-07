@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  ehModeloEditorial,
   instrucaoDoModelo,
   itensDoChecklist,
   lerModelo,
   MAX_ITENS_CHECKLIST,
   MODELOS_AUTOMATICOS,
+  MODELOS_COM_FOTO,
   palavrasDoSlide,
   sortearDiferente,
   tamanhoPorTexto,
@@ -141,6 +143,27 @@ describe("instrucaoDoModelo", () => {
 
   it("a manchete limita as palavras", () => {
     expect(instrucaoDoModelo("manchete")).toMatch(/MÁXIMO 8 palavras/);
+  });
+});
+
+// Os dois modelos da segunda leva de referências (issue #241).
+describe("impacto e recorte", () => {
+  it("são conhecidos, usam foto e entram no sorteio", () => {
+    for (const m of ["impacto", "recorte"] as const) {
+      expect(lerModelo(m)).toBe(m);
+      expect(ehModeloEditorial(m)).toBe(true);
+      expect(MODELOS_COM_FOTO).toContain(m);
+      expect(MODELOS_AUTOMATICOS).toContain(m);
+    }
+  });
+
+  it("pedem à IA uma frase inteira, com destaque e sem manuscrita", () => {
+    for (const m of ["impacto", "recorte"] as const) {
+      const pedido = instrucaoDoModelo(m);
+      expect(pedido).toContain("UMA frase");
+      expect(pedido).toContain("{destacadas}");
+      expect(pedido).toContain("Sem ((manuscrita))");
+    }
   });
 });
 

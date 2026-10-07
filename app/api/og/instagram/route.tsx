@@ -145,7 +145,10 @@ export async function GET(req: NextRequest) {
     bgSrc = fotoPropria;
   } else if (prompt && modelo !== "editorial") {
     const gerado = await obterFundo(
-      prompt,
+      // "Impacto" pede a foto em movimento das referências (issue #241).
+      modelo === "impacto"
+        ? `${prompt}, long exposure motion blur, people in motion, streaks of warm light`
+        : prompt,
       seed,
       story ? "story" : "feed",
       ehModeloEditorial(modelo) ? "documental" : "devocional",
@@ -177,11 +180,12 @@ export async function GET(req: NextRequest) {
 
   // Modelos novos (cinema, bloco, cartaz, editorial): letra sobre a foto crua.
   if (ehModeloEditorial(modelo)) {
-    const [condensada, grotesca, legenda, script] = await Promise.all([
+    const [condensada, grotesca, legenda, script, serifada] = await Promise.all([
       loadFont(selfOrigin, FONTES.anton.file),
       loadFont(selfOrigin, "inter-800.ttf"),
       loadFont(selfOrigin, "inter-500.ttf"),
       loadFont(selfOrigin, SCRIPT_FONT_FILE),
+      loadFont(selfOrigin, FONTE_TEXTO_FILE),
     ]);
     return new ImageResponse(
       renderSlideEditorial({
@@ -203,6 +207,7 @@ export async function GET(req: NextRequest) {
           { name: "Grotesca", data: grotesca, weight: 800, style: "normal" },
           { name: "Legenda", data: legenda, weight: 500, style: "normal" },
           { name: "Script", data: script, weight: 400, style: "normal" },
+          { name: "Serifada", data: serifada, weight: 400, style: "normal" },
         ],
         headers: cabecalhos,
       },
