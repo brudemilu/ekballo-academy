@@ -5,6 +5,7 @@
 // fetched"). SOLUÇÃO: a gente gera a imagem no NOSSO lado, sobe no Storage
 // (público, CDN rápido) e manda pro Meta a URL estática. Aí o Meta baixa rápido.
 
+import { ehPng, pngParaJpeg } from "@/lib/imagem-jpeg";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const BUCKET = "instagram";
@@ -80,11 +81,21 @@ export async function prepararImageUrls(
         throw new Error(
           `falha ao gerar a imagem do slide ${i + 1} (HTTP ${res.status})`,
         );
-      const bytes = new Uint8Array(await res.arrayBuffer());
-      const path = `pub/${crypto.randomUUID()}.png`;
-      const { error } = await sb.storage
-        .from(BUCKET)
-        .upload(path, bytes, { contentType: "image/png", upsert: false });
+      const png = new Uint8Array(await res.arrayBuffer());
+      // O Instagram desiste de baixar o PNG de 2–3 MB (issue #238): vai em
+      // JPEG. Se a conversão falhar, o PNG ainda é melhor que não publicar.
+      const jpeg = ehPng(png)
+        ? await pngParaJpeg(png).catch((e) => {
+            console.error("[imagem] jpeg:", e instanceof Error ? e.message : e);
+            return null;
+          })
+        : null;
+      const bytes = jpeg ?? png;
+      const path = `pub/${crypto.randomUUID()}.${jpeg ? "jpg" : "png"}`;
+      const { error } = await sb.storage.from(BUCKET).upload(path, bytes, {
+        contentType: jpeg ? "image/jpeg" : "image/png",
+        upsert: false,
+      });
       if (error)
         throw new Error(`falha ao subir a imagem do slide ${i + 1}: ${error.message}`);
       urls[i] = sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
