@@ -1,0 +1,3588 @@
+-- Curso: Enquanto Estivermos Juntos (Jeremy Camp) — transcrição sem perguntas. Issue #233.
+do $migration$
+declare
+  v_curso_id uuid;
+  v_aula_id uuid;
+  v_next_ordem int;
+begin
+  select id into v_curso_id from public.cursos where slug = 'enquanto-estivermos-juntos';
+
+  if v_curso_id is null then
+    select coalesce(max(ordem), 0) + 1 into v_next_ordem from public.cursos;
+    insert into public.cursos
+      (slug, titulo, autor, descricao, imagem_url, is_pago, preco_centavos, categoria, ordem, publicado)
+    values (
+      'enquanto-estivermos-juntos',
+      $titulo$Enquanto Estivermos Juntos$titulo$,
+      $titulo$Jeremy Camp$titulo$,
+      $desc$Leitura guiada de Enquanto Estivermos Juntos, de Jeremy Camp. Em vinte e quatro aulas: O cantor Jeremy Camp conta a própria história: a infância pobre, o chamado para a música, o casamento com Melissa e a morte dela poucos meses depois, e a fé que permaneceu. Cada aula traz a transcrição do texto, sem perguntas de reflexão.$desc$,
+      '/capas/enquanto-estivermos-juntos.jpg',
+      false,
+      0,
+      'leitura',
+      v_next_ordem,
+      true
+    )
+    returning id into v_curso_id;
+  else
+    update public.cursos
+    set titulo = $titulo$Enquanto Estivermos Juntos$titulo$,
+        autor = $titulo$Jeremy Camp$titulo$,
+        descricao = $desc$Leitura guiada de Enquanto Estivermos Juntos, de Jeremy Camp. Em vinte e quatro aulas: O cantor Jeremy Camp conta a própria história: a infância pobre, o chamado para a música, o casamento com Melissa e a morte dela poucos meses depois, e a fé que permaneceu. Cada aula traz a transcrição do texto, sem perguntas de reflexão.$desc$,
+        imagem_url = '/capas/enquanto-estivermos-juntos.jpg',
+        categoria = 'leitura',
+        publicado = true
+    where id = v_curso_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 1;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Prefácio$t$, 1,
+$conteudo$Quando soube que o livro de Jeremy, Enquanto estivermos juntos (I still believe), se tornaria um filme, fiquei muito feliz por ele. Conheço Jeremy desde 2002, quando participamos do Festival Con Dios. Fiquei feliz com a notícia porque sei o quanto um filme pode ser poderoso para levar ao grande público uma história de uma graça de Deus.
+
+Mas, para ser totalmente honesto, também fiquei um pouco apreensivo. Em 2017, quando o filme Eu só posso imaginar foi lançado, retratando minha vida e todas as coisas difíceis que aconteceram e inspiraram a canção que deu nome ao filme, não sabia como seria difícil para minha família e para mim. É assustador assistir à sua própria vida representada em um filme. É estranho ver os atores interpretando você, a sua família e os seus amigos; dizendo as coisas que costumamos dizer e fazendo as coisas que fizemos — as boas e as más. Você tem o privilégio de reviver algumas das experiências mais incríveis que viveu, mas também tem seus piores momentos expostos para quem quiser ver. Permitir que as camadas protetoras fossem retiradas pela equipe de filmagem e mostrar a história verdadeira por trás da canção e da banda MercyMe foram algumas das coisas mais vulneráveis que já fiz.
+
+Sei que Jeremy compartilha os mesmos medos e ansiedades de ver sua vida nas telas. Sei o quanto ele está assustado e animado. E vou orar para que Deus use essa história poderosa para continuar construindo o Seu reino.
+
+É difícil acreditar que uma vida inteira pode ser resumida em duas horas (ou menos) de um filme. Horas e horas de filmagem (bem como momentos inteiros de uma vida) ficam abandonadas na sala de edição. Estou entusiasmado de saber que, nas páginas deste livro, você terá a chance de conhecer os detalhes da vida de Jeremy que não puderam ser incluídos no filme.
+
+A história de Jeremy de amar e perder sua esposa Melissa, a resiliência e as bênçãos que se seguiram em sua vida com Adrienne são um poderoso testemunho da graça de Deus. Como você descobrirá com a leitura deste livro, o último desejo de Melissa foi que Deus usasse sua partida para converter pelo menos uma pessoa à fé. Com certeza, a música de Jeremy e a maneira tão bonita como ele conta sua história converteram muito mais do que uma pessoa para o Reino de Deus. Agora, mal posso esperar para ver Deus usando o filme que conta essa história para trazer mais pessoas ao seu Reino.
+
+Bart Millard, 2019$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 2;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Prólogo$t$, 2,
+$conteudo$Pegue seu violão. Eu não queria. Não queria nada com música. Fazia duas semanas desde que Melissa tinha ido para o Céu. Minha esposa tinha apenas vinte e um anos e estávamos casados havia apenas três meses e meio quando ela faleceu de câncer de ovário.
+
+Sentei no sofá da sala de estar da casa dos meus pais. Eu estava sozinho — sozinho de várias maneiras.
+
+Naquelas duas semanas minha vida estava envolta em uma névoa que não dispersava. Tudo que antes parecia fazer tanto sentido agora não tinha mais sentido nenhum. Os médicos tinham afirmado que o câncer de Melissa havia desaparecido. Casamo-nos compartilhando os desejos de ter filhos e de trabalhar juntos no ministério — eu por meio da música, ela por meio do ministério de mulheres e de estudos da Bíblia. Mas mal tivemos a chance de começar a viver nossos sonhos.
+
+Minha Melissa tinha ido embora, e eu me perguntava onde Deus estava. Eu queria orar, mas em meu desespero nem sabia ao certo quais eram meus próprios pensamentos. Tentava orar, mas não sabia por onde começar. Todas as palavras fracas que conseguia enviar no caminho de Deus pareciam se perder na névoa em que estava mergulhado.
+
+— Deus, Você realmente me ouve?
+
+— Você realmente se importa com tudo que acontece? — Deus? Você está por perto?
+
+Pegue seu violão.
+
+Pela primeira vez desde a morte de Melissa, senti que Deus me enviava uma resposta. Suas palavras estavam cristalinas no meu coração.
+
+Mas eu não queria pegar o violão. Não queria voltar para a música ou fazer nenhuma das coisas que já havia feito. Quando escrevia canções, falava do que se passava em meu coração. Naquele momento eu nada sentia. Eu estava anestesiado. Estava física e emocionalmente esgotado. Nada tinha para oferecer.
+
+— Não, Deus, não. A última coisa que quero fazer é tocar violão. Pegue seu violão. Quero que você componha uma canção.
+
+Cedi e comecei a dedilhar alguns acordes sem pensar. Eu não entendia a razão de estar tocando, mas continuei. Então as emoções começaram a tomar conta de mim. Senti as lágrimas chegarem aos meus olhos. Palavras — na verdade, pensamentos — vieram à minha cabeça e comecei a falar enquanto tocava:
+
+Scattered words and empty thoughts Seem to pour from my heart
+
+Pela primeira vez em duas semanas, eu conseguia expressar o que sentia.
+
+I’ve never felt so torn before
+
+Seems I don’t know where to start
+
+Levantei rapidamente para pegar um caderno e uma caneta e voltei para o sofá.
+
+But it’s now that I feel Your grace fall like rain From every fingertip, washing away my pain
+
+Anotei as palavras conforme elas vinham para mim.
+
+I still believe in Your faithfulness I still believe in Your truth
+
+I still believe in Your holy Word
+
+As palavras não saíam da minha mente, elas brotavam do local mais profundo da minha alma.
+
+In brokenness I can see that this was Your will for me. Help me to know You are near.
+
+Me inclinei para trás, impressionado com as palavras que tinham vindo para mim e ainda sem saber que Deus as usaria para falar através de mim para outras pessoas que, como eu, se sentiam abandonadas no vale da mais profunda tristeza. Pessoas que precisavam de esperança. Pessoas que precisavam de incentivo para deixar Deus cavar as profundezas de sua alma até o próprio fundamento de sua fé para então descobrir ali a vontade de declarar: “Eu ainda acredito!”.
+
+Compus “I still believe” em dez minutos.
+
+Mas, em essência, passei toda a minha vida compondo essa canção.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 3;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 1 - Tudo começa em casa$t$, 3,
+$conteudo$Fé e família. Quando olho para trás, faz sentido que minha cura depois da morte de Melissa tenha começado na casa de meus pais em Lafayette, Indiana.
+
+Troquei a casa deles pela Califórnia para fazer o curso profissionalizante da Calvary Chapel Bible College. Foi na Califórnia que encontrei meu caminho no ministério. Foi lá que minha carreira musical começou a se desenvolver. Também foi lá que conheci minha parceira escolhida por Deus no ministério. Contudo, após o funeral de Melissa, quando o caminho que pensei que havia sido traçado repentinamente desapareceu à minha frente, quando minha fé foi abalada de tal maneira como nunca imaginei ser possível, tudo que eu soube fazer foi voltar para casa.
+
+Fé e família estão perfeitamente unidas em minha história de vida.
+
+Meus pais me proveram aquilo que não tiveram ao crescerem: um lar cristão. Isso por si só foi um milagre.
+
+Imagine um homem bêbado, com seu amigo igualmente embriagado, entrar cambaleante na igreja em um domingo à noite e responder a um chamado do altar para aceitar Jesus como seu Salvador, e então você terá a notável história da conversão do meu pai.
+
+Meu pai, Tom — ou “Bear” [“urso” em inglês], como seus amigos o chamavam —, abandonou a escola aos dezesseis anos, pois se envolvera fortemente com álcool e drogas (mais tarde passou no GED e frequentou a faculdade). Com personalidade do tipo festeira e divertida, quando era adolescente não tinha dificuldade de encontrar festas e convencer outras pessoas a juntar-se a ele nesse tipo de diversão.
+
+Minha mãe, Teri, era a clássica garota certinha da escola. Ela cresceu em um ambiente familiar estável. Estudiosa, tinha planos e metas. Foi aceita na Universidade Purdue quando conheceu e começou a namorar o meu pai em seu último ano na escola.
+
+O namoro deles era motivo de fofoca nos corredores — mas não do tipo líder-de-torcida-que-namora-o-jogador-de-futebol. Os comentários eram mais do tipo:
+
+— Por que ela está saindo com ele?
+
+Ela se apaixonou pelo jeito simpático do meu pai e por quão fácil era conversar com ele. Mas, devido ao consumo pesado de álcool e maconha, meu pai tinha dificuldade de permanecer estável nos empregos que arranjava. Então minha mãe deixou de lado seus planos de estudar decoração de interiores na faculdade e começou a trabalhar. Eles se tornaram anfitriões de festas populares. Meu pai vendia maconha nessa época, então é fácil imaginar que tipo de festas e foliões eles recebiam em casa.
+
+Quando descobriram que minha mãe estava grávida, foram morar juntos, e minha irmã, April, nasceu em 1975, antes de formalizarem o casamento. Ter um recém-nascido acabou com as festas em casa, mas o estilo de vida do meu pai continuou a seguir por um caminho tortuoso. A bebedeira aumentou e ele passou a usar e vender cocaína. Quanto mais bebia, mais violento ficava.
+
+Cerca de um ano e meio após April nascer, meu pai entrou em depressão e percebeu que sua vida estava fora de controle.
+
+— Não sei o que há de errado comigo — disse ele à minha mãe. — Me sinto tão vazio por dentro. Não é você. Não é a April. As drogas não me fazem feliz. Não sei o que há de errado.
+
+— Você quer ir a um psiquiatra? — perguntou minha mãe. — Não — replicou ele. — Preciso conversar com um pastor. No Natal de 1976, meu pai ficou visivelmente deprimido. Minha mãe chegou a pensar que ele poderia se machucar, mas, quando tentou consolá-lo, ele disse:
+
+— Preciso ir à igreja e tem de ser agora.
+
+Naquela noite, eles dirigiram de uma igreja para outra procurando uma que estivesse aberta. Finalmente, encontraram uma onde um grupo de pessoas estava tocando. Meus pais entraram e sentaram-se em um banco em silêncio, mas os músicos não lhe deram atenção, provavelmente porque pareciam mais dois hippies perdidos do que frequentadores normais. Eles ficaram no banco por um tempo até minha mãe perguntar a meu pai se ele se sentia melhor.
+
+— Sim — respondeu ele, e foram embora.
+
+Quatro dias depois, em uma quarta-feira à noite, eles decidiram procurar uma igreja novamente.
+
+Quando meu pai era criança, uma vizinha gentil chamada Meb às vezes o levava à igreja com ela. Em uma dessas vezes, quando ele tinha onze anos, subiu ao altar para aceitar Cristo. No entanto, sem uma família para mantê-lo espiritualmente conectado, acabou se afastando da igreja. Ele chegou a conversar sobre coisas espirituais com minha mãe no começo do namoro, mas a cristandade até então era algo sobre a qual ele pensava e questionava em seu coração, mas que nunca se tornava mais do que isso. Porém, pelo menos ele tinha aquela experiência que Meb havia lhe proporcionado quando analisou a própria vida e chegou à conclusão de que precisava fazer sérias mudanças. Ele havia tentado quase tudo, mas em seu coração sabia qual era a verdade e que o Espírito Santo estava chamando-o e fazendo um trabalho profundo dentro dele.
+
+Minha mãe frequentou a igreja quando era criança por obrigação; minha avó a levava sozinha e meu avô as acompanhava em domingos de Páscoa e outras poucas ocasiões especiais. Minha avó a presenteou com um livro de histórias da Bíblia que minha mãe adorava ler quando pequena. Mas, mesmo sabendo sobre Jesus, nunca desenvolveu uma relação com Ele. Com meu pai apresentando uma tendência a um comportamento perigoso, ela se abriu para a igreja provendo a fonte para a mudança de que ele precisava.
+
+Poucos dias após o Natal, meu pai disse mais uma vez:
+
+— Preciso falar com um pastor. Sei onde podemos ir… Meb vai estar na igreja.
+
+Meu pai sabia onde sua antiga vizinha estaria em uma quarta-feira à noite. Quando chegaram à igreja, o culto havia acabado de terminar e as pessoas estavam saindo. Como esperado, Meb estava lá. Um grande sorriso invadiu seu rosto quando ela viu meu pai. Quando ele disse que precisava conversar com um pastor, ela apresentou meus pais ao seu. Os quatro se sentaram e meu pai explicou seus problemas e descreveu o vazio que sentia em sua vida. O pastor identificou o problema como pecado não confesso e explicou que o vazio que ele sentia apenas Cristo poderia preencher. Meu pai concordou. O pastor então conduziu meus pais em uma oração pedindo por perdão, embora minha mãe orasse mais por vergonha e pelo potencial constrangimento de não orar em grupo.
+
+Depois da oração, o pastor deu a meus pais uma lista pequena e direta de mudanças que eles precisavam fazer:
+
+— Vocês precisam se casar, mudar o modo como se vestem, cortar o cabelo e fazer novos amigos.
+
+Meus pais entenderam a necessidade de abandonar as drogas e o álcool, mas ficaram confusos sobre como poderiam arranjar novos amigos da noite para o dia. E sobre o modo como se vestiam, mal podiam pagar as roupas que tinham, como poderiam bancar um guarda-roupa totalmente novo?
+
+A princípio, meu pai tinha um problema com o casamento. Ele fora brevemente casado quando tinha dezesseis anos. Sua namorada havia engravidado, então se casaram. Mas quando ela sofreu um aborto espontâneo, decidiram que não queriam ficar juntos e se divorciaram após menos de seis meses em matrimônio. Algumas vezes no passado ele perguntara à minha mãe se ela se casaria com ele se ele pedisse sua mão. Ela respondia que sim, mas meu pai nunca pediu. Ele lhe disse que não tinha interesse em casar-se, pois nunca havia visto um bom casamento — nem ao crescer, nem nos poucos meses em que foi casado. Mas ao considerar o que o pastor dissera sobre a necessidade de se casar, ele concordou.
+
+O pastor deu uma Bíblia a meus pais, mas não deu nenhuma ajuda prática de como fazer as mudanças que ele sugeriu.
+
+Como resultado, eles deixaram a igreja perguntando-se: — Como vamos fazer tudo isso?
+
+VERDADEIRA MUDANÇA
+
+A Bíblia que o pastor deu a meus pais era uma versão da Bíblia King James. Meu pai tinha dificuldades para ler e essa Bíblia específica era ainda mais desafiadora, então minha mãe lia para ele. Os dois continuaram a falar sobre igreja, e minha mãe comentou que seus colegas de trabalho haviam conversado com ela sobre Jesus e afirmado que meus pais seriam bem-vindos em sua igreja independentemente de suas vestes ou como eram. Meu pai concordou em tentar.
+
+Eles planejaram ir à igreja Assembleia de Deus no primeiro domingo à noite do novo ano — 2 de janeiro de 1977. Meu pai havia ajudado um amigo a mudar de casa naquela manhã e, à tarde, saiu com esse amigo.
+
+Quando minha mãe estava se arrumando para ir à igreja, ele ligou.
+
+— Onde você está? — perguntou ela. — Estou em um restaurante mexicano.
+
+Ela sabia que ele estava no único restaurante local que servia cerveja aos domingos.
+
+— Você andou bebendo? — Ah, só um pouco.
+
+Quando meu pai chegou em casa para pegá-la, ele e seu amigo estavam rindo sobre como haviam apagado e acendido as luzes no restaurante. Eles tinham bebido bem mais do que apenas “só um pouco”. Minha mãe começou a chorar. Desde a noite em que oraram na igreja de Meb, nenhum dos dois havia usado drogas ou bebido — nem mesmo na noite de Ano-Novo.
+
+— Não há a menor chance de eu ir para a igreja com vocês — disse ela.
+
+Minha avó estava com April naquela noite, então quando minha mãe viu quão bêbados estavam meu pai e seu amigo, ela imediatamente foi para a igreja sozinha.
+
+Como era um domingo à noite, a multidão de quase trezentas pessoas não era tão grande quanto a do culto da manhã. Cerca de oito fileiras de cadeiras dobráveis nos fundos do santuário estavam interditadas para que as pessoas se sentassem mais à frente. Minha mãe se sentou sozinha no meio da última fileira disponível. Pouco tempo depois do início do culto, ouviu uma comoção atrás dela. Ela olhou para trás e viu meu pai e seu amigo cambalearem pela porta dos fundos.
+
+A primeira reação da minha mãe foi tentar se esconder. Ela voltou-se para a frente, afundou no assento e tentou desaparecer entre as pessoas ao seu redor. Não funcionou. Meu pai e seu amigo avistaram minha mãe e foram até ela. Mas não caminhando pelo corredor e depois silenciosamente deslizando pela fileira onde minha mãe estava sentada. Meu pai fez a rota mais direta possível entre o ponto A e o ponto B — passando por cima das fileiras de cadeiras vazias!
+
+Minha mãe continuou a olhar para a frente enquanto todos os outros passaram a observar os dois saltadores de cadeiras bêbados. Meu pai e seu amigo caíram bem ao lado da minha envergonhada mãe, e o amigo começou a tagarelar.
+
+Um assistente do culto, procurando acalmar o tumulto, aproximou-se e perguntou ao amigo do meu pai se ele não gostaria de ir sentar-se ao lado dele, e o sujeito foi.
+
+No altar, o pastor falava sobre ser libertado do cativeiro das drogas e do álcool. Por umas duas vezes durante a fala, o amigo do meu pai deixou seu assento, correu até meu pai, disse: “Bear, esse cara sabe o que está dizendo!” e depois correu de volta para seu lugar ao lado do assistente.
+
+Enquanto o pastor pregava, minha mãe notou lágrimas nos olhos do meu pai. As palavras do pastor realmente mexeram com ele, que chorou ao longo do discurso inteiro.
+
+Quando o pastor finalizou sua fala e perguntou se alguém gostaria de subir no altar e receber Jesus em seu coração, o amigo do meu pai correu à frente, mas meus pais hesitaram, ambos pensando: “Nós já não fizemos isso?”. Quando um pastor da juventude se aproximou e ofereceu-se para levá-los ao altar se quisessem responder ao chamado do pastor, eles se levantaram e também foram adiante. A congregação reuniu-se ao redor dos três e orou por eles. Com todos chorando, minha mãe naquele ponto estava aliviada pois eles enfim iam mudar. Meu pai foi imediatamente liberto das drogas e do álcool e saiu da igreja sóbrio.
+
+Mais tarde, eles descobriram que os alcoólatras e os hippies eram os tipos de pessoa menos queridos pelo pastor, mas mesmo assim ele havia acolhido meu pai e seu amigo na igreja naquela noite. Os membros da igreja oravam para que um renascimento acontecesse ali, e, naquela noite, quando de todas as pessoas possíveis, dois hippies bêbados responderam ao chamado do altar, eles perceberam que suas orações tinham sido atendidas. Deus trabalha de maneiras misteriosas!
+
+O pastor acabou tendo muitas oportunidades de compartilhar o que ele chamaria de “ministério de qualquer pessoa”, exortando o corpo de Cristo a ministrar a quem Deus trouxesse em seu caminho.
+
+Em vez de focar em coisas exteriores, os membros daquela igreja encorajaram meus pais a mergulhar na Palavra e na comunhão com outros crentes. Eles deram a meus pais uma cópia da Bíblia Viva para levarem para casa e sugeriram que começassem a ler pelo Evangelho de João. A maneira de João expressar o amor que Jesus demonstrou para com toda a humanidade em Sua morte e ressurreição impactou profundamente o coração da minha mãe. Ela teve uma revelação de que, assim como meu pai, ela também era uma pecadora necessitando de salvação. Certa noite, em sua poltrona favorita na sala de estar, ela disse:
+
+— Senhor, me desculpe.
+
+Esse foi o momento em que tudo mudou para ela. Minha mãe pediu que Jesus entrasse em seu coração e orou:
+
+— Eu irei a qualquer lugar, farei qualquer coisa. Tudo que pedir, sou Sua.
+
+Bem apropriado, considerando suas personalidades contrastantes. Meu pai aceitou Cristo em ambiente público e emocionante; minha mãe fez o mesmo em um momento particular e silencioso. Ainda assim, o impacto imediato de suas decisões foi igual: a vida de ambos mudou por completo. No dia 22 de janeiro de 1977, naquela mesma igreja da Assembleia de Deus, eles se casaram. Desse dia em diante, modelaram o tipo de relacionamento que Deus prescreveu na Bíblia e estabeleceram a fundação da fé na qual eu seria criado.
+
+Eu nasci quase um ano depois, no dia 12 de janeiro de 1978. Após oito anos, April e eu ganhamos nosso irmão Jared. Dois anos depois dele, Joshua chegou. Josh nasceu com síndrome de Down, e foi uma benção que completou nossa família de muitas maneiras.
+
+A decisão dos nossos pais de se tornarem cristãos certamente não resultou em uma vida de navegação suave para eles e nossa família. Na verdade, foi exatamente o contrário, pois encontramos nossa parte de lutas. E nem todos nós quando crianças caminhamos sempre no caminho que nossos pais desejavam que seguíssemos.
+
+No entanto, por toda a nossa jornada juntos, sempre soubemos aonde recorrer para as respostas das perguntas da vida: a Palavra de Deus e um ao outro. E esse padrão permaneceu inalterado quando passamos de crianças da família Camp para adultos com suas próprias famílias. Nossa família tem histórias incríveis da misericórdia amorosa de Deus.
+
+APRENDENDO EM CASA
+
+Quando meu pai frequentava a escola, ele tinha dificuldade de concentrar-se na leitura — provavelmente graças ao abuso de drogas e álcool. Contudo, lembro-me de que, quando eu era criança, sempre o via lendo a Bíblia. Ele contou que, por causa dos seus problemas na escola, odiava ler livros antes de se tornar cristão. Mas era claro que adorava passar o tempo estudando a Palavra de Deus. Na verdade, por um breve período moramos em Springfield, Missouri, para que ele frequentasse a Central Bible College e se preparasse para ingressar no ministério em período integral.
+
+Recordo que minha família sempre esteve fortemente envolvida com a igreja. Nós éramos uma dessas famílias que ficam na igreja praticamente o tempo todo enquanto as portas estão abertas. Meus pais participavam e conduziam estudos bíblicos. Recebíamos amigos em casa, meu pai tocava seu violão e fazia o culto ali mesmo em nossa sala de estar. Minha mãe e meu pai compartilhavam sua fé com qualquer um que conhecessem, contando-lhes sobre a transformação completa que Deus havia feito em sua vida.
+
+A impressão dos meus pais que permanece dentro de mim é referente a quão verdadeiros eles eram. Tanto em casa quanto na igreja, eles eram os mesmos. Eles não iam à igreja, erguiam suas mãos durante o culto e falavam como um cristão deve falar e depois retornavam para casa e agiam diferente. Eles não compartimentavam. Eles eram quem eram pois isso era o que eles eram; as mudanças que Deus fez em seu coração foram definitivas e refletiam em cada área de sua vida. Atribuo a consistência dos meus pais em viver o estilo de vida cristão como a razão pela qual eu nunca me cansei do cristianismo ao crescer, nem mesmo durante os anos em que vaguei entre os caminhos certos e errados.
+
+A frase “Ele tem coração de pastor” descreve perfeitamente meu pai. Ele é um ótimo ouvinte e realmente se importa com as pessoas. Lembro-me de pessoas sentadas em nossa sala, abrindo o coração, e ele sentado lá não apenas ouvindo, mas ouvindo atentamente. Ele é mesmo assim, e as pessoas obviamente adoram estar perto dele.
+
+Meu pai também é divertido. Depois de se tornar cristão, continuou sendo festeiro — apenas o estilo de festa mudou. Quando íamos acampar — sim, a família Camp acampava —, meu pai improvisava músicas hilárias ao redor da fogueira. Para envolver a família toda, ele nos fazia repetir as letras bobas que inventava. Certa vez, fomos patinar e ele foi vestido com um macacão e shorts por cima, só para ser um verdadeiro pateta e ver se conseguia nos envergonhar.
+
+Minha mãe é mais educada e respeitável. Ela não é extrovertida (exceto quando vê o Senhor trabalhando) e é meticulosa. Eu achava que ela levava uma eternidade para maquiar-se. Também escreve devagar, mas quando termina sua letra está perfeita.
+
+Ela mantém a casa limpa e organizada, pois, como meu pai, gosta de convidar os amigos e receber estudos bíblicos e grupos de oração. E minha mãe é dedicada à oração. Lembro-me de muitas vezes entrar na sala e vê-la com o rosto abaixado, orando e intercedendo.
+
+Meus pais foram opostos que se atraíram, mas cujos modos opostos se complementaram através de Cristo. Meu pai tem uma atitude do tipo “vá fundo”. Se percebe que Deus quer que ele faça alguma coisa, ele está pronto para fazer. Já minha mãe diria:
+
+— Precisamos ter mais certeza disso, então vamos orar mais um pouco.
+
+Minha personalidade é mais parecida com a do meu pai, mas aprendi com minha mãe a importância da disciplina e da firmeza no estilo de vida cristão.
+
+Quando éramos crianças e enfrentávamos problemas, nossos pais nos encorajavam com as palavras e a sabedoria da Bíblia — não apenas com suas próprias palavras e conselhos. O momento da oração era sempre priorizado, pois nossa casa era uma casa de adoração. Com frequência, orávamos juntos em família. Quando tínhamos necessidades, tanto individuais quanto como um grupo, orávamos por elas. E nós definitivamente tínhamos necessidades.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 4;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 2 - Cabo de guerra$t$, 4,
+$conteudo$Nossa família não era apenas pobre, mas superpobre. Antes de se tornar cristão, meu pai era usuário de álcool e drogas, o que o impedia de manter empregos estáveis. Depois que meus pais foram salvos, Deus passou a ser a prioridade deles e se tornou um alicerce para nossa família.
+
+Como meu pai não teve uma formação educacional sólida, os melhores empregos que ele conseguia eram em fábricas, que muitas vezes exigiam longas horas de trabalho, inclusive aos domingos. Porém, para passar mais tempo com a família e permanecer em comunhão com outros crentes, meu pai optou por trabalhar na indústria da construção. Nesse tipo de trabalho, no entanto, acontecem muitas demissões, especialmente no inverno.
+
+Não é exagero dizer que houve dias em que a dispensa ficava vazia e sabíamos que ela permaneceria assim até o pagamento do próximo salário do meu pai. Em família, orávamos por comida, e aconteceu de, na manhã seguinte das orações, encontrarmos uma caixa de mantimentos no degrau da porta da frente. Até onde eu sei, meus pais não contavam a ninguém que estávamos sem comida. Mas Deus sabia, e Ele informava nossas necessidades para o coração de alguém. Muitas vezes, não tínhamos ideia de quem havia nos levado comida, mas sempre soubemos que era uma dádiva de Deus.
+
+Nossa eletricidade e água foram cortadas algumas vezes porque não podíamos pagar as contas. Quando estávamos sem eletricidade, nos contentávamos com a luz de velas ou a óleo até chegar o dinheiro do próximo salário.
+
+Em uma das casas em que moramos, o fogão a lenha que ficava no porão era a única fonte de calor. Eu achava o porão assustador — parecia uma caverna subterrânea — e, mesmo quando meu pai estava trabalhando e eu era o homem mais velho em casa, sentia muito medo de descer ao porão para acender o fogão. Minha mãe também não gostava de ir até lá. Eu estudava ou lia no meu quarto embrulhado em cobertores; mesmo com muito frio, dificilmente eu descia para o porão.
+
+Por conta da falta de eletricidade, não podíamos dar descarga no banheiro, pois nossa água corria em uma bomba, então tínhamos de pegar um balde de neve na rua e despejá-la no vaso sanitário para limpá-lo. Lembro-me de quando ficávamos sem papel higiênico e não tínhamos dinheiro para comprar mais ou o dinheiro que tínhamos estava sendo poupado para necessidades maiores. Nossos pais nos ensinaram a fazer papel higiênico usando jornal velho, amassando as páginas e esfregando-as para amolecê-las para uso.
+
+Às vezes, tínhamos de juntar dinheiro para meu pai comprar gasolina, para que ele pudesse ir trabalhar. April e eu contribuíamos com as moedas que eventualmente tínhamos guardadas. Colocávamos o que tínhamos na mesa, contávamos o dinheiro e o entregava ao nosso pai:
+
+— Pai, aqui estão 3,50 dólares.
+
+Não vivíamos assim o tempo todo, mas aconteceu o suficiente para que eu tenha lembranças claras de como foram essas experiências.
+
+Usávamos roupas de segunda mão, mas nossos pais fizeram o possível para garantir que tivéssemos o que precisávamos. Se um de nós precisasse de uma calça jeans ou sapatos, nós ganhávamos. De vez em quando, tínhamos dinheiro suficiente para comer fora em um lugar como o Wendy’s — e comer fora, mesmo que fosse fast-food, era um verdadeiro deleite.
+
+De salário em salário, meus pais viviam pela fé. Eu os observava atentamente e me surpreendia com a fé deles em circunstâncias difíceis e estressantes. Lembro-me de que, nos momentos em que nossas necessidades eram grandes, meu pai pegava o violão e conduzia alguns momentos de adoração em família. Apesar das circunstâncias, ele tocava e cantava com uma alegria incrível. Para meus pais, Deus realmente era bom o tempo todo.
+
+Precisei muito do exemplo dos meus pais. Quando comecei a frequentar a escola, passei a comparar nossa situação com a das famílias de colegas de classe. Essa percepção me deixou com vergonha de ser pobre.
+
+Nossa escola participava de um programa governamental que fornecia merenda gratuita para os alunos de famílias de baixa renda. Estar nessa lista era especialmente vergonhoso. Eu sentia tanta vergonha que implorava aos meus pais para que me dessem dinheiro para que eu pudesse ser visto comprando o almoço em vez de ser visto recebendo a comida do programa.
+
+Certa vez, um aluno percebeu e apontou que eu estava usando a mesma camisa pela segunda vez na semana. Me senti tão humilhado que quis me esconder. Mas nunca me ressenti da nossa situação. Eu sabia que meus pais trabalhavam duro para ganhar o máximo de dinheiro possível para nós, e eles não deixavam dúvidas da fé que tinham de que Deus proveria nossas carências. E cada vez que Ele atendia às nossas necessidades, por quaisquer meios, meus pais faziam questão de que nós, crianças, soubéssemos que tudo havia sido providenciado por Deus.
+
+Até mesmo o Ford Pinto.
+
+DANDO E RECEBENDO
+
+Os carros estavam entre os presentes com que éramos abençoados e, com certeza, tivemos alguns veículos interessantes. As pessoas eram gentis em nos oferecer carros, mas, é claro, não eram veículos que poderíamos usar por muitos anos. Nossa família os usava pelo tempo que desse, então Deus colocava no coração de outra pessoa para nos dar nosso próximo veículo. Somos gratos por cada carro que recebemos. Um desses carros foi um Ford Pinto laranja triste e surrado.
+
+Certa vez, minha mãe foi buscar April e algumas amigas dela em uma reunião de escoteiras. Enquanto minha mãe dirigia de volta para casa, ela viu pelo espelho retrovisor que uma das amigas de April estava de olhos arregalados observando as características interessantes do interior do carro.
+
+— Onde você conseguiu esse carro? — perguntou a amiga de April.
+
+— Ganhamos de um amigo — minha mãe respondeu.
+
+A garota retomou a inspeção antes de dizer alto o suficiente para minha mãe ouvir:
+
+— Huumm, um amigo.
+
+Minha mãe riu e continuou dirigindo pela estrada.
+
+Lembro-me de outro carro, também um Ford Pinto laranja. Minha mãe foi me buscar na igreja com ele. Entrei e, olhando para baixo, observei o chão debaixo dos meus pés. Do lado do passageiro o piso estava tão enferrujado que havia grandes buracos no chão.
+
+Fechei a porta e notei um cinto pendurado nela. — O que é isso? — perguntei.
+
+— Aperte a fivela e segure firme — minha mãe me disse. — Se não fizer isso, a porta se abrirá nas curvas.
+
+Nesse caso foi fácil obedecer à minha mãe. Eu segurei o cinto com força por todo o caminho para casa.
+
+Quando cheguei ao ensino médio, praticar esportes me ajudou a ficar bastante popular entre meus colegas de classe. Na verdade, eu era legal demais para o meu próprio bem, mas isso será tratado mais adiante.
+
+Um dia, depois da escola, eu estava conversando com minha namorada enquanto esperava meu pai me buscar. Na verdade, namorada é uma palavra muito forte para descrever nosso relacionamento. Estávamos “saindo juntos”, como dizíamos, mesmo indo para lugar nenhum. Mas, na época, parecia ser um relacionamento sério. Ela era minha namorada e também líder de torcida. Lá estava eu, o jogador de futebol americano popular, tentando parecer legal enquanto conversava com minha namorada líder de torcida, quando ouvi um carro barulhento entrando no estacionamento.
+
+Me virei para olhar, assim como todos que estavam por perto, e vi meu pai chegando em outro Ford Pinto (este era vermelho) que alguém havia nos dado. O carro já não tinha mais o silenciador do escapamento há muito tempo, seria impossível chegar discretamente na escola.
+
+Era um carro enferrujado e batido, e senti que todas as pessoas que estavam por ali me observaram enquanto eu caminhava até ele. Peguei a maçaneta da porta do lado do passageiro e puxei. Não cedeu. Dei outro puxão enquanto tentava não deixar aparentar que aquela já era minha segunda tentativa. Nada. No final, tive de entrar no carro pela janela. Confie em mim, não há como fazer isso sem ser notado. Por eu ser um atleta popular na escola, lidei bastante com alguns constrangimentos, mas nunca me ressenti da situação financeira da nossa família. Eu queria que tivéssemos carros melhores e que não precisássemos ir a brechós para comprar roupas, mas, por causa da atitude dos meus pais, não tenho ressentimentos.
+
+O tempo todo eles trabalharam duro e nos ensinaram a ter fé em Deus e acreditar que Ele atenderia às nossas necessidades. E Ele atendeu, inúmeras vezes.
+
+Não conseguíamos ter muitas das coisas que queríamos, mas isso nos ensinou a apreciar os momentos em que recebemos o que estava em nossas listas de desejos.
+
+O Natal era muito importante em nossa casa. Eu sempre tive problemas para dormir na noite de Natal e, invariavelmente, acordava por volta das três da manhã e perguntava aos meus pais:
+
+— Podemos, por favor, levantar? Podemos, por favor, levantar? Eles me mandavam de volta para a cama, e eu tinha de esperar até uma hora mais decente para me levantar e abrir os presentes.
+
+Meus pais também ficavam empolgados com essa data, porque economizavam todo o dinheiro que desse para comprar presentes para tornar a manhã de Natal especial para todos nós.
+
+Um presente que me lembro claramente quando recebi demonstra como aprendemos a apreciar o que outras crianças de nossa idade podiam considerar um presente sem importância. Eu gostava muito de esportes e, em um Natal, recebi uma mochila Nike para levar todo o meu equipamento esportivo. Fiquei tão feliz! Eu carregava aquela bolsa sempre que precisava transportar meu equipamento.
+
+Embora tenha adorado ganhar a mochila e ela fosse muito prática, o mais importante era saber que meus pais tinham feito alguns trabalhos ocasionais e economizado para me dar um presente. Espero que meus filhos tenham o mesmo apreço que eu tinha quando jovem. Embora estejamos em uma posição financeira diferente da que meus pais estavam, minha esposa e eu queremos que nossos filhos saibam que os presentes que recebem de Natal são bênçãos de Deus. Provavelmente, essa lição é mais fácil de ensinar quando uma família tem menos recursos, como foi o caso da minha.
+
+Embora meus pais não tivessem muitos recursos materiais, eles se doavam às pessoas. Eram ótimos em doar tempo e atenção aos outros — dois recursos que as pessoas têm para oferecer, mas geralmente não percebem.
+
+Além dos estudos bíblicos e dos grupos da igreja, meus pais também foram tutores de meninos problemáticos.
+
+Quando eu tinha seis anos, eles começaram a trabalhar com um grupo que fornecia abrigo para adolescentes que estavam com problemas. Pelo menos oito garotos ficaram conosco ao mesmo tempo, e alguns tinham histórias muito difíceis.
+
+Meus pais foram orientados de que não haveria problema se eles falassem sobre Jesus e nossa fé com os meninos, mas apenas se eles perguntassem alguma coisa. Porém, quando meus pais compartilharam o Evangelho com os meninos que demonstraram interesse, o grupo desaprovou.
+
+Como consequência, meus pais deixaram o programa depois de um ano. Mas meu pai conseguiu um emprego em um lar para meninos, então constantemente recebíamos em casa garotos e até alguns adultos que precisavam de ajuda. Uma mulher idosa cadeirante morou conosco por um tempo. Também havia um policial que procurava meus pais com frequência para saber se poderíamos abrigar um ou outro garoto problemático. E nosso pastor contatava meus pais sempre que pessoas que ele conhecia precisavam de um lugar para ficar.
+
+Em duas ocasiões diferentes contribuí com esse programa. Os garotos não eram meus amigos íntimos, mas eu sabia que eles viviam situações difíceis em casa e perguntei a meus pais se eles poderiam ficar conosco.
+
+— Se você não se importa em dividir o quarto com eles — responderam.
+
+Para mim isso não era problema, e quando os pais desses garotos concordaram em deixá-los morar conosco por um tempo, tive novos colegas de quarto.
+
+Meus pais gostavam de pessoas problemáticas, especialmente jovens, e queriam proporcionar o ambiente familiar estável que a maioria deles não tinha. E eles faziam isso mesmo sem condições financeiras.
+
+Mas Deus sempre atendeu às nossas necessidades.
+
+Um adolescente chamado Todd morava conosco. Ele era um garoto grande e com muito apetite. Um dia ele abriu a geladeira e não havia muito o que comer.
+
+— Teri — ele perguntou à minha mãe —, o que vamos jantar? — Não se preocupe com isso — respondeu ela. — Tem comida aí, você simplesmente não está conseguindo ver.
+
+Todd lançou-lhe um olhar estranho e fechou a porta da geladeira. Na hora do jantar, minha mãe juntou tudo o que encontrou na geladeira e nos armários. Quando Todd chegou à mesa da cozinha, precisou olhar duas vezes para acreditar na ampla variedade de alimentos. Todd comeu tudo o que pôde e deixou a mesa espantado com a fartura do que antes pareceu ser tão pouco.
+
+Não importa quão acostumados estamos em ver Deus prover, nossa família se sente surpreendida a todo momento. Nós realmente entendemos que Deus sempre atendeu às nossas necessidades.
+
+A BATALHA INTERIOR
+
+Minha mãe gosta de contar a história de quando ganhamos uma caixa térmica cheia de fígado de boi. Comemos muito fígado por um tempo, e minha mãe se lembra de ter orado:
+
+— Senhor, gostaria que tivéssemos algo diferente para comer. Pouco depois de orar, ela leu em Deuteronômio a parte em que os israelitas são lembrados de como o Senhor os havia auxiliado no deserto. Os israelitas estavam queixosos e reclamavam porque o Senhor havia lhes dado maná para comer todos os dias e eles estavam cansados de comer a mesma comida repetidamente.
+
+Enquanto minha mãe lia, o Senhor a lembrou: Estou providenciando para você. Estou fazendo isso para testá-la e saber o que está em seu coração e para que se sinta grata. Assim, quando você entrar na terra da abundância, não Me esquecerá.
+
+Ocorreu à minha mãe que Deus estava suprindo nossas necessidades e que nossas necessidades não eram o que o americano típico consideraria necessidade. Minha mãe não foi criada em um ambiente de escassez. Sua família tinha muita fartura. Eles tiravam férias e ficavam em bons hotéis. Não era nada parecido com o modo como estávamos crescendo.
+
+Mas desde o dia em que minha mãe se tornou cristã, ela olhava para momentos de necessidade com essa pergunta em mente: como seria ser um missionário? Ela pensava nos missionários e nas condições que alguns deles escolheram viver a fim de levar a mensagem do Evangelho aos não salvos, e optou por olhar para as coisas com a mentalidade do missionário. Até hoje, quando alguém conta para ela um conjunto aparentemente difícil de circunstâncias pelas quais está passando, ela recomenda:
+
+— Pense como um missionário.
+
+Com tantas pessoas diferentes entrando e saindo de nossas casas, meus pais tiveram muito cuidado para garantir que nós, como filhos, recebêssemos a atenção de que precisávamos. Não me lembro de ter pensado que as outras crianças estavam tirando algo que eu deveria ter. Hoje, olhando para trás, entendo que conviver com crianças de origens difíceis talvez tenha me ajudado a manter uma perspectiva adequada sobre o que eu tinha em casa, no tempo e na atenção de meus pais, em vez de pensar nos bens materiais que não tinha.
+
+Mesmo assim, tomei algumas decisões ruins em resposta às circunstâncias que enfrentamos enquanto crescemos.
+
+Aos quatro ou cinco anos, aceitei Jesus em meu coração e cresci como um bom garoto que frequenta a igreja. No ensino médio, porém, comecei a me desviar pela primeira vez.
+
+Eu me destacava no esporte, me exercitava muito e estava em boa forma. Quando cheguei à idade em que podia praticar esportes coletivos na escola, especialmente futebol americano, minha capacidade atlética me proporcionou um bom status entre os colegas.
+
+Comecei a frequentar um curso para provar que podia fazer o que quisesse. Sinceramente, acho que não estava passando por um momento de rebeldia, porque não sei contra o que eu estava me rebelando. Não estava com raiva dos meus pais. Não estava bravo com a igreja. Mesmo sendo pobre, não estava bravo com o que alguns chamariam de “sistema”. Mas acho que, depois de crescer em um ambiente humilde, ser um atleta popular na escola me fez querer testar quanto eu poderia esticar meus limites. Eu não fazia algumas coisas de que meus amigos desfrutavam. Então pensei: agora vou me divertir. Na verdade, eu estava realmente inseguro e tentando ser aceito.
+
+Acabei em um cabo de guerra interno. Eu sabia o que era certo; tive influências positivas em casa e na igreja. No entanto, ao mesmo tempo, meu desejo de fazer parte da turma estava me puxando na direção oposta.
+
+Para apaziguar meu lado que queria “ser legal”, comecei a frequentar festas e a beber. E, quando bebia, me sentia muito mais corajoso e procurava briga. Como eu era um dos garotos mais fortes da minha classe, realmente não havia quem quisesse brigar comigo, então eu agia como um macho ofendido e desafiava as pessoas — eu sabia que ninguém cairia na provocação e que provavelmente não precisaria bater em ninguém. Por outro lado, não me importaria se alguém se atrevesse a me desafiar.
+
+Eu também usava meu status e força para defender alguns protegidos. Não me interessava ser aceito pelos alunos mais populares — eu não estava entre os mais legais e não queria estar. Porém, ainda assim, eu era popular. E por não ter sido popular por boa parte da minha vida, pelo menos até aquele ponto, ficava atento às oportunidades de proteger as crianças mais pobres ou menos populares que eram ridicularizadas. Se eu visse alguém no grupo delas sendo perseguido, entrava em cena e mandava o valentão parar, e normalmente ele parava sem que eu precisasse agir de fato. Embora nem sempre estivesse fazendo coisas boas, ainda tinha muitas coisas boas em mim.
+
+Eu não dei as costas a Deus. Ainda ia à igreja e fazia as “coisas da igreja”. Uma característica que eu admirava nos meus pais era a intenção deles de se comportar fora da igreja da mesma maneira que dentro dela.
+
+Não perdi meu senso de certo e errado. Eu sabia a verdade. Se eu estava saindo para uma festa, gostava de beber um pouco antes de chegar, para já estar um pouco entorpecido e com o sentimento de convicção que sentia sempre que fazia esses programas.
+
+Na igreja, eu me convencia das decisões erradas que estava tomando. Dizia a Deus que sentia muito e que queria mudar. Mas então ia para a escola na manhã seguinte e sentia vontade de fazer as mesmas coisas que os outros estavam fazendo. Eu queria fazer o certo, mas ao mesmo tempo não conseguia recusar o que sabia que estava errado.
+
+Era o tipo de batalha interna sobre a qual Paulo escreveu em Romanos 7:21-25:
+
+Acho então esta lei em mim, que, quando quero fazer o bem, o mal está comigo. Porque, segundo o homem interior, tenho prazer na lei de Deus; Mas vejo nos meus membros outra lei, que batalha contra a lei do meu entendimento, e me prende debaixo da lei do pecado que está nos meus membros. Miserável homem que eu sou! Quem me livrará do corpo desta morte? Dou graças a Deus por Jesus Cristo nosso Senhor.
+
+Descobri que, na minha busca por me divertir, eu estava apenas me divertindo. Os momentos divertidos não foram duradouros. Eles não poderiam durar porque, como sabia no meu coração, a fonte da minha diversão estava longe da vontade de Deus. E eu aprendi que a paz que ganho me divertindo dentro da vontade de Deus é muito melhor.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 5;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 3 - Liberdade$t$, 5,
+$conteudo$Meu pai tinha um violão que ele tocava em casa durante os cultos em família e nos momentos devocionais; muitas vezes liderava o culto na igreja. Embora seu violão estivesse à vista em casa, nunca senti curiosidade de tentar tocá-lo porque o esporte — especialmente o futebol americano — era meu principal interesse.
+
+Um dia, quando tinha catorze anos, perguntei ao meu pai se ele poderia me mostrar como tocar alguns acordes. Ele me ajudou a colocar os dedos da minha mão esquerda nos pontos apropriados no braço do violão e, quando passei o polegar direito pelas cordas, o doce som daquele acorde soou como uma obra-prima completa.
+
+— Isso é incrível! — disse ao meu pai.
+
+É difícil de explicar, mas ter o violão em minhas mãos parecia natural. Meu pai me ensinou o que ele aprendeu sozinho e eu rapidamente comecei a aprender o básico. O violão não substituiu o esporte, mas eu estava gostando de tentar aprender a tocar algumas canções.
+
+Com um talento especial para tocar de ouvido — eu ouvia as canções e descobria os acordes sem o auxílio de partitura —, comecei a tocar as músicas que ouvia. As com uma pegada de rock eram as minhas favoritas.
+
+A música secular não era permitida em nossa casa, mas quando meus pais não estavam eu ligava o rádio para ouvir rock clássico ou sintonizava na estação de rádio Top 40. Uma vez, ao sair de casa, troquei a camiseta que estava usando por uma do Lenny Kravitz. Depois troquei novamente a camiseta antes de chegar em casa, mas minha mãe de alguma forma descobriu e ficou brava comigo.
+
+— Como você pode usar algo assim? — ela quis saber.
+
+Comecei a tocar as músicas que ouvia no rádio de artistas como Pearl Jam, Aerosmith e Creedence Clearwater Revival. Da música cristã que eu ouvia em casa (quando minha mãe e meu pai estavam lá), também tirei músicas de artistas como Mylon LeFevre & Broken Heart, DeGarmo & Key e Resurrection Band. A música era parte do lazer em família. Além de adorarmos juntos e de ouvirmos CDs de artistas cristãos em casa, fomos aos grandes festivais de música cristã:
+
+Ichthus (no Kentucky) e Cornerstone (no Illinois). Lembro-me de estar no Cornerstone e pensar: “Seria legal cantar naquele palco”. Claro, eu também pensava na faculdade e, quando assistia a um jogo de futebol americano profissional na televisão, imaginava: “Seria legal jogar nesse campo”.
+
+À medida que captar os elementos musicais das canções que eu ouvia se tornava mais natural, comecei a perceber como as letras de algumas delas pareciam contar a história da vida do letrista. Comecei a achar que a música poderia ser uma válvula de escape para os sentimentos e emoções dos artistas e notei como minhas emoções se agitavam enquanto eu tocava.
+
+Durante um daqueles cabos de guerra entre saber o que é certo e fazer o que é errado, escrevi pela primeira vez a letra de uma canção.
+
+Ela começava comigo olhando no espelho, vendo uma figura cuja vida estava toda fora de forma e em total desespero, e depois pedindo ao Senhor: “You got to set me free from sin” (Você precisa me libertar do pecado). Ela falava de coisas que eu estava vivendo naquele momento: “Whenever I come close to you, I turn back to sin” (Sempre que chego perto de você, volto ao pecado). Dei à música o nome de “Set me free” (Liberte-me). Fiz minha primeira apresentação para meus pais, logo depois que eu a escrevi. Eles ouviram e depois leram a letra com muito cuidado.
+
+Até aquele momento, havia escondido minha vida de festas e bebidas dos meus pais. Certa vez, saí para beber com um amigo e ele bebeu muito mais do que eu e não estava em condições de dirigir. Mesmo não estando exatamente sóbrio e sendo jovem demais para ter uma carteira de motorista, dirigi dez ou quinze minutos até minha casa. Quando entramos pela porta, disse aos meus pais:
+
+— Estamos muito cansados. Vamos para o quarto descansar. Dirigir para casa naquela noite foi uma decisão que eu gostaria de não ter tomado. Eu deveria ter chamado meus pais para nos buscar. As consequências teriam sido bem menores do que se eu tivesse sido pego dirigindo embriagado e sem carteira. Mais tarde, meus pais me disseram que sabiam que eu estava vagando por áreas potencialmente perigosas durante aquele período, mas não faziam ideia de quão longe eu tinha ido, porque tomei o cuidado para que não descobrissem.
+
+Eu não estava me revoltando contra eles, estava apenas fazendo o que dava vontade. Se estivesse me rebelando, gostaria que eles soubessem pelo menos um pouco do que eu estava fazendo. Mas não foi esse o caso, porque eu não queria machucá-los. Não queria decepcioná-los.
+
+Enquanto minha mãe e meu pai liam a letra de “Set me free”, seus semblantes ficaram sérios.
+
+— Isso é muito pesado — disse meu pai. — Você está bem?
+
+“Eles me pegaram!”, pensei imediatamente. Me fiz de desentendido.
+
+— Eu estava pensando em April quando escrevi — disse.
+
+Minha irmã também estava fazendo o que bem entendia. Mas ela tinha ido mais longe e até usou drogas por um tempo. Além disso, meus pais sabiam mais sobre o que ela estava fazendo do que eu. Eles acreditaram na minha mentira e escondi um suspiro de alívio por me esquivar de ser pego naquele momento.
+
+Mas não consegui evitar essa mensagem na primeira música que escrevi.
+
+PRESSIONANDO O BOTÃO RESET
+
+No verão seguinte, no meu segundo ano na McCutcheon High School, em Lafayette, participei de um acampamento de verão de uma semana na Califórnia.
+
+Meu pai inaugurou a Harvest Chapel em Lafayette quando eu tinha catorze anos. Ela é uma igreja da Calvary Chapel e faz parte da comunhão de igrejas não denominacionais que começou em 1965 com a Calvary Chapel de Costa Mesa, Califórnia, liderada pelo pastor Chuck Smith. Como a igreja do meu pai era nova e pequena, ainda não havia um grupo de jovens, por isso eu participava do grupo de jovens da Calvary Chapel de Crawfordsville, a cerca de cinquenta quilômetros de Lafayette. A associação tinha um acampamento de jovens na Califórnia que atraía adolescentes de todo o país, e meu grupo foi para o acampamento. Realizamos alguns eventos para arrecadar dinheiro para a viagem e alguém patrocinou os meus custos restantes.
+
+Do jeito que estava minha vida naquela época, minha empolgação em ir para um acampamento na Califórnia era muito mais social do que espiritual. “Califórnia?”, pensei. “Lugar legal para zoar! Já estou lá!”
+
+Extrovertido como meu pai, fiz amigos rapidamente. Conheci pessoas de diferentes estados — algumas delas tinham atravessado a região da Pensilvânia para chegar à Califórnia.
+
+Mas não demorou muito para que o propósito espiritual do campo ficasse mais importante que os aspectos sociais.
+
+No primeiro culto noturno do acampamento, olhei ao redor e vi as pessoas erguendo as mãos em adoração. Eu já tinha visto adultos, incluindo meus pais, louvando a Jesus daquela forma, mas poucos jovens da minha idade. Percebi que eu estava entre adolescentes que realmente amavam Jesus e tinham um relacionamento forte com ele.
+
+Então admiti para mim mesmo que não tinha o que eles tinham.
+
+“O que tenho feito?”, me perguntei. “O que estou perdendo?” Fiquei envergonhado. Pensei em tudo de errado que estava fazendo — e que sabia que era errado, mas fazia mesmo assim. Esse foi o puxão mais forte para o lado de Deus que eu senti na corda do cabo de guerra. Eu queria sentir o que as pessoas ao meu redor estavam obviamente sentindo.
+
+Jon Courson, hoje pastor da Applegate Christian Fellowship, no Oregon, e comentarista da Bíblia muito conhecido, foi o orador especial. Naquela primeira noite, ele disse que iria falar sobre o Apocalipse. Ouvir um sermão inspirado no Apocalipse, é claro, pode imediatamente causar um bom susto na plateia. Mas Courson falou sobre “dar tudo ao Senhor” de uma maneira que não era assustadora, mas cheia do amor e da misericórdia de Deus. A maneira como sua mensagem chegou para mim não era crítica, como se dissesse: “Você é uma pessoa má”. Era encorajador: “Deus tem muito mais guardado para você”.
+
+Enquanto ouvia, imaginei-me como uma pessoa que havia chegado a uma espécie de precipício. E eu tinha duas opções: poderia dar mais um passo em direção à rebeldia e cair do penhasco, ou poderia abraçar a verdade de que Deus me amava e tinha um plano específico para mim, e entregar meu coração a Ele.
+
+Senti que Deus colocou algumas palavras em meu coração: Quero te usar, mas você está no limite. Você precisa fugir — fugir das tentações do mundo e correr de volta para Mim. Estou bem aqui, esperando por você.
+
+Reentreguei minha vida a Deus naquela noite. Eu queria seguir o seu caminho, inteiramente, por todo o tempo. Não queria mais tentar ser legal e popular, queria parar de perseguir os prazeres mundanos; eles não eram tão gratificantes quanto eu esperava.
+
+Após o culto, liguei para meus pais e contei a eles sobre minha decisão.
+
+— Meus olhos estão abertos — disse a eles — e quero servi-Lo. Fiquei tão animado que não consegui dormir naquela noite. Fiquei deitado no beliche do dormitório pensando na minha vida. Até aquela noite não tinha percebido todo o peso que eu carregava sobre meus ombros. Mas, de repente, a carga tinha sido aliviada. Era como se eu estivesse correndo, uma daquelas corridas que refrescam e aumentam o nível de energia, mesmo com o esforço físico. O cabo de guerra parecia ter finalmente chegado ao fim. Eu estava absolutamente do lado da verdade, não faria mais tentativas de ir contra o que eu sabia que era certo.
+
+Eu me sentia livre, longe da escravidão do pecado. Quando estamos em pecado, confundimos pecado e liberdade, porque parece que podemos fazer tudo que quisermos. Mas estamos errados. Apesar de esse estilo de vida parecer, em um primeiro momento, com liberdade, na verdade é uma escravidão — a escravidão do pecado.
+
+É comum reconhecermos quem usa álcool e drogas porque as evidências aparecem claramente em seu corpo e rosto. Essas pessoas não parecem pacíficas. O pecado nos sobrecarrega e naquela noite percebi o peso do meu fardo. Estava me sentindo “saudável” novamente.
+
+Durante o louvor e adoração na noite seguinte, ergui minhas mãos junto das outras pessoas. Experimentei o que elas possuíam — e não demorou muito para entender que eu até então tinha perdido uma experiência que valia a pena perseguir com todo o meu coração.
+
+Os estudos bíblicos e os serviços durante o resto da semana ganharam vida para mim. Courson continuou ensinando com base no Apocalipse, enfatizando como a igreja pode se afastar da vontade de Deus e a importância de os cristãos serem puros em todas as suas palavras, ações e motivações. Muitas vezes, enquanto ele falava, pensei: “Ah, exatamente como eu faço. Você está falando diretamente comigo?”.
+
+Uma passagem que estudamos tratava da igreja em Laodiceia. Das sete igrejas abordadas no início do Apocalipse, essa tinha se tornado indiferente. A igreja de Laodiceia estava vivenciando seu próprio cabo de guerra entre fazer a vontade de Deus e buscar os prazeres mundanos. A forma de agir da igreja em Laodiceia tornou-se tão desagradável para o Senhor que Ele proferiu essas palavras em Apocalipse 3:16: “Assim, porque és morno, e não és frio nem quente, vomitar-te-ei da minha boca”.
+
+Essa não é exatamente a imagem mais agradável da Bíblia, mas a igreja não muito quente e muito fria tornou-se tão ineficaz que não serviu para entrar no reino de Deus. A ideia de Deus vomitando os mornos laodiceianos chamou minha atenção, porque eu tinha sido morno com Ele nos últimos anos. Eu não tinha utilidade para o Seu reino.
+
+Esse versículo foi como um aviso para mim, mas um aviso cheio de amor. Sim, eu estava confuso. Eu sabia que estava. Eu sabia disso até quando estava fazendo algo errado. Mas o tom com o qual a mensagem foi enviada me fez entender quanto Deus me amava. Ele mandou essa mensagem porque me amava e porque queria o melhor para mim. E dessa forma percebi que ele também queria o melhor de mim.
+
+De repente, tudo o que havia feito anteriormente parecia muito vazio. Era como se um botão reset gigante estivesse sendo pressionado na minha vida e eu estivesse embarcando em um modo de vida totalmente novo.
+
+A partir daí, as conversas que tive durante o restante do acampamento se concentraram menos em tentar saber de qual estado as pessoas vinham e ficaram mais concentradas em saber dos nossos estados espirituais. Tive uma conversa especial com um amigo de nosso grupo de jovens na qual prometemos voltar para casa e nos tornar exemplos para as pessoas do nosso grupo.
+
+— Vamos fazer isso direito — prometemos. — Vamos servir ao Senhor.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 6;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 4 - A ligação$t$, 6,
+$conteudo$Retornei do acampamento uma pessoa diferente. Confessei a meus pais sobre as festas e a bebedeira. Um pouco antes de sairmos para o acampamento, o pai de um amigo próximo encontrou bebida em sua caminhonete. Quando meus pais souberam daquilo, perguntaram-se se eu estava bebendo também, mas, por conta do acampamento, não tiveram a oportunidade de confrontar-me.
+
+— Suspeitamos que pudesse estar fazendo algo como aquilo — eles me disseram quando voltei para casa. — Mas estamos felizes em saber que o Senhor está trabalhando em seu coração.
+
+Por minha decisão de voltar a dedicar-me no acampamento, meu coração estava de bem com Deus. No entanto, permanecia no centro de uma batalha.
+
+Comecei a ir mais a fundo na Bíblia e a Palavra de Deus passou a ter uma significação que nunca tinha percebido. Estudar a Bíblia com o senso de liberdade que eu queria fez as leituras anteriores parecer terem sido feitas com um véu sobre meus olhos. Mas com aquele véu erguido, as palavras saltavam das páginas loucamente e iam direto para o meu coração.
+
+Ainda assim, apesar da mudança, eu sabia que haveria percalços em afastar-me completamente da minha antiga conduta.
+
+Com o verão chegando ao fim, comecei a ficar ansioso para voltar ao colégio, o McCutcheon High, onde eu me tornara um participante popular na cena festeira. Meus velhos amigos estariam lá e, junto a eles, a tentação de voltar aos antigos hábitos. Eu sentia Deus dizendo: Você ainda não está pronto. Eu não era a pessoa clara e direta que sou hoje sobre compartilhar que Jesus Cristo é meu Senhor e Salvador. Com todas as inseguranças da adolescência, eu poderia facilmente ser influenciado. A igreja em Crawfordsville na qual eu frequentava o grupo de jovens tinha uma escola muito pequena, chamada Maranatha Christian School, e pensei que ela poderia servir-me de abrigo naquele estágio da minha nova caminhada em Cristo. Obviamente, estudar em uma escola particular custaria muito dinheiro. Embora a situação financeira da nossa família tivesse melhorado, meus pais me disseram que não havia como me matricularem na Maranatha, mesmo que fizessem todos os sacrifícios imagináveis para tornar aquilo possível.
+
+Liguei para a escola e perguntei se havia a possibilidade de eu trabalhar lá para pagar pelo meu ensino.
+
+— Posso ser o zelador ou qualquer coisa de que precisar — ofereci.
+
+A direção da escola acabou permitindo.
+
+O próximo obstáculo era como eu chegaria à escola, pois não tínhamos um carro extra. Contudo, um pastor que passava grandes temporadas na Ucrânia tinha um carro que só usava quando estava em casa durante o verão, e o ofereceu para eu usar enquanto estivesse fora.
+
+Meus pais — talvez sobretudo meu pai naquele ponto — não estavam convencidos, no entanto, de que estudar naquela escola daria certo.
+
+— Confiem em mim, não posso ir para minha antiga escola este ano — disse a eles.
+
+Meu pai estava animado com a próxima temporada de futebol, pois eu seria o running back do McCutcheon Mavericks e provavelmente teríamos um time muito bom. Ele ficou tentando me convencer de que estar no time de futebol me daria uma ótima plataforma pela qual eu poderia falar a todos os jogadores sobre ser cristão.
+
+— Mas eu não sou um líder — falei para ele. — Sei que não sou um líder.
+
+Porém, apesar dos meus apelos e esforços, fui mandado para o McCutcheon High.
+
+No primeiro dia de aula, eu não queria ir de jeito nenhum. Até me vestir foi um verdadeiro fardo. Eu tinha medo de que, se entrasse nos corredores daquela escola de novo, me afastaria do Senhor.
+
+Sentei com minha mãe na sala de estar enquanto esperava relutante pelo ônibus da escola. Meu pai, que estava tomando banho, apareceu na sala.
+
+— Jeremy — disse ele —, o Senhor falou comigo enquanto eu estava no chuveiro. Ele me disse que, se você está dizendo que não pode fazer isso, e que Ele falou a você que precisa ir para Maranatha, então eu tenho de deixá-lo ir.
+
+Minha mãe ficou radiante, pois disse que ir para Maranatha era o que seu coração queria para mim. Eles me matricularam no mesmo dia.
+
+É difícil explicar o motivo, mas eu sabia que devia ir para aquela escola, que isso era parte do plano de Deus para mim. Com Deus dando-me uma maneira de estudar em Maranatha — além de um modo de chegar lá com o carro emprestado —, ser admitido na escola foi, para mim, como se ouvisse as palavras de Jeremias 29:11: “Porque eu bem sei os pensamentos que tenho a vosso respeito, diz o Senhor; pensamentos de paz, e não de mal, para vos dar o fim que esperais”.
+
+Eu ficava na escola uma hora a mais por dia para limpar os banheiros e aspirar o chão. Acho que eu era um bom zelador, sobretudo para um adolescente! Eu tinha orgulho do meu trabalho e realmente queria que os banheiros e o chão ficassem limpos.
+
+Aprendi com toda aquela esfregação e aspiração que, se Deus o chama para algum lugar, você faz tudo que tiver de fazer para realizar aquele chamado. Eu teria feito tudo que fosse necessário para estudar naquela escola.
+
+Quando me perguntaram se eu podia limpar os banheiros, respondi:
+
+— É claro.
+
+O exemplo de fé e compromisso que meu pai me ensinou refletia em minha resposta. A igreja que ele começou era pequena no início e não tinha condições financeiras para pagar-lhe um salário. Ainda assim, é claro, ele trabalhava em período integral para a igreja. Ali estava meu pai, com quatro filhos em casa para criar e alimentar, tocando uma igreja recém-nascida que Deus o levou a iniciar e que, para sobreviver, teve de trabalhar em uma pizzaria, fazendo e entregando pizzas. Eu sabia que aquela tinha sido uma fase para tornar meu pai mais humilde, mas ele nunca permitiu que se tornasse humilhante.
+
+Minha hora diária limpando cômodos e o chão era uma tarefa que faria de mim uma pessoa mais humilde, e nunca me senti envergonhado ou humilhado como aconteceu quando meus pais me buscavam na escola dirigindo carros caindo aos pedaços. A diferença é que agora eu estava servindo a Deus, e, como resultado, minha percepção de vida estava mudada. Quando era mais jovem, sofri com inseguranças, pois estava tentando encontrar a segurança em coisas. Mas quando comecei a servir a Deus com todo o meu coração, percebi que minha segurança estava Nele.
+
+Meu pensamento era: “Cara, Jesus me ama. Eu O servirei completamente. Então farei tudo que tiver de ser feito. Sim, vou limpar banheiros, não me importo”.
+
+Nunca me senti tão seguro do que quando carregava um escovão e empurrava um aspirador de pó.
+
+ADEUS AO FUTEBOL
+
+Mudar de escola afastou-me das festas das quais eu não queria mais participar. Mas também me afastou do futebol americano, e isso foi difícil para mim.
+
+Eu tinha um objetivo real de jogar futebol quando saísse da escola. Ao longo do tempo, joguei futebol, beisebol e basquete. Destaquei-me no beisebol, que comecei a jogar aos cinco anos. No entanto, no primeiro ano, tive mononucleose e, quando voltei para o time, o treinador me disse:
+
+— Você terá de compensar o tempo perdido correndo.
+
+Ciente de que a mononucleose poderia voltar se eu fizesse esforço excessivo cedo demais, falei que estava preocupado em ficar doente de novo se corresse tudo aquilo.
+
+— Sinto muito — respondeu o treinador —, não é justo com o resto do pessoal que estava aqui correndo e treinando todos os dias.
+
+Então, desisti do beisebol. No segundo ano, cresci bastante antes da temporada de beisebol começar e o treinador queria que eu voltasse para o time. Isso foi quando eu era muito legal para o meu próprio bem e falei para ele que não estava interessado em jogar no time dele — como se eu não jogar beisebol fosse lhe ensinar uma lição.
+
+Além disso, com meu recente crescimento, o futebol americano começou a fazer seu caminho para o status de favorito em minha lista de esportes. Comecei a jogar na sexta série. No segundo ano do ensino médio, eu jogava realmente bem. Jogando tanto no ataque quanto na defesa, era rápido, forte e sabia como correr com a bola. Durante aquela temporada, comecei a pensar que o futebol americano poderia ser minha rota para a faculdade.
+
+Quando decidi não retornar para a escola pública no terceiro ano, informei o treinador.
+
+— Não posso fazer isso. Não posso voltar para essa escola. Um olhar chocado cruzou seu rosto.
+
+— Por que não? Você faz parte do time.
+
+— Deus mudou meu coração e tenho de me afastar disso.
+
+Ele não pareceu entender totalmente minha explicação, mas deixei claro que minha decisão era final.
+
+Ele pareceu concordar.
+
+Já disse que a escola cristã era “muito pequena”. Talvez o melhor seria dizer “muito, muito pequena”. Pelo que me lembro, havia apenas seis pessoas no ensino médio. Nem é preciso dizer que a escola não tinha um time de futebol ou nenhum outro time esportivo.
+
+Apesar de estar aliviado por não estudar mais na escola pública, eu sentia uma falta enorme de jogar futebol.
+
+Às vezes, meu pai e eu dirigíamos até a Universidade Purdue em West Lafayette para tocar canções gospel em uma pequena praça do campus. Os estudantes paravam e ouviam, e, algumas vezes, nossa música criava uma oportunidade de compartilharmos sobre Cristo com eles.
+
+Em uma sexta-feira à noite, estávamos dirigindo para a Purdue quando passamos pela minha antiga escola. As luzes do estádio de futebol estavam acesas e dava para ver suficientemente o interior do estádio para enxergar a torcida na arquibancada e os jogadores no campo.
+
+Comecei a chorar ali mesmo no banco do passageiro do carro do meu pai.
+
+Meu pai sabia quanto eu sentia falta do futebol e, quando viu as lágrimas em meu rosto, ergueu a mão e a colocou em minhas costas.
+
+— Jeremy — disse ele —, você está fazendo o que o Senhor o chamou para fazer. E estou orgulhoso de você.
+
+Mesmo hoje, ao lembrar-me de como me senti ao passar pelo estádio e das palavras do meu pai naquele instante, tenho vontade de chorar. Aquele foi um momento poderoso.
+
+Afastar-me do futebol naquele ano foi uma grande reviravolta em minha vida. Depois de alguns anos fazendo o que eu queria, estava colocando de lado meus próprios sonhos e desejos para fazer o que Deus queria que eu fizesse. Aquilo não foi fácil. Mesmo hoje, sendo adulto, pode ser difícil fazer algo assim. Mas, para servir ao Senhor verdadeiramente, temos de estar dispostos a desistir de coisas que amamos de verdade se elas não estão na linha do desejo de Deus para nossa vida. No meu caso não havia nada de errado em jogar futebol. Não era uma coisa ruim; era uma coisa boa. Porém, refletindo duas décadas depois sobre o caminho que Deus me preparou, Ele tinha planejado para mim algo muito melhor do que futebol.
+
+Sem esportes para jogar na nova escola, comecei a passar mais tempo com a música. Formei uma banda com alguns amigos. Nós tocávamos covers, mas acredito que as bandas de quem estávamos fazendo cover provavelmente não iriam gostar muito se nos ouvissem tocar. Não lembro o nome da banda, mas lembro que, quando as coisas não estavam indo bem para nós, mudamos o nome para Temple Rising. Não mudamos mais nada na banda, apenas o nome, e isso não resolveu nossos problemas.
+
+Meus interesses variavam de artistas cristãos, como Steven Curtis Chapman, até várias bandas de rock diferentes. Ocasionalmente, minhas escolhas musicais demonstravam que, apesar de ter percorrido um longo caminho desde meus dias festeiros, eu ainda tinha desejos que não eram do meu interesse. Não vou dizer que toda música que não é cristã é ruim. Não é o caso. O problema era a atitude por trás das minhas escolhas musicais. Eu não tinha me livrado por completo de toda a minha natureza rebelde. Eu ainda tinha momentos em que queria provar que podia ser eu mesmo e fazer as coisas que eu queria fazer.
+
+Durante esse tempo de exploração musical, comecei a entender mais sobre música e experimentei outros estilos, como um pouco de funk e de reggae. Letras à parte, por eu ser autodidata e capaz de tocar de ouvido, minha influência musical era diversificada.
+
+Contudo, enquanto minhas escolhas musicais eram variadas, comecei a escrever canções para a nossa banda tocar que tinham um foco definido: minha fé crescente em Jesus. Nossa música tornou-se um modo de expressar o que estava acontecendo dentro do meu coração e, gradualmente, meu coração seguia mais e mais para a música.
+
+ENXERGANDO A LUZ
+
+No fim do terceiro ano na escola cristã, fiquei com uma vontade enorme de voltar à McCutcheon High para terminar o ensino médio. Eu queria jogar futebol americano e também colocar em prática o que havia aprendido espiritualmente.
+
+Sabia que voltar para a escola pública seria desafiador, mas queria aquele desafio para testar minha espiritualidade. Eu me sentia forte o bastante espiritualmente, mas ainda restavam alguns medos de quando escolhi estudar na Maranatha.
+
+Eu queria desesperadamente jogar futebol americano, mas ao mesmo tempo não queria passar o último ano inteiro na McCutcheon. A solução foi seguir um programa intensivo que permitia minha formação nas férias de Natal.
+
+A temporada de futebol não correu como eu esperava.
+
+Primeiro, embora eu ainda amasse o esporte, já não estava mais tão ligado nele quanto antigamente. Antes do acampamento na Califórnia, o futebol era minha vida. Agora servir a Deus era minha vida. Além disso, o ano afastado do futebol tornou alcançar meu objetivo de jogar na faculdade muito mais difícil. Como eu não tinha jogado no terceiro ano, acabei perdendo o ano mais importante para ser notado pelos olheiros das universidades.
+
+Joguei o tempo todo na defesa, mas apenas dividindo o tempo na minha posição favorita, de running back. Não se esperava que nosso time jogasse bem naquela temporada. Por isso, os treinadores queriam dar parte das atribuições a um jogador do segundo ano, para que ele ganhasse experiência e garantisse ao time uma melhoria nas temporadas seguintes. Os treinadores disseram que, como eu não havia jogado na temporada anterior, teria de provar o meu valor. Mas estar em uma situação na qual as oportunidades de carregar a bola estavam divididas entre dois running backs tornou isso muito difícil.
+
+Alguns amigos queriam que eu fosse o running back titular e, nos jogos em casa, sentavam nas arquibancadas e gritavam:
+
+— Passem a bola para o Camp! Passem a bola para o Camp! Meu pai ficou tão frustrado que, depois de um jogo, pediu educadamente para falar com o treinador.
+
+— O Jeremy é mais rápido do que o outro running back? — Sim — respondeu o treinador.
+
+— O Jeremy é mais forte? — Sim.
+
+— No geral, o Jeremy corre melhor? — Ah, sim.
+
+— Então por que não o deixa jogar mais? — concluiu meu pai. — É questão de política?
+
+— Não — respondeu o treinador.
+
+Falar com o treinador assim era atípico do meu pai, mas esses foram tempos frustrantes para nós, pois meu objetivo era entrar na Purdue e ir em frente — a princípio jogar sem uma bolsa de estudos na esperança de ganhar uma para as temporadas seguintes —, e ter uma boa temporada no último ano como running back em uma das escolas locais teria sido de grande ajuda. Mas posso olhar para trás hoje e ver a temporada do meu último ano como se Deus dissesse: Isso não é o que planejei para você. O Senhor simplesmente tinha planos diferentes dos meus.
+
+O meio ano que passei na McCutcheon foi de fato um desafio. Eu ainda tinha algumas das mesmas vontades por prazeres mundanos que antes de reeducar minha vida a Cristo. Não bebia e ia a festas como no passado, mas batalhava contra esses desejos mentalmente. Meus velhos amigos ainda eram festeiros, mas eu não saía mais com eles. Apesar de frequentarmos as mesmas aulas e corredores, parecia que vivíamos em mundos diferentes.
+
+Eu não conhecia nenhum cristão naquela escola e parte do motivo era porque eu não tinha coragem de assumir: “Sou cristão agora”. Eu ainda tentava ser legal e, por causa das vontades que ainda tinha, acreditava erroneamente que não era digno suficiente para ser corajoso por Cristo.
+
+Depois do ensino médio, quando me tornei mais firme com meu testemunho e por causa da minha carreira musical, fiquei conhecido como cristão e acabei cruzando com antigos colegas da escola, que me disseram:
+
+— Cara, eu também era cristão naquela época.
+
+Hoje olho para trás e me pergunto: “O que eu estava fazendo?”. Eu podia ter impactado muito mais se tivesse voltado para aquela escola no último ano, erguido a cabeça e sido corajoso por Cristo. Assertividade agora guia o meu coração com a juventude atual, sobretudo com aqueles que passaram por uma transformação espiritual e em quem Deus realmente trabalhou. Eu os encorajo a ir para sua escola e a liderar uma cobrança pela mudança.
+
+Mateus 5:14-16 diz:
+
+Vós sois a luz do mundo; não se pode esconder uma cidade edificada sobre um monte; nem se acende a candeia e se coloca debaixo do alqueire, mas no velador, e dá luz a todos que estão na casa. Assim resplandeça a vossa luz diante dos homens, para que vejam as vossas boas obras e glorifiquem a vosso Pai, que está nos céus.
+
+Digo aos jovens para pensarem que estão em uma sala grande e escura, onde aparece uma pessoa com uma luz. Então, alguém vê essa luz e aparece com a luz dela. E, então, mais e mais pessoas com luzes aparecem até que todas as suas luzes superem a escuridão. Mas até que uma pessoa se levante e descubra sua luz, a sala permanece na escuridão, como em minha escola. Eu não me levantei e mostrei minha luz, e não soube de alguém que tenha feito isso também. A luz sempre perfura a escuridão e, às vezes, basta uma pessoa corajosa para mudar completamente uma sala inteira.
+
+HORA DE CORTAR LAÇOS
+
+Depois de terminar o ensino médio adiantado, passei a primavera trabalhando em uma linha de montagem de persianas personalizadas da Lafayette Venetian Blind e lutando para decidir o que fazer em seguida: ir para Purdue, estudar administração ou contabilidade, e tentar jogar futebol; ou estudar na Calvary Chapel Bible College na Califórnia.
+
+Hoje reconheço isso como mais um cabo de guerra entre o que Deus planejou para mim e meus desejos egoístas, e tive dificuldade de determinar em qual direção eu deveria ir, ficava indo e voltando.
+
+Meus pais podiam tanto ter me influenciado a estudar na Calvary Chapel Bible College quanto ter tentado me manter perto de casa na Purdue. Não fizeram nenhuma das duas coisas. Eles não ficavam me perguntando: “O que você vai fazer da sua vida?”. Em vez disso, focaram no que eu estava fazendo na época: ajudando em sua igreja, às vezes liderando o culto e tomando parte dos estudos bíblicos.
+
+— Apenas sirva ao Senhor — eles diziam. — Você tem um trabalho a fazer e está servindo ao Senhor.
+
+Essa é a sabedoria que meus pais têm. Meu foco era tentar entender o que Deus queria que eu fizesse em seguida. O foco deles era no que eu estava fazendo por Deus naquele momento, sabendo que, ao continuar servindo a Ele, o Senhor revelaria o que gostaria que eu fizesse.
+
+Certa noite, tive um sonho no qual eu entrava na sala de casa e minha mãe estava ao telefone. Quando ela desligou, perguntei:
+
+— Quem era?
+
+— Era o Satanás — respondeu ela nada alarmada, falando com naturalidade. — Você tem o número dele?
+
+— Sim — respondi.
+
+Acordei suando frio. Não fazia ideia do que o sonho significava, mas me assustou que Satanás estivesse nele. Não tive o sonho novamente, mas ele ficou na minha cabeça por duas semanas. Eu sabia que o sonho tinha um significado, mas não sabia qual era até Deus colocá-lo em meu coração: eu ainda tinha o telefone de Satanás pois não cortara os laços com ele por completo. Era hora de seguir adiante e nunca mais olhar para trás. Eu tenho um plano para você, senti Deus dizer para mim, e quero que se aprofunde em Minha Palavra.
+
+Era isto, a resposta era cristalina: o desejo de Deus era que eu fosse para a Calvary Chapel Bible College.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 7;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 5 - Seguindo para a costa oeste$t$, 7,
+$conteudo$Uma camiseta ajudou a tornar possível minha mudança para a Califórnia para frequentar a faculdade. Quando meu pai se converteu, o Espírito Santo transformou sua vida imediata e radicalmente. Depois de ficar sóbrio na noite em que foi salvo na igreja da Assembleia de Deus, ele parou de beber. Simples assim.
+
+Contudo, sua personalidade extrovertida não mudou e, quando combinada ao seu coração transformado, ele começou a aparecer para as pessoas de outra forma. Meu pai amava Jesus e aproveitava todas as oportunidades para falar às pessoas sobre Ele.
+
+Certo dia, ele foi à academia usando uma camiseta em que estava escrito: “God’s Gym” (Academia de Deus), imitando o logotipo da rede de academias Gold’s Gym. Lembro que algumas pessoas achavam a camiseta ridícula, mas meu pai não se importava muito com o que os outros pensavam de suas roupas.
+
+Logo, um homem na academia aproximou-se e disse: — Gostei da sua camiseta.
+
+O homem se apresentou como Keith March, médico, e os dois se deram bem, pois ele gostava da firmeza do meu pai com sua fé. Eles se tornaram amigos e o dr. March acabou ajudando nossa família e igreja por muitos anos.
+
+Certa vez, quando o dr. March descobriu que não tínhamos nenhum tipo de aparelho de som em casa, ele nos comprou um CD player. Ele também levou nossa família com a dele a um show do Newsboys e pagou para que meu pai e eu acompanhássemos ele e seu filho ao evento Promise Keepers no Colorado. Além disso, ajudou nossa igreja a atender a diferentes necessidades. Observar a generosidade sincera do dr. March realmente impactou aquela época da minha vida.
+
+Quando o dr. March soube que eu queria estudar na Calvary Chapel Bible College (CCBC), disse que pagaria pelo meu primeiro semestre. Fiquei comovido. A CCBC tinha uma configuração diferente das universidades comuns. Universidades particulares podem ser muito caras e a Calvary Chapel era estruturada de tal forma para manter os custos o mais baixo possível.
+
+Primeiro, a faculdade tinha um programa de graduação de dois anos (hoje há programas de quatro anos). Segundo, não era uma universidade credenciada, o que permitia que contratasse pastores que talvez não tivessem os diplomas necessários para lecionar em uma que fosse, mas ainda assim possuíam experiência e conhecimento para treinar estudantes para o ministério.
+
+Mesmo sabendo que o custo seria menor comparado a outras faculdades, também sabia que seria preciso uma combinação da provisão de Deus com meu trabalho duro para pagar pelos estudos. Eu tinha guardado o que podia do meu trabalho na fábrica de persianas e outros anteriores, mas não era muito. Então sabia que teria de trabalhar para conseguir bancar a universidade.
+
+O fato de o dr. March ter pago meu primeiro semestre permitiu-me iniciar os estudos livre de pressão financeira e também a guardar dinheiro dos trabalhos que fiz na Califórnia para os semestres seguintes. O dr. March foi mais uma bênção que Deus colocou em minha vida e na da minha família.
+
+Comecei na CCBC no outono de 1996 e fiquei muito feliz de estar lá. Frequentar um ambiente estudantil cristão foi importante para mim, pois acreditava que precisava de tempo para me afastar dos prazeres mundanos com os quais me envolvi durante o ensino médio.
+
+Salmos 24:4 descreve a pessoa que pode estar no lugar santo do Senhor como “Aquele que é limpo de mãos e puro de coração, que não entrega a sua alma à vaidade, nem jura enganosamente”. Essa pessoa que é limpa de mãos e pura de coração era quem eu queria ser, um autor de mudanças tão em busca de Deus que não podia me distrair por meus próprios desejos e prazeres mundanos.
+
+Eu tinha certeza de que havia sido chamado para o ministério, mas não sabia para qual tipo. Eu gostava de tocar violão e liderar cultos na igreja do meu pai, e escrever canções de vez em quando servia tanto como escape criativo quanto como uma rota para expressar meus sentimentos e minha fé. Porém, eu ainda não pensava na linha musical como meu ministério.
+
+No entanto, sabia que queria aprofundar-me na Palavra de Deus. Não queria meramente ler as escrituras e pensar: “Isso foi legal”. Eu queria compreender o que estava lendo. Eu queria pegar uma parte, estudá-la a fundo e dizer: “O.k., agora eu sei isso tudo. Agora vou pensar um pouco sobre isso e perguntar ‘O que essa passagem está realmente fazendo com meu coração?’”.
+
+Experimentar verdadeiramente uma fé transformadora em Jesus significa pegar Sua Palavra das páginas da Bíblia e permitir que Ela se aloje em nosso coração para direcionar nossas ações.
+
+Então eu lia e perguntava: “O que está dizendo, Senhor?”. Às vezes, orava: “O que quer dizer com isso, Deus?”. Depois meditava sobre a passagem. Eu gostaria de destacar Filipenses 4:8, que diz: “Quanto ao mais, irmãos, tudo o que é verdadeiro, tudo o que é honesto, tudo o que é justo, tudo o que é puro, tudo o que é amável, tudo o que é de boa fama, se há alguma virtude, e se há algum louvor, nisso pensai”.
+
+Se um pensamento não encontrava o checklist do apóstolo Paulo, eu não queria dar-lhe prioridade em minha mente.
+
+Por último, eu queria dar o próximo passo para viver segundo a Bíblia. A Palavra de Deus é viva e eficaz. Quando nós realmente a estudamos e sobre Ela meditamos, Ela faz algo dentro de nós. Escolhi um plano simples: abrir minha Bíblia em Gênesis e estudar profundamente Apocalipse. A CCBC tinha uma forte ênfase em aulas sobre a Bíblia. Desde o começo do meu primeiro semestre, sabia que precisava do estudo aprofundado em classe para acompanhar o que desejava aprender em meu tempo devocional particular. Eu era uma esponja nas aulas.
+
+APROFUNDANDO
+
+Com menos de um mês na CCBC, passei por um momento monumental. Estávamos estudando o Evangelho de João e o professor, o pastor Chuck Wooley, estava falando sobre Jesus e Seu amor, e a necessidade de parar e ter nosso coração limpo.
+
+O pastor Wooley era um professor incrível, e, quanto mais ele falava sobre limpar nosso coração, mais as emoções começavam a estruturar-se dentro de mim. Eu estava faminto espiritualmente e precisava daquela limpeza da qual ele falava.
+
+Era uma aula noturna, a última do dia. Hoje o campus da CCBC fica em Murrieta, Califórnia, mas durante meu primeiro semestre a faculdade mudou-se para lá de Big Bear, Califórnia, uma linda região nas montanhas a nordeste de San Bernardino. No topo das montanhas eu podia respirar fundo e mergulhar no aroma suave dos pinheiros ao redor.
+
+O campus era pequeno — com cerca de quinhentos estudantes — e o santuário ficava em um local recuado parecido com um chalé. Escolhi um lugar nos fundos, me sentei e comecei a chorar. Chorei por quase duas horas sem parar, com a cabeça enterrada nas mãos a maior parte do tempo.
+
+Certamente era uma visão notável. Eu não estava sentado na cadeira, mas no encosto dela e com meus pés no assento. Era robusto devido aos treinos e, dado o pequeno número de alunos, todo mundo sabia que eu era de Indiana. Além disso, tinha o cabelo longo que usava preso em um rabo de cavalo para deixar as laterais raspadas aparecendo.
+
+Nem é preciso dizer que tive dificuldades de começar na CCBC. Ali estava um cara corpulento, extrovertido, do centro-oeste, com um penteado estranho, chorando, chorando e chorando.
+
+Havia outros estudantes no santuário, mas não me importei. Quando alguém perguntava se estava tudo bem, eu olhava para a pessoa e dizia:
+
+— Deus está trabalhando em mim.
+
+Então, enterrava a cabeça de novo nas mãos e voltava a chorar. Em seu Evangelho, o profeta Ezequiel discursa sobre um tempo em que Deus dava às pessoas de Israel um novo coração e colocava um novo espírito dentro delas. Quando as lágrimas cessaram e comecei a refletir sobre o que havia acabado de acontecer ali, senti que Deus me dera um novo coração e colocara um novo espírito dentro de mim.
+
+Não é que houvesse algo terrivelmente ruim com meu coração. Eu era cristão, vivia como um e em busca de desenvolver uma relação ainda mais próxima com Cristo. Mas, ainda assim, havia muita bobagem ali dentro.
+
+O melhor jeito de descrever o que aconteceu seria comparar meu coração a um closet necessitando de uma limpeza radical. Você guarda o que deve continuar no closet, joga fora algumas coisas e reorganiza os itens que precisa manter. Depois, você limpa o chão para que possa efetivamente entrar no closet de novo. Quando o trabalho termina, você está cansado, pois sabe que passou por uma grande reforma, e percebe quanto ela valeu a pena quando observa que o ambiente agora parece ser novo em folha.
+
+Eu esperava que fosse assim que Deus estivesse olhando para meu coração quando saí do santuário. Por outro lado, tinha certeza de que me sentia melhor pelo que havia acontecido. Muita bobagem fora removida. Eu cresci cansado de todas aquelas bobagens ao meu redor; de fato, odiava tudo aquilo. Queria ter me afastado, mas minha inabilidade de jogar todos aqueles desejos egoístas fora tornara-se um obstáculo.
+
+Daquele momento em diante, tornei-me por inteiro de Deus. Uma das mudanças que notei logo de cara foi a compaixão pelos outros. Sempre fui respeitoso e bondoso com as pessoas, pois foi assim que meus pais me ensinaram a ser. No entanto, ser bom e respeitoso é só uma parte de ter um coração que dói pelos outros. O coração que dói pelas pessoas é resultado da compaixão. Quando permitimos que Cristo nos deixe ver as pessoas como Ele as vê, notamos mais situações ao nosso redor nas quais a esperança divina é necessária. Nós não apenas sentimos por aquelas pessoas, sentimos compaixão por elas.
+
+Não é que eu precisasse mudar para as pessoas gostarem de mim ou quererem estar perto de mim. Eu precisava mudar para que Deus pudesse trabalhar através de mim como eu queria que Ele fizesse — e como Ele queria. Não era para meu próprio benefício, precisava mudar para que os outros pudessem se beneficiar — e, assim, Deus ser glorificado.
+
+Aparentemente, meu amor pelas pessoas aumentou de forma exponencial.
+
+Eu via alguém sentado em um banco do campus, parecendo deprimido ou angustiado, e meu coração começava a doer por aquela pessoa. Então, eu sentia um empurrão em meu espírito para ir até ela e dizer-lhe que Jesus a amava, que havia esperança em Cristo e que Jesus tinha muito para lhe dar. Tornou-se uma missão pessoal compartilhar o amor e a esperança de Jesus com os outros. E essa missão não apareceu meramente do conhecimento adquirido em sala de aula, pois experimentei Sua presença em meu momento solitário naquele assento do santuário.
+
+Na primeira vez que retornei a Indiana, desculpei-me com meu irmão Jared e pedi seu perdão por não ter sido um irmão melhor para ele. Jared era oito anos mais novo que eu e a diferença de idade provavelmente foi o motivo de não termos sido tão próximos quanto poderíamos ser. Além disso, tínhamos personalidades opostas. Ele era mais reservado, como minha mãe, e eu era mais do tipo “vamos fazer uma loucura”, como meu pai.
+
+Quando minha sensibilidade para com os outros aumentou, percebi que não tinha sido o irmão mais velho exemplar que eu poderia ter sido. Quando pedi seu perdão, Jared graciosamente respondeu:
+
+— Ah, está tudo bem.
+
+Ele herdou isso da minha mãe também. Mas eu sabia que não era bem assim. Tinha perdido oportunidades de ser o irmão mais velho que ele precisava e de ter um impacto positivo em sua vida.
+
+Na faculdade, senti-me mais próximo de Jesus do que nunca. Meus momentos de culto — tanto particulares quanto junto aos outros estudantes — eram incríveis. Nos cultos, a oração me lembrava do poder que senti na primeira noite daquele acampamento de verão; com exceção de que, agora, eu era parte ativa do culto e não apenas uma testemunha. Nós tínhamos ótimas conversas pelo campus. Compartilhávamos necessidades e orávamos juntos. Celebrávamos muito sobre o que Deus estava fazendo em nossa vida, pois tínhamos um interesse profundo uns nos outros. Além disso, aprendemos sobre a educação e a jornada espiritual de cada um.
+
+Nosso corpo estudantil incluía uma ampla variedade de histórias, desde novos cristãos cheios de zelo e paixão até pessoas mais experientes com grande conhecimento da Bíblia. Com todos esses caminhos de vida diferentes juntando-se e as diferentes perspectivas que cada um carregava, nós fazíamos perguntas difíceis sobre a Palavra de Deus e aprofundávamos de fato no significado das escrituras. Quanto mais eu conhecia meus colegas, mais sentia que era capaz de percorrer todos os percalços da vida com eles.
+
+No meu tempo livre, eu ia para alguma parte da montanha, orava e cantava em louvor ao Senhor: “Obrigado, Senhor” ou “Louvado seja, Senhor”. Parecia que eu estava saindo com Jesus!
+
+APRENDENDO A LIDERAR
+
+Pegando emprestada a parábola de Jesus sobre os construtores prudentes e insensatos, eu descreveria minha fundação quando comecei a estudar na CCBC como metade feita de pedra e metade feita de areia. Acredito que a fundação instável é uma das razões pelas quais eu não me senti preparado para voltar à escola pública após o acampamento de verão.
+
+As aulas sobre a Bíblia na CCBC definitivamente solidificaram minha fundação. Nós estudamos a maioria dos livros da Bíblia e realmente interpretamos os livros aprofundados em teologia, como Hebreus, Romanos e Isaías, para citar alguns. No topo das instruções dos nossos professores, também ouvíamos ao que chamávamos de “fitas do Chuck”. O pastor Chuck Smith, que fundou o movimento da Calvary Chapel, era um professor fenomenal da Palavra e escutávamos suas fitas ensinando versículo por versículo. Eu fazia anotações detalhadas sobre o que aprendia da Bíblia nas salas de aula e, durante meu estudo particular, destacava textos, sublinhava palavras-chave e fazia anotações nas margens. Parte por parte, comecei a estabelecer uma fundação sólida e completa na qual iria construir o resto da minha vida.
+
+Musicalmente, eu tocava violão e cantava em meu quarto ou, às vezes, no refeitório, mas a música ainda não era uma área do ministério que estava considerando. Eu só queria aprender tudo sobre a Palavra de Deus. Um dia, estava tocando no refeitório quando alguém perguntou:
+
+— Você toca? — Sim.
+
+— Então toque uma música.
+
+Toquei e, quando terminei, ele disse: — Ah, nossa!
+
+Outra pessoa se aproximou e disse:
+
+— Você deveria liderar o culto na capela. — Sim, eu adoraria.
+
+Fiquei muito ansioso na primeira vez que conduzi o culto na capela. Liderar o culto é como assistir a um game show na televisão: parece fácil até ser a sua vez de fazer. Sou extrovertido e me sinto confortável no palco hoje, mas fiquei muito tímido na primeira vez no altar da capela. Estava tão preocupado em parecer arrogante que fui para o outro extremo. Estava conduzindo, mas de um jeito muito introvertido.
+
+Porém, mesmo assim, durante minha primeira vez liderando o culto na CCBC, pensei: “Uau! Estou gostando disso!”.
+
+Eu já tinha liderado cultos na igreja do meu pai e conduzido estudos bíblicos em casa, mas meu coração havia mudado tanto desde então que pela primeira vez senti que estava ministrando ou realmente usando uma bênção para o Senhor, e que eu estava sendo usado por Ele. Fiquei feliz!
+
+Aquela primeira vez na capela levou-me a liderar cultos duas vezes por semana na CCBC e, depois, a receber convites para conduzir cultos ou cantar algumas músicas em igrejas da região. Eu ficava nervoso todas as vezes, pois tinha medo de estragar tudo.
+
+Para ser honesto, apesar de já ter liderado cultos em Indiana, eu não entendia perfeitamente como conduzi-los. Não lembro quanto tempo levei para aprender, mas cheguei a determinado ponto em que disse para mim mesmo:
+
+— Ei, é só fazer o que você já faz quando está na plateia, mas dessa vez você será aquele que está liderando.
+
+Aprendi então que um líder do culto lidera ao cultuar. Se como líder você está mais preocupado em ter certeza de que as pessoas da plateia estão bem, então você está perdendo a plenitude da profundidade do tempo de adoração. Decidi que, quando estivesse liderando, iria louvar a Jesus. Foi isso o que fiz e as pessoas cultuaram Jesus comigo. Era uma experiência incrível liderar o culto de maneira a fazer os outros cultuarem também.
+
+Eu não tinha um violão próprio, então, toda vez que liderava, cantava em uma igreja ou tocava em meu tempo livre, tinha de pegar emprestado com um amigo.
+
+Depois de o dr. March cobrir meu primeiro semestre, paguei pelo segundo trabalhando no estoque da Staples, loja de material de escritório. No verão seguinte ao segundo semestre, consegui um trabalho em uma construção que ajudou a pagar pelo terceiro semestre. Era tudo o que eu podia fazer para pagar o curso, então comprar um violão estava fora de questão.
+
+Eu nem mesmo tinha certeza se conseguiria terminar o curso, pois não tinha dinheiro suficiente para pagar pelo quarto semestre. No entanto, como eu trabalhara todos os semestres e durante o verão, a faculdade me concedeu um empréstimo estudantil que permitia que eu estudasse o semestre final e recebesse o diploma quando terminasse de pagar todas as mensalidades e taxas.
+
+As oportunidades de ministrar através da música continuaram a crescer. Os estudantes me convidavam para cantar em suas igrejas com seus grupos de jovens ou nos cultos principais. Além disso, entrei para uma banda com outros alunos e, de vez em quando, liderávamos cultos e fazíamos shows no campus. Isso nos permitiu tocar canções que nós mesmos tínhamos composto.
+
+Naquela época, nunca decidi conscientemente fazer uma música, depois sentar e escrevê-la. Minhas canções vinham da minha relação com o Senhor, baseadas em algo que Ele tinha feito em meu coração ou algo que eu lera e que causou uma reflexão sobre Ele. O mais legal é poder rever as letras que escrevi e ver como Deus estava falando comigo. Em uma canção chamada “Looking back” [“Olhando para trás”], o refrão diz:
+
+The cross on which You’ve hung Is not a place for a king to be
+
+Lord, the wounds that stung, You did it all for, You did it all for me.
+
+Essa canção surgiu em uma época em que eu queria sair do meu próprio egoísmo e não tomar como garantido o fato de que Jesus Cristo deu a vida por mim. Minha música tornou-se algo como um ciclo que se autoalimentava, no qual eu escrevia o que estava refletindo e isso me permitia refletir ainda mais sobre o que estava escrevendo. Era como se o aprofundamento da minha ligação com Deus me levasse a ir ainda mais fundo em nossa relação.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 8;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 6 - O dom$t$, 8,
+$conteudo$Quando terminei o curso de formação, decidi ficar na Califórnia e continuar trabalhando como empacotador no supermercado Vons para pagar meu empréstimo estudantil. No final do verão, meus amigos e eu decidimos parar com a banda, então comecei a passar muito tempo saindo com os músicos do cursinho da Calvary Chapel Vista, perto de San Diego, que ficava cerca de meia hora de distância da CCBC. Nós nos reuníamos e tocávamos, e eu também estava ajudando a liderar o culto nos serviços do cursinho.
+
+Naquele outono, Jean-Luc Lajoie, da banda The Kry, estava procurando músicos jovens para formar uma banda para o festival Harvest Crusades. Fui recomendado para Jean-Luc, então ele apareceu uma noite para nos ouvir tocar.
+
+Depois da apresentação, Jean-Luc conversou comigo por alguns minutos, disse que tinha gostado de uma música de minha autoria que havíamos tocado, fez algumas observações e depois falou de seus planos para montar uma banda. Ele disse que estava interessado em conversar comigo sobre a possibilidade de formar uma banda e sugeriu que orássemos sobre o assunto antes de voltar a falar sobre ele.
+
+Gostei de Jean-Luc logo de cara, e começamos a nos encontrar com alguma frequência. Ele tinha um profundo amor por Jesus e, apesar da popularidade do The Kry — os caras eram bem conhecidos nacionalmente, mas na Califórnia eles eram a banda —, ele era realmente um cara pé no chão. Quando os planos de Jean-Luc para formar a banda progrediram, ele me convidou para participar. Eu disse a Jean-Luc que oraria por isso.
+
+Aqueles dias de incerteza depois de terminar o curso tinham algumas semelhanças com a época em que eu estava tentando decidir se iria para a CCBC ou se tentaria jogar futebol na Purdue. Mas havia uma diferença notável. Naquele tempo, minha escolha se resumia basicamente entre a vontade de Deus (CCBC) e a minha vontade (futebol). Mas agora todas as minhas opções tinham a ver com o ministério. Não havia um conflito claro, do tipo “vontade de Deus” versus “minha vontade”.
+
+A igreja do meu pai em Lafayette estava completando cinco anos naquela época, e ele já havia me falado quanto adoraria que eu voltasse para casa e trabalhasse ao lado dele liderando o culto. Mas ele também me incentivava a buscar a vontade de Deus para minha vida; e se Deus me quisesse em outro lugar que não fosse a igreja dele, então isso seria também o que ele iria querer para mim.
+
+Em alguns momentos eu me perguntava se estava perdendo alguma coisa. Certa vez, eu estava assistindo a um jogo de futebol americano universitário na TV em um sábado à tarde. O jogador que seria meu reserva se eu estivesse no time estava jogando, e ele marcou um touchdown e correu por mais de cem jardas. Ele estava jogando muito bem e o jogo estava sendo televisionado em rede nacional enquanto eu trabalhava em um supermercado e, embora eu tivesse algumas opções envolvendo música, ainda não estava de fato tocando.
+
+“O cara jogando futebol na TV poderia ser eu”, pensei.
+
+Mas então me lembrei das palavras de meu pai em uma noite de sexta-feira, três anos antes, quando passamos pelo jogo de futebol da escola em que eu poderia estar jogando:
+
+— Você está fazendo o que o Senhor o chamou para fazer.
+
+Pouco depois de ter visto meu ex-colega de equipe no jogo televisionado, tive a oportunidade de tocar e cantar em um acampamento. O pagamento foi o maior que já havia recebido por um show e também era o suficiente para pagar o que eu devia à CCBC. Com o pagamento da dívida da faculdade, deixei o emprego no supermercado em dezembro de 1998, saí da casa dos avós de um amigo em Oceanside onde eu estava hospedado e voltei para Indiana sem saber se ficaria em casa para sempre ou se voltaria para a Califórnia.
+
+Estava em uma grande encruzilhada da minha vida e tive conversas sérias com meus pais sobre as opções que eu tinha dentro do meu propósito de fazer a vontade de Deus e seguir seus planos para mim. Como sempre, minha mãe me indicou textos das escrituras que falavam sobre o que eu estava passando. Meu pai sabia a importância da decisão que eu precisava tomar, então sugeriu que nós dois fôssemos passar um tempo na cabana de um amigo, onde poderíamos jejuar e orar por alguns dias.
+
+Aquele foi um momento especial com meu pai. Não havia televisão nem rádio no chalé. Não tínhamos telefones celulares. Jejuamos e oramos juntos, e passamos um tempo pescando e conversando. Lembro-me de ter me sentido em paz e muito calmo enquanto estávamos lá. Quando entrava em oração, eu dizia a Deus que não queria reexperimentar meus velhos cabos de guerra. Eu não queria fazer as coisas da minha cabeça como eu tinha feito anteriormente. Prometi a Deus que faria o que Ele quisesse.
+
+Enquanto estávamos na cabana, senti Deus falando ao meu coração que Ele queria que eu voltasse para a costa oeste.
+
+— Você tem certeza? — perguntei a ele. — Eu saí de minha casa. Estou pronto para servir na Harvest. Você realmente quer um cara sem emprego e sem ter onde morar na Califórnia?
+
+No meu tempo em silêncio, senti uma forte certeza de que era a vontade de Deus que eu retornasse à Califórnia. Eu acreditava que Ele tinha um plano e que me daria todo o necessário para seguir Sua liderança. Contar essa decisão ao meu pai não foi fácil. No caminho de carro para casa, dei a notícia a ele.
+
+Eu sabia que minha escolha seria aniquiladora para o meu pai. Imagino como deve ser gratificante para um pai ter seu filho junto dele no ministério, mas isso não iria acontecer. Pedi desculpas e ele compreendeu.
+
+Depois, já em casa, conversei mais uma vez com meus pais sobre minha decisão. Ambos concordaram que eu estava fazendo a coisa certa.
+
+UM NATAL INESQUECÍVEL
+
+Fiquei em Indiana até o Natal. Como sempre, a família se reuniu na manhã de Natal, agora com April e seu marido, Trent, para trocarmos presentes. Era um hábito de nossos pais escolherem um dos filhos para distribuir os presentes, e naquele ano fui o escolhido.
+
+Entreguei todos os presentes, exceto o maior, que estava escondido atrás da árvore. Não havia etiqueta na embalagem.
+
+— De quem é este presente? — perguntei. — É seu — minha mãe disse.
+
+Eu não tinha ideia do que podia ser, mas comecei a desembrulhar. Notei que todos pararam o que estavam fazendo para me observar.
+
+Quando tirei todo o papel, pude ver pela caixa que era um violão. Mas não era qualquer violão, era um da marca Taylor, que eu sabia que custava cerca de dois mil dólares!
+
+Fiquei em choque. Nunca havia pedido um Taylor, como também nunca me permiti nem sonhar em ter um. Se eu o tivesse pedido, seria o mesmo que pedir algo vinte vezes maior do que o maior presente que já havia pedido, então ganhar um violão era mais do que eu poderia sonhar.
+
+Lágrimas encheram meus olhos, e todos na sala choraram também. Olhei para o meu presente, ainda incrédulo, e me lembro claramente das palavras que me vieram à mente: “Senhor, o que Você quiser. Os Seus planos, nunca os meus. Aqui estou”.
+
+Um sentimento premonitório tomou conta do meu coração quando comecei a tocar meu novo instrumento. Embora eu não estivesse pensando que poderia me tornar um músico em tempo integral, comecei a perceber que Deus havia me dado o dom da música. O presente de meus pais foi uma forte afirmação de que esse dom precisava ser completamente dedicado a Deus. E agora eu não precisaria mais pedir a um amigo que emprestasse seu violão para praticar meu dom!
+
+Pouco antes do Natal, comentei com minha mãe que eu realmente precisava ter um violão. Jean-Luc havia me orientado a comprar um porque eu era a única pessoa que ele conhecia que precisava pedir um violão emprestado para tocar nas igrejas. Então disse à minha mãe que não fazia ideia de como conseguir um.
+
+— Eu sei, eu sei — minha mãe respondeu, escondendo o fato de que ela e meu pai já haviam comprado um.
+
+Meus pais sabiam pelas nossas conversas telefônicas o quanto eu gostava de liderar o culto na faculdade e nas igrejas. Eles sentiram que Deus estava usando a música para, por meio dela, construir minha vida e me ajudar a lidar com ela.
+
+Um dia minha mãe estava lavando a louça e sentiu fortemente que ela e meu pai precisavam comprar um violão para mim, mesmo que não tivessem dinheiro para isso. Meu pai teve a mesma impressão separadamente.
+
+Então eles decidiram fazer um empréstimo para comprar o Taylor. Eles consideraram essa compra um investimento no meu futuro espiritual. Mas, antes de fazer o empréstimo, eles pediram permissão à minha irmã e aos meus irmãos. Eles explicaram a April, Jared e Josh que eles não poderiam pagar presentes caros para todos e que os presentes que receberiam seriam muito mais baratos que o meu naquele ano. Minha irmã e meus irmãos ficaram empolgados com a notícia, porque sabiam quanto um violão significaria para mim, e concordaram com o plano dos meus pais.
+
+No voo de volta para a Califórnia, levei meu “bebê” no avião comigo. Não despacharia meu presente como bagagem por nada neste mundo.
+
+Quando embarquei, os compartimentos superiores estavam começando a encher. Comecei a ficar um pouco paranoico. Falei a uma comissária de bordo:
+
+— Não posso deixar meu violão em qualquer lugar, a não ser no compartimento de bagagem.
+
+Se a companhia aérea permitisse, eu ficaria no corredor durante todo o voo e deixaria o violão no meu assento com o cinto de segurança atado em torno dele. A comissária de bordo era doce e compreensiva, e ela me ajudou a encontrar um lugar para guardar cuidadosamente meu tesouro.
+
+Cheguei à Califórnia com uma mochila e meu violão. Eu não tinha emprego, não tinha onde morar e não tinha outro plano além de meu amigo Bryan me buscar no aeroporto e me levar a uma reunião de jovens pastores na CCBC.
+
+Durante a reunião, encontrei um amigo chamado Isaiah Thompson, que eu havia conhecido quando estive na Calvary Chapel Vista.
+
+— Ei, cara, ouvi dizer que você precisa de um lugar para ficar — disse Isaiah.
+
+Não sei como ele soube disso (talvez meu amigo da faculdade cujo dormitório eu iria invadir estivesse espalhando a informação!).
+
+— É verdade — eu disse.
+
+Isaiah me contou que sua avó morava em Vista e estava oferecendo hospedagem em sua casa em troca de cuidar dela, ajudar a fazer compras, levá-la a consultas médicas e fazer algumas outras tarefas.
+
+Eu não tinha outras opções naquele momento, então aceitei a oferta da vovó Marge por meio de Isaiah.
+
+No dia seguinte, o pastor da juventude, Dave Hole, me levou até a casa dela. Quando chegamos ao endereço que Isaiah havia me dado, eu disse a Dave:
+
+— Acho que este deve ser o lugar.
+
+— Você quer dizer que nunca esteve aqui antes? — Dave perguntou. — Você não conhece essa senhora?
+
+— Não, mas parece que é aqui que vou ficar.
+
+O PRÓXIMO ESTÁGIO
+
+Bati na porta da frente e uma mulher sorridente, de cabelos grisalhos, atendeu.
+
+— Oi, Marge. Eu sou o Jeremy — falei. — Acho que vou morar com você.
+
+— Você tem olhos tão lindos — disse vovó Marge. — Entre! Marge me levou à copa, onde nos sentamos à mesa e começamos a nos apresentar. Ela perguntou sobre mim, então contei a ela que havia crescido em Indiana, que tinha me mudado para a Califórnia para frequentar a CCBC e tocar, e que, terminada a faculdade, tinha voltado para casa antes de sentir que Deus queria que eu ficasse na Califórnia, mesmo que não tivesse onde morar.
+
+Marge me contou sobre o marido que havia sido militar e tinha falecido alguns anos antes. Ela também falou sobre sua fé e, ao me contar um pouco dos testes pelos quais havia passado na vida para fortalecê-la, consegui sentir a determinação de seu coração. Nossa conversa também foi um pouco triste, porque era óbvio que ela sentia falta da companhia do marido. No entanto, Marge sorriu o tempo todo que conversamos.
+
+— Venha comigo, vou mostrar o seu quarto — disse ela depois de uma hora de conversa. — E, se você quiser comprar mantimentos amanhã, aqui está meu cartão de crédito.
+
+Coloquei minha mochila e meu violão no chão do quarto. Quando Marge saiu, sentei na cama e respirei fundo. Tudo o que eu tinha levei para o quarto em apenas uma viagem, não foi preciso fazer uma mudança e meus braços nem estavam sobrecarregados. Eu tinha menos de vinte dólares na minha conta bancária. Tinha um telefone celular, mas não tinha carro.
+
+“Muito bem, Senhor”, pensei. “Aqui estou. O que você tem em mente para mim?”
+
+Liguei para Jean-Luc naquele dia para dizer que estava na cidade, e ele me informou que a banda que ele queria formar não tinha dado certo. Mas, como ficamos amigos quando nos conhecemos, ficamos em contato um com o outro e de vez em quando nos encontrávamos.
+
+Um dia, Jean-Luc ligou e perguntou se eu queria ajudar em um show do The Kry vendendo CDs e camisetas. E, naquela noite, acabei recebendo o convite para trabalhar em outros shows fazendo a mesma coisa. Jean-Luc e seu irmão, Yves, me dariam uma pequena comissão. Cada dinheiro que entrava significava muito para mim.
+
+Porém, até mais útil que o dinheiro foi o relacionamento que desenvolvi com Jean-Luc e Yves. Estar perto deles me permitiu ver quanta integridade eles tinham dentro e fora do palco.
+
+Jean-Luc era muito direto comigo e costumava fazer perguntas como: “Você está permanecendo na Palavra?”, “Você tem orado?” e “O que Deus lhe mostrou ultimamente?”. Eu precisava da retidão dele para me manter responsável. Eu sabia que Jean-Luc me faria essas perguntas, e saber disso me ajudava a permanecer disciplinado em meus hábitos espirituais.
+
+Havia uma pergunta que ele fazia muito e que ainda fazemos um para o outro: “Tem passado algum tempo no tapete?”. É que nós costumávamos literalmente nos deitar no chão, de bruços no tapete, para orar.
+
+Jean-Luc falava sobre Deus o tempo todo. Ele me incentivou muito. Por causa de minhas incertezas ao buscar o que Deus tinha reservado para mim, eu precisava do incentivo de Jean-Luc, além de sua retidão.
+
+Jean-Luc também me orientou musicalmente e, felizmente, ele foi tão direto comigo sobre minha música quanto em minha vida espiritual.
+
+— Ah, amigo — dizia ele com seu sotaque franco-canadense depois de me ouvir cantar —, seu timing não está nada bom.
+
+Ou ainda, para me fazer pensar no significado das palavras: — Cara, quando você está cantando, cante o que você quer dizer. Qual o significado do que você está dizendo?
+
+Quando eu contava a ele o que estava pensando, ele dizia com entusiasmo:
+
+— Faça uma música sobre isso!
+
+Mas ele também tinha suas intenções ao me encorajar. Ele gostava de me dizer quando me ouvia cantar e tocar:
+
+— Cara, eu amo seu coração.
+
+Depois de algum tempo de convivência, certa noite Jean-Luc perguntou se eu queria tocar uma música no show deles. Fui pego de surpresa porque não esperava por isso. Eu já me sentia feliz por trabalhar vendendo o material da banda e aproveitar para aprender assistindo ao The Kry em ação.
+
+— Eu adoraria — respondi com um grande sorriso.
+
+Eu estava muito nervoso quando tomei meu lugar entre os membros da banda e olhei para a multidão. Estava no palco com o The Kry! A primeira música que tocamos foi “Get away” [“Cair fora”]. Acho que estava mais preocupado com Jean-Luc do que com a multidão, porque sabia das exigências dele no palco; ele era musicalmente perfeccionista. Sempre que sentia estar saindo do ritmo, me encolhia por dentro. Fiquei com tanto medo de estragar tudo que me senti como um robô no palco enquanto tocava.
+
+Quando terminamos, liguei para meus pais:
+
+— Adivinha o que aconteceu: eu subi ao palco e toquei uma música com o The Kry!
+
+Eles ficaram animados e perguntaram qual era a sensação. — Foi uma loucura! Eu estava tão nervoso!
+
+Meus pais demonstraram o desejo de poder estar lá naquele momento para me ver no palco — mesmo que fosse tocando apenas uma música — e me disseram como estavam orgulhosos de mim. Eles sempre me diziam como estavam orgulhosos de mim. Meu pai tinha uma forma especial de expressar seu orgulho, e ele me disse durante o telefonema:
+
+— Estou muito orgulhoso de você porque você está servindo ao Senhor.
+
+Eu ainda amo quando ele diz isso hoje em dia.
+
+Jean-Luc não percebeu ou, mais provavelmente, ignorou o fato de eu ter tocado com a postura do C-3PO na minha primeira vez no palco, pois permitiu que eu tocasse com a banda mais algumas vezes.
+
+Ficou claro que algum tipo de ministério relacionado à música estava tomando direção e as pessoas ao meu redor estavam encorajando isso. Mas eu não estava pronto para dar um passo à frente e declarar que queria ser músico em tempo integral ou ministro de música. Eu não tive um momento “é isso que eu quero fazer” ou “eu quero fazer isso ou aquilo”. Quando pressionado sobre a música, eu dizia: “Se é isso que Deus quer, legal”.
+
+Eu já havia traçado meu próprio caminho antes e testemunhei os efeitos negativos; não queria fazer isso novamente. Mas senti como se Deus estivesse abrindo portas para mim na música.
+
+Uma grande porta se abriu quando Jean-Luc disse:
+
+— Ei, por que você não toca uma de suas músicas no show? Então, eu me apresentei antes do The Kry pela primeira vez, cantando “This man” [“Esse homem”] na Cedarville College (que hoje em dia é uma universidade), em Ohio. Depois toquei “Get away” com a banda novamente.
+
+A agitação foi incrível. Depois de ouvir a resposta da multidão e sentir como o Senhor estava naquele lugar e como minha música era parte da sensação das pessoas que experimentavam Sua presença, deixei o palco naquela noite pensando: “É isso! É para isso que fui chamado!”.
+
+Fui conduzido a tocar, cantar e compartilhar meu coração. Outras oportunidades para fazer mais disso aconteceram, mais uma vez graças a Jean-Luc.
+
+Quando o The Kry recebia convite para tocar em igrejas locais para datas que eles não poderiam comparecer, Jean-Luc me indicava para tocar no lugar deles.
+
+Eu tinha de pegar carona ou conseguir um carro emprestado com um amigo para chegar às igrejas até que um conhecido soube da minha situação e deixou que eu usasse um carro extra antigo que ele não estava usando. Era a mesma situação da minha infância, quando meus pais recebiam carros velhos das pessoas. O carro que me foi oferecido não era muito melhor que os carros que os meus pais pegavam. Era um Nissan Sentra — um modelo de 1981, se não me engano — que quando eu passava por um buraco e o carro dava solavanco o porta-malas abria.
+
+Meu violão Taylor nunca viajou no porta-malas. Um violão nunca, nunca, nunca deve ser colocado em um porta-malas, mas especialmente nunca deve ser colocado em um que abre sem aviso prévio.
+
+O engraçado desse carro era que ele era velho o suficiente para que os números das marchas tivessem sido arrancados da alavanca de câmbio. Quando eu acelerava na quarta marcha nas rodovias, o motor fazia barulhos irritantes e agudos. Um amigo que estava comigo um dia sugeriu, ao ouvir o barulho, que talvez o carro tivesse cinco marchas.
+
+— Onde está a quinta marcha? — perguntei a ele.
+
+Ele me disse para tentar movimentar o câmbio todo para a direita e para cima. Deu certo! Eram cinco marchas! Depois dessa descoberta, o carro passou a fazer um barulho menos estranho em velocidades mais altas.
+
+Meu violão valia mais que o carro, mas, assim como meus pais usaram vários carros que receberam de presente, fiquei agradecido por Deus ter colocado no coração de alguém o desejo de me ajudar para atender às minhas necessidades.
+
+Morar na casa da vovó Marge manteve minhas despesas baixas. Eu nunca diria a Jean-Luc que estava quase sem dinheiro. Eu conseguia fazer cem dólares mais ou menos por noite e estava ganhando um pouco de dinheiro tocando e cantando nas igrejas. Minha renda era essa, mas eu realmente não tinha nenhuma preocupação com finanças. Nunca tinha tido muito dinheiro, então não me sentia como se estivesse sem nada de que precisasse.
+
+Esses podem parecer tempos de vacas magras, mas os vejo como tempos muito frutíferos. Eu estava crescendo espiritualmente fazendo parte do grupo da Calvary Chapel Vista. Jean-Luc estava cuidando de mim espiritual e musicalmente. Por meio da música, eu estava vendo Deus me usar e abrir portas para mim. E, por fim, estava começando a sentir um chamado específico em minha vida.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 9;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 7 - Triste e humilhado$t$, 9,
+$conteudo$Em 1999, jason duff me convidou para liderar um culto para um grupo de estudos da Bíblia que ele coordenava na Palomar College. Eu recebia esse tipo de convite com certa frequência, pois um grupo de amigos da faculdade que me apoiava em meu propósito estava sempre encontrando oportunidades para eu me apresentar em suas igrejas e pequenos grupos. Eu gostava de liderar cultos e aproveitava todas as chances; além disso, se fosse para poder ajudar um bom amigo como Jason, era um bônus.
+
+Jason me contou sobre uma aluna em particular que havia conhecido em seu grupo de estudos bíblicos.
+
+— Ela é incrível — disse. — Você precisa ver quanto ela ama a Deus.
+
+O que eu já podia ver era quanto Jason estava interessado nela. Quando cheguei a Palomar, Jason me apresentou a Melissa Henning. Ela tinha cabelos castanho-escuros, grandes olhos castanhos e o sorriso mais lindo que alguém poderia esperar ver. “Uau”, pensei. “Ele está certo, ela é adorável.” Jason parecia ter escolhido uma boa pessoa.
+
+Havia cerca de oito estudantes na reunião daquela noite, e formamos um círculo para iniciar o louvor e a adoração. Era um grupo pequeno, mas a experiência de cantar e louvar a Deus com ele foi incrível. Todos os alunos realmente gostaram, mas uma em particular continuou chamando minha atenção — a amiga de Jason, Melissa.
+
+Eu nunca tinha visto alguém da nossa idade com uma paixão por Deus tão ilimitada. Ela cantou com completa entrega, os braços totalmente estendidos. Ela estava tão mergulhada na presença do Senhor que me senti um estranho. Depois que a atividade terminou, Melissa e eu conversamos brevemente.
+
+Eu a vi no grupo e participando de outras atividades nas semanas seguintes. Jason continuava falando dela o tempo todo. No entanto, ele nunca disse nada que indicasse que Melissa sentia o mesmo por ele. Quando observei os dois no mesmo grupo, a esperança de Jason de que eles se tornassem mais que amigos parecia unilateral.
+
+Na verdade, como eu estava convivendo um pouco mais com Melissa, parecia que a única química que estava se desenvolvendo ali era entre ela e eu.
+
+Liguei para Melissa para dizer a ela o que eu estava percebendo sobre nós, e ela confirmou que tínhamos um interesse recíproco um pelo outro. Mas também tínhamos uma pessoa em comum: éramos amigos de Jason. Na verdade, Jason era um dos meus melhores amigos e eu sabia que ele estava realmente esperançoso de que Melissa e ele teriam um relacionamento.
+
+Melissa e eu concordamos que nossa situação era delicada. Não queríamos machucar Jason, mas gostávamos muito de conversar um com o outro e queríamos continuar saindo juntos. Nos reuníamos para almoçar ou tomar um café e conversar sobre Deus, música e muitos outros assuntos. Jason tinha razão quando disse que Melissa era incrível. Ela era uma pessoa muito alegre — uma pessoa muito jovial.
+
+Melissa me disse que havia sido criada em um lar cristão, mas que tinha se afastado um pouco — nada drástico, mas sentia não estar tão comprometida com Deus como pensava que precisava. Um dia Deus falou ao seu coração sobre esse afastamento. Ela percebeu o que estava fazendo e se comprometeu a voltar a segui-Lo. Outros familiares de Melissa estavam se afastando de Deus como ela, e ela os ajudou a voltar para um compromisso total com Deus, como ela havia assumido. Melissa era uma líder e uma testemunha eficaz, e eu admirava isso nela.
+
+Sua devoção era sem igual. Alguns dos meus amigos e eu tendíamos a nos distrair durante as reuniões de estudos da Bíblia. Eu era jovem e gostava de brincar um pouco. Melissa também gostava de se divertir e tinha uma risada contagiante e jovial (e às vezes bem alta). Mas ela me avisava quando eu estava passando dos limites com um sorriso leve e adorável (como quem diz “pare!”), que indicava que eu estava ficando muito pateta e precisava me controlar. Na verdade, eu adorava quando ela sorria daquele jeito para mim.
+
+Estávamos havia cerca de um mês passando mais tempo juntos e eu estava rapidamente me apaixonando por ela. Certa vez, quando estávamos juntos, pensei: “Preciso contar a ela. Eu tenho de contar a ela”.
+
+Pouco tempo depois, nos encontramos na casa dos pais dela. Sentamo-nos na sala de estar e eu senti como se estivéssemos em nosso próprio mundinho. Durante nossa conversa, meu coração começou a bater muito rápido. E comecei a ficar muito emocionado. Eu ficava pensando: “Essa garota é inacreditável! Eu me casaria com ela!”. Meu coração continuava acelerado e notei as palmas de minhas mãos ficando suadas.
+
+“Diga a ela! Diga a ela! DIGA!”
+
+— Melissa, eu só quero que você saiba que eu te amo.
+
+Ela me olhou como se estivesse em choque e imediatamente tentou fazer uma expressão que dizia: “Estou chocada, mas não quero parecer chocada”. Eu gostaria que isso não tivesse acontecido.
+
+Um silêncio constrangedor reinou até Melissa soltar um pequeno suspiro.
+
+— Jeremy, fico feliz de saber disso, mas não posso dizer o mesmo agora. Para mim, dizer essas palavras seria um enorme compromisso.
+
+Senti-me envergonhado e arrasado. E fiquei com medo de tê-la assustado a ponto de ter arruinado qualquer relação que pudesse potencialmente se desenvolver entre nós.
+
+Não dormi bem naquela noite. Aquela cena não saía da minha cabeça. Mas o impulso tinha sido mais forte... era o que eu sentia e não consegui evitar dizer. Ela amava Jesus e amava as pessoas. Se ela via alguém que não estava vestido com roupas bonitas ou que aparentava estar deprimido, ia até aquela pessoa e dizia:
+
+— Como você está? Jesus te ama!
+
+Ela era incrível. A pessoa certa para mim. Eu estava convencido disso. Mas estava preocupado: será que eu tinha ficado tão envolvido com minhas emoções, pulado etapas e arruinado tudo?
+
+Continuei fazendo essa pergunta por algumas semanas porque minha declaração de amor criou um período de constrangimento entre nós. Nós não estávamos saindo juntos todos os dias, então tive muito tempo para analisar e especular. Durante os momentos em que estávamos juntos, sentia necessidade de convencê-la de que eu era normal. E essa abordagem era estranha porque, ao tentar provar que eu era normal, fazia coisas que não costumava fazer. Eu estava naquela posição confusa em que começamos a pensar demais no que devemos fazer em vez de apenas ser o que somos.
+
+Como não nos víamos todos os dias, não podia tentar vê-la com mais frequência, porque parecia que eu estava forçando a barra. Mas também não seria certo reduzir nossos encontros (para “dar um espaço” para ela pensar) porque poderia parecer que eu estava tentando dar um passo para trás porque ela não tinha falado que me amava. Infelizmente, eu não tinha em mãos um livro com um título do tipo “O que fazer quando você diz ‘eu te amo’ cedo demais” para consultar. Eu teria de consertar sozinho a bagunça que criara.
+
+Mas uma coisa era certa: eu não diria “eu te amo” novamente até ela tomar a iniciativa. Não cometeria esse erro pela segunda vez.
+
+ARRASADO
+
+O constrangimento durou algumas semanas que pareceram ter sido alguns meses. Acabamos voltando para o ponto em que estávamos antes do dia em que tive a ideia maluca de me declarar na sala de estar dos pais dela e nosso relacionamento até começou a crescer além desse ponto.
+
+Depois que nos recuperamos do meu erro, decidimos que já estava na hora de eu conversar com Jason e contar o que estava acontecendo. Eu não sabia quando, onde ou como diria a ele. Eu não estava treinando um discurso do tipo: “Então, Jason, precisamos conversar”, mas sabia que na primeira oportunidade eu teria de começar a conversa.
+
+Essa oportunidade surgiu em um passeio que o grupo fez para a praia. Jason e eu caminhávamos sozinhos quando ele disse:
+
+— Conversei com a Melissa ontem à noite.
+
+Enquanto estávamos nesse passeio, Jason ligou periodicamente para todos os participantes de seu grupo de estudos bíblicos apenas para saber se estavam bem. Fiquei triste quando ele contou que ligara para Melissa, porque o tom de sua voz tornava óbvio que ele ainda gostava dela.
+
+— Eu tenho de te dizer uma coisa, cara — comecei.
+
+Fiz uma pausa para que ele soubesse que essa “coisa” era séria. Mal sabia eu que Melissa e sua irmã Heather estavam me ajudando a distância, de mãos dadas e orando fervorosamente pela nossa conversa.
+
+— Melissa e eu estamos saindo juntos. Nós dois gostamos um do outro.
+
+— Como assim?!
+
+Ele perguntou se eu estava falando sério. Quando eu disse que estava, ele compreensivelmente ficou um pouco bravo.
+
+Eu meio que surtei porque percebi que a conversa não iria terminar bem. Não era como se eu esperasse que Jason dissesse: “Ah, tudo bem. Estou chateado, mas estou bem”. Certamente não. Mas ele recebeu muito mal a notícia, muito mal mesmo. Aquela conversa foi muito mais difícil do que eu esperava.
+
+— De todas as meninas, por que a Melissa? — ele perguntou. — Você sabe que eu gosto dela.
+
+— Aconteceu — eu disse.
+
+Tentei me explicar, mas não soube me expressar bem. Na verdade, não tenho certeza se poderia ter dado uma explicação que deixaria nossa conversa mais tranquila.
+
+Jason estava arrasado e com razão, e nada que eu pudesse dizer iria ajudar.
+
+Ele estava chateado e eu estava sentindo o impacto de como o magoara. Caí de joelhos na areia e chorei.
+
+— Cara, me desculpe — eu disse. — Eu não queria magoar você.
+
+Mas era exatamente o que eu estava fazendo.
+
+Jason era o tipo de cara que todos amavam — eu o amava. Ele tinha seguidores leais, especialmente os colegas de seu grupo de estudos bíblicos, porque era um bom líder que realmente se importava com as pessoas que guiava. Os telefonemas que ele fez para os membros do grupo demonstraram isso.
+
+Para os amigos em comum ficou a impressão de que eu havia roubado Melissa dele. Eu não achava que a tivesse roubado, mas me tornei um pária dentro desse grupo. Demorou um tempo para as feridas dessa história se curarem, mas acabou acontecendo. Eu ainda amo Jason, e ainda somos bons amigos.
+
+No entanto, houve uma reação negativa pela qual eu estava completamente despreparado: a de Melissa.
+
+Quando Melissa soube quanto Jason estava magoado e quantos de nossos amigos o defenderam, entramos em atrito. Se o que tínhamos feito era errado para tantas pessoas, Melissa se perguntava se era certo estarmos juntos. Tentei convencê-la do contrário e explicar que os outros não apoiavam nosso relacionamento apenas porque pensavam que Jason havia sido prejudicado. Eles não sabiam quão sensível tínhamos tentado ser em relação a Jason, como tínhamos mantido tudo sem alardes no começo para avaliar o que havia entre nós realmente antes de falar com ele.
+
+— Eu gosto de você e você gosta de mim — disse a ela. — Nós nos importamos um com o outro. Nós amamos a Deus. Não há nada de errado nisso.
+
+— Não sei — ela respondeu. — Para mim parece que tem muita confusão em torno disso para que esteja certo.
+
+Continuamos namorando, mas as consequências da minha conversa com Jason prejudicaram nosso relacionamento. Jason e eu continuamos amigos, Melissa, Jason e eu continuamos amigos, mas os relacionamentos ficaram distantes.
+
+Cerca de um mês depois dessa conversa com Jason, nós três fomos a Maui em uma viagem missionária com o grupo da Vista College. Foi um ótimo momento para converter a população em algumas das partes mais pobres da ilha, longe das áreas turísticas. Lá vimos Deus fazer coisas notáveis na vida das pessoas.
+
+Mas o que aconteceu entre Melissa, Jason e eu tirava nosso foco da missão. Acho que com as bênçãos que estavam ocorrendo em nossa viagem missionária todos estávamos conscientes do propósito de Deus e da importância de estarmos totalmente focados Nele e no que Ele queria de nós nessa missão.
+
+Em um momento de descanso, quando Melissa e eu estávamos separados dos outros na praia, ela me disse que precisava terminar comigo. Suas razões eram as mesmas que eu estava tentando combater.
+
+— Não parece certo — disse ela. — São muitos problemas e muito atrito. Com tudo o que está acontecendo, eu simplesmente não sinto que Deus está nisso. Nesse momento, só preciso estar na Palavra Dele.
+
+Na CCBC, nós costumávamos falar que uma garota poderia terminar um namoro simplesmente dizendo: “Não é você; eu só preciso estar com Jesus. Ele é meu namorado agora”.
+
+Não foi o que Melissa me disse, mas com certeza o sentido foi esse. Aquilo acabou comigo. Eu a amava. Eu acreditava com todo o meu coração que ela era seria minha esposa. Então, fiz o que qualquer outro jovem maduro que fosse dispensado pela mulher dos seus sonhos faria: chorei como um bebê e liguei para minha mãe.
+
+— O que há de errado com as mulheres? — perguntei a ela. — Isso é loucura. Ela é o amor da minha vida!
+
+Eu estava arrasado, e minha mãe sabia disso sem que eu dissesse nada. Ela ouviu meu desabafo e, depois, em sua maneira calma e precisa, redirecionou o foco da minha perspectiva para a perspectiva de Deus.
+
+— Sua única escolha — ela me lembrou — é ser paciente e confiar em Deus.
+
+Depois de falar com minha mãe, fui para a praia e cumprimentei todo mundo alegremente? Claro que não. Eu ainda estava magoado. Ainda estava confuso. Arrasado. Nada disso tinha mudado. Mas o conselho de minha mãe me fez sair um pouco da perspectiva de tudo o que estava sentindo e olhar para o quadro geral do motivo da viagem.
+
+Hoje, olhando para trás, vejo que a atitude de Melissa teve um resultado positivo: foquei totalmente em Deus pelo resto da viagem. Em minha tristeza, vi como Deus podia me usar de maneiras surpreendentes.
+
+Depois que Melissa terminou comigo, Deus foi o único objetivo da minha viagem. Eu compartilhava o Evangelho com as pessoas e elas aceitavam Cristo como Salvador ali mesmo! Coisas radicais estavam acontecendo. Me aproximei de um grupo de quinze crianças e comecei uma conversa. Eles se abriram para mim e me fizeram sentir bem-vindo no grupo deles. Nossa conversa estava sendo muito frutífera. Contei para eles algumas das coisas que Deus havia feito em minha vida, falei de Adão e Eva, de como o pecado chegou ao mundo e que Jesus Cristo tinha vindo para redimir todo esse pecado.
+
+— Meninos, eu amo Jesus — disse a eles. — Ele mudou minha vida e pode mudar a sua também.
+
+Todas as crianças do grupo acabaram inclinando a cabeça e orando para aceitar a Cristo. Guardo até hoje a foto que tiramos juntos. Olhar para ela me lembra não do que eu fiz, mas do que o Espírito Santo fez. Em um momento em que eu estava completamente vazio, triste e humilhado, o Senhor me usou.
+
+Na verdade, provavelmente ele me usou naquele momento porque eu estava completamente vazio de mim mesmo, triste e humilhado.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 10;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 8 - “Apenas uma pessoa”$t$, 10,
+$conteudo$Melissa e eu continuávamos com o mesmo grupo de amigos, então, depois de ela terminar comigo na viagem missionária para Maui, nós ainda nos víamos de vez em quando. Esses encontros me deixavam bastante desconfortável.
+
+Nós “meio” que voltamos por um breve período, mas depois ela terminou comigo de novo.
+
+Toda vez que eu via Melissa, machucava.
+
+Se estávamos no mesmo lugar, eu dizia alguma coisa breve para ela, como “Oi”, mas na maioria das vezes tentava evitá-la. Ela ainda tentava ser minha amiga e conversar, mas eu não conseguia lidar com estar perto dela e sermos apenas amigos.
+
+Perto do fim do verão de 1999, mudei-me da casa da vovó Marge depois de passar quase um ano e meio com ela. Marge era uma mulher especial, e o quarto e a mesa que ela me deu realmente foram uma bênção de Deus. Hoje consigo ver como Deus a colocou em minha vida por mais motivos do que me dar um lugar para morar.
+
+Nós tínhamos boas conversas e aprendi com seus anos de experiência servindo ao Senhor. Como ela me contou sobre muito do que passou na vida, incluindo a morte de seu marido, achava espantoso como ela nunca questionou Deus. Ela sabia que o Senhor estava com ela, ela amava o Senhor e parecia saber que logo estaria com Ele. Eu me lembro da vovó Marge como uma mulher fiel, com uma determinação ao mesmo tempo sólida e amável.
+
+Um amigo de Vista, Danny, perguntou se eu queria dividir um apartamento com ele. Àquela altura, eu já ganhava o suficiente tocando e cantando nas igrejas para poder pagar minha parte em um aluguel barato, apesar de ter de comer mais atum, ovos e macarrão instantâneo que meu amigo para conseguir guardar dinheiro (comi tanto macarrão instantâneo que eu nem tocaria em um pacote hoje em dia).
+
+Eu encontrava Melissa cada vez menos, mas ainda pensava nela com frequência e realmente sentia sua falta. Em outubro, um amigo me contou que Melissa estava tendo dores de estômago e faria exames para ver o que estava acontecendo.
+
+No dia dos exames, fui com um grupo de amigos visitá-la na casa de sua família. O exame revelou que ela tinha um cisto grande, mas não cancerígeno, e Melissa estava otimista como sempre.
+
+Foi estranho visitá-la na casa de sua família, mas foi bom revê-la. Ela ficou feliz em me ver, mas, é claro, continuava a querer que fôssemos apenas amigos. Nosso grupo decidiu visitá-la para que ela soubesse que nos importávamos com ela, mas eu ainda gostava dela mais do que apenas como amigo e não quis ficar na casa por muito tempo.
+
+Por volta da mesma época, outra porta se abriu para mim musicalmente. Com Jean-Luc como produtor, gravei meu primeiro CD: um projeto independente com dez canções intitulado Jeremy Camp: burden me [“sobrecarregado”]. Gravamos em San Diego na produtora Horizon Christian Fellowship, graças ao pastor Mike MacIntosh.
+
+Ainda sou grato a Jean-Luc por seu apoio e mentoria após o término do meu namoro com Melissa. Eu recebia mais convites para tocar em igrejas e ainda tocava ocasionalmente com o The Kry. A música me ajudou a me afastar de Melissa de forma gradual e seguir adiante com minha vida.
+
+Acho até que cheguei ao ponto de aceitar que Melissa e eu não voltaríamos a ficar juntos. Nem mesmo queria mais voltar a namorar com ela, pois ela havia terminado comigo (duas vezes) e eu não queria correr o risco de me magoar de novo.
+
+Então, na primavera de 2000, um amigo me perguntou se eu soubera sobre Melissa.
+
+— Aquele cisto voltou e os médicos o removeram — disse ele. — Era cancerígeno.
+
+Câncer? Melissa?
+
+Eu queria visitá-la no hospital — apenas como amigo — e apoiála.
+
+Era uma viagem de uma hora e meia e fiquei sentimental enquanto dirigia. Meu coração estava pesado por ela. Nós nos tornáramos amigos distantes e não tínhamos muito contato, mas compartilhamos uma época especial e todas aquelas emoções vieram para cima de mim.
+
+Pensei muito durante a viagem, mais uma vez precisando anularme e agir apenas como amigo. Não conseguia ficar bravo com ela ou confrontá-la por ter terminado comigo. “Ela precisa de amigos”, disse a mim mesmo, e, mesmo tendo decidido seguir em frente, não podia negar que eu ainda realmente gostava dela.
+
+SURPRESA NO HOSPITAL Foi estranho entrar na recepção do hospital e perguntar qual era o quarto de Melissa. Enquanto o elevador subia para o andar que ela estava internada, a ansiedade começou a tomar conta de mim.
+
+Saí do elevador e caminhei até a sala de espera, onde estavam alguns familiares e amigos de Melissa. Lá, fui informado de que Melissa tinha sido diagnosticada com câncer de ovário. Ela havia sido submetida à cirurgia para remover o tumor, mas como se tratava de um tipo agressivo, ela começaria a quimioterapia imediatamente.
+
+Ouvir que seu câncer era agressivo e a urgência de começar a quimioterapia me abalaram. A irmã de Melissa, Heather, disse-me que iria avisá-la que eu estava lá para vê-la. Eu não queria apenas entrar em seu quarto e dizer: “Oi! Estou aqui!”.
+
+Caminhei devagar pelo corredor dando-lhe tempo de falar com Melissa. Enquanto eu me aproximava do quarto, seus pais, Mark e Janette, saíram. Estavam tristes, mas pareciam em paz.
+
+“Por que estão deixando o quarto?”, perguntei-me. Não soube como reagir. Eu queria estar lá como amigo, mas será que seria visto como o ex-namorado voltando atrás?
+
+— Oi — disseram seus pais, sorrindo e me abraçando. — Obrigado por vir.
+
+Mark e Janette se afastaram e minha ansiedade subiu de nível. Eu não queria ficar sozinho com Melissa. Não sabia o que esperar. Câncer é uma palavra inquietante e eu achava que ela poderia estar com uma aparência doente e sentindo-se mal depois de passar por uma cirurgia.
+
+Tentei me recompor, respirei fundo, abri a porta e fiquei em choque. Melissa estava sorrindo de uma orelha até a outra com um brilho sobrenatural. Seus grandes olhos castanhos estavam iluminados como sempre.
+
+“Por que ela está tão feliz? Ela acabou de descobrir que tem câncer. Eu estaria devastado.”
+
+— Como você está? — perguntei. Sua resposta ainda me inspira:
+
+— Se eu morresse desse câncer e apenas uma pessoa aceitasse Jesus por causa disso, tudo valeria a pena.
+
+Uau! Que resposta!
+
+De imediato, senti tanto convicção quanto paz. Convicção por causa da minha falta de fé comparada à de Melissa, e paz apenas por estar em sua presença e ver sua perspectiva imortal diante do câncer. Melissa estava disposta a sofrer se isso significasse que apenas uma pessoa ganharia a eternidade no Céu! Já ouvi falar de outras pessoas que desejaram coisas similares e é um sentimento que muitos de nós gostariam de ser capazes de expressar, mas essas palavras assumiram um contexto completamente diferente ao ouvir uma amiga acometida por câncer dizê-las deitada em uma cama de hospital.
+
+Um versículo veio à minha mente: “Porque para mim o viver é Cristo, e o morrer é ganho”. Ao meditar mais tarde sobre pensar nesse versículo naquele momento, percebi que Paulo estava falando não apenas sobre nosso ganho quando vamos para o Céu, mas também sobre o ganho dos que ficam na Terra que iriam a Jesus por observar a fé com que lidamos com circunstâncias difíceis.
+
+Coladas na lateral da cama de Melissa, escritas com sua letra, estavam os dizeres da canção “If you want me to” [“Se você quiser que eu vá”] da cantora-compositora cristã Ginny Owens. O verso final é poderoso:
+
+So take me on the pathway that leads me home to You And I will walk through the valley if You want me to.
+
+Mais tarde, tive o privilégio de conhecer Ginny e contar-lhe quanto sua canção significou para nós dois. A letra — especialmente a parte “Gonna look into Your eyes and see You never let me down” (“Vou olhar nos Seus olhos e ver que Você nunca me decepcionou”) — carrega ainda mais significado considerando que Ginny é cega desde criança.
+
+Não me recordo sobre o que Melissa e eu conversamos ou quanto tempo fiquei com ela no hospital naquele dia. Mas lembro que, quando estava indo embora, disse-lhe que me manteria informado sobre ela e a visitaria quando pudesse. Eu queria ser um bom amigo para ela.
+
+NOTAS DE AMOR
+
+A volta para casa do hospital também foi cheia de emoção. As primeiras palavras de Melissa para mim sobre “apenas uma pessoa” e o modo como ela estava lidando com a situação eram um lembrete do amor que ela tinha por Jesus e pelas pessoas, e como aquela era a razão essencial pela qual eu tinha me apaixonado por ela. Os sentimentos que eu tinha por Melissa, que aparentemente estava tentando reprimir, cresceram novamente dentro de mim. Ao tentar seguir em frente após nosso relacionamento, convenci a mim mesmo de que Melissa era indecisa. Mas eu sabia que estava errado. Melissa era uma jovem impressionante.
+
+Minha mente começou a buscar lembranças de nosso tempo juntos — memórias que eu havia afastado pois lembrá-las doía demais. Ao permitir-me pela primeira vez em muito tempo reexperimentar meus antigos sentimentos por Melissa, fiquei esmagadoramente triste por não saber o que esperar do futuro por conta de seu câncer.
+
+Enquanto eu dirigia, a canção de Ginny Owens, “If you want me to”, começou a tocar no rádio. Meus olhos ficaram tão cheios de lágrimas que achei que precisaria parar o carro.
+
+— Senhor, o que está acontecendo? — perguntei. Depois, explodi com essas palavras: — Senhor, se ela disser que me ama, caso com ela!
+
+Eu não sabia por que tinha dito aquilo, mas era certo que vinha do meu coração. Passei aquela noite orando por Melissa, chorando e desejando estar com ela novamente.
+
+Liguei para meus pais no dia seguinte e contei-lhes sobre a visita no hospital e como meus sentimentos por Melissa tinham reacendido. Meu pai não disse nada, então perguntei o que ele estava pensando.
+
+— Bem, filho, você sabe que, se seguir por esse caminho, pode acabar ficando com alguém que terá de cuidar pelo resto da vida. Não será fácil. Está preparado para isso?
+
+Com as emoções da noite anterior, eu não tinha considerado aquilo, mas não importava.
+
+— Sim — falei para ele. — Por mim, tudo bem.
+
+Voltei a visitar Melissa em maio, durante sua primeira rodada de quimioterapia. Esperava encontrá-la com dor ou, pelo menos, muito desconfortável pelo tratamento. No caminho para a casa da família dela, pensei: “Ela vai dizer que me ama. Eu sei que ela vai”.
+
+Melissa estava em seu quarto quando cheguei. Não estava se sentindo bem, então estava na cama.
+
+Entrei no quarto com um grande sorriso, pretendendo parecer animado.
+
+— Oi! Como você está?
+
+Percebi pela fraqueza em sua voz ao me receber que a quimioterapia tinha sido difícil.
+
+Conversamos um pouco por alguns minutos antes de sua expressão indicar que ela tinha algo sério para falar.
+
+— Jeremy — ela começou —, nunca entendi por que não estava dando certo para nós. Eu sei como você se sentia e sempre gostei muito de você. Mas havia essa reserva, não sei por quê. Mas agora sei o motivo. Era Deus me preparando. Ele queria esse tempo a sós comigo por causa do que eu estava prestes a encarar.
+
+Assenti.
+
+— Quero te mostrar uma coisa.
+
+Ela pegou seu diário e começou a virar as páginas em que ela tinha escrito durante o tempo em que estivemos separados. O diário detalhava como ela estivera orando por mim e minha futura esposa.
+
+— Eu gostava muito de você — continuou ela. — Até conheci um cara nesse meio-tempo, mas quando estávamos juntos eu não parava de pensar em você e em como ele não era você. Quando eu te vi aquele dia no hospital, depois de todos esses meses de oração, percebi que eu te amo.
+
+Eu te amo.
+
+Ela disse! Eu não podia acreditar. Tive esperanças de que ela fosse dizer e certamente tinha sonhado em ouvir essas palavras. Eu até tivera a sensação de que ela diria que me amava, mas quando ela disse respondi de um jeito que não esperava.
+
+— Isso é... assustador — falei. — Não sei se posso fazer isso. Por favor, apenas me dê um tempo.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 11;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 9 - Caminhando pela fé$t$, 11,
+$conteudo$O “eu te amo” de melissa ocorreu quando eu estava me preparando para uma viagem ao Colorado para tocar em alguns shows. Ela graciosamente me disse para tomar o tempo que fosse preciso para pensar em nossa relação. Melissa disse que não esperava que eu tivesse nenhum tipo de compromisso com ela, mas que ela precisava me dizer que me amava para que eu soubesse sobre seus sentimentos. Então lhe falei que voltaria para vê-la assim que retornasse do Colorado.
+
+Sei o que alguns leitores devem estar pensando neste ponto: “Está falando sério? Ela acabou de se abrir e dizer que te ama, e você prometeu a Deus que se casaria com ela se ela dissesse isso. Como pode recuar agora?”.
+
+Eu não estava tentando recuar na promessa que fizera a Deus sobre me casar com ela. Casamento é um grande compromisso por si só e percebi — como meu pai tinha me aconselhado — que, por causa do câncer, um casamento com Melissa enfrentaria uma pressão enorme desde o pedido. Eu era a pessoa com a personalidade “vamos nessa!”, mas havia tantos fatores incluídos que eu precisava de tempo para processar o que nos aguardava adiante.
+
+O patrocinador de um dos shows no Colorado alojou-me em um chalé tranquilo nas montanhas. Era o lugar perfeito para orar e refletir. Enquanto estava lá, fiquei acordado a maior parte da noite rezando e perguntando a Deus o que ele esperava que eu fizesse com Melissa. Foi uma noite tão longa, emotiva e agitada que, no dia seguinte, enquanto me preparava para o show daquela noite, pensei ter uma ideia de como Jacó se sentiu depois de sua noite de luta com Deus.
+
+Ao buscar Deus, lembrei-me das palavras de Tiago 1:5: “E, se algum de vós tem falta de sabedoria, peça-a a Deus, que a todos dá liberalmente, e o não lança em rosto, e ser-lhe-á dada”.
+
+Eu pedi a Deus Sua sabedoria. Sozinho, não conseguia responder à questão do que fazer em seguida. Sabia que faria o que tinha prometido, mas não sabia como se casar com Melissa se encaixava no plano de Deus para mim na música. A resposta de Deus foi: Você Me perguntou, filho. Ela respondeu ao que você Me perguntou da maneira como você esperava que ela fizesse. Do que mais você precisa?
+
+As palavras vieram claras até mim, mas eu ainda lutava com o medo. Tentei seguir a instrução de Mateus 6:34: “Não vos inquieteis, pois, pelo dia de amanhã, porque o dia de amanhã cuidará de si mesmo. Basta a cada dia o seu mal”. Eu tentei, mas não foi fácil. Durante a viagem, me conectei a John David Webster, um amigo músico que vivia nas Montanhas Rochosas. Ele percebeu que eu estava com algo preso na cabeça e sugeriu que fizéssemos um passeio pelas montanhas. Ele me levou a um lugar onde podíamos nos sentar em uma pedra enorme e apreciar a vista dos lindos montes. Era um lugar incrível para lembrar-se do poder e da grandiosidade de Deus.
+
+Contei a John David sobre meu relacionamento com Melissa, sobre o que eu disse que faria se ela declarasse seu amor por mim e sobre a incerteza em relação à saúde dela.
+
+— Se você a ama de todo o coração — disse John David —, você não pode deixar o medo falar mais alto. Você só tem de fazer o que Deus o chamou para fazer. Não deve considerar o futuro. Vá aonde Deus o leva e confie o resto a Ele.
+
+Confie o resto a Ele.
+
+Essas palavras ecoaram em minha mente como se estivessem saltando pelas montanhas do Colorado. Olhei para aquele cenário de tirar o fôlego e considerei quão grande é Deus. Ele criou tudo o que eu podia ver sentado naquela pedra e muito mais além. Se Ele podia controlar e manter firme a Terra inteira, sem dúvida Ele podia me manter firme. É como a antiga canção infantil diz: Deus tem o mundo inteiro nas mãos. E isso inclui a mim.
+
+Havia apenas uma coisa que eu podia dizer a Deus depois dessas considerações:
+
+— Vou confiar em Você.
+
+Como tinha dito a Melissa que faria, fui visitá-la na casa de seus pais assim que retornei do Colorado. Ela estava passando por um dia difícil e não estava se sentindo bem. Seu longo cabelo castanho começara a cair por causa do tratamento. Porém, típico de Melissa, em vez de focar em sua situação, ela quis saber como eu estava e como tinham sido os shows no Colorado. Depois de conversarmos por um tempo na sala de estar, ela disse que queria sair um pouco para tomar ar fresco na varanda.
+
+Eu estava preocupado com ela, pois, apesar de ela não querer transparecer que algo a estava incomodando, ela parecia bastante chateada.
+
+— Você está bem? — perguntei. — Estou bem.
+
+— O que está acontecendo? Dá para ver que tem algo errado.
+
+— Estou bem — repetiu ela.
+
+Olhei então no fundo de seus olhos.
+
+— Olha, Melissa, se nós vamos nos casar, você tem de me dizer tudo o que está acontecendo com você.
+
+— Casar? Você está me pedindo em casamento?
+
+Vi lágrimas brotarem em seus olhos e senti as minhas também. — Eu te amo — falei. — E eu vejo a mão de Deus e Seu plano nisso tudo, em como Ele está orquestrando tudo. Vejo que Ele nos uniu.
+
+Ainda estávamos chorando, mas começamos a rir.
+
+Foi um momento espontâneo, sem dúvida. Não comprei uma aliança e não pedi a bênção de seus pais antes de fazer o pedido.
+
+Voltamos para dentro da casa onde seus pais estavam.
+
+— Podemos falar com vocês? — perguntou Melissa. — Nós vamos nos casar!
+
+Os pais dela ficaram muito felizes. Eu me dava bem com eles e eles sabiam quanto eu gostava da Melissa, quanto ela gostava de mim e quanto nós dois amávamos o Senhor. O que eles mais queriam era que sua filha fosse feliz e eu ainda posso ver o olhar de pura felicidade no rosto de Melissa naquela noite.
+
+Com renda suficiente para apenas comprar macarrão instantâneo, atum e ovos, eu não podia pagar por um anel de noivado. Então, a mãe de Melissa lhe deu um anel que tinha pertencido à sua mãe.
+
+Apesar de ter sido um dia difícil, Melissa tinha saído para correr/ caminhar, mas não tivera tempo de tomar banho antes que eu chegasse à sua casa. Ela brincou muitas vezes depois sobre como sempre imaginou que seu pedido de casamento seria uma cena glamourosa, mas que em vez disso estava “suada e nojenta” quando eu propus. É claro que eu não concordava, na minha opinião ela estava linda, e Melissa então dizia que a proposta na verdade ocorreu melhor do que qualquer outro jeito que ela já sonhara.
+
+Eu não contei aos meus pais que ia pedi-la em casamento, mas contei-lhes que Melissa disse que me amava e que eu tinha prometido a Deus que me casaria com ela se ela dissesse isso. Eu mal podia esperar para contar-lhes que estávamos noivos. Mas precisava. Por conta da diferença do fuso horário entre a Califórnia e Indiana, não liguei para meus pais até a manhã seguinte. Minha mãe estava em casa quando liguei.
+
+— Pedi ela em casamento! — relatei animado.
+
+LIGAÇÃO PREOCUPANTE Melissa e eu escolhemos que nosso casamento seria em 21 de outubro. Faltavam apenas cinco meses, mas não queríamos um noivado longo. Ambos tínhamos cem por cento de certeza sobre o que queríamos, então não havia um motivo para prolongar. Nós queríamos ficar juntos. Eu odiava ter de dizer “Até amanhã” no fim da noite. Queria passar o tempo todo com Melissa.
+
+Eu também queria ajudá-la a lidar com os efeitos da quimioterapia quanto fosse possível. Por não sermos casados, havia limitações óbvias sobre quanto eu podia ajudá-la, mas sua família era muito atenciosa sobre deixar-me cuidar dela. Algumas vezes, eu acabava ficando na casa deles até tarde e seus pais me ofereciam o sofá da sala para passar a noite.
+
+Como é esperado de alguém que está passando por quimioterapia, Melissa tinha dias difíceis. Qualquer um que já tenha passado por quimioterapia ou tenha sido próximo a alguém que a fez sabe a batalha física e mental que o tratamento causa. No entanto, no quadro geral, as coisas pareciam estar indo bem, mas com o câncer há sempre uma nuvem de incerteza pairando sobre você.
+
+Nós dois sabíamos a importância de nos mantermos na Palavra de Deus e receber esperança e força Dela naquele momento, tanto sozinhos quanto juntos. Um versículo-chave naquela época para mim foi Jeremias 29:13: “E buscar-me-eis, e me achareis, quando me buscardes com todo o vosso coração”. Nós buscávamos Deus com todo o nosso coração e O encontrávamos. Nós íamos à igreja juntos e, mesmo nos dias em que ela estava enfraquecida pela quimioterapia, ela continuou a orar com a mesma paixão.
+
+Esse foi um período em que, analisando hoje, identifico que minha fé estava crescendo. Um dos motivos para seu crescimento foi Melissa. Mesmo a minha fé tendo se intensificado, estar com ela me deixou convicto sobre a necessidade de uma fé ainda mais profunda. Eu levava meus estudos bíblicos e minha caminhada com o Senhor a sério, mas, veja, eu era jovem. Eu tinha momentos bobos com os amigos durante os estudos bíblicos ou relaxava um pouco em minha devoção periodicamente. Porém, a Melissa — cara, ela era totalmente devotada a Deus. Ela estava constantemente lendo a Bíblia e orando. Ela nunca perdia a oportunidade de falar com alguém sobre Jesus. Ela era focada em sua relação com o Senhor e em ser um exemplo brilhante para Ele.
+
+Às vezes, quando estávamos juntos, ela se afastava de mim para falar com outra pessoa. Eu dizia: “Ei, estou aqui também”. Mas então eu a observava conversar com aquela pessoa e compartilhar Jesus com ela, e eu percebia quantas oportunidades ela enxergava ao nosso redor e eu não. Quando a conversa acabava e eu via como aquela pessoa respondera a Melissa, pensava: “Isso foi inacreditável”.
+
+Acredito que nossa fé também estava crescendo. Como casal, nós nos beneficiamos da garantia de que devíamos estar juntos e, de certo modo, essa garantia ofuscou a incerteza do câncer. Ainda estávamos preocupados com a saúde de Melissa e orando na expectativa de uma cura, mas partilhávamos a alegria de saber que Deus nos colocara no caminho um do outro e criara um caminho para trilharmos juntos. A alegria do Senhor, na verdade, foi nossa força. Essa alegria era possível, pois a alegria não vem de circunstâncias que podem mudar com o resultado de um exame ou uma dor inesperada. A alegria vem de ter um relacionamento imutável com Deus e transcende qualquer desafio que possamos enfrentar no mundo. Mesmo Melissa batalhando contra a fraqueza, a dor e as náuseas causadas pelo tratamento, nós ríamos muito juntos. Nós aprendemos a ser gratos e satisfeitos em todas as circunstâncias. Quando o cabelo dela caiu por completo, comecei a chamá-la de “meu amor lindo, careca e de olhos castanhos”. Isso a fazia rir. E toda vez eu queria dizer isso. Com ou sem cabelo, ela era linda para mim, pois tão atraente quanto ela era por fora, seu interior era ainda mais incrivelmente belo. Na verdade, enquanto planejávamos o casamento e o futuro de nossa vida juntos, Melissa tornou-se mais bonita para mim.
+
+Conversamos sobre entrar para o ministério juntos. Eu cantaria e, com o amor que Melissa tinha pelas pessoas, ela ministraria para mulheres e conduziria estudos bíblicos. Parecia o plano perfeito para nós.
+
+Melissa estava estudando para ser professora e eu sabia que ela seria ótima, pois pude observar como ela interagia com crianças e jovens na igreja, abraçando-os e distribuindo sorrisos, fazendo cada um sentir como se o sorriso fosse exclusivo para eles. E eu mal podia esperar para vê-la com nossos filhos. Nós conversamos sobre filhos e todos os sonhos que casais têm, como perseguir os pequenos pela casa e levá-los para as atividades esportivas ou para recitais ou qualquer coisa que fosse de seu interesse.
+
+No fim do verão de 2000, nós viajamos para Indiana para comparecer ao casamento de Joey Bell, um amigo que eu conhecia desde pequeno e com quem eu estudara na CCBC. Melissa conhecia meus pais de suas viagens à Califórnia para me visitar, mas aquela foi a primeira vez que ela visitou minha casa. Foi legal compartilhar com ela coisas do meu passado e, típico de Melissa, ela instantaneamente se deu bem com os amigos para quem eu a apresentei.
+
+Eu tinha um amigo cuja mãe tivera câncer e, como Melissa, estava passando por quimioterapia. Melissa foi à casa deles para fazer uma sopa para a mãe dele. Ela entendia o que a mãe do meu amigo estava passando e queria fazer o que pudesse para ajudá-la.
+
+Enquanto estávamos em Indiana, Melissa recebeu uma ligação de um de seus médicos. O resultado de um exame mostrava que havia um tumor em seu útero e o médico queria que ela fizesse uma histerectomia quanto antes. Aquela notícia nos arrasou. Se Melissa tivesse o útero removido, não poderíamos ter filhos.
+
+Quando retornamos para casa e consultamos o médico, falei para ele que tínhamos pessoas de todo o país e do mundo orando por nós.
+
+— Se você operá-la e não tiver tumor no útero, não vai retirá-lo, certo? — perguntei.
+
+— É claro que não — respondeu ele. Mas então ele olhou diretamente para mim e, de modo claro para ter certeza de que eu entendia a seriedade da situação, falou: — Mas nós fizemos os exames e tem um tumor. Sinto muito.
+
+SENHOR E SENHORA CAMP!
+
+A cirurgia foi marcada com urgência e ligamos para todo mundo que conhecíamos — e pedimos que solicitassem a todos que eles conheciam — para interceder pelo nome de Melissa. As orações foram feitas também durante todo o tempo da cirurgia.
+
+Caminhei pelos corredores do hospital. “Deus, Você é o curador”, orei. “Nós precisamos do Seu poder curativo hoje. Por favor, cure a Melissa”.
+
+Depois de um tempo mais curto do que esperávamos, a mãe de Melissa correu até mim.
+
+— Sumiu! — exclamou ela. — O câncer sumiu. Eles não removeram o útero.
+
+Caí de joelhos ali mesmo no corredor. — Obrigado, Deus! Obrigado!
+
+Liguei para minha família e para todos os amigos que conseguia lembrar, compartilhando animado a notícia:
+
+— Deus a curou! Ele a curou!
+
+O cirurgião disse que não encontrou nenhum traço do tumor em seu útero. Quando Melissa acordou da cirurgia e soube da novidade, choramos juntos ao perceber que ainda poderíamos ter filhos.
+
+A atitude de Melissa em relação à sua cura era como se ela soubesse o tempo todo qual seria o resultado. Para mim, eu queria que ela fosse curada e acreditei que ela poderia ser, mas não sabia necessariamente que isso iria acontecer. Melissa sabia. Mais uma vez, fiquei impressionado e inspirado por sua fé.
+
+Melissa fez vinte e um anos no dia 7 de outubro. Catorze dias depois, nós nos casamos em Rancho Santa Fe, com meu pai oficializando a cerimônia.
+
+Melissa ficou feliz que seu cabelo voltara a crescer para o casamento. Estava um pouco espetado e fizemos piada sobre isso, assim como quando ela era “meu amor lindo, careca e de olhos castanhos”.
+
+Ela estava deslumbrante em seu vestido de noiva. Quando ela caminhou pelo corredor até mim, seu rosto era um reflexo brilhante da paz e alegria de Cristo. Melissa escolhera a cor branca para os vestidos das damas de honra para representar a pureza que defendíamos.
+
+A noiva e o noivo são o centro da atenção natural em um casamento, mas nós queríamos que, em nossa cerimônia, Deus fosse honrado e glorificado. A doce presença do Espírito Santo preencheu o santuário durante a cerimônia. Juntos, cantamos “Dwelling places” [“Lugares para morar”] de Hillsong, que escolhemos para expressar como nosso amor estava enraizado em Deus. O refrão diz: “I love You, I love You, I love You, and my heart will follow wholly after You” [“Eu Te amo, eu Te amo, eu Te amo, e meu coração O seguirá completamente”].
+
+A luta de Melissa contra o câncer aumentou a emoção que todos na igreja obviamente sentiram durante a cerimônia. Melissa quis convidar todas as pessoas que ela conhecia — foram cerca de seiscentos convidados presentes no casamento —, pois ela queria que todos ouvissem o Evangelho proclamado durante o culto.
+
+Nós não pudemos bancar sozinhos o tipo de casamento que Melissa provavelmente sempre sonhou, mas, como ela era muito querida, amigos se uniram por nós e nos ajudaram a prover o que eu acho que Melissa considerou um casamento perfeito. A cerimônia foi um momento alegre e Melissa claramente amou cada minuto dela.
+
+Ficamos muito felizes por Jason Duff ter comparecido. O tempo curou a ferida em minha relação com ele e fiquei grato por seu apoio gracioso ao estar lá.
+
+Nós viajamos para nossa lua de mel de duas semanas no Havaí, onde os tios dela tinham uma casa de praia. Ficamos com a casa só para nós por uma semana e, quando os tios dela voltaram na segunda semana, nos hospedamos no apartamento do subsolo. Seus tios foram outra bênção para nós, pois não poderíamos pagar por duas semanas no Havaí sozinhos. Nós também íamos visitar minha família em Indiana por duas semanas, então teríamos cerca de um mês após o casamento antes de voltar para a Califórnia.
+
+Desde o momento em que o avião pousou em Oahu, a viagem realmente pareceu uma fuga. Melissa sentiu-se progressivamente mais forte com a proximidade do casamento e nossa lua de mel foi um tempo para nós ficarmos sozinhos e não termos de lidar com quimioterapia nem consultas médicas.
+
+Começamos a lua de mel apenas aproveitando a companhia um do outro e planejando o futuro à nossa frente. Nós caminhamos na praia e nadamos no mar. Passeamos de bicicleta para ver a vista ao longo da costa. Saímos para jantar e também ficamos em casa e cozinhamos juntos. Jogamos jogos de tabuleiro e Phase 10. Fizemos tudo o que queríamos fazer — basicamente, ficar juntos. Simplesmente nos divertimos enquanto nos dávamos conta de que estávamos casados!
+
+Toda a situação — me casar com Melissa e poder passar a lua de mel no Havaí apesar de não termos dinheiro para isso — parecia um sonho.
+
+Apesar de estar no Havaí ter sido um tempo de alívio dos problemas de saúde de Melissa, eu ainda sentia uma seriedade por dentro, como se não soubesse me livrar dela por completo. Houve momentos em que a realidade da situação dela me atingiu.
+
+Um desses momentos foi quando eu estava sozinho na sala de estar. Eu estava refletindo sobre 2 Coríntios 5:7, “Porque andamos por fé, e não por vista”, e senti Deus falando em meu coração: Sei que está com medo e há muito o que não sabe. Mas você não deve saber ainda. Apenas continue a confiar em Mim. Sei o que estou fazendo — sei o que estou fazendo.
+
+Deus estava certo — eu não sabia o que iria acontecer. Nem mesmo tinha uma pista do que poderia acontecer. Apesar de as coisas parecerem melhores com a saúde de Melissa e até ousarmos dizer que seu câncer estava em regressão, eu estava com medo. Mas pensei nas palavras de Deus para que eu continuasse confiando Nele e lembrei alguns acontecimentos do meu passado que serviam como evidência do motivo de eu dever continuar confiando. Com um sopro, Deus colocou vida dentro de mim e Ele fora fiel a mim por toda a minha vida.
+
+Peguei meu violão e ponderei duas questões: acreditarei em Deus quando Ele diz que Sua mão me guiará por todo o caminho? Receberei as palavras que Ele diz em todo momento e em todos os dias?
+
+As palavras para a canção “Walk by faith” [“Caminhar pela fé”] vieram a mim:
+
+Would I believe You when You would say Your hand will guide my every way?
+
+Will I receive the words You say Every moment of every day?
+
+[Refrão]
+
+Well I will walk by faith even when I cannot see
+
+Well because this broken road prepares Your will for me Help me to rid my endless fears
+
+You’ve been so faithful for all my years With one breath You make me new Your grace covers all I do.
+
+Yeah, yeah, yeah, yeah, yeah, yeah
+
+[Refrão]
+
+Well I’m broken, but I still see Your face
+
+Well You’ve spoken, pouring Your words of grace
+
+[Refrão, duas vezes] Well hallelujah, hallelu (I will walk by faith) Well hallelujah, hallelu (I will walk by faith)
+
+I will walk, I will walk, I will walk by faith I will, I will, I will walk by faith
+
+Eu lia o que a Palavra de Deus dizia. Ouvi o que Ele me dissera. Melissa e eu confiávamos Nele. Mas agora eu estava em um ponto em que havia uma grande questão que precisava confrontar: vou agir de acordo com minha fé? O refrão respondeu a essa pergunta com determinação: eu seguiria o Senhor aonde quer que Ele me levasse, independentemente do que estivesse por vir.
+
+Toquei e cantei a canção para Melissa. — É linda — disse ela.
+
+E ficamos sentados lá em silêncio, acho que ambos sentindo a mesma paz de que Deus estava nos guiando e continuaria guiando independentemente do que enfrentaríamos juntos.
+
+Alguns dias depois, Melissa disse que estava com dor de estômago.
+
+— Está estranho, parece inchado.
+
+Seus olhos revelaram uma preocupação profunda.
+
+— Talvez seja apenas alguma coisa que você comeu — falei. Nós estávamos comendo mais comidas diferentes na viagem do que as de costume. Sentei-me na sala de estar e comecei a ficar apreensivo. Eu esperava que Melissa estivesse com uma indigestão, mas, uma vez que a pessoa teve câncer, você pode esperar que a dor seja de algo menor, mas sempre haverá o medo de que seja algo muito pior.
+
+Ainda assim, o restante da nossa lua de mel foi ótimo. Mas como era uma completa fuga de nossa rotina diária, tivemos muito tempo para pensar. Houve momentos em que estava sozinho e meus pensamentos retornavam ao que Melissa dissera sobre seu estômago. Eu ficava preocupado e, em algumas noites, não conseguia dormir.
+
+Tentei não parecer aflito, mas acho que Melissa sentiu momentos de ansiedade e medo em mim. Acredito que ela também imaginava o que estava acontecendo dentro de seu corpo, mas quaisquer preocupações que ela expressava eram sobre mim, não sobre ela.
+
+— Você está bem? — perguntava ela.
+
+— Estou bem — eu dizia, admirado que ela estivesse pensando mais em mim do que em si mesma.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 12;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 10 - Buscando esperança$t$, 12,
+$conteudo$Do havaí, fomos para indiana. Íamos dar uma festa lá para aqueles que não puderam viajar até a Califórnia para o nosso casamento, e um amigo que estivera na cerimônia também iria se casar.
+
+O clima estava relativamente quente para o outono de Indiana. Meus pais estavam construindo uma nova entrada para carros em frente à casa e todos da família colocaram os pés descalços no cimento molhado. Não sei o que diz mais “bem-vindo à família” para uma recém-casada do que deixá-la colocar suas pegadas na garagem dos sogros! Abaixo das pegadas, escrevemos “Isaías 52:7”, que diz: “Quão formosos são, sobre os montes, os pés do que anuncia as boas-novas, que faz ouvir a paz, do que anuncia o bem, que faz ouvir a salvação, do que diz a Sião: O teu Deus reina!”.
+
+Minha mãe estava ajudando a organizar e decorar o casamento do meu amigo e Melissa quis ajudar, mas ela não se sentia bem e minha mãe tentava não sobrecarregá-la. Ela disse a Melissa que fosse descansar, pois provavelmente estava esgotada do tratamento, do casamento logo em seguida e ainda da drástica diferença de fuso horário entre o Havaí e o centro-oeste.
+
+No entanto, meus pais ficaram preocupados, e disse a eles que marcaria uma consulta com o médico de Melissa assim que voltássemos para a Califórnia. Também falei que estava muito animado para voltar para casa. Melissa tinha arrumado nosso apartamento e, apenas um mês após nos casarmos, iríamos finalmente nos instalar na nossa casa.
+
+Quando voltamos para a Califórnia, marquei uma consulta para Melissa. Foi na mesma época do Dia de Ação de Graças e Heather estava na cidade visitando a família. Mais tarde, Heather me contou que ela e Melissa ficaram sozinhas no quarto e que ela percebeu que Melissa não estava se sentindo bem.
+
+— O que há de errado? — perguntara ela.
+
+Melissa levantou parcialmente a blusa, pegou a mão de Heather e a esfregou em seu estômago. Heather sentiu tumores por toda parte. Elas começaram a chorar e oraram para Deus curar o que quer que fosse aquilo.
+
+Quando o médico examinou Melissa, ele disse que ela tinha líquido acumulado na cavidade abdominal que precisava ser drenado. Enquanto drenavam os fluidos, segurei sua mão com força e me senti impotente ao ver as expressões de dor em seu rosto. Foi muito difícil de assistir. O médico examinou os fluidos e, quando o resultado ficou pronto, ele foi ao quarto de Melissa e pediu para falar comigo a sós no corredor.
+
+“Ah, não”, pensei ao me levantar da cadeira e segui-lo até a porta. — O que está acontecendo? — perguntei ao médico do lado de fora antes mesmo que ele começasse a falar. Vi compaixão em seu olhar. Ele sabia que tínhamos acabado de nos casar.
+
+— Receio que o câncer esteja... bem, esteja se espalhando — disse ele. — Ele voltou e fez metástase para outras partes do corpo. Sinto muito ter de lhe dizer isso.
+
+A notícia me atingiu como um soco, mas foi mais como alerta do que um golpe de nocaute. Eu ainda tinha aquela mentalidade de “vamos superar!” de quando escrevi “Walk by faith”. Não era a primeira vez que recebíamos notícias ruins e Melissa se curara, e eu estava pronto para bolar um plano de ação para lidar com esse problema também.
+
+— Tá bom, então o que nós fazemos agora? — perguntei ao médico.
+
+Ele não respondeu de imediato e odiei o modo como ele olhou em meus olhos intensamente.
+
+— Não, veja... — disse devagar. — Não há mais nada que possamos fazer.
+
+— O que isso quer dizer?
+
+— Nossas opções de tratamento são mínimas. Jeremy, ela provavelmente tem meses ou talvez até semanas de vida.
+
+Não me lembro de como a conversa terminou. Depois disso, só me lembro de estar sozinho no corredor, percebendo que eu precisava me recompor o mais rápido possível. Então, entrei no quarto para contar a Melissa.
+
+Como o médico tinha me levado para fora do quarto, ela sabia que a notícia não era boa. Notei que ela estivera chorando e tenho certeza de que ela sabia que eu estivera chorando também.
+
+Sentei-me ao seu lado na cama e repeti o que o médico havia me dito. Nós dois desabamos. Ela começou a tentar me consolar, mas não falamos muito enquanto esperávamos a liberação para ir para casa.
+
+Eu estava descrente enquanto dirigia para casa e não me recordo de quase nada do que conversamos; mas lembro de algumas frases que ela disse, frases que ouço claramente até hoje:
+
+— Quero que saiba que tudo bem se você encontrar outra pessoa depois que eu partir, e não quero que espere muito. Você não tem de viver de luto por muito tempo.
+
+Não consegui entender por que ela tinha me dito aquilo.
+
+— Nós estamos lutando aqui — falei. — Eu ainda vou continuar lutando.
+
+Não é que Melissa estivesse escolhendo parar de lutar, mas ela já estava aceitando a realidade de sua condição e olhando adiante para ajudar-me com o que eu iria enfrentar.
+
+Liguei para os meus pais para informá-los do relatório do médico. — Alô? — minha mãe atendeu.
+
+Tentei falar, mas não consegui. Tentei de novo, e ainda não consegui.
+
+Minha mãe desligou. Esperei alguns segundos para recompor-me e ligar novamente, mas ninguém atendeu.
+
+Liguei para minha irmã. — Alô? — ela atendeu.
+
+Mais uma vez, tentei falar e não consegui. April desligou e liguei de novo.
+
+Ela atendeu e falhei novamente em falar. Ela desligou. Liguei uma terceira vez.
+
+— Por favor, não desligue — mal consegui dizer quando ela atendeu.
+
+April ficou na linha. Eu não conseguia falar.
+
+— Acabei de ficar sabendo... — comecei. — Melissa tem poucas semanas ou meses de vida.
+
+Disse a April que tinha tentado contar para nossa mãe mas que quando liguei novamente ela não atendeu. Meus pais não tinham celulares, mas April disse que eles tinham um compromisso no banco e que ela tentaria encontrá-los para mim. Ela ligou para o banco e, quando a secretária entrou no escritório do gerente e disse à minha mãe que April estava ao telefone, seu coração afundou. Ela sabia que havia algo muito errado se April tinha ligado para o banco. Minha irmã contou-lhe sobre nossa conversa e meus pais deixaram o banco imediatamente para voltarem para casa e me ligarem.
+
+— Nós estamos indo para aí — minha mãe me disse. — Faremos todo o possível para chegar aí.
+
+— Não, não venham ainda — falei. — Quero tentar encontrar outras opções para a Melissa. Nós vamos ver o que é possível fazer. Nem sei se estaremos aqui, então esperem.
+
+LUTANDO, ACREDITANDO E LOUVANDO
+
+Logo ficou claro que nós não iríamos lutar sozinhos. Nos meses anteriores, tínhamos alcançado todas as pessoas possíveis para rezar por Melissa. Depois de receber aquela notícia terrível, acionamos nossa rede de orações mais uma vez.
+
+Pastores e amigos começaram a aparecer em nosso apartamento para orar por Melissa e ungi-la com óleo. Em algumas dessas visitas, tivemos momentos poderosos de culto e louvor. Soubemos de amigos e familiares que não moravam em nossa região que também estavam orando e acreditando em sua cura.
+
+Apesar da decepção com o diagnóstico do retorno de seu câncer, nós estávamos confiantes que o Senhor poderia curá-la. Era realmente doloroso vê-la sofrendo, então eu queria que a cura viesse rápido.
+
+— Por favor, Deus — eu suplicava. — Cure-a.
+
+Minha mãe ligava quase todos os dias para citar um trecho do Evangelho que Deus lhe dera para compartilhar conosco. Os versículos eram repletos de encorajamento, exortação e conforto. Eles nos lembravam da bondade de Deus diante de circunstâncias difíceis e nos lembravam de santos que serviram de exemplos ao andar pelo fogo e sair do outro lado com uma fé maior.
+
+Fomos abençoados financeiramente, sobretudo graças a Joey Buran. Ele era um surfista famoso, conhecido como “California kid”, que se tornara pastor na Calvary Chapel Costa Mesa. Ele tinha fundado recentemente uma comunidade jovem chamada Worship Generation [geração da adoração]. Toquei em alguns eventos de Joey e nos tornamos bons amigos.
+
+Quando Joey soube que o câncer de Melissa voltara e se espalhara, ele começou a contar sobre o caso às pessoas em sua congregação e em programas de rádio ao vivo da Worship Generation. Ele sugeria que as pessoas nos doassem dinheiro e passou nosso endereço de correspondência. Amigos e até pessoas que não conhecíamos começaram a nos enviar cheques e bilhetes de apoio.
+
+Por causa desses presentes, pude dar um tempo na agenda de shows e nos cultos nas igrejas para ficar com Melissa. Eu tinha de levá-la ao hospital a cada três dias para drenar seu estômago. Havia tanto líquido se acumulando que, em algumas vezes, eles drenavam mais de sete litros.
+
+Eu odiava aquelas drenagens, pois era um procedimento doloroso para Melissa. Quando eu a via estremecer e ouvia seus gemidos de dor, eu praticamente suplicava para Deus curá-la ali mesmo para que a dor parasse. Eu ficava desamparado em ver minha esposa sofrer e não poder fazer nada para acabar com aquilo. Sabia que estar ao seu lado era uma grande ajuda para ela, mas me sentia impotente quando ela sentia dor.
+
+A dor não parava quando voltávamos para casa. Melissa era durona e tentava manter o foco longe de seu sofrimento, mas lembro-me de uma noite em que ela estava deitada no sofá da sala e gemendo de dor.
+
+— Poderia pegar seu violão e cultuarmos juntos? — perguntou. Não esperava por aquela pergunta, mas rapidamente peguei o violão e me sentei perto dela. Cantamos uma canção chamada “Good to me” [“Bom para mim”].
+
+Há uma parte da canção em que as palavras “for You are good” [“porque Você é bom”] se repetem várias vezes. Eu cantava com a cabeça abaixada e de olhos fechados quando, em uma dessas repetições, levantei o olhar e vi Melissa — fraca e com dor — cantando com as duas mãos erguidas na direção do Senhor. As palavras seguintes ficaram presas em minha garganta, pois fiquei devastado com a visão de sua fé inabalável.
+
+Não importava quanto ela estivesse sofrendo, ela continuou a louvar a Deus. Eu a ouvia dizer a Ele:
+
+— Você é bom. Em meio às dificuldades e à dor, Você é bom. Aquilo me lembrava do que ouvi meu pai dizer várias vezes enquanto eu crescia:
+
+— A vida é dura, mas Deus é bom.
+
+Nós sabíamos que Deus podia curá-la instantaneamente ou através da medicina e dos médicos abençoados por habilidades dadas por Deus para tratar pacientes. Além das nossas orações, tentamos tratamentos alternativos, como fazer mudanças na dieta de Melissa, beber suco de cenoura, tomar sopa de alho e consumir outros alimentos que se acredita serem capazes de combater o câncer.
+
+Exploramos também opções de tratamento no México. Visitamos um lugar desgastado em Tijuana que tinha limusines para transportar os pacientes que ficaram sem esperança de tratamento nos Estados Unidos. Lá, as enfermeiras vestiam uniformes brancos e chapéus com cruzes vermelhas. Eles deram uma medicação à Melissa que não podíamos levar para casa e, depois, atravessamos a fronteira de volta para ela ter a cavidade abdominal drenada mais uma vez no hospital.
+
+Além disso, viajamos para Houston, Texas, para visitar o Centro de Oncologia MD Anderson.
+
+Liguei para minha mãe quando chegamos a Houston.
+
+— Isso é tão difícil, pois ela está muito fraca — falei. — Tivemos de usar uma cadeira de rodas.
+
+Estávamos otimistas para ter um relatório positivo de um dos melhores hospitais do país para tratamento de câncer, e os médicos do MD Anderson realmente nos deram alguma esperança. Eles nos disseram que o câncer de Melissa estava no estágio três em vez do estágio quatro. Também disseram que, por mais que tivesse recebido o tipo de tratamento apropriado na Califórnia, ele fora interrompido cedo demais. Disseram que os médicos deviam recomeçar o tratamento e que isso faria diferença. E disseram que havia algumas coisas menores que podíamos fazer para ajudá-la, como aumentar sua ingestão de proteína.
+
+Porém, depois de voltarmos de Houston, Melissa começou a perder peso rapidamente.
+
+Por não conseguir manter a comida em seu organismo, ela teve de passar o Natal no hospital. Sua irmã Megan precisou passar por uma cirurgia de emergência no dia de Natal e sua família conseguiu que elas dividissem o mesmo quarto. Melissa ficara realmente chateada de ter de passar o Natal no hospital, mas como Megan seria sua companheira de quarto, a família decorou o ambiente e deixou o espaço mais festivo para elas.
+
+No entanto, após deixar o hospital, o intervalo entre as horríveis drenagens diminuiu. Sua dor aumentou em intensidade e frequência.
+
+Eu tentava ser forte por ela, mas era difícil. Muitas vezes, quando sabia que Melissa não me ouviria, eu ligava para meus pais. Um deles atendia e eu caía no choro.
+
+— É tão duro — eu dizia.
+
+Eu me considerava um lutador ao lado de Melissa. Queria ser encorajador para ela. Mas havia momentos em que eu pensava: “Não posso mais fazer isso. É simplesmente demais... dói demais”.
+
+Mas, toda vez, Deus me mandava uma onda de força que me encorajava a continuar lutando. E Melissa parecia também saber do que eu precisava, pois ela sugeria:
+
+— Vamos louvar ao Senhor.
+
+Para ser honesto, muitas vezes quando ela dizia isso louvar era a última coisa que eu queria fazer. Mas toda vez, porque ela queria, eu pegava meu violão e cantava com ela, louvando a Deus por toda Sua bondade. Repetidas vezes, Deus usou nosso tempo de adoração para nos reabastecer com a força que somente Ele poderia fornecer.
+
+Continuamos depositando nossa confiança em Deus. Ainda falávamos sobre o futuro, até mesmo sonhando em um dia ter filhos correndo pela casa. Um amigo nos deu um livro infantil ilustrado como presente de esperança e nos apegamos a ele como um sinal para ousar imaginar dias melhores pela frente.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 13;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 11 - “Chegou a hora”$t$, 13,
+$conteudo$Eu não fiz muitos shows enquanto Melissa estava doente, pois queria ficar com ela o máximo que pudesse. Não queríamos desperdiçar um momento juntos sequer, então nas poucas ocasiões em que participei de algum evento, se Melissa estivesse disposta, me acompanhava.
+
+A Horizon Christian Fellowship me convidou para fazer parte do seu especial de Ano Novo no centro de convenções de San Diego. A essa altura, Melissa já não conseguia andar direito, mas quis ir comigo em sua cadeira de rodas. Era preciso muita força de vontade apenas para estar lá.
+
+A apresentação daquela noite incluía minha primeira performance pública de “Walk of faith”. Compartilhei com a plateia a história por trás da canção — sobre Melissa, como a canção surgiu em nossa lua de mel e tudo o que aconteceu depois disso.
+
+Comecei a cantar, mas, para ser sincero, não estava realmente sentindo as palavras que eu cantava. Espero que isso não soe como uma desonestidade em relação à canção, pois não é o caso. Essa é uma canção profunda que surgiu em um momento em que Deus falava comigo, e acredito que Ele tenha me dado as palavras para que, assim, Ele pudesse falar às pessoas através da minha música. Ao longo da última década, soube de centenas de pessoas, literalmente, que queriam que eu soubesse quanto aquela música em particular os ajudara. No entanto, naquela noite, havia coisa demais rolando em minha mente por causa da saúde debilitada de Melissa.
+
+Melissa estava na cadeira de rodas na lateral do palco e, quando me aproximei do fim da canção e estava cantando os aleluias, olhei para ela. Ela estava muito magra. Seu rosto tinha afinado. Eu sabia quão fraca ela estava. Mas lá estava ela, com as mãos para o alto, cantando com toda a força que tinha: “Aleluia” — nossa tradução do hebreu para “Louvai ao Senhor”.
+
+Ela estava tendo o mesmo tipo de momento íntimo com o Senhor de quando nos vimos pela primeira vez no estudo bíblico na Palomar College. Por fora, Melissa tinha mudado drasticamente desde então. Mas, apesar de tudo que lhe acontecera, sua fé em Deus não enfraqueceu. Na verdade, apenas fortaleceu.
+
+Quando vi Melissa louvando a Deus, senti o Espírito Santo atingirme como um vento forte. O poder que senti naquele palco foi incrível. Foi mais uma onda de força que chegou no momento exato em que eu mais precisava.
+
+“Tá bom, vamos seguir em frente”, pensei.
+
+Contudo, não demorou muito para o dia que eu mais temia chegar, o dia que até mesmo tentei ignorar. Melissa precisaria de cuidados médicos 24 horas por dia em um hospital.
+
+Sua mãe e sua irmã Heather ajudaram a cuidar dela. Também foi preciso alguma assistência externa. Por duas semanas, Melissa precisou do nosso cuidado contínuo. Ela desidratava facilmente, então trocávamos sua bolsa de hidratação o tempo todo. Eu acordava no meio da noite com o bipe do equipamento me alertando que era hora de trocar seu estente para mantê-la hidratada. Eu também acordava sozinho à noite só para ter certeza de que ela estava bem, então não dormia muito.
+
+O sofrimento de Melissa era provavelmente a parte mais difícil para mim. Ela sentia dores cada vez piores e mais frequentes. Eu lhe dava um analgésico, mas se a dor chegasse a um nível excruciante antes de eu lhe dar outra dose era tarde demais para o remédio fazer efeito. Certa vez, quando ela acordou com muita dor, não consegui pegar o remédio rápido suficiente. Aquela foi uma das piores noites da minha vida, vê-la em agonia e sentir que era minha culpa, que eu tinha falhado com ela. Ela tinha dias difíceis e havia dias em que ela ficava compreensivelmente irritada pela dor. Porém, não ouvi sequer uma vez Melissa reclamar da dor ou questionar Deus.
+
+Eu ficava ao seu lado o tempo todo, mas tinha horas em que ela me olhava amavelmente e dizia:
+
+— Só preciso de um tempo a sós com o Senhor.
+
+Eu não queria deixar o apartamento caso ela precisasse de mim para alguma coisa, então eu me trancava no banheiro e orava.
+
+“Deus, é sério! Você precisa fazer alguma coisa. Leve-a, ou pare com a dor, ou cure-a! Mas essa coisa de estar no limbo...”.
+
+Mas seu sofrimento não acabava. Ficava cada vez mais constante e não podíamos mais lhe dar o tratamento adequado em casa. Interná-la seria um passo em direção ao fim que nunca conseguiríamos voltar atrás. Doía a probabilidade de que, se Deus não lhe desse uma cura milagrosa, nós nunca mais estaríamos em casa juntos.
+
+Melissa estava no hospital havia apenas alguns dias quando, notavelmente, sua condição piorou. Um dos médicos disse que eles fariam de tudo para “mantê-la confortável”. Não gostei de ouvir aquilo. Soou como se o médico estivesse desistindo. Cansado e frustrado, descontei nele gritando:
+
+— Não, não queremos apenas isso! Até o último dia, vamos orar pela cura, confiar no Senhor e não desistir! Acreditamos que Deus cura e eu não vou desistir!
+
+Um médico — não me lembro se foi o mesmo médico — também deu a Melissa um livro. Eu o ouvi dizendo a ela que o livro era sobre como se preparar para os dias finais. Quando o médico saiu do quarto, fui atrás dele e falei:
+
+— Ei, não dê um livro a ela basicamente dizendo que ela vai morrer, porque nós vamos continuar tendo esperança até o último dia. Não faça esse tipo de coisa.
+
+— Ouça, você precisa encarar o que está acontecendo — disse o médico calmamente. — Você precisa encarar a realidade.
+
+— A realidade é que Deus pode curá-la.
+
+Continuei a acreditar que Deus podia curá-la e continuei a orar para que Ele o fizesse. Enquanto Melissa dormia, eu sentava ao seu lado na cama, observando-a e checando nos monitores conectados a ela as menores mudanças — em qualquer direção — em seus números. Eu orava sem parar: “Deus, por favor, cure-a. Por favor, cure minha esposa”.
+
+Eu colocava um travesseiro no chão do quarto, um cobertor por cima de mim e dormia. Não gostava de sair de seu lado, mas algumas vezes eu descia para a capela do hospital e dormia lá, pois tinha bancos acolchoados.
+
+Nossas famílias ficaram conosco o tempo todo, junto a um fluxo constante de amigos que chegavam e saíam da sala de espera, trazendo flores, cartões de apoio e orando por nós. Como em toda a sua vida, Melissa se preocupava em primeiro lugar com os outros. Ela recebia as visitas perguntando como elas estavam. Ela pegava na mão de alguém, segurava o mais forte que podia, sorria e tentava fazê-lo entender quanto ela apreciava não apenas sua visita, mas a pessoa em si.
+
+Melissa sempre teve um talento especial para saber como e quando incentivar as pessoas. Certa manhã, quando minha mãe e meu pai estavam com ela, ela lhes disse:
+
+— Quero que saibam quanto amo vocês dois. Vocês são os sogros que pedi e o Senhor os trouxe para a minha vida.
+
+Ela amava rosas — amarelas e vermelhas. Sempre havia rosas em seu quarto que alguém lhe trouxera. Os visitantes recebiam uma rosa de Melissa e ela orava por eles. Ela também fazia seus familiares entregarem rosas a outros pacientes que conhecera. Seu pai orava com os outros pacientes todo dia por causa das rosas que entregava.
+
+Melissa ainda gostava de cantar. Amigos levavam violões para seu quarto, tocavam canções de adoração e ela os acompanhava. Um dia, quando ela estava muito cansada, olhei para ela e falei:
+
+— Nós vamos superar isso.
+
+Ela começou a cantar suavemente “Jesus loves me, this I know” [“Jesus me ama, isso eu sei”]. Enquanto cantávamos o resto da canção juntos, ela ergueu os braços finos, não tão alto quanto de costume, mas o mais alto que conseguia. Dois minutos depois, ela dormiu.
+
+A linha do tempo enquanto Melissa estava no hospital ainda é confusa para mim, mas acho que estávamos lá havia duas semanas. Em certo ponto, com sua condição ainda piorando, ela foi transferida para a UTI para que pudesse receber mais atenção médica. Depois de alguns dias após a transferência, ela começou a entrar e sair de seu estado consciente. Seu tempo acordada tornou-se mais raro, mas a equipe do hospital conseguiu administrar melhor sua dor com níveis maiores de medicação. Ver Melissa sofrer menos pela dor ajudou e fez eu me arrepender ainda mais do meu confronto com o médico que disse que eles fariam tudo para mantê-la confortável.
+
+Melissa orava com os médicos antes de cada medicamento ou procedimento a que era submetida, e uma das enfermeiras estava fazendo anotações sobre a fé de Melissa e de todos ao seu redor. Ela viu as orações, ouviu as canções de louvor, sentiu a paz no quarto de Melissa e percebeu que algo estava faltando na própria vida.
+
+Melissa estava orando pela enfermeira e pediu a nós que estávamos com ela para orar pela mulher também. O pai de Melissa orou com a enfermeira um dia e ela pediu que Jesus entrasse em seu coração e fosse seu Senhor e Salvador.
+
+Se eu morresse desse câncer e apenas uma pessoa aceitasse Jesus por causa disso, tudo valeria a pena.
+
+Melissa não tinha muita força quando soube da decisão da enfermeira, mas chorou ao saber que seu objetivo naquele sofrimento havia sido alcançado. Acho que aquela confirmação foi um lindo presente de Deus para Melissa, dizendo: O que você disse Eu fiz acontecer. Queria que você visse isso acontecer.
+
+— Lembra-se daquela “uma pessoa”? — falei para ela. — Esse é só o começo. Haverá muitas mais.
+
+COM JESUS
+
+Certa noite, Melissa estava dormindo quando senti que o Senhor queria que eu levasse o violão a uma sala de espera vazia e lesse Salmos, um Evangelho que muitas vezes foi fonte de conforto para mim. Os Salmos de Davi revelam a honestidade crua com a qual ele entregou seu coração a Deus. Há uma tendência clara nos Salmos: ele conta a Deus sua provação e sua mágoa, pergunta por que essa provação está acontecendo e então declara sua confiança em Deus e na bondade e misericórdia infalíveis Dele.
+
+Comecei a ler e senti Deus me levando ao Salmos 119, em que os versículos 153-154 dizem: “Olha para a minha aflição, e livra-me, pois não me esqueci da Tua lei. Pleiteia a minha causa, e livra-me; vivifica-me segundo a Tua palavra”.
+
+Vivifica-me. Era disso que eu precisava, reviver. Naquela sala vazia, escrevi a canção “Revive me” [“Reviva-me”].
+
+Consider my affliction and please deliver me Plead my cause and redeem me
+
+Salvation is not for the wicked For they don’t seek Your word
+
+Great are Your tender mercies, Lord.
+
+Revive me, according to Your loving-kindness Revive me, that I may seek Your Word
+
+Revive me, according to Your loving-kindness Revive me, oh Lord.
+
+You give me understanding according to Your Word Great peace for those who seek Your face
+
+I long for salvation
+
+My lips shall praise Your name
+
+I rejoice in the treasure of Your keep.
+
+For all my ways are before You I let Your hand become my help My soul longs and adores You
+
+Let my cry come before You, oh Lord.
+
+Depois de escrever as últimas palavras, voltei para o quarto de Melissa. Ela estava acordada e perguntei se podia cantar uma canção para ela. Lágrimas escorreram de nossos olhos.
+
+— É linda — disse ela.
+
+— Deus deu essa canção para nós neste momento.
+
+Nas horas seguintes, Melissa ficou menos responsiva. Dava para ver que seu corpo estava desligando e que sua hora estava chegando.
+
+Dez de nós estavam no quarto de Melissa, ainda chorando e orando por uma cura. Já fazia várias horas desde que ela havia respondido a algum de nós. Mike MacIntosh, nosso amigo pastor da igreja Horizon, veio até mim e sussurrou:
+
+— Acredito que você precisa dizer a ela que está tudo bem, que ela pode ir ao encontro do Senhor.
+
+Assenti de leve, ajoelhei-me ao lado de Melissa e me curvei até seu ouvido.
+
+— Está tudo bem, amor. Nós ficaremos bem. Vá e fique com o Senhor.
+
+Alguns minutos depois, nossas mães começaram a cantar. De repente, Melissa se sentou ereta na cama e colocou as mãos em suas bocas, como se dissesse: “Não, ainda não estou partindo”. Então ela ficou inquieta, mexendo-se na cama. Todos nós começamos a orar. Melissa dobrou as pernas e nos disse para baixar as grades da cama, pois queria se levantar.
+
+Dissemos que não podíamos, mas então começamos a perceber que Deus podia estar curando-a e rapidamente descemos as grades. Melissa girou as pernas para fora, levantou-se e olhou-me diretamente nos olhos.
+
+— Ele se foi! — disse. — Ele se foi. Não soube o que responder.
+
+— Jeremy, acredite em mim. Foi tudo embora. Confuso, perguntei o que ela queria dizer. — Você está curada?
+
+— Sim! Foi tudo embora.
+
+Na mesma hora, o quarto irrompeu em regozijo. Eu a abracei. Meu irmão Jared abraçou a nós dois. Nossas mães começaram a pular e se abraçaram também. Todos nós continuamos alegres, agradecendo a Deus por sua cura.
+
+Melissa precipitou-se, tentando andar, mas teria caído se um amigo não a tivesse segurado. Ela disse que precisava ir ao banheiro. Nós dissemos que ela ainda não podia, por causa de todos os tubos presos a ela, então ela teria de esperar. Ajudamos ela a voltar para a cama e ela se deitou com o olhar mais pacífico que já vi.
+
+Saí do quarto e comecei a ligar para amigos contando o que tinha acontecido.
+
+— Acho que Deus a curou.
+
+Melissa dormiu várias vezes naquele dia, sentando-se e conversando de vez em quando. Ela estava com o olhar vidrado e supusemos que fosse causado pelos medicamentos. Esperávamos que voltasse ao seu antigo eu assim que o efeito da medicação passasse. Um nível renovado de energia preencheu o quarto.
+
+Quando ela estava acordada e falante, nós conversávamos com ela o máximo possível antes que voltasse a dormir. Quando estava dormindo, eu saía para o corredor e caminhava, maravilhado com a possibilidade de minha Melissa ter sido curada.
+
+No entanto, com o passar de algumas horas, ela voltou a ficar sem resposta. Seus sinais vitais enfraqueceram e ela parecia ainda mais fraca que antes.
+
+Fiquei confuso. Ela estava curada ou não? Voltei para a sala de espera ao lado, exaurido. Deitado de bruços no chão, chorei alto.
+
+— Senhor, o que está acontecendo?
+
+Fiquei no chão, chorando e pedindo a Deus por respostas.
+
+Então, sentindo a presença de alguém, ergui os olhos para ver um amigo parado à porta.
+
+— Jeremy — disse ele com um tom sombrio —, chegou a hora. Levantei do chão e comecei o que parecia ser uma longa caminhada até o quarto dela. Meu irmão e meus pais estavam comigo.
+
+Jared, com um olhar de dor, parou e me abraçou. Ele chorou enquanto nos abraçávamos.
+
+— Não acabou — disse ele. — Ela ainda não se foi.
+
+Demos dois passos em direção ao quarto de Melissa quando, por algum motivo, aquilo me atingiu: Jared, apenas um adolescente na época, estava amadurecendo espiritualmente, e aquele podia ser um momento decisivo para sua fé em Deus. Eu queria tranquilizá-lo em sua caminhada com Cristo.
+
+Peguei em seu braço e olhei para ele cara a cara.
+
+— O que quer que você faça, nunca pare de servir a Jesus. Só porque vivemos em um mundo doente e cheio de pecados não significa que Ele não está no controle.
+
+Jared assentiu.
+
+Eu podia sentir minhas pernas cedendo enquanto entrava no quarto de Melissa. Além da música de oração tocando no CD player, estava tudo quieto. Me aproximei de Melissa e caí ao seu lado na cama. Eu a abracei e disse:
+
+— Eu te amo.
+
+Às 0h05 de segunda-feira, 5 de fevereiro de 2001, Heather sussurrou:
+
+— Ela está com Jesus agora.
+
+Rolei para fora da cama direto para o chão, onde me curvei em uma bola. A família de Melissa começou a louvar ao Senhor, erguendo as mãos e cantando, acompanhando a música do CD. Depois, minha mãe começou a cantar, seguida do meu pai e de outros membros de nossas famílias.
+
+Eu não queria cantar. Só queria ficar no chão e chorar.
+
+Mas, então, Deus falou em meu coração: Quero que se levante e louve a Mim.
+
+“Ah, Deus, não! Eu não quero me levantar e louvar agora. Não há nada em mim que possa fazer isso”.
+
+Minha mãe, em sua voz maternal delicada mas firme, disse-me: — Querido, você tem de erguer suas mãos, você tem de louvar ao Senhor.
+
+Eu sabia que tinha de confiar em Deus, que, mesmo nos momentos mais dolorosos e horríveis, Ele ainda é digno de ser louvado. Vagarosamente fiquei de joelhos e, então, meus pais me ajudaram a ficar em pé. Comecei a cantar e ergui minhas mãos junto aos outros em torno da cama de Melissa.
+
+Nunca senti a presença de Deus tão poderosamente quanto naquele momento. O corpo de Melissa estava sem vida diante de nós, mas eu sabia que sua alma estava louvando seu Senhor e Salvador. Ela estava na presença de seu Rei — sem dor e sem sofrimento.
+
+A jornada tinha sido longa para todos nós. Tinha nos exaurido física e emocionalmente. Eu não achava que tivesse forças para andar sozinho, então apoiei os braços em meu pai e em um amigo próximo, e eles me ajudaram a sair do quarto de Melissa.
+
+HORA DE CONFIAR
+
+Quando acordei em nosso apartamento mais tarde naquela manhã, meu primeiro pensamento foi: “Vou receber uma ligação dizendo que ela foi curada, que ela está viva”. Contei para minha mãe e ela disse que teve um pensamento similar.
+
+Tínhamos tanta fé que Melissa seria curada, seguindo as escrituras cheias de promessas, que acreditamos que a cura chegaria para ela.
+
+Um pouco depois de Melissa se levantar da cama no hospital e declarar que o câncer tinha ido embora, seu irmão, Ryan, perguntou-me se eu acreditava que Deus a tinha curado. Não me lembro das palavras exatas de sua pergunta seguinte, mas me lembro claramente da essência: Deus não seria tão cruel de nos dar falsas esperanças de ela ter sido curada, seria?
+
+— Sem chance, cara — respondi a Ryan.
+
+Porém, depois, Melissa se deitou na cama e nunca mais se levantou.
+
+— Por que Você faria isso? — perguntei a Deus. — Por que nos daria esperança em vão? Por que nos deu aquela esperança sobre termos filhos? Nós começamos a conversar sobre filhos e, então, obviamente nós deveríamos ter filhos, pois ela não precisou fazer aquela histerectomia.
+
+Senti Deus me falar: Eu lhe dei aquela esperança porque não queria que vocês se casassem já pensando que não poderiam ter filhos.
+
+Eu meio que entendia isso. Mas, depois, perguntei:
+
+— Por que ela disse que tinha sido curada? Por que Você deixaria isso acontecer?
+
+Percebi, então, que talvez ela estivesse mesmo sendo curada naquele momento, um tipo diferente de cura pela qual eu estivera orando, acreditando e esperando, mas sendo curada do jeito que Deus queria. Acredito que Deus revelou a Melissa que o câncer, toda a dor e o sofrimento estavam sendo removidos dela quando ela entrou em Sua presença por toda a eternidade.
+
+Ainda assim, eu lutava com o fato de que acreditara que Melissa seria curada aqui na Terra.
+
+Há uma simples palavra para o que eu precisava fazer naquele momento: confiar.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 14;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 12 - Por quê?$t$, 14,
+$conteudo$O que fazer quando sua melhor opção é confiar em alguém, mas você está em um momento da sua vida que não tem a capacidade de confiar? E se você tivesse aprendido que confiar em Deus não significa que tudo está seguro e que nada de ruim vai acontecer?
+
+Esse lugar confuso é onde eu estava com Deus depois que Melissa foi para o Céu. Após o enterro, voltei para Indiana para passar um tempo com minha família. Eu precisava me afastar da nossa casa, da costa oeste e de tudo que me fazia lembrar de Melissa diariamente.
+
+Melissa e eu nem tínhamos tido a chance de estabelecer uma rotina depois do casamento, e pouco mais de cem dias desde que prometemos ficar juntos até que a morte nos separasse eu não estava preparado para começar uma nova rotina que não fosse com ela. Eu tinha vinte e três anos e estava viúvo. Essa última palavra foi difícil de entender.
+
+“Entorpecido” é o sentimento mais próximo para descrever como me sentia. Sair da cama de manhã exigia todo o meu esforço. Se pudesse ficar na cama com as cobertas por cima da cabeça para evitar enfrentar minha confusão, eu ficaria. Mas a confusão também estaria ali. Ela estava por toda parte.
+
+Não foi como se de repente eu tivesse esquecido todas as coisas boas sobre Deus que mencionei até este momento no livro. Fiquei agradecido por Deus ter colocado Melissa na minha vida. Fiquei grato pela força que Ele me deu, e foi a única razão pela qual consegui superar as difíceis circunstâncias. Eu queria confiar em Deus — sabia que precisava confiar Nele —, mas como eu acreditei que Ele curaria Melissa e Ele não o fez da maneira como eu acreditava que Ele faria, minha confiança Nele ficou prejudicada.
+
+Eu estava levando minhas dúvidas diretamente a Deus, mas não parecia haver uma conexão sólida entre nós. Era como quando você está conversando com alguém no celular, entra em uma área em que o sinal é ruim e a ligação começa a falhar. Você sabe que a outra pessoa está na linha, mas não consegue ouvi-la direito. Só que eu já estava naquela área sem sinal havia duas semanas e começando a me perguntar se Deus e eu nos comunicaríamos novamente como havíamos feito antes.
+
+Por isso, surpreendeu-me sentir que Deus falou comigo (pegue o violão) no dia em que eu estava sentado sozinho no sofá da casa de meus pais. Primeiro, fiquei surpreso porque senti as palavras ressoarem claramente dentro de mim. Além disso, achava que não tinha algo a oferecer a Deus, ou a qualquer pessoa, física ou emocionalmente. Imagine um pneu vazio. Ainda é um pneu, mas sem ar é inútil. Eu me sentia como esse pneu.
+
+Depois de resistir à vontade de Deus por talvez meia hora, peguei meu violão. Dez minutos depois, “I still believe” estava pronta.
+
+Não pensei coisas do tipo “essa canção será um sucesso”. O objetivo dela era me ajudar, e tudo que fiz desde então foi compartilhá-la com outras pessoas.
+
+Recostei-me no sofá e suspirei. No meio de toda a minha confusão, senti a presença de Deus. No meio da minha dor, senti Sua graça e Sua misericórdia.
+
+Essa música foi uma grande confirmação para mim. Na Bíblia encontrei o que eu acreditava ser a promessa de que Melissa seria curada, e na música eu disse que ainda acreditava na santa Palavra de Deus. Que acreditava em Sua verdade. Que acreditava em Sua fidelidade.
+
+Por meio daquelas palavras escritas por minha alma, eu estava dizendo: “Você é fiel. Você é fiel. Você é fiel”. Mesmo com todas as dificuldades, eu ainda acreditava. Eu confiava completamente Nele! Aquele momento foi o que hoje considero o começo da cura do meu coração.
+
+Obedecer a Deus pode resultar em mudanças drásticas, mesmo que no meu caso não tenha sido a obediência mais terna. A obediência abre as portas do nosso coração para permitir que Deus faça o trabalho que Ele deseja.
+
+“VOCÊ ACREDITA NISSO?”
+
+Estar em Indiana foi bom para mim porque, enquanto estava na casa dos meus pais, eles compartilharam sua sabedoria comigo. Embora lamentassem, eles também falavam palavras de conforto e de cura.
+
+Como sempre, minha mãe parecia saber as palavras exatas da Bíblia que eu precisava ouvir. A cada dia — às vezes várias vezes por dia — ela compartilhava comigo um versículo que sentia que o Senhor havia colocado em seu coração para ajudar na minha situação.
+
+Minha mãe encontrou conforto em Hebreus 11. O primeiro versículo nos dá a definição de fé que muitos de nós memorizaram quando jovens: “Ora, a fé é o firme fundamento das coisas que se esperam, e a prova das coisas que não se veem”. O capítulo também fala dos membros do “salão da fé” — heróis e heroínas do Antigo Testamento que nos servem de exemplo porque permaneceram fortes em sua fé, embora não tenham visto certas promessas de Deus cumpridas em sua vida.
+
+Minha mãe me indicou os versículos que encerram este capítulo, os versículos 39 e 40: “E todos estes, tendo tido testemunhos pela fé, não alcançaram a promessa, Provendo Deus alguma coisa melhor a nosso respeito, para que eles sem nós não fossem aperfeiçoados”.
+
+— Não entendo por que Deus nos fez essas promessas — ela disse —, mas sinto que Ele está nos dizendo que, embora tenhamos recebido as promessas mas não o que havia sido prometido, devemos caminhar com fé. E isso seria um tipo mais profundo de fé.
+
+Em muitas ocasiões, meu pai apenas se aproximou de mim e me abraçou com força enquanto eu chorava. Certa vez, estávamos cantando louvores juntos e eu tive de parar.
+
+— Ela era tão devotada — disse ao meu pai e comecei a chorar. Meu pai estendeu os braços e me abraçou sem dizer uma palavra. Meu pai era ótimo em me deixar chorar quando eu queria. Sou abençoado por ter um pai que ama a Deus e me ama com a ternura que ele me mostrou.
+
+No início da primavera de 2001, voltei para a Califórnia. Eu não estava convencido de que estava pronto para voltar a morar lá sem Melissa, mas senti que era onde Deus queria que eu estivesse. Não foi fácil estar lá porque havia lembranças visuais de Melissa em todos os lugares — os restaurantes onde comíamos, os lugares onde passeávamos, a igreja que frequentávamos. Meus amigos não eram apenas meus amigos, eram nossos amigos.
+
+Eu não queria morar em nosso apartamento sozinho, então o irmão de Melissa, Ryan, e outro amigo ficaram comigo por um tempo em ocasiões diferentes.
+
+Estar em nosso apartamento foi especialmente emocionante. Melissa adorava os quadros de Thomas Kinkade, e duas de suas gravuras estavam penduradas nas paredes — uma delas havia sido presente do próprio Kinkade e a outra comprei para ela. Se eu estava na cozinha cortando cenoura, começava a chorar com a lembrança dos sucos de cenoura que preparava na esperança de ajudá-la a vencer o câncer. Sentado na cama, assistindo à TV, pensava em como ela costumava estar ali ao meu lado. Mas então eu me lembrava daquele monitor desagradável com a bolsa de coleta, do tubo e do barulho que me acordava no meio da noite quando os fluidos eram drenados.
+
+Era uma quantidade enlouquecedora de emoções misturadas. A entorpecência que senti imediatamente após a morte de Melissa se transformou em tristeza. Depois de um tempo, a tristeza deu lugar à raiva. Eu estava com raiva por sua vida ter acabado tão cedo. Ela tinha apenas vinte e um anos e muito a oferecer! Fiquei com raiva por tantas esperanças e sonhos nos serem arrancados tão de repente.
+
+Um dia, eu estava lendo a Bíblia no meu quarto quando deparei com uma passagem na qual Jesus curou milagrosamente alguém. Não consegui terminar de ler a passagem porque parecia que um vulcão havia sido despertado dentro de mim. Levantei-me, peguei minha Bíblia e a joguei com força. Ela bateu contra a parede e caiu no chão.
+
+— Por quê, Senhor? Por que você não curou minha esposa? Eu tive fé! Eu acreditei! Por quê?
+
+Eu não sou o tipo de pessoa que tem ataques de raiva como esse, e a raiva que eu sentia não era constante. Mas tive momentos em que pensava em tudo o que havia acontecido e ficava realmente chateado. Eu tentava conter meus sentimentos de raiva de Deus porque havia dito a mim mesmo que Ele era Deus e que não podia ficar com raiva Dele. Eu estava fazendo muitas perguntas a Ele, mas não queria realmente questioná-Lo. Parecia que havia uma linha que eu não podia — e não deveria — cruzar. Mesmo assim, havia uma mistura tão grande de emoções contidas dentro de mim que se tornou mais do que eu podia conter.
+
+Meu pulso acelerou. Fiquei ofegante. Senti quão tenso meus músculos tinham ficado, e eu queria dar um soco na parede mais próxima. Fiquei um pouco assustado com a forma como eu havia reagido: “Você jogou sua Bíblia na parede!”, pensei, e respirei fundo algumas vezes para me acalmar.
+
+Mais uma vez, senti o Senhor colocando palavras em meu coração: Você não saberá o porquê. Esse não é o Meu propósito para você. Quero que você seja um testemunho de fé.
+
+Não era isso que eu queria ouvir, mas me acalmei, apesar de ainda não entender completamente.
+
+Em outra leitura da Bíblia, Deus me instruiu a passar um tempo estudando a história de Lázaro em João 11. Lázaro estava doente e morrendo em Betânia. Maria e Marta, irmãs de Lázaro e amigas de Jesus, chamaram Jesus porque sabiam que Ele poderia curar Lázaro. Jesus estava a menos de três quilômetros de distância, em Jerusalém, quando o pedido de Maria e Marta chegou. No entanto, em vez de largar tudo e correr para Betânia, Jesus permaneceu em Jerusalém. Quando Jesus chegou a Betânia, Lázaro havia morrido e estava no túmulo havia quatro dias. Por todo esse tempo, Maria e Marta receberam os amigos enlutados que vinham de todos os lugares. Marta soube que Jesus estava chegando e foi encontrá-lo. Enquanto lia a história, senti a mágoa, a confusão e a raiva de Marta.
+
+No versículo 21, ela diz a Jesus: “Senhor, se tu estivesses aqui, meu irmão não teria morrido”. Nos versículos 25 e 26, Jesus a lembra: “Eu sou a ressurreição e a vida. Quem crê em mim, ainda que esteja morto, viverá e todo aquele que vive e crê em mim nunca morrerá”. Então, ele faz uma pergunta direta a Marta:
+
+— Você acredita nisso? Você acredita nisso?
+
+Foi como se a pergunta direcionada a Marta também fosse direcionada a mim. Eu acreditava que o Senhor estava disposto a curar? Eu estava lutando com essa pergunta o tempo todo. Eu continuaria acreditando que Jesus era a ressurreição e a vida? E que Melissa estava mais “viva” agora do que jamais esteve na Terra?
+
+Mais para a frente na história de Lázaro, é revelado que não foi por insensibilidade ou indiferença que Jesus não havia chegado antes. Como “Deus criou o homem”, Jesus sentiu todas as emoções que sentimos. Ele amou, regozijou-se, sentiu raiva (basta perguntar aos vendilhões no templo) e, é claro, sofreu.
+
+O versículo 35 do mesmo capítulo (João 11) é outro trecho que muitos de nós memorizaram em tenra idade porque, sendo o versículo mais curto da Bíblia, é o mais fácil de aprender. Ele diz: “Jesus chorou”. É também um dos versículos mais profundos da Palavra de Deus, porque demonstra a verdadeira empatia do nosso Salvador.
+
+Jesus não apenas chorou; a palavra usada originalmente na escritura significa lamentar, lastimar, uma tristeza tão profunda que estremece até o âmago. Uma pessoa provavelmente não poderia ficar mais dominada pelo luto do que Jesus.
+
+Totalmente Deus e totalmente humano, Jesus devia saber de antemão o resultado final da morte de Lázaro: ele sairia da tumba como um homem ressuscitado. Por que então lamentou tanto? Penso que um grande motivo é que Jesus amava Lázaro, assim como amava Maria e Marta, então ele sabia quanto elas estavam sofrendo. Eu acredito que Ele simpatizou com a dor das irmãs lamentando a morte do irmão.
+
+Acho que Ele fez o mesmo comigo. Às vezes, sentia que Ele chorava comigo. Estivesse eu sofrendo, confuso, zangado ou questionador, o Senhor nunca se retirou de mim. Quando expressei minha raiva jogando a Bíblia na parede, Deus já sabia como eu estava me sentindo. Ele já conhecia meus pensamentos. Minhas ações eram apenas eu sendo eu mesmo.
+
+Reconhecer a presença contínua do Senhor não eliminou as batalhas e lutas. As perguntas difíceis continuavam comigo. Eu ainda as fazia. Na verdade, ainda faço algumas delas. Mas, naquele dia, quando estudei a história de Lázaro, senti paz interior ao saber que não estava sozinho — meu Salvador estava comigo.
+
+UM GRANDE PASSO À FRENTE
+
+Meus pais haviam me incentivado a procurar Jon Courson. Eu ainda não tinha conversado com ninguém que havia passado por algo parecido com o que me aconteceu. Jon havia perdido a esposa em um acidente de carro, ficando com três filhos. Mais tarde, uma filha adolescente morreu em outro acidente, também automobilístico.
+
+Quando entrei em contato com Jon, ele convidou o irmão de Melissa e eu para visitá-lo no Oregon.
+
+Ryan e eu não tínhamos compromissos com que nos preocupar, por isso decidimos transformar a visita em uma viagem de carro, parando pelo caminho onde desse vontade. Por mero capricho, saíamos da estrada principal para procurar coisas divertidas para fazer. Em uma parada, por exemplo, encontramos um riacho e decidimos nadar por um tempo. Então saímos da água e sentamos na beira do riacho e apenas conversamos.
+
+Ryan era um cara radical e esse tempo juntos foi importante. Nós experimentamos altos e baixos na viagem. Nós podíamos estar rindo, brincando ou fazendo algo divertido, então um de nós pensava em Melissa e era como se um interruptor fosse acionado. Nossa conversa ficava sombria e chorávamos relembrando e falando sobre quanto sentíamos a falta dela.
+
+Quando nos aproximamos do nosso destino, senti uma mistura de ansiedade e incerteza. Eu esperava que Jon pudesse responder às minhas perguntas sobre a morte de Melissa — e eu tinha muito o que perguntar. Mas também percebi que conversar com Jon esmagaria algumas das emoções cruas que eu ainda carregava. Além disso, senti um pouco de desconforto imaginando qual seria o teor dessas respostas. Será que eu conseguiria lidar com as respostas que ele ofereceria?
+
+Por mais que minha família e amigos tenham me ajudado nesses tempos difíceis, posso dizer que assim que conheci Jon senti que a relação com ele seria diferente. Ele foi muito caloroso em nos receber e nos hospedar em uma pequena cabana em sua propriedade.
+
+Quem já ouviu Jon falando sabe que ele se expressa muito paternalmente — e ele de fato tem uma personalidade amorosa que combina com sua voz. Ele parece quase um Papai Noel. Eu poderia ter fechado os olhos e imaginado Jon de roupas vermelhas e barba branca, dizendo para mim: “Ho, ho, ho. Venha aqui, filho”.
+
+Depois que Ryan e eu nos acomodamos, nos encontramos com Jon para nossa primeira discussão. Uma das minhas primeiras perguntas foi sobre o sofrimento de Melissa.
+
+— Foi tudo muito doloroso... O que você me diz disso? Por que ela teve de sofrer tanto? Ela amava a Deus. Fizemos tudo o que podíamos. Oramos, acreditamos. Eu simplesmente não entendo.
+
+Jon respondeu com palavras sábias que nunca esquecerei. Ele começou fazendo uma série de perguntas:
+
+— Você fez todas as coisas que a Palavra de Deus diz para fazer? Você jejuou e orou? Os anciãos vieram orar e a ungiram com óleo? Você acreditou? Você teve fé?
+
+Eu respondi afirmativamente a todas as perguntas. Todos nós tínhamos feito todas essas coisas até seu último suspiro.
+
+— Então você pode colocar a cabeça no travesseiro à noite sabendo que fez tudo o que pôde. Esse era o plano de Deus. Ele ouviu suas orações. Ele confortou Melissa. Descanse sabendo que você buscou o Senhor em obediência.
+
+Jon usou a história de Miriam — a irmã de Moisés e Arão — de Êxodo 14-15 como exemplo.
+
+— Lembra-se da passagem em que Miriam toca sua música de celebração no pandeiro depois que os israelitas cruzaram o Mar Vermelho?
+
+— Lembro — respondi. E imaginei Miriam dançando e louvando depois que os hebreus chegaram em segurança ao outro lado do Mar Vermelho, afastados da ameaça do exército egípcio.
+
+— Bem — continuou Jon —, ela perdeu as oportunidades de como Deus poderia tê-la usado.
+
+Eu sempre imaginei Miriam como uma heroína da história. — Perdeu? O que você quer dizer com isso? — perguntei.
+
+— O que ela fez, cantar, ela deveria ter feito antes — explicou Jon. — Admito, eu não estava lá, mas quando todos estavam reunidos antes de atravessar o Mar Vermelho, sem saber o que fazer, ela poderia estar cantando e louvando o Senhor naquela hora também; não só depois.
+
+Imagine se Miriam pegasse um pandeiro e começasse a dançar e a louvar ao Senhor quando os israelitas estavam presos entre o Mar Vermelho e o exército egípcio, quando todos ao seu redor estavam aterrorizados por causa das circunstâncias. Os amigos de Miriam provavelmente pensariam que algumas peças de seu pandeiro estavam soltas, se é que você me entende.
+
+Mas o que Miriam perdeu foi a experiência de experimentar a plenitude de como Deus poderia tê-la usado em uma capacidade maior. Deus não se tornou bom de repente depois que eles cruzaram o Mar Vermelho. Colocando na balança, Deus também era bom quando os israelitas estavam presos e aparentemente sem saída, porque Ele tinha um plano o tempo todo para tirá-los de lá e resgatá-los de uma maneira que eles nunca poderiam ter imaginado. E Miriam perdeu a oportunidade de glorificar a Deus em meio a uma situação incerta e perturbadora.
+
+Jon trouxe a história de Miriam para o aqui e agora, lembrandome de que ainda deveríamos adorar a Deus em nossas dificuldades; que Ele é digno de ser adorado até quando estamos passando por momentos difíceis.
+
+— Ele está no controle — disse Jon. — É fácil dizer: “Senhor, você é o melhor!” depois que provamos a libertação de Deus e vemos Seus milagres. Mas é difícil dizer “Deus, Você é bom. Sim, Você é bom. Não importa o quê, Você é bom” quando não estamos vendo nenhum resultado ou algo ruim está acontecendo.
+
+Isso foi muito mais fácil de ouvir porque falávamos sobre Miriam em vez de mim. A última coisa que tive vontade de fazer após a morte de Melissa foi dizer coisas como: “Senhor, Você é bom! Sim, Você é bom!”. Quero dizer, quando perdíamos os jogos de futebol no ensino médio, nenhum de nós aplaudia. O treinador não nos dizia: “Muito bem, vocês perderam, comemorem com seus colegas de equipe”.
+
+Mas essa analogia do futebol é bastante míope. Na minha vida, consegui ver um cenário bem maior por causa das circunstâncias ao meu redor. Talvez eu sentisse como se estivesse saindo do campo após o final de um jogo, mas se desse um passo para trás e olhasse para minha vida da perspectiva da eternidade — a perspectiva de Deus — eu mal tinha começado o aquecimento para o jogo. Nosso tempo aqui na Terra pode parecer tudo para nós, mas, na realidade, é apenas uma parte minúscula do plano de Deus. Nosso tempo aqui é nos preparar para a eternidade com Ele.
+
+Eu precisava da perspectiva da eternidade que Jon estava trazendo para mim.
+
+— Provavelmente nunca entenderemos por completo o sofrimento até estarmos na presença do Senhor por toda a eternidade — disse ele.
+
+Jon usou a metáfora de uma lagarta para nos ajudar a entender melhor o conceito de sofrimento. Uma lagarta luta para sair do casulo. A tentação seria ajudar a libertar a lagarta, mas a pressão da luta é o que faz ela se tornar uma borboleta. Se a lagarta fosse removida prematuramente do casulo e da luta, ela não se desenvolveria de forma adequada e morreria. A luta da lagarta é o que permite que uma borboleta se torne o que foi criada para ser.
+
+Da mesma forma, a beleza da nossa vida geralmente é o resultado de uma fase de lutas. Por meio de nossas lutas, ganhamos força e maturidade. Queremos que Deus nos tire de nossas lutas, mas como seria se Ele fizesse o que desejamos? Seríamos fracos e imaturos! Não foi isso que Deus nos criou para ser. Infelizmente para nós, às vezes força e maturidade surgem apenas da dor. Podemos desejar que existisse uma maneira mais fácil, mas os resultados são inegáveis.
+
+— Eu sei que não faz sentido — continuou Jon —, mas a dor faz parte do quadro geral. Por meio do sofrimento, Deus trabalha para um propósito maior. Agora que está no Céu, a recompensa de Melissa é grande. Se conseguirmos olhar as coisas de uma perspectiva eterna, podemos ver que a recompensa dela é muito maior do que qualquer sofrimento terrestre.
+
+Eu sabia que isso era verdade, mas ainda assim era difícil de entender por que nossa mentalidade terrena só permite que compreendamos as coisas que conhecemos. Podemos imaginar o que a Palavra de Deus descreve sobre o Céu, mas o fato é que não sabemos como o Céu é. Nossa mente terrena nos limita. Eu precisava aprender tudo o que podia sobre o Céu nas Escrituras e confiar em Deus que Melissa estava em um lugar melhor, um lugar onde ela não sofresse. Em Colossenses 3:2, Paulo escreveu: “Pensai nas coisas que são de cima, e não nas que são da Terra”. Realmente, eu precisava desse tipo de perspectiva eterna.
+
+Jon me convidou para tocar uma música no culto de domingo à noite em sua igreja. Fiquei honrado, mas hesitante. Eu não sentia que estava em um estado em que pudesse ser usado por Deus.
+
+No enterro de Melissa, meu bom amigo Jean-Luc me disse: — Vamos acelerar o dia!
+
+Ele me disse essa frase várias vezes mais tarde:
+
+— Não desista! Vamos acelerar o dia! Vamos contar a mais pessoas sobre Jesus, para que Ele venha mais rápido!
+
+Eu gostava quando Jean-Luc dizia isso e me estimulava a perceber que eu ainda tinha muito que fazer pelos outros. Mas o momento ainda não parecia certo. Eu achava que tinha questões para resolver em meu coração — as perguntas que ainda precisavam de respostas — antes que Deus pudesse me usar.
+
+Jon, no entanto, queria que eu visse como poderia ser usado por Deus naquela noite.
+
+— Acho que será bom para você — disse ele — porque neste momento de dor mais profunda Deus o usará para ter um impacto maior.
+
+Eu estava vivendo uma dor realmente profunda, então, se Jon estivesse correto, certamente estava no ponto em que poderia ser mais bem usado.
+
+Naquela noite escolhi tocar “I still believe”. Seria a primeira vez que eu tocaria a música em público. Eu praticamente chorei o tempo todo em que cantei e depois compartilhei brevemente minha história sobre a morte de Melissa. Nem me lembro do que contei à congregação, mas me lembro de toda a compaixão que vi no rosto das pessoas e quantas estavam enxugando lágrimas. Cantar a música e falar sobre Melissa foi doloroso, mas poderoso. Senti que, em vez de estar em um palco, estava nas mãos de Deus porque Ele estava me segurando. Não me senti forte, mas reconheci que toda a força que eu tinha vinha de Deus.
+
+Ao final, os membros da congregação se aproximaram para me abraçar, oraram por mim, ofereceram palavras de apoio e me disseram como a música e a história haviam falado com eles. Foi um momento agradável, e eu deixei a igreja naquela noite espantado com a forma como Deus havia ministrado tanto pela minha dor como por meio dela.
+
+As conversas com Jon não dispersaram de todo a neblina para revelar tudo o que eu queria ver naquele momento de provação. Mas, graças à verdade que Jon amorosamente trouxe para mim, achei que estava começando a enxergar melhor do que antes.
+
+Deixei o Oregon com um vislumbre de esperança, e isso era muito mais esperança do que tinha quando cheguei. Saí com um pouco mais de determinação, porque notei como Jon havia passado por duas tragédias — as mortes de sua esposa e de uma filha — e ele parecia estar se virando bem, conseguindo usar seus momentos difíceis para ajudar as pessoas. Por fim, saí começando a pensar: “Vai ficar tudo bem”.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 15;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 13 - Novos caminhos$t$, 15,
+$conteudo$A determinação entrou no meu coração com a canção “I still believe”. Agora, sentia que estava entrando no estágio de ação.
+
+Após a viagem ao Oregon, eu estava pronto para sair, tocar e cantar. Eu queria compartilhar “I still believe”, a história de Melissa e o que Deus havia feito e estava fazendo na minha vida. Naquela primavera e no verão, por causa do retorno das congregações em que compartilhei essas histórias, comecei a receber mais convites para cantar ou liderar o culto nas igrejas.
+
+Era estranho, mas havia duas tendências contrastantes em ação. Por um lado, eu conversava com Deus antes de um culto, pensando:
+
+“Senhor, não sinto vontade de Te adorar hoje. Não sinto vontade de dizer que ainda acredito”.
+
+Eu sabia que o que eu tinha para dizer no culto era a verdade, mas não era a verdade daquele momento. Mas, por outro lado, mesmo que às vezes me sentisse relutante, eu sentia a presença de Deus enquanto cantava e percebia que o impacto no público era maior do que eu poderia prever. E assim eu via e sentia que Deus estava se movimentando entre as pessoas e sabia que isso não tinha nada a ver comigo, porque apenas alguns minutos antes eu estava dizendo a Ele que não queria cantar a música. Essa foi uma lição valiosa sobre a importância da obediência acima dos sentimentos.
+
+Notei que, quando eu liderava o culto, prestava mais atenção às letras das músicas. Todas tinham um significado para mim. Elas eram uma oportunidade para explorar a profundidade do amor e da graça de Deus, e eu estava entendendo aspectos da natureza de Deus que provavelmente nem consideraria antes. Eu ainda tinha altos e baixos. Ainda enfrentava dias muito difíceis. Diferentes gatilhos desencadeavam inesperadamente um rio de sentimentos ruins.
+
+Se eu via um jovem casal caminhando de mãos dadas, sentia saudades de Melissa. Se via um casal passeando e brincando com um bebê, me fazia pensar que aquela cena poderia ter sido vivida por nós — às vezes pensava que aquela família deveria ser a nossa. Chorei no cinema durante uma cena tensa de um filme de guerra.
+
+Os gatilhos estavam por toda parte e, como eu não sabia quando eles apareceriam, nem sempre conseguia me manter protegido deles.
+
+Eu sentia raiva com muita facilidade. Certa vez, em um restaurante, percebi, pelos gestos que faziam, que um casal estava tendo algum tipo de discussão. Fiquei bravo com o cara e quis me aproximar para dizer a ele: “Fique grato pela esposa que tem!”.
+
+Perdi a compaixão que sentia pelas pessoas que era tão importante quando comecei os estudos bíblicos. Agora considerava todas egoístas. Afinal, os problemas com os quais estavam tão preocupadas não eram nada comparados aos meus! Eu estava bravo com o mundo e pronto para enfrentá-lo. Eu contra o mundo — quem vai encarar?
+
+Ao mesmo tempo, minha carreira musical estava em alta. Minha vida era uma louca montanha-russa, experimentando altos e baixos aparentemente ao mesmo tempo. Quando eu cantava ou liderava o culto, conseguia deixar a raiva de lado temporariamente.
+
+Alguns amigos me disseram carinhosamente que estavam preocupados e que talvez fosse muito cedo para eu voltar ao ministério da música. Eu entendia por que eles estavam dizendo isso. Se eu fosse um deles e me visse na condição em que estava, poderia ter falado a mesma coisa. Eu ainda estava de luto. Mas acreditava piamente que Deus estava gentilmente me levando de volta ao ministério da música, como se dissesse: Vou cuidar de você. Apenas siga em frente, entre no que estou fazendo. Escrever músicas que saíam direto do meu coração e depois compartilhá-las foi uma parte importante da minha cura, mas também incentivava e oferecia esperança a outras pessoas.
+
+Eu recebia retornos incríveis quando cantava “I still believe” e “Walk by faith”, e gravá-las criaria uma área muito mais ampla de impacto. Um amigo me falou de dois jovens produtores, Adam Watts e Andy Dodd. Ouvi alguns dos trabalhos deles, gostei e liguei para perguntar sobre a possibilidade de gravar uma demo.
+
+— Estou passando por um momento difícil na minha vida — disse a eles —, mas preciso divulgar essas músicas.
+
+Adam e Andy concordaram sem hesitar. Gravamos “Walk by faith” primeiro. Quando estávamos no estúdio, trabalhando nas mixagens finais, eu tinha um forte pressentimento de que Deus usaria a música para dar esperança e encorajamento a muitas pessoas que sofrem com provações dolorosas. Então orei:
+
+— Obrigado, Senhor, por usar o que Melissa e eu sofremos para ajudar as pessoas em suas próprias lutas.
+
+Senti uma empolgação imensa por saber que Deus tinha grandes coisas reservadas para o meu futuro, mas também sabia que não estava totalmente preparado para o próximo passo. Para ser específico, meu coração não estava preparado. Eu tinha de permitir que Deus eliminasse a raiva. Não poderia me envolver de fato com a ideia de que Deus usaria minhas músicas para inspirar profundamente se resistisse ao trabalho de aprofundamento que Ele precisava realizar em mim.
+
+MISSÃO: ROMPER COM A DOR
+
+Quando o outono chegou, resolvi fazer um retiro em um pequeno chalé nas montanhas. Tudo o que eu queria dessa viagem era romper com a dor. Eu sentia que Deus estava prestes a fazer algo grande e não queria perder.
+
+Pedi a Deus que purgasse completamente toda a frieza e amargura do meu coração. Lembrei-me da época em que a frieza e a amargura me dominaram e não queria ficar desse jeito. Eu precisava de Deus para voltar a ter um coração como Ele havia me dado na CCBC. Eu queria ser compassivo com as pessoas novamente.
+
+Planejei ficar na cabana por três dias, orando, jejuando e tocando violão. Foi mais difícil do que eu previra. O tempo passou devagar. Ele não apenas se arrastava — às vezes simplesmente parava. Eu esperava que uma grande revelação caísse sobre mim como uma águia majestosa pousando em um poleiro alto. Eu achava que, sozinho nas montanhas, sem distrações, ouviria a voz de Deus e passaria por uma renovação imediata e transformadora. Eu estava preparado para chorar até ficar sem lágrimas.
+
+Mas não houve lágrimas. E ainda havia muita frieza e amargura. Minha mente e meu coração pareciam presos. Eu simplesmente não conseguia superar as mesmas velhas perguntas e a confusão. A única coisa que eu estava conseguindo era sentir o meu estômago doendo de fome.
+
+Então, em uma das vezes em que eu estava tocando violão, uma música fora do meu estilo e palavras começou a vir para mim. Ela se tornou a canção “Breaking my fall”:
+
+So easily I fall, so easily You reach Your hand out Quickly will I drown, in all the pools of all my reason So easily will I fear, so easily will Your peace surpass me Quickly will I trust, in anything I think is worthy
+
+How many times You make the waves calm down So I won’t be afraid now
+
+[refrão]
+
+I saw You breaking my, breaking my fall What am I supposed to do?
+
+’Cause I saw You breaking my, breaking my fall What am I supposed to do?
+
+How precious are Your thoughts, the many that You think about me Faithful are Your ways, I always feel Your grace abounding
+
+Quickly will I call, quickly will You answer my cry Carefully will You bring, everything I need in my life How many times You make the waves calm down So I won’t be afraid now
+
+This narrow road I’m walking, this world will try to draw Your Word will help me fight it, with You I’ll face it all
+
+A pergunta principal da canção é: “O que devo fazer?”. Esse era o questionamento que me fiz enquanto estava naquele chalé. Eu estava lá para romper com a dor, mas acho que não havia dado nenhum passo na direção certa, nem ao menos um avanço.
+
+O que eu deveria fazer?
+
+A música, no entanto, expressou minha fé de que, de alguma maneira, Deus me livraria da minha dor: “Quickly will I call, quickly will You answer my cry”.
+
+O problema era que Deus e eu tínhamos definições diferentes de “rapidamente”.
+
+Mas pude perceber nas palavras que Deus estava me dizendo: Ei, Eu ainda estou aqui — mesmo quando você está tropeçando. Eu te amo. Estou pensando em você. Eu estou aqui.
+
+No tempo em que fiquei na casa dos meus pais depois da morte de Melissa, lutei para me comunicar claramente com Deus. Mas no chalé foi diferente, porque eu sentia uma conexão forte. E mesmo assim não estava conseguindo o que eu queria.
+
+— Senhor, eu quero a cura! — disse em algum momento. — Estou tropeçando, caindo, ficando amargo e sentindo raiva, mas estou lutando para conseguir a cura!
+
+Senti como se Deus respondesse: Eu sei que você está me chamando e estou lhe dizendo que estou impedindo sua queda. Estou pensando em você mais do que nas areias da praia.
+
+Na terceira e última manhã, saí do chalé decepcionado por minhas expectativas não terem sido atendidas. Certamente aquele não tinha sido um retiro relaxante nas montanhas. Não comi e não dormi muito. Sentia como se estivesse perdendo uma longa luta de boxe.
+
+— Senhor — orei —, o desejo do meu coração era ter uma grande revelação, chorando em Sua presença, sentindo Seu toque de cura, algo significativo. Não entendo por que nada mudou.
+
+Depois de comer em um restaurante perto do chalé, desci a montanha e fui para casa. O CD demo que havia gravado estava no carro e resolvi ouvir para saber como tinha ficado. Enquanto “Walk by faith” tocava e eu ouvia as palavras que Deus havia me dado em nossa lua de mel, enfim, a águia pousou.
+
+Meu coração se encheu de calor e derreteu o gelo que havia se acumulado. Todas as emoções reprimidas foram repentinamente liberadas. As comportas dos meus olhos se abriram. Encostei o carro na beira da estrada em um cruzamento e enterrei a cabeça entre as mãos.
+
+Mesmo depois da experiência emocionante de escrever “Walk by faith”, e de todas as vezes que eu tinha cantado a música e meditado sobre suas palavras, nunca havia compreendido, até aquele momento, o que ela de fato queria dizer.
+
+— O.k., Senhor — eu disse em voz alta no banco do motorista. — Não vejo, mas caminharei pela fé. Não entendo, mas sei que há um plano maior. Vai dar tudo certo. Você vai fazer dar certo!
+
+Eu já tinha transcendido antes, então sabia como era. E eu sabia que tinha acabado de transcender novamente. Que alívio! Lembro-me de me sentir muito agradecido.
+
+— Sinto muito, Senhor, por estar tão chateado — disse. — Agora eu entendi.
+
+Eu havia experimentado inúmeros momentos grandiosos em minha vida, quando Deus falou comigo de maneira poderosa: o acampamento de verão para jovens, na capela da CCBC, quando escrevi “I still believe”, os dias que passei com Jon Courson. Aquele momento na estrada foi um desses eventos. Hoje, olhando para trás, reconheço que aquela viagem foi um momento decisivo no processamento do que havia acontecido com Melissa. Depois disso, enfrentei muitas batalhas — e ainda as enfrento —, mas foi exatamente nesse ponto que tudo mudou.
+
+Voltei para a estrada e fui para casa. Continuei conversando com Deus enquanto dirigia, mas a conversa agora tinha um sentido totalmente diferente — ou pelo menos o sentido tinha mudado para mim.
+
+Tudo ao meu redor parecia tão pacífico… Sentia esperança novamente. Eu olhava para as montanhas ao meu redor e elas eram lindas.
+
+Essa foi provavelmente a viagem de duas horas mais rápida que já fiz na minha vida. Voltei para casa como um homem diferente. As etapas de cura que se seguiram foram mais rápidas. Minhas orações estavam cheias de esperança e expectativa.
+
+— Aqui estou, Deus... vamos lá! — Eu orava. — É hora de viver.
+
+Estou arrasado, mas o que você quer que eu faça estou disposto a fazer.
+
+UM PASSO IMPORTANTE
+
+Em dezembro de 2001, recebi um e-mail de Tyson Paoletti, representante de uma gravadora na BEC Recordings. “Um amigo falou muito de você”, dizia o e-mail, “e gostaríamos de conversar com você. Você tem uma demo que possa nos enviar?”
+
+Mas é claro que eu tinha uma demo que eu poderia enviar!
+
+Eu sabia que Brandon Ebel era o dono da BEC (que significa Brandon Ebel Company). Quando era adolescente e viajava com minha família, acampamos ao lado dele em dois ou três festivais Cornerstone. Fiz questão de contar isso a Tyson.
+
+Alguns dias depois que enviei o CD demo de seis músicas, Brandon me ligou.
+
+— Irmão, como estão as coisas? — ele perguntou. — Como está sua família em Indiana?
+
+Disse a ele que minha família estava indo bem e contei sobre Melissa. Percebi, pelas reações dele do outro lado da linha, que ele estava chocado. Ele expressou suas condolências e fez uma pausa.
+
+— Essas músicas... meu Deus — disse ele. — Tem muita coisa aqui. Eu realmente gostaria de trabalhar com você.
+
+Por mais empolgado que eu estivesse, disse a Brandon que ainda não podia dar uma resposta.
+
+— Preciso orar antes de responder. Já passei por muita coisa e preciso garantir que todas as decisões sejam de Deus.
+
+Brandon me disse para usar todo o tempo de que eu precisasse. Ficamos em contato, e um dia ele perguntou se eu tinha interesse em gravar um álbum como parte de um projeto anual de adoração chamado Any Given Sunday. Essa oportunidade realmente me interessou porque eu adorava liderar cultos. Além disso, várias pessoas já haviam sugerido que eu gravasse minhas canções — eu tinha mais músicas de estilo congregacional que falavam sobre o que Deus havia feito em minha vida — junto com algumas das canções de adoração populares que eu cantava em igrejas, mas que foram escritas por outros.
+
+Orei por isso, e também pela oportunidade com a BEC, e senti Deus me dando a aprovação para participar do Any Given Sunday.
+
+Enquanto estávamos trabalhando no projeto, senti uma forte confirmação para assinar o contrato com a BEC. Os contratos de gravação são muito mais complicados do que as pessoas de fora da indústria da música imaginam.
+
+Para dar uma visão geral simplificada, quando um cantor e compositor assina um contrato, ele transfere parte da propriedade das músicas que escreve para o selo com o qual está assinando. O contrato exige que o artista grave certo número de músicas para cada CD, e artista e gravadora precisam chegar a acordos sobre marketing e promoção de CDs e singles.
+
+Eu não tinha um contrato que exigia que eu participasse de turnês, mas os artistas entendem que as turnês fazem parte do acordo em termos de marketing e promoção. As gravadoras investem dinheiro nos artistas, portanto espera-se que os artistas façam sua parte para ajudar a vender CDs para pagar esse investimento. Um artista que não faz shows provavelmente não terá o contrato renovado por sua gravadora.
+
+Além disso, o artista e a gravadora precisam chegar a um acordo sobre a divisão dos lucros de tudo que está no contrato. Uma descrição mais longa e detalhada de como são os contratos de gravação provavelmente causaria dor de cabeça nos leitores — se já não causou.
+
+Jean-Luc, com sua experiência na indústria fonográfica, foi de grande ajuda. Embora eu tivesse certeza de que assinar um contrato fazia parte do plano de Deus para mim, Jean-Luc queria que eu tivesse certeza de que também tomava uma boa decisão comercial. E não me importo em admitir que assinar um contrato para produzir um certo número de CDs — ou seja, músicas ainda não escritas — é um pouco assustador. Inúmeras vezes no processo de negociação desse contrato me perguntava: e se eu ficar sem ideias para compor novas músicas? Mais de dez anos depois, ainda não esqueci os conselhos de Jean-Luc nos meus primeiros anos e tento ajudar da mesma forma os jovens artistas promissores que estão começando. Sei que esse conceito incomoda algumas pessoas, mas a realidade é que ministério e negócios se cruzam. Tomar boas decisões de negócios é uma parte importante de ser um bom servidor dentro do ministério.
+
+Então, eu estava com o projeto Any Given Sunday já acontecendo (mais tarde o nome mudou para Carried me: the worship project) e, em maio de 2002, assinei um contrato de três CDs com a BEC.
+
+Meus pais acompanharam todo o processo de negociação do contrato e o primeiro telefonema que fiz para contar a notícia foi para eles: eu era oficialmente um artista contratado! Claro, eles ficaram muito animados. E meu pai, como sempre, disse:
+
+— Estou muito orgulhoso de você; você está servindo ao Senhor. Assinar o contrato foi um momento incrível. Eu estava feliz e pronto para começar. Sou deste jeito: quando é hora de começar algo, dou tudo de mim.
+
+Estava pronto para fazer o que o Senhor quisesse de mim. Sabia que Ele havia aberto aquela porta — assim como sabia que antes Ele havia aberto as muitas outras portas que me conduziram até aquele momento — e que dessa forma eu estaria compartilhando as canções que Ele havia me dado.
+
+“Tudo bem, Senhor”, pensei. “Eu sei perfeitamente o que Você fez por mim.”
+
+CHEGANDO LÁ
+
+Gosto que minha personalidade é nesse estilo “vamos lá!”. Depois de assinar o contrato, gravei dois álbuns em cerca de um mês.
+
+Stay foi o primeiro CD, lançado em setembro. Entre as doze músicas estavam “Walk by faith”, “I still believe” e “Breaking my fall”. Cinco das seis músicas da demo que enviei para Tyson fazem parte desse trabalho. O outro CD, Carried me: the worship project, foi lançado cerca de um ano e meio depois e continha uma mistura de músicas minhas e de outros compositores.
+
+A gravação de um CD pode ser física e mentalmente desgastante. Gravar dois CD em cerca de um mês, então — mal sei descrever como é. Foi um mês louco, certamente, mas meu corpo e minha mente estavam energizados por saber que minhas músicas alcançariam mais pessoas do que eu sonhei em alcançar e ofereceriam mensagens de apoio e esperança.
+
+Uma grande oportunidade para minha carreira foi o convite para participar da turnê de quarenta cidades do Festival Con Dios, um festival itinerante de música cristã iniciado no ano anterior pelo Newsboys. Quando fui oficialmente contratado para participar da turnê, agradeci a Deus por Ele estar me permitindo compartilhar minha música e testemunho com tantas pessoas em todo o país.
+
+As principais atrações do Festival Con Dios foram Audio Adrenaline, TobyMac, MercyMe e Out of Eden. Também participaram Pillar, The Benjamin Gate, Tree63, Sanctus Real, Everyday Sunday e Aaron Spiro. Eu conhecia as músicas de todas as bandas — algumas havia bastante tempo — e agora estava dividindo o mesmo palco e ministrando ao lado delas.
+
+O Festival Con Dios foi surreal!
+
+Seis caminhões carregavam um palco de tamanho normal, luzes e equipamento de som de cem mil watts. A instalação tinha espaço para cerca de dez mil pessoas, que podiam levar cadeiras dobráveis e cobertores para se acomodar. O festival era mais do que um show musical. Viajava conosco a estrutura de uma “feira”, com barracas de comida, tendas de merchandising, bungee jumping e outras atividades.
+
+Além disso, um piloto profissional de motocross se apresentava fazendo acrobacias aéreas em sua motocicleta.
+
+Nem preciso dizer que havia muita energia envolvida na turnê. Logo de cara experimentei a boa vida das turnês porque consegui viajar de ônibus. O lado menos glamouroso das turnês é viajar em uma van de quinze passageiros rebocando um trailer. Os músicos viajam em uma van — revezando-se na direção — e transportam seus equipamentos em um trailer atrelado a ela. Algumas bandas da turnê tiveram de seguir a rotina de van+trailer.
+
+No meu caso, a BEC preferiu que viajássemos de ônibus com outra banda: “Queremos que você faça o que deve fazer”, disseram, e pagaram a conta. Eu gostei do “luxo” do ônibus e me senti mal pelas bandas que viajavam de van. Se soubesse o que aprendi com a minha experiência de van+trailer na minha primeira turnê solo, quando fizemos cerca de duzentas e vinte apresentações e ficamos na estrada por trezentos dias, eu me sentiria ainda pior por eles e provavelmente tentaria encontrar espaço para todos em nosso ônibus.
+
+Minha banda era formada por mim, um guitarrista, um baixista e um baterista. Nossa apresentação era de cerca de vinte minutos em cada parada. Em minha estreia nos palcos, quando toquei uma música com o The Kry, eu estava muito nervoso. Tocar no Festival Con Dios foi um pouco estressante quando pensei que estaria no palco com minha própria banda. Mas uma vez no palco nunca me perguntei o que deveria fazer, porque estava confiante no que Deus havia me chamado para fazer.
+
+Stay foi lançado durante o Festival Con Dios e, com as vendas da turnê e do CD alcançando um público cada vez maior, a história de Melissa e meu testemunho fizeram uma conexão imediata com mais fãs. As pessoas me escreviam, e alguns fãs me procuravam para contar suas histórias e jornadas com familiares doentes. Os que haviam perdido pessoas amadas me contavam como as palavras das minhas músicas eram significativas para eles pessoalmente.
+
+Foi difícil ver e ouvir a dor nos olhos, nas vozes e nas palavras dos outros enquanto compartilhavam suas histórias, e houve momentos emocionantes em torno da minha mesa de merchandising, pois os fãs faziam perguntas sobre minhas experiências e orávamos juntos. Adorei as oportunidades de ter essas conversas.
+
+Eu sabia quanto o câncer é comum, mas fiquei impressionado quando comecei a perceber quantas pessoas são diretamente afetadas pela doença. Ouvir e ler tantas histórias confirmou a promessa que Deus me fez nos momentos mais dolorosos: Ele tinha um plano e um propósito para mim que se estendiam muito além de qualquer coisa que eu pudesse imaginar.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 16;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 14 - Apaixonando-me novamente$t$, 16,
+$conteudo$Começar com o festival con dios colocou-me em minha própria essência, pois com todas aquelas bandas participando havia muitos outros músicos de quem eu podia me aproximar e me apresentar. Por que não? Eu sou extrovertido e estava animado em fazer a turnê com eles.
+
+No início da turnê, enquanto assistia às outras bandas e esperava minha vez, um artista em particular chamou minha atenção: uma garota ruiva com voz poderosa que liderava o The Benjamin Gate, ou TBG para abreviar.
+
+O TBG era uma banda da África do Sul, que também tinha tocado no Fish Fest na Califórnia naquele verão, apesar de não termos nos conhecido na ocasião. A banda também participara do primeiro Festival Con Dios, e vou lhe contar, eles sabiam mesmo como agitar no palco. A vocalista principal — cujo nome, vim a saber depois, era Adrienne Liesching, ou Adie — era uma roqueira barulhenta e durona.
+
+Depois de um show, enquanto eu fazia a ronda para estar a par de todos os atos, fui até Adrienne e me apresentei. Ela me cumprimentou em seu sotaque sul-africano, mas não foi o que eu esperava. Não tinha nada a ver com a pessoa que ela era no palco, sua voz tinha um tom suave e jovial.
+
+Nossa primeira conversa de verdade ocorreu após ela torcer o tornozelo em Atlanta, Georgia. As sobras de uma tempestade tropical caíam na região e uma das barracas parecia prestes a sair voando no temporal. Nosso empresário saiu correndo para tentar segurar a barraca e acidentalmente foi de encontro com Adrienne. Pareceu uma jogada bem executada em um jogo de futebol americano. Adrienne achou que estava tudo bem e disse ao empresário para ir ajudar com a barraca. Mas quando tentou se levantar, não conseguiu.
+
+Me senti mal por ela, pois é difícil para uma roqueira agitar a plateia com o pé imobilizado. Eu a vi no dia seguinte e falei:
+
+— Nós oramos por você hoje antes de subir no palco. Nossa banda realmente orou por ela, juro!
+
+Ela me agradeceu e, enquanto conversávamos, observei como Adrienne realmente tinha um espírito calmo. Quase não dava para acreditar que estava conversando com a mesma pessoa que eu vira no palco.
+
+Minha mesa de merchandising ficava a duas mesas da do TBG e, como Adrienne era a vocalista principal, ela passava a maior parte do tempo sentada à mesa e conhecendo os fãs. Soube mais tarde que Adrienne ainda não tinha me ouvido falar sobre Melissa no palco, mas soubera pelos membros de sua banda que eu tinha uma história inspiradora que ela precisava ouvir. Eles tiveram uma longa conversa sobre meu testemunho em sua van um dia, e aquilo deixara Adrienne ainda mais curiosa.
+
+Adrienne entreouviu algumas conversas que eu tinha sobre Melissa com os fãs em minha mesa de merchandising e, quando as coisas ficavam calmas em torno das mesas, ela se aproximava, me cumprimentava e perguntava sobre Melissa. Ela me fazia perguntas como “Como ela era?”, ou “Como vocês se conheceram?”, ou “Poderia me contar sobre a caminhada dela com o Senhor?”. Eu gostava da facilidade com a qual Adrienne parecia falar de Melissa, e isso facilitou nossa conversa.
+
+Outros músicos mencionavam meu testemunho, mas Adrienne tinha um interesse mais profundo do que os outros. Ela era realmente doce com isso. E não é porque estivesse atraída por mim, ela parecia intrigada pela minha história com Melissa.
+
+Eu encontrava Adrienne almoçando ou cruzava o caminho com ela e não deixava de dizer:
+
+— Oi, como você está?
+
+Nossas bandas sentavam juntas enquanto outros grupos tocavam e, quando TobyMac estava no palco, nós dois nos levantávamos e dançávamos feito bobos. Em sua adolescência na África do Sul, ela fizera aulas de jazz e tentou me ensinar alguns movimentos. Nós também fazíamos o “running man” da dança hip-hop que MC Hammer e Vanilla Ice tornaram popular no fim dos anos 1980. Sei que Adrienne não vai se importar se eu disser isso, mas basicamente nos comportávamos como bobos. Éramos bons amigos, ficávamos confortáveis juntos, sem tentar impressionar um ao outro.
+
+Às vezes nós íamos juntos para nossas mesas de merchandising e, como elas eram próximas, fazíamos companhia um ao outro e batíamos papo. Era muito agradável conversar com ela.
+
+Adrienne estava em uma posição desafiadora. Ela era uma garota jovem (com vinte e um anos), longe de casa e viajando o tempo todo cercada por homens. Ela não parecia ter alguém próximo para ser seu amigo, aquele tipo de pessoa com quem pudesse falar sobre qualquer coisa.
+
+Ferro aguça ferro e ela precisava de alguém do tipo ferro. Adrienne tinha uma fome notável por Deus. Quando me ouvia falar sobre o Senhor, ela fazia perguntas sobre Deus assim como tinha feito sobre Melissa, com um interesse particular e profundo.
+
+Quanto mais nos conhecíamos, mais nossas conversas focavam em Deus e assuntos espirituais. Como eu podia ver o desejo de estreitar seu relacionamento com Deus, senti-me confortável em gentilmente desafiá-la com o objetivo de incentivá-la a crescer espiritualmente.
+
+Adrienne estava desanimada com a cena musical cristã. O TBG foi formado na África do Sul em 1998 e chegou aos Estados Unidos um ano antes de nos conhecermos. Eles estavam no meio de um caminho em que fariam cerca de duzentos e cinquenta shows por ano em três anos consecutivos, então estavam trabalhando muito para dar certo. Para piorar a situação, eles estavam no esquema de van+trailer o tempo todo desde a mudança para os Estados Unidos.
+
+O TBG estava sofrendo um pouco, e Adrienne também sentia que tanto ela quanto a banda não estavam onde deveriam estar no quesito espiritual. A música não parecia mais valer o sacrifício que exigia. Adrienne tornou-se cética. Era fácil entender o porquê, mas ainda assim eu não achava que ela precisava ficar daquele jeito.
+
+— Você está desiludida — falei sem rodeios a ela um dia.
+
+Não me esquivei quando disse isso, mas não tinha certeza de como ela receberia minha tentativa de, hum, afiar seu ferro. Mas minha intenção era falar a verdade com amor.
+
+— Sério? — perguntou ela, em parte perguntando-se se estava mesmo desiludida e em parte, acho, frustrada por eu ter dito aquilo.
+
+— Sim, com certeza. Não se desiluda. Não endureça seu coração pois sei como é isso, e não é nada bom.
+
+Alguns dias depois ela me agradeceu por ter me importado o suficiente para notar e desafiá-la em sua condição espiritual. Ela andava se sentindo distante de Deus, e Ele falava em seu coração que havia algo errado na relação deles.
+
+Senti que o Senhor estava nos juntando como amigos próximos para que pudéssemos ajudar um ao outro a superar os períodos difíceis em nossa vida.
+
+Nós tivemos algumas conversas bem pessoais sobre Melissa. Adrienne estava curiosa. Ela fazia muitas perguntas e eu respondia a todas. Obviamente, eu falara com um monte de pessoas sobre Melissa nos primeiros meses após sua morte. Mas agora, oito meses desde então, Adrienne era a primeira mulher com quem eu conversava profundamente sobre aquele período da minha vida, e foi muito bom para mim ouvir a perspectiva de uma mulher.
+
+Adrienne e sua banda souberam durante a turnê que um amigo próximo na África do Sul tinha sido assassinado, e tentei confortá-la o melhor que pude baseado na minha experiência com o luto. Parecia que havia tanta coisa acontecendo em nossa vida que nossas conversas começaram a curar a nós dois.
+
+Também comecei a perceber a eficácia das conversas cara a cara e pessoais. Eu estava acostumado a falar sobre o exemplo de vida de Melissa no palco e com os fãs em ambientes como a mesa de merchandising, mas havia algo diferente em fazer isso tão profundamente com uma única pessoa.
+
+Além do fato de que estávamos passando mais tempo um com o outro e tendo conversas sérias, pessoais e espirituais, não havia nada no sentido amoroso entre nós. Adrienne não estava em busca de alguém e eu ainda não estava no ponto de pensar sobre começar outro relacionamento.
+
+Sobretudo, nós não fazíamos o tipo um do outro. Eu era o cara extrovertido, do tipo esportista, do centro-oeste. Adrienne era a mistura interessante de rock pesado com doçura introvertida da África do Sul. Ela era muito artística e criativa e eu era, bem, o cara do tipo esportista.
+
+Nós não éramos nada mais do que apenas bons amigos de verdade que se divertiam juntos, com a mesma probabilidade de nos sentar, almoçar e conversar sobre o que lemos na Bíblia naquela manhã do que olhar um para o outro e perguntar: “Quer correr?” e sair correndo feito loucos até uma linha de chegada imaginária (a não ser quando ela estava com o pé imobilizado, embora nem isso tenha me impedido de desafiá-la a uma corrida).
+
+Adrienne era pequena e eu não fazia ideia de que ela vinha de uma família com bons atletas. Depois que seu tornozelo sarou, ameacei jogar um copo de água gelada nela e ela saiu correndo. Vou lhe contar que precisei correr muito para alcançá-la. Nem preciso dizer que sua habilidade de corrida me impressionou.
+
+O que eu mais gostava em Adrienne era quanto ela queria aprender sobre Deus e o nível de curiosidade que iluminava seu rosto quando conversávamos sobre assuntos espirituais.
+
+Apesar de a amizade cobrir toda a extensão da nossa relação, quando nos tornamos próximos comecei a me sentir culpado de passar tanto tempo com ela e muito culpado de estar me divertindo com uma mulher que não era a Melissa. Cheguei a me perguntar se estava mesmo tudo bem ser amigo de Adrienne.
+
+Certa vez, no fim do outono de 2002, eu estava sozinho e a culpa pesava sobre mim. Decidi:
+
+— Cara, não posso fazer isso.
+
+Comecei a me afastar de Adrienne. Nossos caminhos se cruzavam e eu dizia: “Ei, bom te ver! Desculpa, mas preciso ir”. Não contei a ela que estava intencionalmente me afastando, mas mais tarde ela me disse que sabia que era isso o que eu estava fazendo. Ela disse a um amigo que pensou que eu diria a ela que precisávamos parar de nos ver.
+
+A distância que criei entre nós me mostrou quanto eu na verdade queria estar com ela. Eu me perguntava sobre o que ela estava fazendo e então tentava encontrá-la “sem querer” em algum lugar entre as barracas. Quando não a encontrava, ficava desapontado. A cada dia que passava, eu me sentia mais e mais atraído por ela. Sentia falta de seu espírito doce e de sua personalidade divertida. E aquelas diferenças que pensei serem a prova de que não éramos o tipo um do outro? Comecei a considerar que, talvez, nossa relação fosse na verdade um caso de como os opostos se atraem e complementam um ao outro.
+
+Mas o que eu mais sentia falta era da sua fome espiritual. Ela me dissera como Melissa a inspirou e como ela queria ser serva do Senhor como Melissa.
+
+Percebi que gostava de Adrienne. E não meramente gostar, mas realmente gostar. Sim, aquele tipo de gostar. E, apesar de eu não saber naquela época, ela sentia o mesmo por mim.
+
+Adrienne percebeu que eu poderia gostar dela também quando nos reunimos com nosso grupo, jogamos sinuca e eu a deixei ganhar. Sou competitivo e, no espírito de uma boa competição, não costumo perder de propósito.
+
+Mas havia algo diferente sobre Adrienne.
+
+SEGUINDO CAMINHOS SEPARADOS
+
+— Deus — orei —, o que está acontecendo aqui? Ficar com Adrienne parece certo e errado!
+
+Se estou te abençoando com algo, disse Ele em meu coração, não se questione tanto. Receba Minha bênção.
+
+Eu estava cansado de brigar com Deus em minhas orações e rapidamente aceitei Sua resposta.
+
+Então, me lembrei do que Melissa tinha dito no carro naquela volta do hospital: “Quero que saiba que tudo bem se você encontrar outra pessoa depois que eu partir, e não quero que espere muito. Você não tem de viver de luto por muito tempo”.
+
+Não quis ouvir aquelas palavras na época, e não entendi por que Melissa as disse quando ainda tínhamos muito para lutar. Mas, de repente, reconheci a impressionante falta de egoísmo em suas palavras e sua sabedoria em dizê-las mesmo que não fosse fácil para ela.
+
+Aproximar-me de Adrienne foi ao mesmo tempo emocionante e assustador. Depois de Melissa ir para o Céu, coloquei todo meu foco no ministério. Era tudo o que eu queria fazer. Não tinha planejado apaixonar-me de novo e nem considerei seriamente que um dia conseguiria.
+
+Quando você perde um cônjuge para a morte, torna-se dolorosamente consciente do risco de apaixonar-se. Eu realmente não queria correr aquele risco de novo e esse foi um dos motivos para concentrar-me no ministério. Deus e eu, ninguém mais. Sem distrações. Até certo ponto, bom e seguro.
+
+“O que está acontecendo?”, pensei. “Isso tem de parar! Não posso começar outro relacionamento. Nem mesmo quero fazer isso.”
+
+Eu tinha de terminar nosso relacionamento antes que avançasse mais, então convidei Adrienne para jantar com intenção de dizer-lhe que estava tudo acabado. Fomos a um Applebee’s em Oklahoma City e minha intuição dizia que Adrienne sabia o que estava por vir. Eu sabia o que tinha de dizer, mas não planejei como diria.
+
+Nós conversamos, pedimos a comida e conversamos mais um pouco. O restaurante estava cheio, então havia muito barulho com todas as conversas nas mesas ao nosso redor. O tempo todo ficava imaginando como começaria a falar o que precisava.
+
+Por fim, decidi que precisava ser antes de a comida chegar. Não seria o melhor tipo de conversa para se ter entre garfadas.
+
+Olhei por cima da mesa para ela e ela olhou para mim.
+
+— Consegue imaginar-se passando o resto da vida comigo? Digo, sente que poderia se casar comigo?
+
+Não sei se Adrienne queria perguntar “O que foi isso?”, mas eu queria. Não conseguia acreditar que tinha dito aquilo. Era totalmente o oposto de “Ouça, sinto muito, mas isso não é certo. Ainda quero ser seu amigo, mas…”.
+
+Adrienne parecia surpresa, mas sorriu. — Sim — respondeu.
+
+— O.k. — falei, rindo. — Preciso ser honesto, vim aqui esta noite meio que para terminar tudo com você. Tenho sentido tanta culpa e incerteza! É simplesmente demais. Mas não consegui. E acabei falando o contrário do que imaginei. Tenho passado por muita coisa para ficar de joguinhos amorosos, então… Espero que não se importe que eu tenha feito uma pergunta tão séria como essa.
+
+— Está tudo bem — respondeu ela. — Fico feliz que possamos esclarecer as coisas assim.
+
+O atendente trouxe nossas entradas e ambos ficamos cutucando a comida mais do que comendo de fato. Acho que estávamos mais propensos a ficar sentados lá, olhando um para o outro e perguntando-se se o que achávamos que tinha acontecido realmente acontecera.
+
+O Festival Con Dios terminou antes do Dia de Ação de Graças e eu não queria me separar de Adrienne. Quando seguimos separados nossos caminhos, realmente seguimos caminhos separados. A banda de Adrienne estava baseada em Nashville, Tennessee, e eu ainda morava na Califórnia. Comparamos nossas agendas de shows e percebemos que levaria pelo menos um mês antes que pudéssemos nos ver novamente.
+
+Ainda bem que já existiam os celulares! Nós conversávamos praticamente todos os dias, às vezes por horas e algumas vezes até três ou quatro horas da manhã. Mesmo por telefone, nossas conversas eram tão profundas quanto pessoalmente. Eu diria que falávamos sobre tudo, mas isso é meio óbvio, pois nós tínhamos de falar sobre tudo para ficar no celular com aquela frequência e por todo aquele tempo.
+
+Três tópicos importantes para nós foram nosso relacionamento com o Senhor, nosso futuro juntos e meu tempo com Melissa.
+
+Adrienne continuou ávida para aprofundar sua relação com Deus, e decidimos ler a Bíblia juntos e depois conversar sobre as várias coisas que o Senhor destacava para nós. Eu amava a curiosidade de Adrienne sobre todos os assuntos espirituais, e suas perguntas para mim me faziam sentir que eu tinha um papel importante em seu crescimento espiritual. Era claro que ela estava se desenvolvendo, e ouvir a animação em sua voz ao reconhecer seu próprio amadurecimento espiritual fazia-me querer estar ao seu lado em vez de contentar-me com as conversas por telefone.
+
+Depois de nossa conversa no Applebee’s, reconhecemos mutuamente que tínhamos possibilidades de um relacionamento que pedia mais consideração. Esse é um modo cordial de dizer que tudo estava totalmente radiante entre nós e definitivamente acontecendo. Aquelas ligações enquanto estávamos separados foi uma maneira de nos conhecermos melhor. Embora tenhamos passado bastante tempo juntos na turnê, não tivemos muitas oportunidades de longas conversas a sós, pois a turnê, basicamente, era uma viagem comunitária e passávamos a maior parte do tempo em grupos ou com nossas bandas. Uma vez, lembro que nós pudemos nos sentar sozinhos por cerca de meia hora e ter uma boa conversa na qual perguntamos um ao outro tudo o que podíamos. Nós também fizemos algumas caminhadas juntos, mas em festivais de música frequentados por milhares de pessoas elas estavam longe de ser longas caminhadas por prados serenos.
+
+Portanto, não foi logo depois da turnê que pudemos desfrutar de um tempo ininterrupto juntos, mesmo que fosse tudo por telefone. Toda vez que nos falávamos, eu ficava mais convencido de que precisávamos ficar juntos.
+
+Conversar com Adrienne sobre Melissa foi uma parte muito importante do meu processo de cura. Não consigo expressar quão útil e madura Adrienne foi. Ela era o exemplo perfeito de um amigo carregando o fardo de outro. Eu podia falar com ela sobre qualquer coisa referente à Melissa, e ela ouvia com um coração tão empático que muitas vezes terminamos com os dois chorando.
+
+Em algumas das nossas conversas sobre Melissa, Adrienne me dizia:
+
+— Estou me sentindo um pouco insegura hoje.
+
+Apreciei sua honestidade ao admitir aquilo. Teria sido fácil para ela pensar “Isso é problema meu” e guardá-lo para si mesma. Mas seu sentimento de insegurança era algo que nós dois precisávamos trabalhar juntos. Saber como ela se sentia criou oportunidades para dizer-lhe que não tinha nenhuma expectativa de que ela vivesse se comparando com Melissa. Na verdade, eu era muito cuidadoso em nunca comparar Adrienne à Melissa de modo nenhum. Eu dizia a Adrienne que ela e Melissa eram diferentes e então tentava tranquilizá-la para que voltasse a se sentir segura.
+
+Adrienne fez uma coisa que eu apreciava sobretudo quando conversávamos sobre Melissa: ela me perguntava sobre a jornada espiritual de Melissa. Adrienne me dizia, baseada no que eu lhe contara, quanto admirava Melissa e como parecia que Melissa tinha o tipo de relação com o Senhor que ela estava buscando. Falar sobre Melissa parecia benéfico para nós dois, e isso foi importante, pois me deu liberdade de continuar a falar sobre ela, uma parte vital do meu processo de recuperação do luto.
+
+CONHECENDO A FAMÍLIA
+
+Nossas agendas nos permitiram a oportunidade de nos vermos uma vez na Califórnia em dezembro, mas essa foi a única vez que pudemos ficar juntos entre o fim do Festival Con Dios e o começo de 2003. No Natal, Adrienne viajou para a África do Sul e eu fui para Indiana. Eu sabia que precisava contar à minha família sobre Adrienne. Tinha comentado com minha mãe sobre ela, mas não sobre quão sério eu estava com Adrienne — em parte porque eu ainda estava tentando determinar exatamente quão sério era — e pedi a ela que ainda não contasse ao restante da família.
+
+Não houve ninguém em minha vida depois de Melissa, e esperava fortes reações de todos quando soubessem que eu estava gostando de alguém. Outro fator importante era o meu histórico de relacionamentos. Eu não namorava só por namorar. Eu não queria fazer joguinhos com uma mulher e arriscar-me a magoá-la se não pensasse que poderíamos potencialmente ter uma relação mais séria. Por isso, eu sabia que, quando minha família soubesse de Adrienne, eles imediatamente entenderiam que era sério.
+
+Embora estivesse animado com o que estava acontecendo entre Adrienne e eu, não estava ansioso para contar à minha família sobre ela. Não fazia ideia de como fazer isso. Pesei na balança entre fazer um grande pronunciamento para todos e contar a pequenos grupos por vez.
+
+Escolhi o grande pronunciamento.
+
+— Sabem aquela garota do The Benjamin Gate? — perguntei. Antes que alguém pudesse responder, falei: — Eu realmente gosto dela. Estamos namorando.
+
+“Uau! Consegui!”
+
+Meu cunhado, marido de April, Trent, disse: — Isso é incrível, cara!
+
+Acho que essa foi a única reação positiva. Minha família é extremamente amável e calorosa. Mas eles ficaram bem surpresos ao saber que eu estava namorando alguém. Eu tinha esperança de que esse não fosse o caso, pois realmente precisava do apoio deles depois de sentir-me culpado por ter me apaixonado de novo.
+
+Eu entendia o motivo do choque. Eles nunca me ouviram falar de uma mulher desse jeito a não ser de Melissa, e sabiam que provavelmente já era bem sério para nós. Além disso, Adrienne era a vocalista de uma banda de rock cristã, um estereótipo que não se encaixava na pessoa que eles imaginaram para mim depois de Melissa (eles ainda não sabiam quão doce e de voz suave Adrienne é na verdade, e quando a conheceram se apaixonaram por ela).
+
+Com o celular praticamente grudado em minha orelha o tempo todo em que estive em Indiana, meu pai acabou notando quanto eu falava com Adrienne enquanto ela estava visitando seus pais. Um dia ele pediu para conversar comigo e disse que queria que eu tivesse certeza de que não estava tomando a decisão de namorá-la somente baseado em emoções. Ele me perguntou se eu daria um tempo nas conversas para passar um tempo orando e buscando o Senhor para saber o que Ele desejava para mim e Adrienne.
+
+Disse a meu pai que faria isso, e quando contei a Adrienne sobre minha conversa com ele, ela concordou que deveríamos interromper temporariamente os telefonemas e se comprometeu a orar por nós.
+
+Não nos falamos por uma semana. Eu sentia falta dela, mas esse foi um bom tempo de oração que afirmou o que eu estava sentindo por Adrienne. Acredito que aquela semana também deu tempo para minha família lidar com a realidade de que havia alguém depois de Melissa. Eles esperavam que, eventualmente, eu me apaixonasse, tivesse outro relacionamento e até mesmo me casasse de novo. Eu ainda trabalhava meu sentimento de culpa e, após meu anúncio, eles tiveram de começar seus próprios processos de lidar com “outro alguém”. Aquela semana foi importante, pois permitiu-me seguir naquele processo com minha família pessoalmente em vez de afastados.
+
+Por outro lado, houve outro benefício naquela semana sem nos falarmos. Um pouco depois de Adrienne voltar aos Estados Unidos — o tempo que leva, digamos, para a conta de celular do mês anterior chegar pelo correio —, percebemos como ligações internacionais são caras. Tive de ajudá-la a pagar a conta de mais de 700 dólares.
+
+Com minha família preparada para conhecer Adrienne, dirigi mais de quinhentos quilômetros para buscá-la no aeroporto de Nashville quando ela retornou da África do Sul. Nós fomos no que determinamos ser nosso primeiro encontro oficial, um jantar no P. F. Chang’s, e depois a levei até Lafayette para apresentá-la à minha família.
+
+De imediato, Adrienne encantou a todos na família. Mas não sei quem ficou mais impressionado com ela, eles ou eu. Sério.
+
+Já é difícil conhecer os pais daquela pessoa especial pela primeira vez, mas é exponencialmente mais difícil quando por toda casa há fotos da pessoa especial com a primeira esposa.
+
+Adrienne foi incrível. Eu a observei interagindo com minha família, além de lidar com a situação de Melissa, e fiquei pensando: “Essa é mesmo uma mulher especial enviada por Deus”.
+
+Ela entendeu completamente que era um pouco estranho para minha família ver-me com alguém que não fosse Melissa. Adrienne não demonstrou nenhuma insegurança, e não consigo imaginar muitas pessoas nesse tipo de situação sem sentir-se pelo menos um pouco inquietas.
+
+Quando conversamos sobre a visita mais tarde, Adrienne me disse: — Não fui lá tentando ocupar o lugar da Melissa ou perguntando: “Onde é meu lugar?”. Eu quis ir e apoiar, não substituir. Não queria que sua família sentisse como se devessem superar a Melissa. Queria que se sentissem livres para sentir as emoções que estavam sentindo.
+
+Adrienne e minha mãe se deram muito bem. Em uma de suas idas ao mercado, minha mãe compartilhou boa parte do que todos passaram com Melissa como família e quanto Melissa significou para todos nós. Minha mãe contou-me mais tarde que, enquanto falava de Melissa, ela podia ver uma compaixão profunda nos olhos de Adrienne. Ao fim da conversa, elas choraram juntas.
+
+Você pensaria que Adrienne era parte da família havia anos. Nós ficávamos conversando até tarde, e houve algumas noites em que o restante de nós ia dormir e minha mãe e Adrienne ficavam conversando à mesa da cozinha até três ou quatro horas da manhã.
+
+Certa vez, quando estava sozinho com meus pais, contei-lhes sobre quão sério eu era em relação à Adrienne.
+
+— Ela é realmente a pessoa certa para mim — falei.
+
+Aquela revelação não foi tão bem aceita quanto eu esperava. Foi particularmente difícil para minha mãe, e também para minha irmã quando souberam o que eu tinha dito. Suas preocupações nada tinham a ver com Adrienne, mas com o fato de que elas ainda estavam em processo de luto por Melissa.
+
+Elas não demonstraram seus sentimentos para Adrienne, e acredito que a maneira como ela falava abertamente e com admiração sobre Melissa ajudou-as a aceitar mais tranquilamente que eu e Adrienne estávamos em um relacionamento.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 17;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 15 - Tudo sobre Deus$t$, 17,
+$conteudo$Depois da visita de adrienne aos meus pais, nós voltamos para a estrada com nossas respectivas bandas. Para mim, aquilo foi uma experiência totalmente nova.
+
+Para o Festival Con Dios, nós fizemos a turnê com um monte de outros músicos e tive a sorte de viajar de ônibus. Também foi uma turnê relativamente curta por apenas quarenta cidades.
+
+Porém, em 2003, a agenda de shows previa cerca de duzentas e vinte datas com trezentos dias de estrada. E, em vez de um ônibus, viajamos de van com um trailer no reboque. Por algum tempo, minha banda foi formada apenas por mim e pelo baterista Leif Skartland, e abríamos os shows de Bebo Norman. Leif, aliás, entrou na banda um pouco antes do Festival Con Dios e ainda é meu baterista.
+
+Depois da turnê com Bebo, formamos uma banda com quatro pessoas e comprei nossa primeira van, uma Chevy Mark III com uma cama nos fundos, que nós revezávamos para dormir quando dirigíamos à noite entre um show e outro. Também dividi o palco com o Jars of Clay e participei do festival Ichthus em Kentucky, ao qual minha família foi quando eu era criança.
+
+Aquele primeiro ano inteiro em turnê foi uma boa introdução ao lado não tão glamouroso da música. Certa vez, dirigimos do sul da Califórnia até o leste do Canadá para tocar em um show, e o promotor nunca nos pagou.
+
+É um negócio muito difícil, e a maioria das pessoas ficaria chocada se soubesse quantos músicos lutam para não se endividarem. Sendo um artista novo, como eu era, você se sente obrigado a tocar em qualquer lugar para que conheçam seu nome, atrair seguidores e vender discos o suficiente para manter sua gravadora feliz e interessada em refazer o contrato com você.
+
+Eu brincava que, no meu primeiro ano na estrada, toquei em celeiros pequenos e sujos. Não é bem verdade, mas teria sido se um fazendeiro tivesse me convidado e dito que havia tomadas suficientes para plugar todo nosso equipamento.
+
+Lembro-me de shows com trinta a cinquenta pessoas na plateia. Não é exagero meu dizer que eu ficava empolgado quando bisbilhotava antes do show e via cento e cinquenta pessoas na plateia. Certa noite, tocamos para um público de seiscentas pessoas. Fiquei chocado.
+
+Em uma das nossas viagens, minha carteira foi roubada. Assim que consegui voltar para a Califórnia, fui ao Departamento de Trânsito para tirar uma nova carteira de motorista. Eu estava andando apressado em direção à entrada, falando com Adrienne no celular, quando um jovem que parecia desamparado chegou até mim e perguntou:
+
+— Cara, você teria um trocado?
+
+Sem querer parar ou me distrair, falei:
+
+— Não, desculpa — e continuei a conversa ao celular e entrei no prédio.
+
+Lá dentro, enquanto aguardava minha nova carteira de motorista, comecei a me sentir mal sobre como havia dispensado o jovem e orei: “Senhor, me dê uma oportunidade de encontrá-lo novamente”.
+
+Quando saí, dirigi até o In-N-Out Burger mais próximo. Do lado de fora do restaurante, vi o mesmo jovem. Mal pude acreditar. Fiquei feliz de Deus ter me dado outra oportunidade e dessa vez eu não a perderia.
+
+Fui até ele e disse:
+
+— Oi, cara. Vamos lá dentro, vou pagar um almoço para você. Após fazermos os pedidos e nos sentarmos, orei pela nossa refeição e pedi que ele me contasse sua história.
+
+Seu nome era David e ele era, de fato, um sem-teto. Disse que era viciado em heroína e alcoólatra. Sua esposa pedira que ele saísse de casa e ele estava vivendo debaixo de uma ponte havia algum tempo. Depois de contar-me sua história, começou a me fazer perguntas.
+
+Uma delas foi sobre meu trabalho.
+
+— Eu toco música cristã — contei. Ele perguntou meu nome de novo.
+
+— Jeremy — respondi. — Jeremy Camp?
+
+Assenti. Fiquei surpreso que ele soubesse quem eu era.
+
+David disse que, antes de sair de casa, um amigo havia lhe dado meu primeiro CD. Enquanto comíamos, conversamos sobre o Senhor, minha música e nossas histórias. Quando estávamos de saída, senti fortemente que precisava encorajar David.
+
+— Deus vai restaurar seu casamento — falei. — Quero que seja forte. Deus me trouxe à sua vida neste momento por um motivo.
+
+Nós oramos, dei à David todo o dinheiro que tinha na carteira, apenas 26 dólares, e passei meu número de celular. Pedi que me ligasse se precisasse de qualquer coisa e que ligasse alguma hora para me contar como estavam as coisas.
+
+Cerca de oito anos depois, recebi um e-mail de uma mulher apresentando-se como esposa de um homem sem-teto e viciado em drogas que eu conhecera em um In-N-Out muito tempo antes. Nele ela perguntava se eu me lembrava do encontro, e eu me lembrava. A mulher também contava no e-mail que David estava sóbrio agora e que eles voltaram a ficar juntos. Depois, disse que tinha mandado o e-mail pois gostaria de fazer uma surpresa para o marido organizando um reencontro e perguntou se eu podia ajudá-la a realizar esse presente.
+
+Fiquei animado com essa oportunidade e organizamos o encontro. Acabou que o casamento de David foi completamente restaurado por Deus, ele e a esposa estavam ótimos e eles tiveram um filho que também conheci. Foi uma reunião incrível, que me deixou muito agradecido ao Espírito Santo por ter me dado uma segunda chance depois de eu ter dispensado David na entrada do Departamento de Trânsito.
+
+Esse é um dos meus exemplos favoritos sobre a importância de encontrarmos uma maneira de realizar algo quando o Espírito Santo nos pede para ajudar alguém. Nunca sabemos quais frutos podemos colher pela nossa obediência. Também me fez perceber que, se minha carteira não tivesse sido roubada, eu provavelmente não teria conhecido David. Isso me proporcionou uma nova perspectiva sobre a importância de nos lembrarmos, quando estamos em um momento frustrante, de que Deus pode estar trabalhando e como Ele pode tornar situações negativas em testemunhos de Sua glória.
+
+FAZENDO O PEDIDO
+
+Adrienne e eu tínhamos de manter nossos celulares carregados, pois os telefonemas ainda eram nosso meio de comunicação principal. Nas raras vezes em que um de nós estava livre e em um lugar relativamente próximo, dirigíamos por horas para ficarmos juntos.
+
+Nosso namoro teve alguns altos e baixos. Não eram muito diferentes do que a maioria dos casais enfrenta no relacionamento, mas nós orávamos juntos e sozinhos também, e dávamos nosso jeito conversando aberta e honestamente. Ter aquelas conversas confirmou a nós dois que nosso namoro era sério, e saímos daquela temporada mais fortes no amor um pelo outro.
+
+Toda primavera a Gospel Music Association faz o que é chamado de GMA Week. Basicamente é uma enorme conferência anual para a indústria musical gospel, que recebe todo mundo que é conhecido na música cristã. A cerimônia do GMA Dove Awards é o evento principal da semana.
+
+Como estaria em Nashville para a GMA Week, eu me encontraria com Adrienne. E, por esse motivo, levei um lindo anel comigo.
+
+Aquela foi uma semana corrida, pois dei muitas entrevistas por ter sido apontado como um artista em ascensão. Além disso, participei de várias atividades relacionadas à promoção e marketing. Adrienne também estava ocupada e não conseguimos nos ver muito.
+
+No entanto, decidimos que definitivamente iríamos sair para jantar em alguma noite daquela semana. Mas quando?
+
+O The Benjamin Gate tinha sido indicado para um Dove Award — por álbum de rock moderno/alternativo do ano —, mas Adrienne não esperava que sua banda ganhasse. Então, sugeri que fossemos jantar durante a premiação. Ela me perguntou se podíamos nos arrumar para o jantar de qualquer forma, mesmo que não fossemos à premiação.
+
+Jantar a dois? Arrumadinhos? Parecia a hora perfeita para fazer o pedido.
+
+Fiz uma reserva e alguns preparativos no Park Cafe e fui buscar Adrienne. Estávamos ambos exaustos daquela semana agitada, mas no caminho para o restaurante parecia que tínhamos uma “paz exausta” enquanto ouvíamos músicas de louvor e conversávamos sobre todas as coisas que aconteceram naquela semana.
+
+O restaurante reservou para nós uma mesa perto da janela em uma área com apenas uma mesa próxima. Era o lugar perfeitamente calmo para ficarmos juntos e, mais importante, para o item principal em meu plano para o jantar.
+
+Tentei relaxar, mas estava ansioso e provavelmente agindo como um tonto. Fizemos nossos pedidos e continuamos a conversa que começamos no carro. Eu estava muito animado e com dificuldades de esconder isso.
+
+Disse para Adrienne que precisava ir ao banheiro, mas na verdade levei o anel de noivado para um membro da equipe do restaurante para a grande surpresa que viria mais tarde.
+
+Os pratos chegaram e nós fizemos uma deliciosa refeição. Depois, o atendente trouxe pequenas caixas decorativas que pareciam conter chocolates ou algum outro tipo de doce. O anel de Adrienne estava dentro de sua caixinha, mas ela não abriu! Ficamos conversando e esperei que ela a abrisse (além disso, eu queria ter certeza de que a pessoa para quem eu entregara o anel não tivesse estudado a aliança, decidido sair do trabalho mais cedo e seguido para uma casa de penhores).
+
+Eu tinha escondido previamente um pequeno CD player debaixo da mesa e, quando pensei que Adrienne fosse abrir sua caixinha, me estiquei embaixo da mesa e apalpei o aparelho. Adrienne me olhou de um jeito estranho e tentei agir, sem sucesso, como se a comoção em minhas pernas fosse normal.
+
+Por fim, peguei o CD player, para que eu pudesse ver os botões, e coloquei para tocar a canção “Here I am to worship” [“Estou aqui para louvar”]. Adrienne me dissera várias vezes que gostaria de entrar na igreja com aquela música.
+
+Com sua canção tocando, levantei-me, fui até seu lado da mesa, peguei sua caixinha, abri e tirei o anel. Então me ajoelhei e perguntei:
+
+— Quer se casar comigo? — Sim! — respondeu ela.
+
+Àquela altura, o casal na mesa perto de nós tinha parado de conversar e nos observava. “Ah, meu Deus!”, disse um deles quando me ajoelhei e, depois de Adrienne aceitar, eles nos parabenizaram.
+
+Deixamos o restaurante e, por pelo menos meia hora, ligamos para nossas famílias e amigos mais próximos para contar a novidade. E depois para celebrar? Bem, nós seguimos caminhos separados novamente. Voltei para a estrada naquela noite para continuar a turnê e demorou cerca de um mês até a próxima vez em que vi minha noiva.
+
+A SEPARAÇÃO (MAS NÃO A NOSSA)
+
+Nosso noivado marcou o fim oficial da jornada de Adrienne com o The Benjamin Gate. Quando Adrienne foi para a África do Sul para o Natal, ela já não estava feliz com a banda, sobretudo no âmbito espiritual. Ela pediu à sua família e aos amigos que orassem com ela sobre o futuro da banda.
+
+Aquele foi um período estressante para Adrienne. Ela não era um membro original da banda, então existia um “antes” sem ela, em que o nome do grupo não era “Adrienne Liesching and The Benjamin Gate”, mas em qualquer banda o vocalista principal carrega o papel mais importante. Adrienne se preocupava que sua saída colocasse um fim na carreira musical dos outros membros, e ela amava tocar e estar com eles.
+
+Todos eram da África do Sul e o The Benjamin Gate era basicamente tudo o que eles tinham nos Estados Unidos. Cada um deles tinha sacrificado muita coisa ao deixar seu país de origem e tentar fazer música juntos nos Estados Unidos, e substituir a vocalista principal exigiria começar tudo de novo em muitos aspectos. Adrienne achava que os outros membros não queriam passar por esse processo novamente.
+
+Quando ela retornou aos Estados Unidos, encontrou-se com os membros do TBG para terminar com a banda. Foi uma conversa difícil para ela começar e, compreensivelmente, houve um pouco de reação negativa a princípio. Mas logo se tornou uma decisão mútua para a banda acabar.
+
+Com a direção óbvia que nosso namoro havia tomado, os membros da banda decidiram esperar até que nosso noivado se tornasse oficial para que o rompimento pudesse ser um “seguindo em frente” positivo, e Adrienne concordou em ficar por mais nove meses para, assim, cumprirem a agenda de shows programada para não que terminassem endividados.
+
+Depois que ficamos noivos, o rompimento do The Benjamin Gate foi anunciado e Adrienne e a banda continuaram tocando até setembro.
+
+PLANEJANDO O CASAMENTO
+
+Adrienne e eu conseguimos nos ver algumas vezes, mas não tanto quanto gostaríamos. Ela visitou minha família duas vezes sem mim, até celebrou seu aniversário com eles em Lafayette em julho. Ela me dizia que todos já a incluíam na família e como meus pais eram os cristãos mais incríveis que ela conhecia. Ela admirava a relação deles com o Senhor e entendia como haviam conseguido manter uma caminhada próxima a Ele depois de Melissa partir.
+
+Adrienne adorava conhecer um pouco mais do coração da minha mãe. Elas ficaram próximas rapidamente e minha mãe tornou-se uma espécie de mentora para Adrienne. Imagine como deve ser legal para uma mãe aconselhar a jovem mulher com a qual o filho vai se casar.
+
+Meu pai quebrava a cabeça com Adrienne. Ele ficou fascinado com as diferenças entre os Estados Unidos e o país de origem dela, apesar de frequentemente confundir a África do Sul com a Austrália.
+
+No começo, quando meu pai perguntava sobre a “Austrália”, Adrienne dava a melhor resposta possível, pois tinha um tio que morava lá. Quando percebeu que meu pai na verdade queria saber sobre a África do Sul, ela começava respondendo baseada no que seu tio lhe contara sobre a vida na Austrália e depois, gentilmente, dizia:
+
+— Mas na África do Sul, onde eu moro....
+
+Escolhemos dezembro para nosso casamento na África do Sul e Adrienne reservou a igreja e cuidou de todos os preparativos. Porém, cerca de três meses antes do casamento, Adrienne descobriu que havia complicações potenciais com seu visto devido ao rompimento com o The Benjamin Gate e nosso casamento pendente. Ela fora aconselhada a, se perguntassem sobre o visto quando estivéssemos deixando a África do Sul, mentir e retornar aos Estados Unidos sem problemas. Contudo, não havia nenhuma possibilidade de que fossemos mentir, então fomos obrigados a transferir o casamento para os Estados Unidos.
+
+Adrienne conseguiu fazer todas as mudanças para a transferência da cerimônia rapidamente, a não ser por uma coisa. As estações na África do Sul são o oposto dos Estados Unidos, e a amiga que fizera seu vestido de noiva o fizera para o verão. Portanto, Adrienne teria de se casar em Indiana, em dezembro, com um vestido sem mangas.
+
+Quando o prazo de Adrienne com o The Benjamin Gate terminou em setembro, ela precisou de um lugar para ficar, então mudou-se para a casa dos meus pais e ocupou o quarto de hóspedes. Pelo menos isso lhe deu a chance de trabalhar nos detalhes do casamento e poder compartilhar essa experiência com minha mãe.
+
+Meus pais limparam uma parte do porão para tornar-se o quartelgeneral do casamento. Lá, Adrienne podia trabalhar na decoração e nos convites. Ela fez os convites à mão, algo em torno de cento e cinquenta a duzentos deles. Ela começou a confeccioná-los quando ainda estava viajando com a banda. Quando não era sua vez de dirigir, ela sentava e escrevia os convites na van. Os preparativos para o casamento e nosso futuro juntos ajudaram-na a não pensar no rompimento vindouro do TBG.
+
+Um dia após ela mudar-se para a casa dos meus pais, eles estavam olhando fotos de família e surgiram algumas de mim com Melissa. Meu pai se levantou, foi até Adrienne e lhe deu um grande abraço.
+
+— Só quero que saiba que nós amamos Melissa — disse ele. — Mas ela está com Jesus agora e você está aqui, e nós a vemos como parte da família.
+
+Ele também lhe disse:
+
+— Deus selecionou você como ferramenta para ajudar na cura do meu filho. Você faz parte do plano de cura para o Jeremy.
+
+Em outra vez, um pouco antes do casamento, minha mãe conversou com Adrienne sobre a foto do meu casamento com Melissa que ficava no console da sala.
+
+— Não sei por que é tão difícil tirar de lá no momento, mas quero que saiba que vou tirar antes de a sua família chegar aqui.
+
+Adrienne compreendeu completamente e disse à minha mãe que não havia pressa. Mesmo contando a história hoje soa como um momento estranho, mas não foi, devido ao modo como ambas eram sensíveis aos sentimentos uma da outra.
+
+Não conheci os pais de Adrienne, Rory e Wendy, até que eles chegassem a Indiana para a cerimônia, mas há uma história interessante sobre o pedido de bênção ao pai dela.
+
+Quando Adrienne era adolescente, disse ao pai que, se ele não aprovasse a pessoa com quem ela queria se casar, ela não se casaria. Bem, foi realmente uma luta para o pai dela pensar em dar seu consentimento a alguém que ele não conhecia, mesmo que eu parecesse o.k. ao telefone, gostasse do que Adrienne dizia sobre mim e pudesse ver que ela estava feliz comigo. Ainda assim, sem ter conversado comigo pessoalmente, ele se perguntou como poderia aprovar o casamento, até que um dia sentiu Deus lhe dizer: Você não precisa, Eu já aprovei.
+
+Quando fiz “a ligação” para o pai dela, estava ansioso e gaguejei um pouco.
+
+— Está pedindo a mão da minha filha em casamento? — perguntou ele.
+
+— Sim.
+
+— Apesar de não o conhecer e de sempre ter pensado que conheceria os cônjuges dos meus filhos antes do casamento, vejo como Adrienne amadureceu e vejo sua alegria quando fala de você.
+
+“Uau, isso é muito legal!”, pensei.
+
+Para garantir que fosse no tempo certo, esperamos um pouco após o noivado para contar à família de Melissa que eu iria me casar novamente. Mais tarde, Adrienne enviou um convite para eles.
+
+Adrienne ficou entusiasmada ao conhecer as duas irmãs de Melissa, Megan e Heather, cerca de um mês antes do casamento, quando ela e minha mãe viajaram à Califórnia para participar de um retiro para esposas de pastores.
+
+Conhecer Megan e Heather deu a Adrienne a oportunidade de expressar sua admiração por Melissa e saber mais sobre ela de suas irmãs. Adrienne se deu bem com as duas logo de cara e manteve contato com elas. Em uma de suas conversas posteriores, Heather contou a Adrienne que, após a morte de Melissa, ela ficou mais próxima de Deus; ela sentiu o conforto do Senhor mais forte do que jamais experimentara e, como resultado, sua jornada espiritual ficou mais profunda do que nunca.
+
+No retiro para esposas de pastores, Adrienne também conheceu a segunda esposa de Jon Courson, Tammy. Obviamente eu tinha lhe contado sobre a importância de Jon para mim, que ele foi o orador quando redirecionei minha vida no acampamento de verão e como ele apoiou a mim e ao irmão de Melissa, Ryan, em sua casa após a morte de Melissa. Como segunda esposa de um homem que perdera a primeira esposa em uma tragédia, Tammy pôde apoiar Adrienne com valiosa sabedoria.
+
+Tammy disse a ela:
+
+— Há certas coisas que você não deve pensar. Não se compare. Então, para preparar Adrienne para o que estava por vir em nosso casamento, ela lhe deu exemplos de como lidara com situações e memórias referentes à primeira esposa de Jon.
+
+Embora eu tenha evitado de forma consciente fazer comparações entre Adrienne e Melissa, havia momentos, naturalmente, em que Adrienne se comparava em sua própria mente. Quando isso acontecia, nós conversávamos, mas foi de grande ajuda para Adrienne ouvir a perspectiva de Tammy sobre essas comparações.
+
+Como Tammy era esposa de um pastor que compartilhava seu testemunho publicamente, ela também se concentrou em uma área que sabia que seria vital para Adrienne se dirigir antes de nos casarmos. Tammy fez uma pergunta que teria sido difícil para eu responder se fosse Adrienne:
+
+— Se Jeremy nunca compartilhasse sobre você no palco, apenas sobre Melissa, você ficaria bem com isso?
+
+Adrienne respondeu que sim, pois havia testemunhado parte do que Deus fizera, não apenas por meio do meu testemunho de caminhar pela fé, mas também pela história que contei sobre a vida de Melissa.
+
+Quando Adrienne me contou sobre sua conversa com Tammy, ela me disse que aquela pergunta tinha sido uma boa verificação em seu coração para lembrá-la de que não era sobre ela, nem sobre Melissa, mas sobre o trabalho que Deus fazia na vida de inúmeras pessoas.
+
+E aquilo foi uma boa verificação para mim também, como a pessoa no palco compartilhando histórias e cantando canções daquele período da minha vida. Nada disso era sobre mim; era tudo sobre Deus.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 18;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 16 - Chegando às raízes$t$, 18,
+$conteudo$Adrienne e eu nos casamos em 15 de dezembro de 2003, em uma pequena cerimônia em Lafayette. Como a igreja dos meus pais se reunia em uma cafeteria naquela época, nos casamos em uma antiga igreja com vitrais enormes.
+
+No início da cerimônia, quando eu estava no altar da igreja, olhando fixamente para o corredor onde eu veria Adrienne pela primeira vez em seu vestido de noiva, meu coração batia forte. Então, quando ela apareceu, fiquei encantando em como ela estava linda. Lembro-me de como seu sorriso era enorme. Dava para ver como ela estava feliz, e aquilo me fez ainda mais feliz. Adrienne era a esposa perfeita para mim, uma verdadeira bênção de Deus e também outro sinal de esperança redentora.
+
+Meu pai oficializaria a cerimônia, e olhei para ele e o vi chorando. Pensei: “Ah, meu Deus, contenha-se, homem. Você falará para a congregação em um minuto”.
+
+Em vez da tradicional marcha nupcial, tocou a canção “Here I am to worship” quando Adrienne entrou. Nosso amigo Jean-Luc liderou a congregação na hora da oração e a presença do Senhor na igreja se intensificou. Aquilo era exatamente o que nós desejávamos, pois queríamos uma cerimônia com a glória de Deus à mostra para definir o tom do resto de nossa vida juntos.
+
+O talento artístico de Adrienne também ajudou a definir o tom da cerimônia. Quando orava sobre o casamento, o tema “coroas” se destacava para ela. Em uma de suas orações, o Senhor colocou Isaías 35:10 em seu coração: “Os resgatados do Senhor voltarão e virão a Sião com cânticos de júbilo; alegria eterna coroará a sua cabeça; gozo e alegria alcançarão, e deles fugirá a tristeza e o gemido”.*
+
+Ela tomou aquilo como uma promessa de Deus de que toda a mágoa seria removida da minha vida e que aquela alegria e gozo me possuiriam e coroariam nossa cabeça.
+
+Adrienne gostava de coroas e refletir sobre a majestade de Deus. Em cada um dos convites, anexou uma pequena coroa de arame, que ela mesma fizera, e escreveu o versículo de Isaías sob ela. Para a cerimônia, Adrienne fez coroas para as daminhas de honra, além do suporte para as alianças. Desde os convites para a cerimônia, queríamos deixar claro que Jesus seria o Rei em nosso casamento.
+
+Foi uma cerimônia emocionante, com lágrimas rolando por todos os lados. Eu chorei, Adrienne chorou, meu pai chorou no altar da igreja. Meu pai chorou por muito tempo, assim como quando oficializou meu primeiro casamento.
+
+Fizemos uma mudança nos votos tradicionais. Escrevemos nossos próprios votos e não incluímos “até que a morte nos separe” ou “enquanto nós dois vivermos”. Deixar essas frases de lado nada tinha a ver com meu compromisso com Adrienne em nosso casamento. Eu estava e estou completamente comprometido com ela. Mas aquelas frases eram difíceis para mim, sobretudo a primeira. A palavra morte parecia saltar para mim quando pensava em recitá-la durante a cerimônia. Atingia uma parte das minhas emoções que ainda era frágil. Adrienne entendeu e me apoio naquela decisão.
+
+Eu também queria ser sensível com Adrienne. Esse era seu primeiro casamento e reconheço que muitas noivas sonham com o dia de seu casamento desde crianças. Adrienne certamente planejara muito e colocara todo seu talento criativo em nosso casamento, e eu queria que fosse o melhor dia da vida dela. O sorriso radiante que ela manteve por toda a cerimônia me dizia que era mesmo.
+
+Mais tarde, minha mãe me disse que o que mais se destacou para ela durante o casamento foi quão esplêndida Adrienne estava em seu vestido de noiva. Minha mãe falou sobre como, enquanto Adrienne morou com eles durante nosso noivado, ela testemunhara a mudança de Adrienne de uma garota doce e tímida para uma mulher confiante e devotada. Durante a cerimônia, a conclusão daquela transformação impressionou minha mãe.
+
+Adrienne e eu estávamos muito felizes ao partirmos daquela igreja direto para o próximo capítulo de nossa vida. Depois da lua de mel, vendemos minha casa na Califórnia e, em apenas um mês, encaixotamos tudo e nos mudamos para Lafayette, para que pudéssemos estar mais perto da minha família quando não estivéssemos na estrada.
+
+Com o início do nosso casamento, falamos sobre filhos. Três ou quatro pareciam ser bons números para nós. Ambos realmente adoramos crianças e desejávamos começar uma família. Na verdade, estávamos tão animados em começar nossa própria família que, bem, vamos só dizer que não esperamos muito.
+
+Não decidimos ter um bebê imediatamente, mas, se posso usar um duplo negativo para descrever nossa mentalidade, também não tentamos não ter um.
+
+Cerca de dois meses após nos casarmos, descobrimos que Adrienne estava grávida. Não foi uma grande surpresa para nós, mas foi para as pessoas para quem contamos. Tenho certeza de que nosso anúncio rapidamente fez amigos e familiares fazerem as contas, calculando: “Se eles se casaram em dezembro e o bebê está previsto para o fim de setembro, vejamos, isso dá um mês, dois meses, três meses...”. Não se preocupe, foi tudo conforme a Bíblia!
+
+Em setembro de 2004, Isabella Rose (Bella) nasceu. Um ano e meio depois, Arianne Mae (Arie) juntou-se à família. As meninas eram as bênçãos mais incríveis que eu poderia imaginar. Tornar-me pai abriu meus olhos para uma perspectiva de vida totalmente nova. Antes que elas engatinhassem, e até antes de começarem a se mexer no berço, assisti com fascínio ao começo da descoberta do mundo em torno delas.
+
+Observá-las me fez querer ter olhos de criança para ver o mundo que Deus criou para nós. Uma das coisas que eu adorava em ter crianças pequenas foi notar como a vida é descomplicada para elas. A vida é tão simples para os pequenos! É ao longo do nosso desenvolvimento que tornamos a vida mais cheia, complicada e confusa do que precisa ser. Não é de admirar que Jesus tenha dito isso a um grupo de adultos, seus discípulos, que estavam tendo um debate infantil sobre quem deles seria melhor no Céu: “Em verdade vos digo que, se não vos converterdes e não vos fizerdes como meninos, de modo algum entrareis no Reino dos Céus”.
+
+Contudo, o nascimento de Bella e de Arie também me abriu as portas para um novo conjunto de medos. Por um motivo que não consigo explicar, depois que Adrienne e eu nos casamos, nunca tive medo de que ela morresse. Mas quando as meninas nasceram, fiquei ansioso e me perguntei: “Será que Deus pode pensar em levar uma delas para o Céu?”. Fiquei tão apavorado que uma delas ou ambas pudessem morrer que eu as segurava com força em meus braços e orava com ainda mais afinco por sua proteção.
+
+Aquele medo era muito real. Deus teve de trabalhar em mim com persistência nessa área, como evidenciado pelo fato de que, um ano e meio após ter esses medos com Bella, eu os experimentei novamente com o nascimento de Arie.
+
+AO PÉ DA CRUZ
+
+Certa vez, quando estava dizendo a Deus o quanto amava minhas garotas e expressava quanto temia que morressem, Deus falou em meu coração gentilmente, mas também com a firmeza de “não duvide disso”: Você não percebe quanto Eu te amo, Jeremy? Eu te amo muito, muito mais do que você poderia amar suas filhas. Eu esperava que Deus fosse responder algo mais parecido com “Eu também amo as meninas e vai ficar tudo bem com elas”. Mas, como aprendi com Deus ao longo dos anos, Ele prefere trabalhar abaixo da superfície dos nossos problemas. Embora o medo de que algo ruim pudesse acontecer com minhas filhas às vezes consumisse meus pensamentos, a verdade é que o medo era um problema superficial, e Deus queria trabalhar na raiz do problema: eu precisava compreender melhor Seu amor.
+
+Não passei por uma dessas realizações instantâneas, mas Deus colocou-me no caminho do processo para obter um conhecimento melhor sobre a profundidade de Seu amor. A Bíblia diz que “Deus é amor”. Seu próprio caráter, Sua essência, é amor. Amor é quem Ele é. Lutei para entender essa verdade, pois estava pensando em meus termos humanos e limitados.
+
+Nosso amor é condicional. Não importa quanto queiramos acreditar no contrário, nós sempre colocamos condições ao nosso amor. Podemos dizer que vamos amar alguém não importa o que aconteça, mas isso mudará se formos apanhados pela rejeição contínua dessa pessoa.
+
+O amor de Deus é perfeito. Seu amor não tem condições. Nenhuma circunstância pode mudá-lo. Nosso Senhor, nosso Rei, vê cada milímetro do nosso ser e, se formos completamente honestos conosco, da grosseria que nós somos. E Ele ainda nos ama! Esse amor reluziu grandemente na cruz.
+
+Nosso amor não pode ser perfeito, mas o amor de Deus não pode ser nada além de perfeito.
+
+Nós amamos, mas Deus é amor. Há uma diferença inconcebível entre as duas coisas. Eu gostaria de poder dizer que aprecio completamente a diferença. Não aprecio, embora ainda esteja tentando compreendê-la. No entanto, aprendi que um jeito de me livrar de viver com medo, como o medo de experimentar a morte, é aumentar minha compreensão sobre quanto Ele me ama e se importa comigo. Quanto mais eu abraço a profundidade do amor perfeito e incondicional do Pai celestial por mim, mais fácil é acreditar que tudo ficará bem.
+
+Apenas confie em Mim, Deus me disse. Confie em Mim. Confie em Mim. Confie em Mim.
+
+Enquanto continuei a orar naquele dia, Deus me lembrou de 1 João 4:18: “No amor não há temor, antes o perfeito amor lança fora o temor; porque o temor tem consigo a pena, e o que teme não é perfeito em amor”.
+
+Esse versículo acalmou meu espírito, e repeti as palavras em minha mente quando me sentia lutando contra o medo, independentemente de qual fosse ele. Tirar o foco das minhas circunstâncias para considerar quanto Deus me ama e se importa comigo acabou com muitos dos meus medos.
+
+Implícito nesse comentário está que eu ainda experimento e luto contra o medo.
+
+Ao lidar com aqueles medos precoces de que uma das minhas filhas pudesse morrer, percebi que tinha medo da dor e do sofrimento que passei com a morte de Melissa. Aquela foi uma das piores dores que podia imaginar, e tinha medo de sentir-me daquele jeito novamente. Como consegui superar aquela experiência, sabia que não importava o que acontecesse comigo, eventualmente tudo acabaria bem. Mas tinha medo de sentir aquela dor de novo.
+
+Gostaria que houvesse um versículo que eu pudesse citar que prometesse que nunca mais teria de passar por essa dor. Busquei muitas vezes, algumas vezes em desespero, e não há nada nas Escrituras nesse sentido. Mas o que encontro na Bíblia é, caso após caso, uma pessoa sofrendo e Deus caminhando com ela em cada passo do caminho.
+
+Era ali que Deus estava, trabalhando na raiz do meu medo. Aos poucos, Ele me trouxe a um ponto em que posso proclamar: — Senhor, creio que vai andar comigo por toda e qualquer dor que eu enfrentar no futuro. Com Sua graça, não terei medo da dor.
+
+Pedro falou sobre a possibilidade de nos regozijarmos no poder de sustentação de Deus: “ainda que agora importa, sendo necessário, que estejais por um pouco contristados com várias tentações”.
+
+Paulo também ofereceu uma visão sobre o assunto em 2 Coríntios 4:16-18:
+
+Por isso não desfalecemos; mas, ainda que o nosso homem exterior se corrompa, o interior, contudo, se renova de dia em dia. Porque a nossa leve e momentânea tribulação produz para nós um peso eterno de glória mui excelente; não atentando nós nas coisas que se veem, mas nas que se não veem; porque as que se veem são temporais, e as que se não veem são eternas.
+
+Mais uma vez, vencer o medo e suportar o sofrimento se resume em ter e manter uma perspectiva eterna. Essa não é uma verdade fácil de escutar durante o sofrimento, pois certamente não parece que nossos problemas estão conseguindo algo no momento, mas o sofrimento é temporário.
+
+Sem dúvida, não me senti dessa forma durante meu período de sofrimento, mas aprendi com o tempo que é verdade.
+
+O sofrimento que percorri com Deus me refinou. Não me definiu, não sou “o cara que perdeu a esposa e tem um testemunho poderoso por causa disso”. Porém, ele me aperfeiçoou e aprofundou minha dependência em Deus.
+
+O sofrimento escava até o âmago da sua alma e o testa, muito abaixo da superficialidade de quem você pensava que Deus era. O sofrimento pergunta: Você vai mesmo confiar no Senhor? Vai mesmo louvar ao Senhor? Vai mesmo continuar a servi-Lo?
+
+“Sim” é a única resposta possível a essas perguntas quando você é levado a uma profundidade em que pode entender e realmente conhecer quem é Deus — onde você pode experimentar pessoalmente quem Ele diz que é na Bíblia — e depois seguir nessa verdade.
+
+Um amigo sofreu com a morte do filho de dezoito anos. Ele disse: — Antes de isso acontecer, pensei que tivesse uma relação forte com Deus, mas eu estava apenas na campina perto da cruz. Depois que aconteceu, fui ao pé da cruz e fiquei lá.
+
+Como meu amigo e eu aprendemos com nossas experiências, o sofrimento é uma oportunidade. Nenhum de nós se voluntariou para aquilo. Não tivemos nenhuma opção a não ser passar por aquilo. No entanto, nós tínhamos a escolha de como responder àquilo. Foi difícil, mas ambos decidimos nos levantar e seguir até o pé da cruz.
+
+Para ser honesto, não acredito que teria feito essa jornada se não tivesse sido forçado pelo meu sofrimento. Mas confie em mim, uma vez que cheguei ao pé da cruz, soube que nunca havia estado mais perto do meu Salvador.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 19;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 17 - Tudo que realmente importa$t$, 19,
+$conteudo$O Senhor continuou a usar minhas experiências pessoais para me dar canções que ressoavam nas pessoas, que em troca maravilhavam-me com suas histórias de como as canções e meu testemunho haviam tocado em sua vida e lhe dado apoio e esperança.
+
+Nos dois anos seguintes ao meu casamento com Adrienne, minha carreira alcançou um crescimento gigantesco. Seis músicas do meu primeiro CD alcançaram o topo das paradas, e recebi quatro Dove Awards da Gospel Music Association naquele período. O sucesso aumentou a plataforma da qual eu podia compartilhar minha mensagem, graças a mais vendas, mais tempo de reprodução das minhas canções nas rádios e mais oportunidades de liderar turnês.
+
+No entanto, ter um ministério em expansão exigia mais de mim. Havia mais turnês, mais pessoas envolvidas no processo e mais logísticas para pensar e administrar.
+
+Essas expectativas estão no pacote quando se faz parte da música cristã ou de qualquer tipo de ministério. Eu era filho de pastor, estudei na Calvary Chapel Bible College e tinha amigos na indústria da música cristã como Jean-Luc, então tinha uma boa ideia de como minha carreira/meu chamado poderia ocupar todo o meu tempo. Sabia que as exigências poderiam se tornar uma potencial armadilha que Satanás adoraria ver me tirando do caminho do meu dever de cumprir a Grande Comissão. Um bom caçador diria que uma armadilha funciona melhor quando camuflada no ambiente e o alvo fica sem saber no que pisou até que seja tarde demais.
+
+Felizmente, eu tinha um amigo adorável que corajosamente tomou uma atitude para me salvar antes que, sem saber, eu caísse na armadilha.
+
+Percebi que estava muito ocupado, mas pensei que fosse apenas uma consequência do sucesso da nossa banda. Além disso, tudo ao meu redor parecia correr bem. Eu ainda buscava Deus e queria honrá- Lo em tudo que fazia. Os CDs estavam vendendo. O fato de que não parávamos de receber histórias e mais histórias de fãs indicava que estávamos fazendo o impacto espiritual que queríamos. Em casa, Adrienne e eu estávamos ótimos. As crianças estavam crescendo e tínhamos momentos maravilhosos em família.
+
+Contudo, o ritmo era implacável. Um ministério em ascensão significava mais trabalho a fazer para que continuássemos crescendo e alcançando mais pessoas. Nós podíamos contratar funcionários para fazer o trabalho, então não é como se eu estivesse sobrecarregado. Havia quem providenciasse os dois ônibus e os dois caminhões que usávamos na turnê. Havia gente para descarregar os caminhões e arrumar todo o equipamento em cada evento. Não era mais como nos dias de van+trailer em que eu me desdobrava para dirigir, descarregar, me apresentar, carregar tudo novamente e voltar para a estrada.
+
+Então eu não estava necessariamente trabalhando mais nesse aspecto, mas eu era responsável por mais coisas. Meu nome tornou-se uma marca (eu tenho sentimentos confusos sobre essa parte da nossa indústria, sem dúvida). Os dois ônibus e os dois caminhões que percorriam as cidades e todas as pessoas envolvidas na turnê faziam parte do show de Jeremy Camp. Se um membro da equipe fosse rude com alguém, adivinhe só? Ele ficava sem nome quando a pessoa ofendida dizia:
+
+— Aquele cara do Jeremy Camp com certeza foi rude comigo. Eu era o mais prudente possível ao fazer as contratações e tinha boas pessoas trabalhando para mim. Mas pessoas boas podem cometer erros, e há erros que estão além do controle. Às vezes as coisas simplesmente acontecem. Quanto maior nos tornávamos, mais peças eram adicionadas, e ter mais peças significava mais oportunidades para erros. O crescimento pode criar um círculo vicioso.
+
+Mas o ponto principal era que, se algo desse errado, a consequência seria minha, estaria em meu nome.
+
+Essa carga pesou tanto em meus ombros que comecei a tentar ficar à frente de qualquer problema que pudesse surgir. Quando nós tínhamos problemas — e enfatizo “nós” pois tínhamos pessoas cuja função era resolver esses problemas — eu tentava buscar uma maneira de resolvê-los. Então, eu queria saber quantos shows estavam sendo agendados, ou como estavam as vendas dos CDs, ou com qual frequência as canções eram tocadas nas rádios.
+
+Isso não quer dizer que essas coisas não eram importantes e eu deveria ter simplesmente delegado tudo aos que trabalhavam comigo. Não sou preguiçoso. Mas estava indo longe demais na direção oposta, assumindo coisas demais e colocando-me em lugares onde, francamente, eu não pertencia.
+
+Essa sobrecarga é o que fez as coisas se tornarem muito desgastantes para o meu próprio bem (e, talvez, para o bem daqueles que trabalhavam comigo).
+
+Aqueles que já tiveram períodos em que estavam envolvidos em mais tarefas do que o tempo permitia provavelmente estão pensando: “Aham, sei onde isso vai dar”.
+
+A ARMADILHA
+
+Enquanto eu me dedicava à situações em que não precisava estar, meu tempo particular com Deus foi prejudicado. Eu ainda passava um tempo com Sua Palavra e orava, e ainda queria ter um ministério eficaz e ser uma testemunha forte por Ele. Porém, meu tempo com Ele era inconsistente. De certa forma, eu estava passando menos tempo com Ele para que pudesse fazer mais coisas por Ele. Essa é uma armadilha potencialmente mortal. Por exemplo, percebi que o crescimento do ministério trouxe mais decisões que precisavam ser feitas rapidamente. No passado eu teria ficado sozinho, colocado o rosto no chão e orado pela decisão, mas agora eu tinha de apressar as decisões. “Não! Sem tempo para orar primeiro”, eu pensava erroneamente. Descobri em meu negócio que raramente decisões rápidas são boas.
+
+Eu estava assumindo controle demais. Embora agora eu não tenha certeza de quão no controle estava de verdade. Está mais para um falso senso de controle.
+
+Permiti a mim mesmo ficar muito ocupado tentando o que achava ser a melhor maneira de fazer a obra do Senhor. Falhei em não colocar o Senhor acima do trabalho. Como resultado, comecei a me sentir esgotado. Queria sair da rotina. Quando não estava na estrada, estava gravando. Quando não estava gravando, estava escrevendo canções para o próximo álbum. Se não estava fazendo isso, estava dando entrevistas para promover um álbum ou uma turnê. Tantas coisas diferentes me puxavam para tantas direções diferentes! “Não posso fazer mais nada”, pensei.
+
+Nesse ponto, quero deixar claro que não havia nada falso em nosso ministério, pois sempre fiz o melhor que podia para garantir que todos em nossa equipe tivessem a integridade guiando nossas decisões. Em vez disso, eu diria que nosso ministério se perdeu, pois eu estava tentando guiá-lo mais do que deixando Deus guiá-lo. Nós não pegávamos estrada e o dinheiro das pessoas em troca de meramente fazer um bom show para elas. Todo “artista” tem noites em que não se sente tão bem quanto o normal por causa de um resfriado, uma dor de cabeça, alergias, uma garganta inflamada, um dia ruim, e assim por diante. Então não estou dizendo que não tive noites assim. Mas mesmo quando estava mal, levava muito a sério o aspecto de louvor de cada evento. Meu objetivo manteve-se inalterado: glorificar a Deus.
+
+E Ele continuava a trabalhar em nossos eventos, mesmo com as limitações que eu Lhe impunha do lado comercial.
+
+Na verdade, eu diria que, como glorificar a Deus continuou a ser nosso propósito, esse objetivo somou-se ao fardo que eu estava obrigando-me a carregar. A vida espiritual das pessoas estava em jogo, e eu sabia disso. O sustento daqueles que viajavam conosco também estava em jogo. Como Jeremy Camp, precisava estimular a todos que estavam na estrada comigo, mas estava cansado e sobrecarregado, então não tinha muito a oferecer. Por não me sentir encorajado, tive dificuldade para incentivá-los.
+
+Eu queria sair da música, pelo menos do jeito que estava fazendo. Comecei a considerar se deveria sair da indústria musical e me tornar líder de culto em uma igreja. Ou talvez um pastor da juventude.
+
+Sem saber que direção tomar, continuei com uma sensação de desconforto. Esse desconforto, logo entendi, era a luz acesa do meu “mecanismo de verificação” espiritual e eu estava ignorando-a, pois estava ocupado demais para parar e fazer a verificação.
+
+Certo dia, um amigo pastor, por quem tinha um grande respeito, me puxou de lado e perguntou:
+
+— Jeremy, quem está comandando esse navio, é o Senhor ou você?
+
+Sua pergunta me atingiu bem no meio dos olhos!
+
+Fui abençoado em ter muitas pessoas em minha vida que me falavam a verdade com amor, então estava acostumado com esse tipo de pergunta. Mas não podia pensar em ninguém que tivesse sido tão direto assim referente à minha carreira. Não fiquei na defensiva com meu amigo, pois aprecio um consultor de confiança firme o suficiente para ser tão franco comigo.
+
+Contudo, sua pergunta me despedaçou.
+
+Não precisava pensar muito para reconhecer que eu estivera comandando o navio. Tentei determinar a direção quando tudo foi ficando maior e melhor, trabalhando noite e dia para tentar controlar os resultados.
+
+Eu andava perguntando ao Senhor o que Ele queria que eu fizesse em seguida, para onde Ele queria que fosse o ministério. Procurei ser excelente em tudo que fizemos para que Ele fosse glorificado. Mas o que parei de fazer foi esperar o Senhor liderar e confirmar antes que eu seguisse adiante. Não fui deliberadamente desobediente, mas assumia o controle e saía na frente de Deus.
+
+Meu pai costumava dizer:
+
+— Podemos ficar tão ocupados fazendo a obra do Senhor que nos esquecemos do Senhor da obra.
+
+Esse era eu.
+
+Eu me vi recordando como as coisas estavam crescendo. Houve momentos em que nossa família não tinha nada, e seguir o exemplo de nossos pais nos ajudou a ficar satisfeitos. Então, eu contrastava essas lembranças com quão insatisfeito eu me tornara como resultado de ter tanto. Quero dizer, eu era bem-sucedido. O Senhor me impulsionou para a indústria da música tão puramente, com gratidão, alegria e humildade. Eu ainda era grato, mas, honestamente, cheguei a um ponto pela primeira vez na minha vida no qual pensei (erroneamente) que não precisava do Senhor para guiar-me.
+
+Tenho vergonha de admitir que, embora não tenha chegado a proferir essas palavras, a atitude por trás das minhas orações tornara-se de “Obrigado, Senhor, mas eu assumo a partir daqui”.
+
+Como resultado, a alegria diminuiu. O inimigo que chega para “roubar, matar e destruir” havia deixado uma armadilha bem escondida. Eu servia ao Senhor e não há dúvidas de que Ele participava do que fazíamos; resultados visíveis comprovavam essa crença. Mas o sucesso — as vendas, as canções no topo das paradas, os prêmios — camuflavam a armadilha para a qual eu estava seguindo, até que uma pessoa me amou o suficiente para me confrontar com uma pergunta que mudou meu curso para melhor.
+
+DESISTINDO DO LEME
+
+Através da pergunta simples mas pontual do meu amigo, o Espírito Santo me condenou sobre a necessidade de afastar-me do leme do navio.
+
+Dediquei-me mais aos estudos bíblicos e no foco às escrituras. Comprometi-me a mais tempo de oração séria, e estou falando do tipo de oração com o rosto no chão. Também procurei pastores e amigos que eu sabia que poderiam e iriam me dar conselhos piedosos, mesmo quando eu não pedisse especificamente por isso.
+
+Como banda, continuamos a estudar a Bíblia juntos e orar antes de subir no palco, mas isso se tornou mais uma rotina do que necessariamente deveria ser. Comprometemo-nos a realmente escavar a Palavra em nossos estudos bíblicos.
+
+Tudo isso levou a um sentido mais profundo da presença do Senhor em minha vida. Quando estamos mais profundamente conscientes da presença de Deus, nos tornamos mais atentos às maneiras diferentes como Ele pode falar conosco. Uma dessas maneiras levou a um momento-chave de revelação monumental em minha vida.
+
+Eu estava dando uma entrevista por telefone, compartilhando a história de Melissa e meu testemunho. Recontei a conversa quando ela dissera que, se apenas uma pessoa aceitasse Deus por causa de seu câncer, todo seu sofrimento valeria a pena. Assim que disse aquilo, fui atingido por muitas pessoas — e eu sabia que havia muitas mais além dessas — que aceitaram Jesus como seu Salvador ou aprofundaram sua relação com Ele por causa da inspiração de Melissa.
+
+Não me lembro do restante da entrevista, mas me lembro de desligar o telefone depois e me sentir como se uma represa tivesse acabado de romper dentro de mim. Não teria conseguido parar de chorar mesmo se quisesse.
+
+Era como se o Espírito Santo estivesse me dizendo: Lembre-se por que você começou a fazer isso. Lembre-se para o que serve. Lembre-se daquela “uma pessoa convertida”.
+
+— Senhor, quero que meu foco fique em Você — orei. — Quero que seja meu primeiro amor novamente. Quero ser guiado por Você para minha próxima estação. Você está no controle, não eu!
+
+Não tinha experimentado um momento como esse desde o dia em que dirigi pela montanha após o retiro de três dias no chalé. O Senhor me transcendeu em larga escala e foi ótimo. Mais tarde naquele dia, escrevi a canção “Beyond measure” [“Além da medida”] como expressão do meu desejo de me submeter à liderança e ao senhorio de Jesus em todos os aspectos da minha vida — como homem, marido, pai e artista.
+
+The fog has finally cleared to see the beautiful life You’ve given me To feel the breeze of my newborn’s gentle breath
+
+With one to walk hand in hand
+
+To share this life that You have planned It’s like a storybook with dreams
+
+That are meant to see every next step is an extraordinary scene
+
+I know that I’ve been given more than beyond measure I come alive when I see beyond my fears
+
+I know that I’ve been given more than earthly treasure I come alive when I’ve broken down and given You control
+
+I’ve faced a great tragedy but have seen the works of what You bring A display of faith that You give
+
+I don’t know if I will ever understand
+
+The depth of what it is You’ve done inside
+
+But I know that I won’t find any worth apart from You
+
+Everything that I have has been given so unselfishly And shown that even when I don’t deserve You always show the fullness of Your love.
+
+A primeira linha do refrão, “Sei que me deu mais do que além da medida”, representou a minha valorização renovada pelas bênçãos de Deus. Fui abençoado mais do que além da medida. Fui abençoado com viagens para cantar minhas canções, liderar cultos e testemunhar o Senhor tocando vidas através do nosso ministério. Fui abençoado por voltar para casa para uma linda esposa e uma garotinha incrível (isso foi antes de Arie nascer) e ver as necessidades da minha família serem sanadas. Não entrei no ministério de música para ganhar muito dinheiro, e meu propósito não mudou mesmo com o sucesso. Contudo, o Senhor começou a prover-me algumas dessas bênçãos extras.
+
+A última linha do refrão resume onde eu estava naquele ponto da minha vida: “Vivo quando estou esgotado e Te dou o controle”.
+
+As coisas periféricas — a quantidade de shows, as vendas, a frequência nas rádios — tornaram-se muito importantes para mim, e eu estava chegando a uma importante conclusão: “Tudo que realmente importa é Deus”.
+
+Eu simplesmente precisava desistir da ideia de que estava no controle.
+
+Nós queremos o controle, mas Deus quer nosso coração. Sua Palavra deixa isso claro. Apenas dois exemplos:
+
+Lucas 10:27: “E, respondendo ele, disse: Amarás ao Senhor teu Deus de todo o teu coração, e de toda a tua alma, e de todas as tuas forças, e de todo o teu entendimento, e ao teu próximo como a ti mesmo”.
+
+Mateus 6:33: “Mas, buscai primeiro o reino de Deus, e a sua justiça, e todas estas coisas vos serão acrescentadas”.
+
+Tive muita experiência em ter Deus como meu tudo. Ele era tudo que minha família tinha quando meus pais não tinham dinheiro e precisávamos fazer compras. Ele era tudo que eu tinha na Maranatha Christian School quando paguei meus estudos com uma escova de limpeza e um aspirador de pó. Ele era tudo que eu tinha na Califórnia quando morei com Marge, a avó do meu amigo, dependia de caronas e pegava emprestado violões para tocar nas igrejas. Ele era tudo que eu tinha nos momentos sombrios após Melissa partir para sua vida eterna.
+
+Agora que eu chegara a um nível de sucesso pelo qual podia ser autossuficiente, Deus ainda queria ser meu tudo.
+
+Quando finalmente fui forçado a admitir que estivera comandando o navio e depois decidi devolver o leme a Deus, Ele me lembrou: Quero que Me ame e descanse no Meu amor por você. Eu cuidarei do restante. Estou no controle de qualquer jeito, não você. Sua ilusão de poder é apenas isso, uma ilusão, e precisa ser transcendida.
+
+Que alívio!$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 20;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 18 - Haverá um dia$t$, 20,
+$conteudo$Com minhas prioridades realinhadas, Deus continuou a derramar Suas bênçãos e provar Sua lealdade a mim todos os dias.
+
+Arie chegou ao mundo em 2006. Pensei que todo meu coração tinha derretido quando nossa primeira filha, Bella, nasceu, mas de alguma forma Arie encontrou um bom pedaço dele para derreter!
+
+Fui questionado como ter filhos afetou minha música. Acredito que aqueles que perguntam esperam — talvez até criem expectativas — por uma resposta profunda. Normalmente eu os decepciono, pois mesmo hoje não consigo olhar para trás e ver um impacto direto na música (embora ser pai certamente me deu mais histórias engraçadas para contar durante os shows).
+
+Ter duas crianças, no entanto, deu-me uma compreensão muito maior sobre o coração do Pai Celestial. Com Bella e Arie crescendo e ficando mais ativas, elas se tornaram lembretes rastejantes e depois caminhantes do amor e da graça de Deus. Como pai, aprendi mais sobre meu Pai.
+
+Nosso ministério de música também continuou a ser abençoado. Fiquei agradecido pela gravadora BEC oferecer-me um segundo contrato e assinei com prazer. Além disso, tive o privilégio e a honra distinta de ser coprodutor do álbum solo de estreia da minha pessoa favorita no mundo: Adrienne Camp.
+
+Como não deixei de fazer turnês, continuei compartilhando a história de Melissa e minha jornada para tornar-me apto a caminhar pela fé. E percebi uma coisa engraçada: a publicidade vinha em ondas. Depois de aparecer no cenário musical, ter algumas músicas conhecidas e ganhar alguns prêmios, fui convidado várias vezes a falar sobre minha história em entrevistas nos círculos de música cristã. Então havia muita gente que eu conhecia ou que me mandava e-mails querendo falar sobre minha história. Na maior parte do tempo, ela se tornou tudo sobre o que todo mundo queria falar. Depois entrei naquele período (sem sucesso) de tentar comandar o navio.
+
+Quando emergi desse período sem ter afundado o navio antes de passar o comando para Deus, seguiu-se outra onda de atenção. Muito disso veio em entrevistas para a mídia secular e maiores meios de comunicação cristãos com mais audiência geral do que especificamente musical. De repente, comecei a conhecer fãs que diziam nunca ter ouvido minha história.
+
+Permita-me dizer que canções no topo das paradas e prêmios não são meu objetivo principal de forma nenhuma. Meu objetivo principal é que Deus seja glorificado através da minha música.
+
+Dito isto, há duas perspectivas a assumir quando se escreve canções famosas e se ganha prêmios.
+
+A primeira, com base em um ponto de vista puramente musical: eles são legais de receber. Embora não sejam meu objetivo principal, eu me rendo! Sou músico. Somos pessoas criativas em um negócio subjetivo, e nosso trabalho é tanto elogiado quanto criticado — algumas vezes ao mesmo tempo. Recebi uma bênção de Deus. O pouco treino com o violão que tive quando comecei é prova disso. Sou abençoado, e é minha responsabilidade fazer o melhor que posso com essa bênção que Ele me deu.
+
+Estando em um negócio subjetivo, eu seria bobo de negar todos os prêmios e números. Se os fãs compram meus CDs, fazem download das minhas canções, ligam para as rádios pedindo minha música e votam em mim para ganhar um prêmio, seria falso da minha parte dizer que nada disso importa. É importante, e sou grato por todo o apoio.
+
+A segunda perspectiva é que canções famosas e prêmios levam a uma plataforma maior. Deus colocou canções em meu coração e me deu um testemunho com um propósito: compartilhá-lo com as pessoas que precisam de esperança e apoio. Por que eu não gostaria de fazer o que é necessário para poder compartilhá-lo com mais pessoas?
+
+No entanto, ainda assim, houve um momento em que me perguntei se não chegara a hora de parar de compartilhar a minha história com Melissa.
+
+Uso muito a palavra história para descrever o que eu compartilhava no palco. Contudo, na realidade, história é uma descrição bem fraca. O que eu compartilhava era uma parte significante da minha vida — e dolorosa também. Deus trabalhou uma cura imensa em mim que até tornou possível eu subir no palco e contar minha história sem desabar completamente. Mas ainda havia pontos frágeis que eram cutucados e incitados quando eu compartilhava. A dor nunca iria embora. Eu não esperava por isso. E não queria que fosse. Isso pode soar estranho, mas não queria contar a história sem sentir dor. Não queria que se tornasse apenas uma história.
+
+Além disso, queria ser sensível com Adrienne. Desde o primeiro dia, ela me deu um apoio enorme. Quando lhe contei que estava cogitando se deveria omitir a história temporariamente dos shows, ela de imediato me encorajou a continuar compartilhando — às vezes até repetindo as palavras de Melissa: “Se apenas uma pessoa...”. Adrienne dizia que ainda amava ouvir-me compartilhar sobre o coração de Melissa e seu desejo de se entregar completamente ao Senhor.
+
+— Deus usou Melissa para tocar meu coração e muitos outros, e isso é parte de quem você é — Adrienne me disse uma vez. — Não pense nem por um minuto que vou atrapalhar isso. Sei como toca as pessoas, já vi o impacto. Isso é muito importante.
+
+Adrienne é uma esposa incrível e, como ela costuma fazer, acertou em cheio ao dizer “Isso é muito importante”. Certa noite, no ônibus, quando estava orando especificamente sobre se deveria continuar contando a história de Melissa, o Senhor me levou a uma ótima passagem que diz que Deus “nos consola em toda a nossa tribulação, para que também possamos consolar os que estiverem em alguma tribulação, com a consolação com que nós mesmos somos consolados por Deus”.
+
+Eu tive minha tribulação e recebi o consolo de Deus. Por isso, fui colocado em uma posição para liderar as pessoas passando por suas próprias tribulações à mesma consolação.
+
+Melissa viu a pessoa, a enfermeira, pela qual tinha esperado e orado que recebesse Cristo por causa de seu câncer. Eu tive a bênção de ver e ouvir de outras milhares.
+
+Então, continuo a compartilhar a história, pois sei que muitas pessoas magoadas necessitam de esperança e apoio para lidar com o sofrimento ou a morte de um ente querido. Eu fui uma delas. Em alguns dias, ainda sou.
+
+Para ser franco, não há nada nesse mundo em que eu escolheria depositar minha esperança. Eu tentei, e conversei com muitos outros que também tentaram. Todos concordamos: depositar a esperança em qualquer coisa desse mundo não funciona.
+
+Passei por momentos difíceis que me deixaram desesperado, e gostaria de nunca mais experimentá-los. Pessoas sem esperança querem desistir, pois o sofrimento e a dor tornam-se demasiados para aguentar.
+
+As conversas com essas pessoas nas mesas de merchandising após os shows e os e-mails e cartas que me mandam são tão numerosos que eu nem tentaria estimar a quantidade.
+
+— Jeremy, suas canções me trouxeram esperança e coragem — eles me dizem.
+
+Embora seja ótimo ouvir isso, a verdade é que sua esperança e coragem vêm do Senhor. Minhas canções nada mais são do que ferramentas pelas quais Ele escolheu tocar-lhes o coração.
+
+ANSIOSO PARA CHEGAR EM CASA
+
+Em mais de dez anos de estrada, tive minha cota de estadias em hotéis. Também me hospedei em uma ampla variedade de tipos de hotéis. Alguns eram tão ruins que eu nem gostaria de passar na frente de novo. Outros me mimaram com suas amenidades e serviço de primeira classe. Independentemente do lugar, sabe o que eu mais gosto de fazer nos hotéis? O check out! Sobretudo se estou saindo para voltar para casa.
+
+Posso me hospedar em hotéis onde o encarregado leva minhas malas até o quarto por mim, o serviço de quarto leva refeições ótimas e a camareira arruma a cama e limpa o quarto para mim. Mas, ainda assim, mal posso esperar para deixar tudo para trás e voltar para minha casa, carregar minhas próprias malas para onde minha família está me esperando, assar eu mesmo hambúrgueres enormes na churrasqueira e depois, talvez — para não me esquecer daquele ano no ensino médio —, até passar um aspirador de pó no chão e limpar algum cômodo.
+
+Por quê? O hotel pode ser ótimo, mas não é minha casa. Nada mais é que um lugar temporário para ficar.
+
+Tendemos a esquecer a realidade de que a Terra não é nosso verdadeiro lar, é apenas um lugar temporário para ficar. O Céu é meu lar, e mal posso esperar para fazer o check out desse mundo velho e partir para lá. Penso nas palavras do meu amigo Jean-Luc no enterro de Melissa:
+
+— Vamos acelerar o dia!
+
+Em meio às nossas provações, dor e sofrimento, precisamos ter uma mente celestial.
+
+Minha esperança e sua esperança — nossa esperança — estão no Céu!
+
+Por experiência própria, posso dizer que Apocalipse 21:4 oferece grande conforto àqueles que sofrem. Diz que, não importa quão difíceis se tornem nossas circunstâncias, haverá um dia pelo qual vale a pena esperar: “E Deus limpará de seus olhos toda a lágrima; e não haverá mais morte, nem pranto, nem clamor, nem dor; porque já as primeiras coisas são passadas”.
+
+Em Romanos 8:18, Paulo deu perspectiva eterna às dificuldades quando escreveu: “Porque para mim tenho por certo que as aflições deste tempo presente não são para comparar com a glória que em nós há de ser revelada”.
+
+Vou lhe contar, eu sofri. Sofri até chegar ao ponto de pensar que não poderia piorar, e piorou. Sofri mais do que pensei que poderia sofrer e sobrevivi. Mas na medida em que o pêndulo balançou para o lado da dor em minha vida, a Palavra de Deus promete que haverá um dia em que o pêndulo balançará ainda mais para o lado da glória.
+
+Minha esperança está nessas promessas de glória!
+
+Inspirado por esses trechos de Apocalipse e Romanos, escrevi a canção “There will be a day” [“Haverá um dia”]. Quando gravamos a música, levamos um coral para cantar o refrão e a ponte. Uma mulher do coral estava sofrendo com uma dor crônica. Enquanto cantava sobre o dia sem mais sofrimento e dor, ela fechou os olhos e ergueu as mãos em louvor, abraçando a esperança de que um dia iria para o Céu, onde não mais sofreria com a dor que estava experimentando na Terra.
+
+Essa é uma esperança que vale a pena ter, e como alguém que a agarrou com todas as forças, é uma esperança que vale a pena compartilhar, pois sei que “haverá um dia”:
+
+I try to hold on to this world With everything I have
+
+But I feel the weight of what it brings And the hurt that tries to grab
+
+The many trials that seem to never end His word declares this truth
+
+That we will enter in this rest With wonders anew
+
+But I hold on to this hope
+
+And the promise that He brings
+
+That there will be a place with no more suffering There will be a day with no more tears
+
+No more pain and no more fears There will be a day
+
+When the burdens of this place Will be no more
+
+We’ll see Jesus face-to-face
+
+But until that day
+
+We’ll hold onto You always
+
+I know the journey seems so long You feel you’re walking on your own But there has never been a step
+
+Where you’ve walked out all alone
+
+Troubled soul, don’t lose your heart ’Cause joy and peace He brings And the beauty that’s in store
+
+Outweighs the hurt of life’s sting.
+
+But I hold on to this hope
+
+And the promise that He brings
+
+That there will be a place with no more suffering There will be a day with no more tears
+
+No more pain and no more fears There will be a day
+
+When the burdens of this place Will be no more
+
+We’ll see Jesus face-to-face
+
+But until that day
+
+We’ll hold onto You always
+
+I can’t wait until that day
+
+When the very one I’ve lived for always Will wipe away the sorrow that I’ve faced
+
+To touch the scars that rescued me From a life of shame and misery This is why, this is why I sing
+
+There will be a day with no more tears No more pain and no more fears
+
+There will be a day
+
+When the burdens of this place Will be no more
+
+We’ll see Jesus face-to-face
+
+There will be a day with no more tears No more pain and no more fears
+
+There will be a day
+
+When the burdens of this place Will be no more
+
+We’ll see Jesus face-to-face
+
+There will be a day
+
+He’ll wipe away the tears He’ll wipe away the tears He’ll wipe away the tears There will be a day.
+
+DOMINADO POR AMOR E PAZ
+
+No fim da primavera de 2009, descobrimos que Adrienne estava grávida do nosso terceiro filho. Em agosto, quando ela foi à consulta de catorze semanas, o médico não encontrou o batimento cardíaco do bebê. Ele disse que não era tão incomum naquele estágio da gravidez. Quando Adrienne foi encaminhada para um ultrassom logo em seguida, o médico disse que o coração do bebê parara de bater uma semana antes.
+
+Não tomamos nada como garantido com a gravidez, mas quando Adrienne entrou no segundo trimestre, respiramos com mais tranquilidade por saber que as chances de um aborto espontâneo eram menores naquele estágio. Ficamos arrasados com o relatório do médico.
+
+Muitas vezes, observei Adrienne colocar a mão na barriga crescendo e orar para o pequenino dentro dela. Conversamos sobre os planos de preparar o quarto do bebê em casa e estávamos ansiosos para descobrir se teríamos uma terceira filha ou o primeiro filho. Bella e Arie estavam animadas para ter um irmão ou irmã.
+
+Precisamos sentir mais fortemente a presença de Deus e, como sempre, Ele estava lá por nós. Quando Adrienne escreveu sobre o aborto em nosso blog, disse: “Deus nos dominou com Seu amor e paz. Sabemos que Ele é fiel e não duvidamos nem por um minuto de que Ele esteja no controle. Somos muito gratos pela esperança que depositamos em Cristo”.
+
+Um dia antes de descobrirmos o aborto, Adrienne recebeu uma ligação de uma amiga pedindo orações pelo filho do pastor local, que se envolvera em um acidente de carro e estava com a vida por um fio (ele acabou indo para os braços de Jesus). Enquanto conversavam, a amiga de Adrienne disse que esperava que Deus nunca testasse sua fé daquele jeito.
+
+Adrienne ficou pensando naquela conversa, sobretudo a última parte, pelo resto do dia. Em sua oração da manhã seguinte, ela ajoelhou-se e disse ao Senhor que nunca colocaria limitações no que Ele poderia fazer em sua vida e que o que quer que Ele quisesse que ela enfrentasse ela enfrentaria de bom grado por Ele.
+
+Mais tarde naquela manhã, o médico disse que tínhamos perdido nosso bebê.
+
+Quando informamos meus pais sobre o aborto, Adrienne contou à minha mãe sobre o que tinha orado naquela manhã.
+
+— Adrienne, o Senhor está fortalecendo seu testemunho — disse minha mãe.
+
+Na manhã seguinte ao ultrassom, lemos a Bíblia juntos e focamos em todas as coisas que Deus fizera em nossa vida e em tudo que Ele estava fazendo naquele momento. O Salmos 16 foi escrito em um momento quando a vida de Davi aparentemente estava em perigo. No primeiro versículo, Davi declara que se refugiaria em Deus. Nos versículos restantes, diante das circunstâncias inquietantes em torno dele, Davi falou com convicção sobre a confiança que tinha em Deus. Aquela foi uma passagem sobretudo reconfortante para compartilharmos.
+
+E, como sempre, minha mãe estava certa. O testemunho de Adrienne fora fortalecido. Com o Twitter, o blog e afins, nós estivéramos animados publicamente com a gravidez. Nosso tempo de sofrimento tornou-se igualmente público. Porém, assim como o Senhor havia feito comigo a respeito de Melissa, Ele transformou as dificuldades em oportunidades. Adrienne pôde alcançar outras mulheres que haviam sofrido com aborto e falar-lhes sobre a bondade do Senhor em todas as circunstâncias.
+
+Mais tarde, Adrienne disse que saiu daquela provação dolorosa com intuições mais profundas sobre minha perda de Melissa. Anteriormente, Adrienne tivera compaixão por mim. Ela dizia coisas como:
+
+— Nossa, não posso imaginar como é passar por isso.
+
+Ela não tentou comparar o aborto à morte de Melissa, mas sofreu por perder um filho que amávamos. Enquanto sofríamos juntos, ela me disse:
+
+— Tenho ainda mais compaixão por você e realmente posso entender como se sentiu.
+
+A perda do nosso bebê nos fez apreciar ainda mais termos duas filhas saudáveis que iluminavam nossos dias, mas também tocou em alguns dos medos que eu tivera antes sobre uma das meninas morrerem.
+
+“Talvez nós devamos ter apenas dois filhos, por isso perdemos o bebê”, pensei. Lutei por um tempo contra a ideia de querer tentar ter outro bebê. Não queria passar por nada como o aborto de novo. Não queria arriscar passar por uma mágoa dessas novamente.
+
+O maior obstáculo que enfrentei foi permitir-me ser vulnerável o suficiente para confiar em Deus mais uma vez.
+
+Depois de um tempo, contudo, desenvolvi uma verdadeira paz sobre tentar ter outro bebê, sabendo que não importava o que acontecesse, Deus tinha um plano para nossa família e sabia exatamente o que estava fazendo.
+
+No fim de 2010, descobrimos que Adrienne estava grávida.
+
+Ficamos animados e, embora mais cautelosos sobre o momento de tornar a novidade pública, tínhamos completa confiança em Deus sobre o bem-estar do nosso bebê.
+
+Como tínhamos duas meninas, fiz a pergunta “Você quer menino ou menina?” muitas vezes. Eu estava tranquilo se fosse outra menina, pois Bella e Arie são muito doces e divertidas. Mas quando o médico nos disse que se tratava de um menino, fiquei radiante.
+
+— Ele vai fazer exercícios e jogar futebol! — falei.
+
+No dia 17 de agosto de 2011, nosso garotinho chegou ao mundo. Nós o nomeamos Egan Thomas. Egan significa “zelo pela casa do Senhor” e “jovem guerreiro”. Minha mentalidade em relação à Egan desde seu nascimento foi: “Torná-lo um guerreiro para Você, Senhor! Que ele nunca olhe para os lados, mas sempre nos Seus olhos!”.
+
+Percebi algo diferente sobre ter um menino depois de ter duas meninas. Quero ser um homem de Deus para elas, mas para Egan quero ser um exemplo de homem de Deus a quem ele possa seguir. Sei que ele observará minha liderança e como me relaciono com o Senhor. Quero que ele veja seu pai como sendo apaixonado e rendido a Cristo, intransigente em sua fé. E então eu oro para que esse seja o tipo de homem que Egan se tornará.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 21;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 19 - Arriscando tudo pelo Evangelho$t$, 21,
+$conteudo$Sempre tentei ser um bom servo da história que Deus me deu. Ele ainda escreve através de mim. Ser um bom servo inclui confiar e seguir Seu tempo.
+
+Parte do grande interesse que minha história atraía foram os inúmeros pedidos para transformá-la em livro ou filme. Compartilhei minha história nos shows, mas não acreditava que ela fosse completa o suficiente para ser colocada em um desses formatos. Deus ainda trabalhava em minha cura, na restauração e nos novos começos com Adrienne e nossos filhos.
+
+Quando Adrienne estava grávida de Egan, comecei a sentir que havia chegado a hora de dar o próximo passo em minha história. Em 2011, lancei a primeira versão deste livro. No ano seguinte, trabalhei em uma versão revista e expandida com uma estratégia de divulgação diferente que disponibilizaria a história a mais pessoas. O livro surgiu mais de uma década após a morte de Melissa, mas subestimei a dificuldade de reviver aquela parte da minha vida durante o processo de escrita. Reviver é uma descrição precisa. Ao conversar sobre a história com as pessoas que me ajudaram a tornar o livro uma realidade, não somente fui requisitado a recontar detalhes sobre os quais não pensava havia muito tempo como também precisei descrever cenas que tentara esquecer. Aquilo trouxe de volta uma onda de dor e tristeza com a qual tive de lidar.
+
+Como consequência do lançamento do livro e de ouvir das pessoas que leram minha história, percebi que o nível no qual estava me conectando com as pessoas estava diretamente relacionado à profundidade que eu desejei no processo de escrita. Aprendi uma lição valiosa sobre o poder dos nossos testemunhos: embora as circunstâncias das histórias das pessoas possam variar enormemente, quanto mais fundo nos permitirmos chegar em nossos sentimentos e emoções com os outros, mais solo em comum descobrimos. Lá, podemos nos relacionar uns com os outros, ministrar uns para os outros e experimentar a cura de Deus juntos em níveis mais profundos. Em outras palavras, eu não teria encontrado um enorme número de pessoas que perderam seus cônjuges para o câncer três meses e meio após o casamento. Minha história consiste de circunstâncias específicas que talvez poucas pessoas experimentaram e foram forçadas a superar. Mas ao escavar esses temas de medo e confiança que lutei após a morte de Melissa, conecto-me com pessoas que podem se relacionar com esses problemas, independentemente das circunstâncias de suas histórias, e, espero, ajudo-as a encontrar o que precisei aceitar em minha vida como um novo normal.
+
+Escrever as primeiras versões deste livro não foi um processo fácil, mas se provou válido. O desejo de ser um bom servo do que Deus fizera em minha vida continuou depois de escrever o livro. Logo após seu lançamento, meu empresário, Matt Balm, recebeu uma ligação de Kevin Downes, ator, escritor, produtor e diretor ativo na indústria de filmes cristãos.
+
+Kevin tinha interpretado recentemente Shane, um dos personagens principais em Corajosos: a honra começa em casa. Filmes religiosos estavam tendo um aumento de popularidade na época, e Kevin queria fazer um filme baseado em meu livro. Demos os primeiros passos para encontrar um diretor e um roteirista para começar o roteiro, mas nada que fizemos parecia certo. Eu não queria forçar as coisas, pois, fora do tempo de Deus, um filme não teria sido tão eficaz quanto poderia ser. Deixamos tudo de lado e eu meio que esqueci essa história.
+
+Na mesma época, recebi notícias de meu pastor da juventude em Indiana, Jed Gourley. Jed, sua cunhada Melanie e o marido dela, Paul, estavam servindo como missionários no Quirguistão, um país na fronteira oeste da China onde noventa por cento da população é muçulmana. Adrienne e eu começamos a participar do Speaking Louder Ministries em 2012, com o objetivo de levar a mensagem de Cristo a todos os cantos do mundo. Como parte de nosso ministério, fizemos parcerias com igrejas em países estrangeiros para realizar campanhas, como conferências de liderança e adoração, projetos de auxílio à saúde e eventos ao estilo de cruzada.
+
+Jed me enviou um e-mail perguntando se eu consideraria levar minha banda para tocar no Quirguistão. Fiz uma pesquisa e descobri que o país estava passando por conflitos civis e por uma ruptura com o Cristianismo, com missionários sendo banidos do território. Respondi que, considerando os problemas do Quirguistão, uma viagem para lá não me parecia uma boa ideia. Jed respondeu afavelmente, dizendo que, se eu não acreditava que Deus nos queria lá, ele entendia por completo minha relutância. Depois acrescentou que essa poderia ser a última oportunidade do tipo, pois o governo estava fechando as portas para campanhas e declarações ousadas sobre Cristianismo. Igrejas estavam sendo obrigadas a fechar.
+
+“Ah, meu Deus”, pensei quando li aquelas palavras. Eu conhecia muito bem o Jed e sabia que não estava tentando me pressionar. Senti o tom de desespero em seu e-mail. Comecei a pensar como poderia não ir para o Quirguistão. Sempre falei sobre entregar-se por completo a Deus e, considerando minha história, obviamente já passei por muita coisa em minha vida. E por todo o caminho, Deus se mostrou fiel. Meu álbum mais recente na época era Reckless [“Imprudente”]. A cançãotema era sobre imprudentemente seguir aonde Deus levasse.
+
+Adrienne e eu começamos a orar. Informei ao resto da banda sobre o convite e eles oraram. Todos nós sentimos por fim uma paz sobre ir para o Quirguistão, e Jed começou o processo para nos receber com tranquilidade no país.
+
+O Ministério da Religião do Quirguistão e o Comitê de Segurança Nacional nos rastrearam na internet. Aparentemente, os prêmios que ganhei impulsionaram nossa causa. Eles pediram para ler as letras das nossas músicas. Sabendo como elas falam sobre Jesus, pensei: “Gente, fiquem à vontade!”. Fomos aprovados para a viagem, mas nos disseram que só poderíamos tocar nossa música e não compartilhar nada sobre o Cristianismo.
+
+Passamos a monitorar as notícias que chegavam do Quirguistão e, não sei se isso foi devido à nossa maior cautela ou se era realmente o caso, mas os esforços anticristãos pareciam estar se intensificando. Todos nós estávamos em paz com a decisão da viagem, mas também prevíamos que seria no mínimo interessante.
+
+SENDO MAIS CAUTELOSO
+
+Agendamos uma semana de eventos de campanha e shows em Kiev, Ucrânia, a caminho do Quirguistão. Mil pessoas apareceram em um dos shows em Kiev e centenas entregaram sua vida a Cristo. Depois de testemunhar aquela resposta incrível, pegamos o avião para o Quirguistão cheios de animação. Mesmo que eu tenha perdido a voz depois dos shows consecutivos, Deus claramente estava orquestrando aquela viagem.
+
+Nós não sabíamos naquele momento, mas no dia em que chegamos à capital Bishkek, a CBN News publicou um artigo on-line intitulado “Fiéis secretos compartilham a fé sob fogo cruzado”. O artigo descrevia como fiéis do Quirguistão e de três países vizinhos estavam sendo obrigados a encontrar-se em segredo no país por causa das crescentes restrições à religião e ameaças de espancamento, prisão ou morte aos cristãos.
+
+Quando chegamos ao Quirguistão, fomos tomados por um sentimento completamente diferente. Ao sair do avião, a opressão era tão pesada que parecia que estávamos entrando em uma sala escura, sem ideia do que havia lá dentro e do que aconteceria depois. Parecia que meu peito estava sendo esmagado. Todos em nosso grupo de viagem, incluindo meu pai, tinham essa estranha sensação de “O que está acontecendo aqui?”. No hotel, senti uma resistência palpável para aquilo que nos levara até lá: proclamar Cristo. Na manhã seguinte, nosso grupo se reuniu e conversou sobre a óbvia necessidade de orar. Durante a oração, começamos a sentir novamente aquele sentimento de paz aflorar sobre a decisão de termos ido ao Quirguistão e nos sentimos seguros de que Deus nos guiaria e nos protegeria em nossa semana lá.
+
+Meu pai falou a um grupo de igrejas locais, citando exemplos de sua vida de como nosso sofrimento exalta a beleza e a glória de Deus. Ele leu Filipenses 1:12-14:
+
+E quero, irmãos, que saibais que as coisas que me aconteceram contribuíram para maior proveito do Evangelho; de maneira que as minhas prisões em Cristo foram manifestas por toda a guarda pretoriana, e por todos os demais lugares; e muitos dos irmãos no Senhor, tomando ânimo com as minhas prisões, ousam falar a palavra mais confiadamente, sem temor.
+
+A participação do meu pai na campanha foi sobretudo poderosa em uma cultura que mantém grande respeito por pais e idosos. E, ao sabermos mais sobre o medo de possível perseguição sob o qual líderes das igrejas locais viviam, aquela passagem que ele leu se mostrou ainda mais oportuna.
+
+Em um dos encontros de oração, li uma parte da Bíblia que Adrienne havia me enviado por e-mail:
+
+Então disse eu: Não me lembrarei dele, e não falarei mais no seu nome; mas isso foi no meu coração como fogo ardente, encerrado nos meus ossos; e estou fatigado de sofrer, e não posso mais. Porque ouvi a murmuração de muitos, terror de todos os lados: Denunciai, e o denunciaremos; todos os que têm paz comigo aguardam o meu manquejar, dizendo: Bem pode ser que se deixe persuadir; então prevaleceremos contra ele e nos vingaremos dele. Mas o Senhor está comigo como um valente terrível; por isso tropeçarão os meus perseguidores, e não prevalecerão; ficarão muito confundidos; porque não se houve prudentemente, terão uma confusão perpétua que nunca será esquecida. [...] Cantai ao Senhor, louvai ao Senhor; pois livrou a alma do necessitado da mão dos malfeitores. (Jeremias 20:9-11, 13)
+
+Tanto no Quirguistão quanto em casa, nós recebíamos a confirmação de que o Senhor nos protegeria.
+
+Meu primeiro evento grande para a campanha foi uma coletiva de imprensa. Obviamente, oficiais do Ministério da Religião estavam lá — também não tentaram esconder sua presença — para nos manter na linha e, sobretudo, controlar o que eu falava. Músicos norteamericanos visitando seu país era um acontecimento, e meu rosto estava por toda Bishkek em peças de divulgação. A antecipação da nossa chegada foi elevada por membros das igrejas locais, que traduziam nossas canções para o russo, não apenas para a população do Quirguistão, mas também para países vizinhos. As agências de notícias locais queriam saber por que estávamos no Quirguistão. Na verdade, fizeram-me esta pergunta de variadas formas durante a coletiva. Todas as vezes, respondi que estávamos lá para tocar nossa música em seu país e para seu povo.
+
+Uma jornalista mantinha os olhos fixos em mim. Ela perguntou com um toque reforçado:
+
+— Mas por que estão aqui?
+
+Eu teria amado responder: “Quero falar às pessoas sobre Jesus e convidá-las a aceitá-Lo como seu Senhor e Salvador”. Mas eu sabia que precisava ser cuidadoso com o que dizia, especialmente em relação ao nome de Jesus.
+
+— Passei por muita coisa em minha vida — falei e depois ofereci um resumo da minha história. — Deus me curou muitas vezes. Ele se mostrou fiel e me deu esperança em meio às adversidades. Quero compartilhar que há esperança, pois todos nós passamos por coisas difíceis e sofremos.
+
+Não sei dizer se essa resposta deixou a jornalista satisfeita, mas ela parou de me encarar.
+
+Dei mais entrevistas depois daquela conferência, e me senti mais corajoso a cada uma. Em uma delas, falei mais sobre meu testemunho e sobre como Jesus salvou minha vida.
+
+Nossa campanha incluiu uma noite de oração pela juventude das igrejas locais. Os jovens estavam no centro de uma batalha espiritual enorme no Quirguistão, com filosofias não cristãs saltando sobre eles, sem mencionar os altos índices de uso de drogas e álcool. Quando estava entrando no local, entreouvi Jed dizer a alguém:
+
+— Nós teremos de lidar com isso mais tarde. Parei e me virei para ele.
+
+— Lidar com o quê? O que está acontecendo? — Não se preocupe. Falamos sobre isso depois.
+
+Sou o tipo de pessoa que prefere ter esse tipo de conversa imediatamente e não depois.
+
+— Você já sabe como estou me sentindo, então pode me dizer. — Bem... — começou, relutante. — Temos amigos que estão vendo os noticiários e por toda parte estão dizendo para não comparecerem a esse evento do Jeremy Camp, pois é de natureza provocativa e vai agitar as pessoas.
+
+“Ah, ótimo. Então, o que estamos fazendo aqui?”, pensei.
+
+— O Ministério da Religião também entrou em contato — continuou Jed. — E eles podem cancelar o evento ou permitir que vocês toquem, desde que você apenas cante e não fale entre as canções.
+
+Se aquilo não era ameaça o suficiente, Jed me disse que eu precisava tomar cuidado com o que dizia pelo bem do pastor local, Pasha, pois o Ministério o apontava como responsável pelo evento.
+
+— Eles disseram que, se você disser alguma coisa errada, vão colocar Pasha na cadeia por um ano — avisou Jed.
+
+O medo começou a crescer dentro de mim. Tinha medo de dizer algo errado — e não estava claro o que poderia ser esse “algo errado” — e saber que eu poderia ser responsável pela prisão de Pasha era angustiante.
+
+Continuei no evento da juventude cheio de incertezas. Enquanto conduzíamos o culto, senti uma opressão pesada e sombria por toda a plateia. Além disso, medo — em mim e nos jovens.
+
+Quando nossa banda parou de tocar, uma antiga Miss Ucrânia deu seu testemunho. Ela fez um convite aos jovens para virem adiante e orarem, e dezenas deles foram. Enquanto orávamos, não pude deixar de pensar no que aconteceria àqueles jovens depois que saíssem do evento e retornassem à sua casa e vida.
+
+Comecei a cantar uma canção de louvor e, imediatamente, todo o medo deixou o lugar. O muro de resistência ruiu. Experimentei um senso irrefutável de “Podemos fazer isso. Através da força de Deus e Seu poder, podemos fazer isso, não importa o que aconteça”. Um peso parecia sair de cima de nós. Mais jovens foram à frente, onde todos louvaram a Deus no que tornou-se um momento lindo.
+
+Depois do evento, saímos para jantar. Olhei para Jed do outro lado da mesa e perguntei:
+
+— Eu deveria ficar de olho em minha volta?
+
+Jed não é minimamente dramático, mas respondeu: — Sim, sem dúvida, tenha cuidado.
+
+Então me lembrei de como meu rosto estava por toda Bishkek; não teria onde me esconder.
+
+Mais tarde, naquela noite, liguei para Adrienne. Quando ela atendeu, tudo o que eu disse foi:
+
+— Querida.
+
+— Oi, meu amor. Tudo bem? Comecei a gritar.
+
+— Qual é o problema?
+
+Descrevi minha noite para ela.
+
+— Não sei se esse evento vai acontecer — contei. — E se acontecer e eu disser algo errado, estão ameaçando colocar Pasha na cadeia por um ano.
+
+— O quê?!
+
+— Sim. Não sei o que vai acontecer. Quero voltar para casa. Estou pronto para voltar para casa.
+
+— Querido — disse ela com firmeza. — Você foi chamado para um momento como este. Você vai voltar para casa. Mas foi chamado para estar aí agora. Acredito nisso com todo o meu coração.
+
+As palavras de Adrienne abalaram meu mundo. Quando desligamos, falei:
+
+— Deus, não posso fazer isso. Sou fraco demais.
+
+Pude sentir Suas palavras em resposta: Perfeito. Agora está pronto para fazer.
+
+Entreguei o restante da viagem completamente nas mãos de Deus, admitindo que não conseguiria finalizar com minhas próprias forças. É isso aí, você não pode, senti Ele me dizer. Quero que diga apenas Minhas palavras.
+
+Obviamente, isso é o que queremos fazer, sempre. Porém, naquela situação, esse pensamento carregava um significado extra, como se o Senhor estivesse basicamente me dizendo: “Não abra sua boca a não ser que Eu peça”.
+
+Tivemos um dia de descanso antes do evento final e, apesar do sucesso no evento da juventude, moderamos nossas expectativas para aquele show. O governo divulgou avisos públicos sobre o show por meio dos noticiários. Recebemos ameaças de morte, incluindo um possível ataque de atirador e atentados à bomba. E a previsão do tempo era de chuva para o dia do evento.
+
+Convocamos nosso time de oração do outro lado do mundo. Enquanto isso, naquela noite, nossa equipe e os líderes da igreja local se reuniram para o que se tornou uma oração poderosa. Os líderes locais vinham orando por esse momento havia anos — bem antes de nos convidarem para irmos ao seu país. Desde então, Jed descreve como naquela noite ele sentiu que o show seria o auge da obra de Deus nos corações do povo quirguiz.
+
+EXPERIÊNCIA TRANSFORMADORA
+
+Quando chegamos ao estádio para o show, fomos recebidos por uma escolta armada. A polícia já tinha prendido um homem, soubemos, por fazer ameaças violentas contra nós.
+
+As emoções estavam à flor da pele quando me reuni com os membros da banda para orar antes do evento e, vou lhe dizer, nossa oração cobriu de tudo, desde o clima até atiradores. O guarda-costas local a quem, digamos, fiquei muito próximo nos últimos dois dias entrou na sala da banda. O medo cobria seu rosto.
+
+— Você está bem? — perguntei.
+
+Ele colocou a mão direita sobre o peito e fez o movimento de um coração batendo rápido.
+
+— Muita coisa acontecendo lá fora. — Entendi.
+
+— Você cai, nós caímos juntos — disse ele em um inglês com sotaque carregado.
+
+Não sei se ele estava tentando me encorajar com essa declaração, mas, se esse era seu objetivo, falhou! Quero dizer, fiquei feliz que estivesse disposto a arriscar sua vida para me proteger, mas, poucos minutos antes de subir ao palco, eu esperava fortemente que isso não fosse necessário!
+
+Ao deixarmos a sala, orei:
+
+— Tá bom, Deus. Tudo isso é por Você.
+
+No caminho para o palco, nosso grupo começou a cantar uma canção de louvor. Senti paz e alegria. Foi como se eu tivesse recebido uma infusão de força. Não minha própria, mas a força de Deus. Certa vez, vi uma foto de quando estávamos subindo no palco. Eu parecia não ter nenhuma preocupação e meu guarda-costas estava em primeiro plano, encarando a multidão com uma expressão intensa. Não poderíamos ter parecido mais diferentes. A força e o poder de Deus são incríveis!
+
+Primeiro, a não ser por uma garoa refrescante um pouco antes do show, não choveu. Do palco, olhei para o céu e vi nuvens pretas e alarmantes por todos os lados, exceto logo acima do estádio. É como se tivesse um bloqueio climático protegendo o local.
+
+Segundo, senti como se estivesse cem por cento em sintonia com o Espírito Santo durante o show. Tenho uma tendência de falar muito entre as canções nos shows. Mas, naquela noite, compartilhei apenas o que senti o Espírito Santo me levando diretamente a dizer.
+
+Cerca de oito mil pessoas foram ao evento. O show começou bem, mas, assim que cantei as palavras “Jesus, Você é o caminho”, houve um êxodo espontâneo de cerca de duas mil pessoas. Foi como se um quarto da plateia quisesse sair, mas decidiu esperar que alguém fosse primeiro. Observei-os saírem enquanto tocava. Mas não mudei nada sobre o que estava fazendo. Quando senti que o Espírito Santo estava me instigando a falar, falei. Se eu não sentia Sua liderança, não falava. Do ponto de vista de apresentador, falar menos do que o normal era estranho para mim, mas estava determinado a não dizer nada a não ser que tivesse certeza de que deveria.
+
+Quando terminamos de tocar, Pasha pegou o microfone. Ele não mencionou a palavra salvação, mas disse:
+
+— Se quiser ouvir mais sobre esse Jesus, temos pessoas aqui que conversarão com você.
+
+Eu queria ter visto a resposta da multidão, mas os seguranças do evento nos colocou para fora do palco e direto em um carro que nos aguardava, por causa das ameaças contra nós. Parece estranho mesmo agora escrevendo sobre isso, e não gosto da ideia de sumir assim que terminamos um show. Contudo, naquela situação, o melhor que podíamos fazer era remover a fonte de ameaças — ou seja, eu — e permitir que os fiéis locais cultuassem para seu povo da melhor maneira que podiam.
+
+No carro, meu pai me disse:
+
+— Nunca te ouvi tão abençoado quanto hoje.
+
+Hoje, posso dizer que tudo o que disse naquela noite veio do Senhor e que não abri a boca a não ser que Ele me dissesse para fazê-lo. Foi o momento mais radical que já vivi. Acredito que seja porque, não importa quão louca foi a situação ou quão sombrio estava o ambiente, eu sabia que Deus me queria lá e queria que eu compartilhasse como minha história O glorifica. Como Adrienne disse ao telefone, eu estava lá no tempo de Deus. Tinha muitas dúvidas e preocupações, desde quando decidi fazer a viagem até quando subi ao palco naquela noite. Mas também entendi que, quando eu corro em direção ao que Deus me manda fazer, em vez de fugir, Ele é grande o suficiente para proteger-me independentemente do que acontece ao meu redor.
+
+Deus trabalhou naquela noite no Quirguistão. Mais tarde soube que, ao sairmos, Pasha também disse à multidão:
+
+— Se esse americano pode vir e ser corajoso para compartilhar neste palco, então nós também precisamos nos impor.
+
+Pelo que ouvi, a campanha fez um impacto duradouro em Bishkek. O modo como chegou a mim é que as pessoas de Bishkek responderam ao fato de que um músico americano deixou a segurança de seu país para ir até lá proclamar a mensagem gospel. Minha versão é que esse músico americano estava apavorado e incerto do que estava fazendo lá, mas o Espírito Santo lhe deu a habilidade de fazer o que Deus o chamou para fazer no Quirguistão. Qualquer coragem que demonstrei veio de Deus.
+
+Mais tarde, Jed e sua família tiveram de deixar o Quirguistão, pois seus vistos não foram renovados em consequência do evento. Hoje, ele faz um ótimo trabalho na Geórgia, e Paul e Melanie, no Oriente Médio.
+
+Tive minha cota de experiências transformadoras — não há nada de chato na minha vida! Aquela viagem à Ásia Central tornou-se mais uma. Ministrei em muitos países, mas o Quirguistão foi o primeiro lugar perigoso, no qual enfrentamos mais resistência. Pela primeira vez, coloquei de forma legítima minha vida em risco pelo Evangelho.
+
+Uma coisa é você estar disposto a arriscar sua vida, mas isso é muito diferente de realmente arriscá-la. Por eu ter me colocado em uma situação que nunca tinha vivido, senti a presença do Espírito Santo de um modo que nunca tinha sentido. Voltei para casa transformado.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 22;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 20 - O amor perfeito do Pai$t$, 22,
+$conteudo$Após a viagem para o quirguistão, estava preparado para me afastar da música.
+
+Eu não tinha um contrato assinado. Recebíamos ligações de gravadoras que queriam me contratar, e, enquanto conversávamos com elas, meu foco era em não querer construir um império de Jeremy Camp. Compreendo os conceitos de marca e marketing e aprecio a necessidade de não apenas fazê-los, mas fazê-los direito. Mesmo assim, eu estava completamente ciente de quanto ao meu redor era cheio de “Jeremy Camp isso”, “Jeremy Camp aquilo”.
+
+Considerei tornar-me independente em vez de assinar com uma marca. Também considerei fazer uma mudança dramática no modo como ministrava. Nossos filhos tinham idades entre três e dez anos, e Egan, o caçula, tinha idade suficiente para podermos considerar a possibilidade de um ministério que envolvesse mais a família.
+
+A experiência no Quirguistão e o risco que encontrei lá me colocaram em uma posição em que eu queria ir aonde Deus quisesse que eu fosse. Se Deus tivesse me dito que queria que eu me tornasse missionário, eu teria deixado a música e me preparado para vender a casa e para a mudança para qualquer país que Ele indicasse. Adrienne também estava disposta a isso.
+
+Isso não quer dizer que eu não me importava mais com a música, pois não era o caso. No entanto, depois do Quirguistão, não me importava mais com o que faria para viver desde que fosse aquilo que Deus queria que eu fizesse. Eu ainda amava a música, mas tinha uma nova vontade em meu coração de seguir Deus aonde quer que Ele quisesse que eu fosse e para fazer o que quer que Ele quisesse que eu fizesse. Se isso significava não mais fazer parte da indústria musical, teria sido totalmente tranquilo. E eu não tinha pressa em descobrir o que viria a seguir. Minha mentalidade era totalmente focada em: “Deus, seja o que for, tudo que sei é que tem de ser por Você”.
+
+Com Adrienne e eu orando por uma direção, fiquei inspirado a escrever canções mesmo sem ter um contrato assinado ou um álbum à vista. Minhas novas canções surgiram após a viagem ao Quirguistão. “Same power” [“Mesmo poder”] nasceu da reflexão sobre o Quirguistão e em perguntar a Deus: “Como fiz tudo aquilo enquanto agia com medo em meio àquela resistência?”. Romanos 8:11 veio à minha mente: “E, se o Espírito daquele que dentre os mortos ressuscitou a Jesus habita em vós, aquele que dentre os mortos ressuscitou a Cristo também vivificará os vossos corpos mortais, pelo Seu Espírito que em vós habita”.
+
+“É isso! É isso!”, percebi. Foi isso que me deu a habilidade — Sua mesma força, Seu mesmo poder, Seu mesmo Espírito que permitiu a Cristo caminhar sobre a água, a ordenar que os mortos acordassem e ressuscitassem da sepultura. Esse mesmo poder vive dentro de nós!
+
+Quando olho para trás, vejo esse período após a viagem ao Quirguistão como um surto de crescimento espiritual em mim. Mais do que dar um passo adiante, acredito que foi um passo de crescimento profundo, pois coloquei tudo aos pés do Senhor e disse: “Estou disposto a desistir. Estou pronto para ir aonde quer que Você queira”. Esse foi um momento radical e incrível do qual me lembro com carinho.
+
+PROBLEMAS ANTIGOS REAPARECEM
+
+Após mais orações, assinei com a Capitol Records. Meu primeiro álbum com aquele contrato foi intitulado, apropriadamente, como I will follow [“Eu seguirei”]. Guardamos boas lembranças cantando “Same power” [“Mesmo poder”], junto às outras duas canções principais daquele álbum, “He knows” [“Ele sabe”] e “Christ in me” [“Cristo em mim”]. Me sentia renovado e empoderado pelo Espírito Santo. Certo de que Deus queria que eu continuasse na música, eu estava a todo vapor nessa direção. Em 2017, escrevi o álbum seguinte, The answer [“A resposta”], e as coisas continuaram indo bem.
+
+Então, Kevin Downes voltou a nos procurar com frequência. Ele não tinha sumido de todo, fazendo contato com meu empresário, Matt, uma ou mais vezes por ano, para que soubéssemos que ele acreditava em minha história e ainda queria transformá-la em filme. Toda vez eu respondia: “Legal. Seria ótimo… um dia”. Certa vez, Kevin me disse que estava produzindo um filme com os irmãos Jon e Andy Erwin, Eu só posso imaginar, a história de vida do meu amigo Bart Millard, do MercyMe.
+
+Eu ainda achava que transformar minha história em um filme seria incrível, pois sabia que Deus poderia usar meu testemunho para tocar muitas pessoas. Porém, também sabia que Deus teria de me dizer quando seria a hora certa.
+
+Kevin entrou em contato conosco mais vezes do que o normal e uma sensação de que a hora estava chegando começou a crescer em meu espírito. Mesmo quando começamos a conversar com potenciais diretores e roteiristas, não pensei que o filme fosse acontecer. Agora algo havia mudado. Com a probabilidade de acontecer aumentando, refleti mais sobre tudo o que passei na vida e, de fato, comecei uma jornada por todas aquelas emoções e dores do passado.
+
+Na mesma época, Adrienne e eu tínhamos alguém próximo lutando contra o vício. Com o vício, às vezes aparecem a manipulação e o engano, e aquele era definitivamente o caso. Nós dois estávamos profundamente magoados, pois acreditamos e respeitamos nosso amigo. Foi duro processar por que aquilo tinha acontecido e como tinha se tornado tão ruim. Lutamos para saber como recuperar a confiança em um relacionamento gravemente danificado. Voltei a um período de questionamento: “Deus, o que está acontecendo?”. Além da desconfiança e da dor com aquela situação, estava revivendo as memórias da doença de Melissa e sua morte ao passar mais tempo considerando o filme.
+
+A morte de um cônjuge é traumática, e os efeitos são permanentes. Eles afloram de maneiras inesperadas. Ao reviver aquela parte da minha vida enquanto lutávamos com as circunstâncias a respeito de nosso amigo, voltei aos meus problemas com medo e confiança. Quando esses problemas surgem, tenho uma tendência a pegar o controle da situação para mim, mesmo sabendo que isso na verdade significa tirar o controle das mãos de Deus.
+
+Em janeiro de 2018, levei minhas filhas Bella e Arie para uma campanha da Speaking Louder Ministries em Uganda. Foi uma viagem mista para mim, já que também foi a primeira vez que viajei sozinho com as meninas sem Adrienne. Elas pediram por essa oportunidade por um ano inteiro, e a campanha foi incrível; Deus trabalhou de maneiras impressionantes. Trinta e cinco mil pessoas apareceram no evento de Kampala, capital de Uganda. Nossas filhas fizeram parte de um movimento de Deus que viu milhares de pessoas aceitarem Cristo como seu Salvador. Viajo para países estrangeiros há quase vinte anos, e ainda fico espantado quando todo aquele tanto de gente entrega seu coração para o Senhor. Ao presenciar minhas filhas vendo isso na idade delas, cara, penso em como esse momento pode moldar quaisquer que sejam suas formas de ministério quando adultas.
+
+As campanhas do nosso ministério não são apenas um show. Viajamos a outros países para levar a mensagem de que Deus traz esperança, e queremos que essa mensagem ressoe por muito tempo após nosso retorno para casa. Em Uganda, fizemos uma conferência sobre liderança para líderes ministeriais de Kampala. O treinamento de discipulado daquela conferência ainda ecoa por toda a Uganda nas vozes dos pastores locais, cuja paixão é pregar Cristo ao seu próprio povo. Na pequena cidade de Entebbe, também construímos uma clínica médica para atender às necessidades físicas da população, que em troca abrirá o coração ferido das pessoas para que Jesus possa trazer a cura de que elas mais precisam — a cura espiritual.
+
+Tenho orgulho do trabalho das pessoas associadas ao nosso ministério. Fico feliz que Bella e Arie puderam testemunhar Deus mudando vidas em Uganda. Aquela foi uma viagem linda. Mas não foi uma das mais fáceis para mim. Fisicamente, a melhor forma que posso descrever é que foi estranha. Fiquei ansioso a viagem inteira. E paranoico de que algo fosse acontecer com minhas meninas. Tive medo e desconfiança; queria controlar cada situação enquanto estávamos em Uganda.
+
+Voltei para casa exausto.
+
+Adrienne e eu programamos uma viagem em família para a Itália, com planos de fazer uma turnê de adoração na sequência em Roma e em Israel. Nossa família ficou doente na Itália nos dias de férias e, quando fomos para Israel, não me senti bem. Meu peito ficava apertado às vezes e, certa noite, tive um ataque de pânico moderado. Consegui respirar fundo e esquecer.
+
+Umas duas semanas após voltarmos para casa, Adrienne saiu por algumas horas e comecei a me exercitar. De repente, o pânico voltou, mas dessa vez com força total — nada que eu já tivesse vivido. Liguei para Adrienne, pirando. Respirar tornou-se difícil. Não sabia o que fazer, então me deitei no chão até que ela voltasse e me ajudasse a me acalmar.
+
+Depois daquele dia, entrei em uma depressão louca e sombria que durou quase uma semana inteira. Pensamentos estranhos ficavam vindo até mim, como “E se eu morrer e não tiver nada?”. Por quatro dias, senti como se estivesse perdendo a cabeça. Eu me deitava no chão e chamava por Deus. Adrienne constantemente orava e lutava ao meu lado. Tudo o que eu sabia fazer era cultuar. Liderei milhares e milhares de pessoas nos cultos por anos, e mesmo isso foi difícil para mim. Às vezes ganhava um pouco de ânimo, mas era como se eu estivesse tentando sair de um buraco e, quando justamente começava a fazer progresso, o barro em volta do buraco cedia e eu escorregava para o fundo de novo.
+
+Finalmente, enquanto orava um dia, Deus começou a revelar áreas problemáticas em meu coração. Ele mostrou como eu estava tentando controlar as situações em vez de segui-Lo. Mostrou como eu confiava em minhas habilidades — por mais limitadas que fossem — em vez das Dele. Reviver a doença e o sofrimento de Melissa foi difícil. A traição de alguém que eu amava e respeitava doía profundamente. Deus sabia disso. Comecei a me arrepender de todas as vezes que tentei controlar as situações — com minha família, minha esposa e minha carreira. Me arrependi de todo o medo ou falta de perdão em meu coração. E Deus sabia as palavras exatas que eu precisava ouvir Dele em meu estado depressivo: Eu te amo. Confie em Mim. Amor perfeito repele o medo. E Meu amor é perfeito para você.
+
+Deus me lembrou de um momento alguns anos antes, quando eu estava caído e Ele me tirou do buraco em Seu abraço amoroso.
+
+Veja como fui fiel com você. Veja o que fiz por você. Eu te amo. Amor perfeito. Não é algo que nós, humanos, somos capazes de dar um ao outro. Mas é o que Deus nos dá.
+
+Naquele momento, Deus não estava bravo comigo. Ele não exigia saber o que havia de errado comigo ou por que eu estava tão amargo, tentando estar no controle e não confiando Nele, mesmo tendo provado ser tão fiel a mim tantas vezes. Não, em vez disso, disse que me amava e que eu podia confiar Nele, pois Ele tinha o melhor plano para mim. Ele não me disse que eu não passaria por outras dificuldades. Isso iria contra o que Sua Palavra nos diz. Mas Deus me disse que, independentemente do que eu vier a passar, Ele sempre estará lá comigo. E que Ele sempre me amará. De forma perfeita, como só Ele pode.
+
+MEDIDAS PREVENTIVAS
+
+As canções que escrevi após essa experiência formam o que considero o álbum mais vulnerável desde o primeiro após a morte de Melissa. No álbum intitulado por The story’s not over [“A história não acabou”], canções como a faixa-título e “Father” [“Pai”] surgiram após eu olhar para minha trajetória e minhas batalhas e relembrar como Deus trabalhou em minha vida.
+
+Em “Father” pintei uma bela imagem de Deus sendo nosso Pai celestial e sobre confiar Nele por completo para nossa cura.
+
+Não posso dizer que Deus me tirou imediatamente daquele buraco no qual estava preso. A depressão me deixou, mas remanescentes da ansiedade permaneceram por muitos meses enquanto eu reaprendia a caminhar na diária confiança em Deus ao abrir minha Bíblia, não apenas para ler e ter a Palavra para aquele dia, mas para banhar-me com a luz da Palavra de Deus.
+
+Esse foi um processo necessário para o meu crescimento. Embora preferimos um resgate imediato de nossos problemas, acho que Deus às vezes escolhe nos fazer passar por um processo mais longo, pois Ele tem lições a nos dar enquanto saímos dos nossos buracos. Quando Ele segura nossas mãos e nos puxa enquanto enterramos os pés nas laterais do buraco a cada passo, experimentamos mais da Sua força e aprendemos mais sobre Sua paciência ao nos tirar das situações das formas mais benéficas para nossa relação com Ele.
+
+Naquele caso, percebi que algumas vezes a melhor coisa que podemos dizer a Deus é “Me desculpe”.
+
+“Me desculpe”, dita de forma sincera, é uma frase cheia de humildade. Ao sair de uma fase na qual eu escolhera confiar em mim em vez de em Deus, precisei dessa humildade perante Ele.
+
+Hoje acredito que Deus me revelou aquelas fraquezas por uma razão. Estive no topo da montanha depois do Quirguistão, pois vi Sua fidelidade à toda mostra. No entanto, mesmo quando não conseguia imaginar as coisas podendo ser ainda melhores, permaneci suscetível a voltar aos meus problemas de medo e confiança. Essas são fraquezas, Ele me lembrou, que o inimigo vai atacar. Eu precisava me certificar de proteger-me nessas áreas para a próxima temporada que Ele havia planejado para mim.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 23;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 21 - Luzes! Câmera! Ação!$t$, 23,
+$conteudo$Quando eu só posso imaginar chegou aos cinemas em março de 2018, Matt, Kevin e eu ainda estávamos no estágio de “apenas conversando” sobre minha história. Minha impressão era de que Kevin, compreensivelmente, queria esperar para ver como o filme de Bart se sairia. O filme superou todas as expectativas, arrecadando mais de 15 milhões de dólares nas bilheterias apenas no primeiro fim de semana. O sucesso foi merecido; o filme é de alta qualidade.
+
+Duas semanas após o lançamento de Eu só posso imaginar, Kevin ligou para Matt e disse que queria reunir o pessoal e começar a conversar sobre nosso filme.
+
+— Temos de fazer essa história — disse ele.
+
+Na mesma época, Kevin e os irmãos Erwin estavam lançando o próprio estúdio de filmes religiosos chamado Kingdom Studios. Não fizemos muito progresso, pois, nos bastidores, o Kingdom Studios estava tentando fazer um acordo com a Lionsgate, que distribuiu Eu só posso imaginar assim como outros filmes religiosos famosos, como Até o último homem e A cabana.
+
+Durante a espera, fiquei pensando se o filme iria acontecer ou não. Descobri que entre ter uma ideia e a etapa das filmagens há a maior montanha-russa do mundo.
+
+Em tempo, Kevin nos disse que o Kingdom não tinha certeza se queria outra cinebiografia musical como seu próximo filme. Ainda queriam fazer o filme, ele nos garantiu, mas provavelmente outro filme seria feito entre Eu só posso imaginar e o meu.
+
+Eu estava muito agradecido por considerarem minha história. No entanto, me perguntei se o acordo entre Kingdom e Lionsgate impactaria minha chance de ter um filme. Nós conversamos com Kevin por alguns anos e sabia o que ele pensava sobre a história, mas nem imaginava o que a Lionsgate pensava, inclusive se mostraria algum interesse em transformar minha história em filme. Isso nos colocou em outro nível de suspensão, mas pensei que, se o filme deveria acontecer, aconteceria.
+
+Na vez seguinte que soube de Kevin, ele disse que os irmãos Erwin queriam se encontrar comigo e Adrienne e nos filmar conversando sobre a história. Tive de programar o encontro entre meus eventos e, por fim, pudemos organizá-lo para o fim do verão.
+
+Falei sobre os detalhes da minha história por um tempo e, depois, fizeram algumas perguntas à Adrienne. Ela disse:
+
+— Quando Melissa disse que, se apenas uma pessoa aceitasse Jesus por causa de sua morte, valeria a pena, isso me impactou profundamente. Eu sou uma dessas pessoas. Eu não estava bem e Deus usou seu testemunho para agarrar meu coração.
+
+Quando ela terminou, Jon e Andy pararam, olharam para nós e disseram:
+
+— Essa história precisa ser contada.
+
+Eles queriam fazer meu filme imediatamente. Mais tarde, me disseram que aquela resposta de Adrienne os convenceu a mover meu filme para o topo da lista.
+
+Em seguida, Kevin e os irmãos Erwin precisavam levar a ideia à Lionsgate. Fizemos uma mostra de oito minutos — basicamente uma demo — para compartilhar a história com ela. Não sabia o que esperar daquilo. Mas acontece que uma das vice-presidentes da distribuidora era Bree Bailey, que cresceu a cerca de meia hora de Lafayette, Indiana. Ela estudou na Universidade Purdue e conhecia o Pizza King e outros lugares que eu frequentava quando estava na Purdue. Bree já estava familiarizada com minha história e minha música, e nos deu seu apoio total.
+
+A Lionsgate não somente decidiu seguir em frente com meu filme como também quis fazê-lo imediatamente.
+
+As filmagens foram agendadas para começar em maio de 2019 e terminar até o fim de junho. Àquela altura, pela primeira vez depois de anos cheios de “humm” e “nãos” e “talvez” e “talvez mas não sei quando”, percebi que o filme iria de fato acontecer. E que iria acontecer muito rápido!
+
+As duas prioridades maiores eram escrever o roteiro e reunir o elenco.
+
+O roteiro começou a ser feito em janeiro. As filmagens começariam em quatro meses e fiquei pensando: “O.k., será que o roteiro vai ficar pronto a tempo?”.
+
+Fui avisado de que, embora a história fosse autêntica, havia a necessidade de montá-la. Como qualquer filme que é baseado em uma história real, imaginava que “baseado em” fossem as palavras-chave. Parte de mim achava que a história seria totalmente mudada. Adrienne e eu começamos a ler o roteiro assim que ficou pronto, e choramos na maior parte do tempo. Usamos a mesma palavra para descrever o roteiro: lindo. Fiquei emocionado com a precisão com a qual ele lidou com minha história. Jon Erwin e Jon Gunn o escreveram com a ajuda de Madeline Carrol, que entrou mais tarde no processo. Eles incluíram palavras que eu usara quando lhes contei minha história. Fiquei impressionado com a seriedade do trabalho que fizeram para permanecer fiéis à história.
+
+Enquanto finalizávamos o roteiro, começamos a trabalhar no elenco.
+
+Obviamente, queríamos atores e atrizes com nomes reconhecidos para dar mais legitimidade ao filme. Por volta de março, fui informado de que KJ Apa estava sendo considerado para me interpretar. Eu não sabia quem era KJ e me disseram que era um ator muito requisitado, mais conhecido por estrelar a série de TV Riverdale. Também não estava familiarizado com essa série. Falei:
+
+— O.k., legal.
+
+— Sério, confie em nós, ele é o cara. Ele é incrível. Mas pode ser difícil consegui-lo — me disseram.
+
+Então começaram a tentar fisgar KJ e orei: “Deus, se isso é obra Sua, Você tem de fazer acontecer”.
+
+Pela graça de Deus, KJ assinou o contrato depois de ler o roteiro e dizer que queria fazer parte da história. Quando o conheci, tivemos uma conexão instantânea e nos tornamos grandes amigos.
+
+Logo após conseguirmos KJ, Gary Sinise assinou contrato para interpretar meu pai. O nome dele eu conhecia. Conseguir ele para o elenco foi incrível, pois ele ganhou um Emmy e um Globo de Ouro e fora indicado para um Oscar.
+
+Para o papel de Melissa, sabíamos que precisávamos encontrar alguém com quem KJ pudesse se conectar e, assim, ter uma boa química no filme. Cerca de cem atrizes tentaram pegar o papel, e tinham algumas ótimas e reconhecidas no grupo. Mas os executivos do filme, que fizeram parte do processo de entrevistas, disseram que nenhuma delas parecia a pessoa certa para interpretar Melissa.
+
+Depois de uma rodada de audições sem conseguir uma Melissa, KJ perguntou:
+
+— E quanto a Britt Robertson?
+
+Eu conhecia Britt dos filmes Eu, meu irmão e nossa namorada e Tomorrowland. Pensei: “Sim, ela seria ótima!”.
+
+KJ e Britt trabalharam juntos em Quatro vidas de um cachorro, então KJ lhe mandou uma mensagem de texto. Depois… grilos cantaram. Como não recebeu uma resposta, disse direto e reto:
+
+— Bem, isso é constrangedor.
+
+Então ele lhe enviou uma mensagem direta pelo Instagram, dizendo que estava em um filme que gostaria de trabalhar com ela, e perguntou se ela não queria dar uma olhada no roteiro. Também mencionou que tentara mandar uma mensagem de texto.
+
+— Sinto muito — ela respondeu. — Troquei o número do telefone.
+
+KJ ficou aliviado ao saber aquilo. Britt leu o roteiro e disse:
+
+— Preciso desse papel.
+
+Quando ela assinou o contrato, pensei: “Caramba! Esse elenco é demais!”. Depois adicionamos Melissa Roxburgh, de Manifest: o mistério do voo 828, para interpretar a irmã mais velha de Melissa, Heather. Nathan Parsons, com o papel principal na série Roswell, foi designado para interpretar meu amigo e mentor Jean-Luc Lajoie. E depois Shania Twain assinou para interpretar minha mãe, e Nicolas Bechtel e Reuben Dodd entraram no elenco para interpretar meus irmãos Jared e Josh, respectivamente.
+
+Por fim, precisávamos de alguém para interpretar Adrienne, papel que acabou sendo atribuído à Abigail Cowen, de Stranger things. Adrienne e Abigail se conectaram completamente durante o processo e é encantador ver sua amizade se desenvolver.
+
+Fiquei impressionado com as reações de todo o elenco após a leitura do roteiro. Esse era um filme de que todos queriam fazer parte. O modo como definir o elenco durou até quase o último minuto em alguns casos me deixou muito feliz por não estar na indústria cinematográfica. Porém, sem dúvidas, tínhamos um elenco montado pelo Senhor. Lembro-me de pensar em algum momento das filmagens que não conseguia imaginar um elenco diferente daquele que tínhamos escolhido para trabalhar em nossa história.
+
+O CAPÍTULO SEGUINTE
+
+Gostei de estar no set para assistir à história acontecer através daqueles atores e atrizes incríveis. Tentei ficar fora do caminho e deixar os profissionais trabalharem, mas o elenco e a equipe eram amáveis com Adrienne e eu quando estávamos lá. Andy Erwin me fazia perguntas de tempos em tempos, e KJ me perguntava sobre modos específicos como eu reagia ou lidava com diferentes partes da história. Eles estavam comprometidos por completo a representar cada pequeno detalhe corretamente. Isso significou muito para nós, ver nossa história ser levada com aquele nível de respeito e cuidado.
+
+Perdi cerca da metade das filmagens devido à minha agenda de shows e à finalização de um álbum. Tive de me afastar por duas semanas para participar de uma conferência no Havaí. Imagine ficar chateado em ter de ir para o Havaí!
+
+O primeiro dia no set após meu retorno do Havaí foi o dia em que filmaram a cena no hospital, quando Melissa pensou que estava curada e tentou sair da cama. Quando Britt se sentou na cama de hospital e exclamou “Ele se foi! Ele se foi!”, não consegui lidar com aquilo. Me virei e corri para encontrar um lugar onde pudesse sentar e chorar. Adrienne me seguiu para fora do set e me apoiou até que eu conseguisse conter minhas emoções.
+
+A cena do hospital foi real demais para mim, como se estivesse assistindo de fato acontecer. Falei sobre o que aconteceu no hospital muitas vezes, mas, além das memórias em minha mente, aquela foi a primeira vez desde então que eu vi Melissa tentar levantar da cama.
+
+A morte de Melissa também estava na programação da filmagem, e não voltei para o set naquele dia. Costuma-se gravar vários takes de cada cena quando produzem um filme, e eu não podia me submeter a assistir àquelas cenas repetidas vezes.
+
+De modo geral, testemunhar o desdobramento da minha vida em um set de filmagem foi uma experiência surreal. Enquanto Adrienne e eu assistíamos, dizíamos um para o outro que não podíamos ter imaginado que esse filme de fato aconteceria. Estar no set, sobretudo, me fez perceber que o desejo de Melissa de alcançar uma pessoa tornara-se esse ministério imenso que já alcançou milhões de pessoas e, por meio do filme, alcançará outro tanto.
+
+Tento viver de tal maneira que eu seja aberto a qualquer coisa que Deus queira para minha vida, e sentir que Deus estava confiando a mim com esse filme para compartilhar Sua história mais uma vez foi extremamente gratificante. Gratidão foi grande parte das minhas emoções — gratidão pelo que Deus fez para me trazer àquele momento, e gratidão que Ele tenha me preparado para tudo que resultasse do filme.
+
+O sucesso do filme de Bart Millard criou o caminho para que Enquanto estivermos juntos fosse produzido. Bart é um amigo de confiança, que generosamente me concedeu um pouco de seu tempo para que pudéssemos nos sentar e conversar não somente sobre o processo cinematográfico, mas também sobre o que eu podia esperar após o lançamento do filme. Se você não assistiu ao filme Eu só posso imaginar, recomendo que assista. Parte da história de Bart foi ter vivido com um pai abusivo. Bart me descreveu abertamente como o processo desencadeou alguns dos problemas com o pai que ele ainda carregava, e como assistir às filmagens aflorou emoções que ele percebeu que ainda precisavam ser resolvidas.
+
+Ele me disse:
+
+— Cara, prepare-se para as pessoas que vão compartilhar histórias e mais histórias com você. E esteja preparado para carregar esse pesopesado em seus ombros.
+
+Deparei com isso até certo ponto por meio do meu livro e ao compartilhar meu testemunho nos shows. Bart me disse que preciso me preparar para esse experiência em uma escala muito maior, por causa do número de pessoas que o filme alcançará.
+
+Ele também me disse que vou receber ainda mais convites para falar sobre minha experiência com o luto do que já recebo. Disse que não vou me sentir experiente o suficiente para falar sobre o luto e que terei incertezas sobre se devo mesmo me colocar nessas situações. Mas, então, me deu um grande conselho:
+
+— Apenas faça as coisas que sente que Deus quer que você faça. Não faça só porque as portas estão abertas. Garanta que é algo que Ele quer que você faça.
+
+Eu precisava ouvir em especial essas palavras. Deus me mostrou inúmeras vezes que nem todas as coisas boas são Dele, que só porque uma porta está aberta e parece ser uma coisa boa não necessariamente significa que Ele quer que eu vá em frente.
+
+Depois de conversar com Bart, acredito que, de agora em diante, um bom teste decisivo para mim será se me sinto em paz com as oportunidades que surgirem em meu caminho. Agradeço a sabedoria de Bart e sua vontade de compartilhá-la comigo.
+
+Não estou ansioso em dizer não às pessoas quando oportunidades de falar mais sobre o filme e minha história surgirem. Sei de antemão que haverá mais oportunidades do que posso aceitar. Também preciso me cuidar e tomar conta da minha família.
+
+Adrienne… nossa! Devo muito a ela. Em qualquer momento, se ela tivesse me dito “Não acho que posso lidar com esse filme”, teria sido tudo o que eu precisava ouvir. Desde que nos conhecemos, dezoito anos atrás, ela abraçou meu testemunho. Ela me encorajou a falar sobre Melissa. Algumas vezes foi ela quem me defendia para falar sobre Melissa, pois acredita no poder do meu testemunho e na fidelidade de Deus em tudo isso.
+
+Ela sempre me apoiou, e isso não mudou durante o processo do filme. Vê-la no set apoiando todo mundo é um destaque para mim. O elenco e a equipe me diziam:
+
+— Sua esposa é incrível. E eu respondia:
+
+— Eu sei!
+
+Nós estamos casados há dezesseis anos. Temos três filhos. Ainda assim, sabemos que haverá um ponto do filme no qual os expectadores se apaixonarão por Jeremy e Melissa. Eles ficarão decepcionados que Melissa e eu não pudemos viver nossa vida juntos.
+
+Adrienne me disse:
+
+— Sei de verdade que Deus usará esse filme e isso é tudo o que realmente importa. Não é sobre mim. Mas não sou ingênua. Sei a possibilidade de como as pessoas vão reagir à sua história de amor com Melissa. Tive momentos em que pensei sobre isso. Não é um sentimento fácil, mas estou pedindo ao Senhor que prepare meu coração e me ajude a lidar com tudo isso com Sua graça. E sei que devemos fazer isso, e quero que as pessoas saibam o que Deus fez em sua vida.
+
+Incrível. E eu adoraria que Adrienne fosse homenageada nesse filme.
+
+Mas, acima de tudo, quero honrar a Deus, pois Seu amor perfeito me ensinou a amar e a ser amado.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 24;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 22 - Eu ainda acredito$t$, 24,
+$conteudo$Fé e família. Minha história está sempre vinculada a esses preceitos.
+
+Meus pais ainda vivem em Lafayette e mantêm a mesma igreja que começaram cerca de vinte e cinco anos atrás. A Harvest Chapel ganhou a reputação de igreja que ministra aos pobres da cidade. É incrível observar o que o Senhor fez nessa igreja e através dela e como Ele abençoou meus pais por sua fidelidade a Ele.
+
+Minha irmã, April, é casada, tem quatro filhos incríveis e seu próprio testemunho poderoso da graça e misericórdia de Deus. Quando saí de casa para a CCBC, April ainda estava longe de Deus e fazendo o que bem entendia, mas tinha ido muito mais longe do que eu. Francamente, sua vida estava uma bagunça. Eu costumava ficar literalmente de cara no chão orando por ela: “Deus, por favor, traga minha irmã de volta para Você”. Demorou um pouco — até depois que terminei a faculdade —, mas ela recolocou sua vida totalmente em Cristo, e seu marido, Trent, também deu a vida ao Senhor. Eles têm servido fielmente a Ele ao lado dos meus pais. Trent é líder de louvor e minha irmã administra o café da igreja que também tem um trabalho com a comunidade local.
+
+Meu irmão Jared se casou com uma garota incrível chamada Heather, e eles têm quatro filhos maravilhosos. Jared e eu temos oito anos de diferença e, como passei a escola secundária e parte dos meus anos de ensino médio perseguindo meus próprios desejos, eu não estava tão próximo dele quanto poderia estar quando saí de casa. Fui morar na Califórnia e comecei a viver da minha música. Mas em algumas ocasiões Jared e eu fomos capazes de estabelecer um relacionamento próximo. Ele é um guitarrista talentoso e já tocou em nossa banda. Hoje em dia, ele é o pastor de adoração em nossa igreja na Califórnia. Quando ele era membro da banda viajamos bastante juntos e isso nos deu a oportunidade de recuperar o tempo perdido. Espero continuar sendo o irmão mais velho que não fui por muitos anos e encorajá-lo nos dons que Deus lhe deu.
+
+Joshua — que jovem especial. Ele nasceu com síndrome de Down e tinha apenas oito anos quando me mudei para a CCBC, então também não passei muito tempo com ele enquanto ele crescia. Josh é sempre tão alegre. Lembro que quando ele estava doente minha mãe dizia:
+
+— Joshua, vamos orar para que você se sinta melhor. Minha mãe orava e imediatamente Josh dizia:
+
+— Uau, já me sinto melhor!
+
+Eu aprendi muito com Josh sobre ter uma fé infantil porque, como nesses momentos em que ele estava doente, confiar era simples para ele — minha mãe orava e Deus o curava. Não havia nada além disso. Eu também adorava vê-lo interagir com as pessoas. Ele se aproximava das pessoas na igreja e os abraçava e amava enquanto seu rosto brilhava com o sorriso mais bonito. Embora hoje ele esteja enfrentando muitas lutas por causa de sua saúde e nem sempre o vejamos feliz como antes, haverá um dia em que meu irmão mais novo será libertado das limitações da síndrome de Down. Mal posso esperar para vê-lo na presença de nosso Senhor, onde ele poderá experimentar a plenitude do entendimento e uma alegria ainda mais profunda do que a que teve em seus melhores dias no passado.
+
+Quando Adrienne e eu nos mudamos de Lafayette para Nashville, em 2007, estar longe da minha família foi mais difícil inicialmente para Adrienne do que para mim. Ela e minha mãe haviam desenvolvido um doce relacionamento Rute-Noemi. A Bíblia diz que um homem deixará seu pai e sua mãe e se apegará à sua esposa, mas ela se tornou tão próxima dos meus pais que brincou que se sentiu como se fosse ela quem estivesse apegada e deixando a família. Foi um grande momento de crescimento para nós, pois assim instituímos nosso próprio núcleo familiar.
+
+Adrienne conheceu as irmãs de Melissa, Megan e Heather, na Califórnia, antes de nos casarmos; elas se tornaram amigas e mantêm contato entre elas. Adrienne enviou flores e cartões aos pais de Melissa em alguns dos aniversários da morte de Melissa. Eles nos enviaram um presente de casamento e depois presentes nos nascimentos de Bella e Arie. Quando Adrienne e nossas filhas conheceram os pais de Melissa, Mark e Janette, eles foram muito gentis com elas.
+
+Deus tem sido muito bom comigo e me abençoou com uma família maravilhosa. Oro para que minhas crianças, quando mais velhas, ao ficarem frente a frente de alguns dos prazeres do mundo, sintam repulsa por eles. Espero que, quando diante de coisas que eu tolamente persegui, digam:
+
+— Isso é nojento; não quero para mim.
+
+Adrienne lançou dois álbuns solo, mas por enquanto não optou por lançar-se em uma carreira solo. De tempos em tempos, ela pensa em gravar músicas que são significativas para ela e que podem ser um incentivo para as pessoas, o que a faz se interessar por música novamente, mas no momento o que ela mais faz é escrever. Ela escreveu dois livros. Nós dois sentimos que após o filme devemos fazer mais coisas juntos. Ainda não sabemos exatamente o que isso significa. Mas juntos escrevemos um livro de casamento intitulado In unison, que deve ser lançado em breve nos Estados Unidos. Para mim, uma das melhores coisas de nossos filhos estarem crescendo é que Adrienne e eu temos oportunidades de ministrar juntos. Admiro como Adrienne suspendeu sua carreira para focar na maternidade — e ela é ótima. As crianças são educadas em casa para que possam ter flexibilidade para viajar comigo às vezes. Por mais que eu goste de fazer turnês, não gosto de estar longe da minha família. Em geral, se eu tiver de ficar fora de casa por mais de uma semana, minha família viajará comigo, para que não fiquemos separados por muito tempo. Às vezes eles viajam comigo em viagens mais curtas.
+
+Como adultos, Adrienne e eu podemos conversar por telefone e ainda manter uma boa comunicação (conversávamos muito por telefone enquanto estávamos noivos). Não é a maneira mais eficaz de nos comunicarmos, mas acredito que Deus nos deu graça e misericórdia especiais em nosso casamento para realizar o que devemos fazer para Ele.
+
+Mas as crianças precisam da presença do pai, não apenas da voz dele por telefone. Elas precisam que eu esteja perto, interagindo. Precisam me ver como um exemplo.
+
+Quando as crianças eram muito novas e ficavam em casa com Adrienne quando eu viajava, Adrienne orava com elas à noite dizendo:
+
+— Papai está falando sobre Jesus para as pessoas, e vamos ver todas elas no Céu um dia.
+
+Então, quando nos reencontrávamos, elas me perguntavam: — Você contou às pessoas sobre Jesus, pai?
+
+Isso não é incrível? Agora que estão crescendo não fazem mais esse tipo de pergunta, mas ainda apoiam totalmente nossa família fazendo sacrifícios para compartilhar o que Deus fez em nossa vida.
+
+Quando Bella era pequena, eu estava conversando com ela e disse: — Te amo muito.
+
+— Mais que Jesus? — ela perguntou. — Não — respondi.
+
+Bella me deu o olhar mais doce e disse:
+
+— Tudo bem. Eu sei que você deve amar mais a Jesus.
+
+Sou abençoado por poder compartilhar minha carreira com minha família.
+
+Como Adrienne viveu toda a rotina das turnês várias vezes, ela entende quão louca a agenda na estrada pode se tornar. Ela entende bem o lado comercial da indústria da música. Já aconteceu de estarmos juntos em turnês e, ao ver que estou ficando preocupado com o cronograma, ela sugerir:
+
+— Se começar a ficar muito apertado, vamos para casa para deixarmos você mais tranquilo.
+
+Ou então ela me dá espaço e me diz para não se preocupar com as crianças. Ela é uma mulher extraordinariamente tranquila.
+
+Adrienne também foi agraciada com uma bela voz (e o sotaque sul-africano mais fofo!). Este não é um comentário tendencioso, porque eu já pensava assim no começo da turnê do Festival Con Dios, quando não havia uma pitada de faísca entre nós.
+
+Ela costuma ser minha cantora de apoio no palco e nos CDs, e há algo verdadeiramente especial em compartilhar o testemunho do que eu passei com Melissa, contando as histórias por trás de músicas como “Walk by faith” e “I still believe” e cantando com Adrienne. Às vezes, ao nos apresentarmos, sinto que Deus graciosamente me concedeu a percepção da plenitude.
+
+Recebo muitas perguntas sobre Melissa e Adrienne. É difícil de explicar, mas é como se meu coração não precisasse tirar uma para dar lugar à outra. Em vez disso, é como se meu coração tivesse crescido para que pudesse ter espaço para ambas. Mas agora que Adrienne e eu estamos casados há dezesseis anos, não há comparação. Adrienne é a mulher que Deus me deu para caminhar nesta vida. Às vezes me surpreendo quando penso nisso. Mas muitas coisas que Deus fez na minha vida me surpreendem. Ele é um Deus maravilhoso! Como eu poderia não querer contar a todos sobre Ele?
+
+Lembro-me agora de meus pensamentos na manhã de Natal, quando ganhei meu violão Taylor. Eles continuam sendo minha missão hoje: “Senhor, o que Você quiser. Os Seus planos, nunca os meus. Aqui estou”.
+
+MEU DESEJO
+
+As pessoas me perguntam qual a minha definição de adoração. Minha resposta é “qualquer coisa que façamos que glorifique o Senhor”. Um entrevistador que me perguntou isso disse que minha resposta o surpreendeu, porque ele esperava que um músico desse uma resposta relacionada à música.
+
+Algumas definições dizem que adoração “são músicas cantadas para Deus” ou “músicas que cantamos na igreja aos domingos”. Mas a adoração é muito mais que a música. Pode ser simples como uma conversa. Se estou com alguém e estamos falando de Deus e o que Ele realizou em nossa vida, se estamos elevando Seu nome, eu considero que estamos adorando a Deus nesses momentos.
+
+O projeto de adoração foi minha primeira oportunidade de trabalhar com um segmento. Depois disso, fui encaixado no segmento do rock cristão de nossa indústria. Depois fui considerado um artista de música contemporânea. Já toquei músicas de inúmeros estilos, mas até onde sei eu sempre fui um músico de adoração. Talvez mais especificamente um músico adorador.
+
+Uma de minhas músicas chama-se “My desire” (“Meu desejo”). Sempre me perguntam qual a origem da profundidade da minha música, mas “My desire” tem uma mensagem bastante simples. Como diz a canção:
+
+This is my desire, to be used by You
+
+É isso. Este é o meu desejo. Ser usado por Deus.
+
+A explicação está mais para a frente, perto do final da música:
+
+There’s not much I can do to repay all You’ve done, So I give my hands to use.
+
+Minhas mãos são vitais para o meu propósito. Toco violão com elas. Componho com elas. Então, quando eu digo que entreguei minhas mãos para que Deus as use como quiser, estou sendo literal. Mas mais que minhas mãos, entreguei meu coração a Deus.
+
+Quero escrever canções que toquem o coração de Deus. Acredito que, quando Deus vê um de seus filhos compondo músicas de amor para seu Pai — músicas que O glorificam —, Seu coração é tocado. Para mim, músicas compostas com o coração são verdadeiras. São honestas. São emocionalmente puras. E quando eu sou honesto e digo “Deus, é assim que me sinto”, abro meu coração para Ele, para que Ele faça um trabalho de transformação comigo.
+
+Deus chamou Davi de homem por causa do seu coração; não porque Davi era perfeito, mas porque ele era penitente. Ao longo da leitura dos Salmos de Davi, fica óbvio que ele era honesto com Deus em relação a seus sentimentos e pensamentos, e sabemos do grande trabalho que Deus fez com ele.
+
+Esse é o tipo de relacionamento que quero ter com Deus — um relacionamento em que o meu coração está totalmente aberto para que Ele possa me moldar e esculpir da forma como Ele quiser. Quero que minhas músicas ajudem as outras pessoas a encontrar essa abertura em sua relação com Deus.
+
+Esse é o meu desejo.
+
+Outra música que cantamos diz: We’ll sing it out to let all the world know that Jesus saves. Nos últimos anos, Deus nos permitiu levar essa mensagem para novos lugares, inclusive em apresentações internacionais em mais de catorze países.
+
+Aprendi que, mesmo que o público esteja em um país estrangeiro ouvindo minha música usando um tradutor ou passeando pelo feed do Instagram, mais pessoas do que imaginamos precisam saber como Deus nos ajuda através dos vales mais profundos para que se sintam encorajadas a se manter firmes e dizer: “Precisamos acreditar!”.
+
+Mas, para ser sincero, algumas noites, principalmente nos primeiros anos depois que Melissa foi para o Céu, enquanto eu me preparava para subir ao palco com plena consciência de que muitos da plateia estavam ali para me ouvir compartilhar minha história e depois cantar “I still believe”, eu não queria cantar. Eu sabia que as palavras eram verdadeiras, mas elas não pareciam verdadeiras.
+
+Eu dizia a Deus: “Não acho que Você é bom. Não sinto que Você é fiel”. Nessas noites, foi uma verdadeira prova de fé dizer: “O.k., Deus, mesmo que eu não sinta, ainda vou cantar”. Eu podia dizer isso porque, nos momentos quando menos esperava, Deus vinha por mim. Nas noites que deixei de lado o que não sentia e cantei o que sabia que era verdade, eu vi Deus se movimentando entre as pessoas da plateia.
+
+Já houve noites em que pensei: “Não posso cantar esta música hoje, pois não estou acreditando no Senhor neste exato momento!”. Ou que eu me perguntava: “Como posso dizer às pessoas que eu ainda acredito quando estou com medo do que pode acontecer na minha vida?”. Mas, fortalecido nas experiências anteriores em que confiei em Deus e cantei “I still believe”, subi ao palco e cantei com todo o meu coração. Toda vez que fiz isso, Deus me surpreendeu com a quantidade de corações que ele tocou com a música; se eu tivesse feito o contrário, seria uma vitória do inimigo.
+
+A história do que passei com Melissa não é apenas uma história, é o meu testemunho. E “I still believe” não é apenas uma música, é o meu grito de guerra.
+
+Faz quase vinte anos desde o dia em que, na casa dos meus pais, embora não quisesse, peguei meu violão e “I still believe” inundou meu coração.
+
+Scattered words and empty thoughts Seem to pour from my heart
+
+I’ve never felt so torn before
+
+Seems I don’t know where to start
+
+But it’s now that I feel Your grace fall like rain From every fingertip, washing away my pain Though the questions still fog up my mind With promises I still seem to bear
+
+Even when answers slowly unwind It’s my heart I see You prepare But it’s now that I feel Your grace fall like rain From every fingertip, washing away my pain
+
+The only place I can go is into Your arms Where I throw to You my feeble prayers
+
+In brokenness I can see that this was Your will for me Help me to know You are near
+
+I still believe in Your faithfulness I still believe in Your truth
+
+I still believe in Your holy Word
+
+Even when I don’t see, I still believe.
+
+Eu não poderia ter expressado essas palavras sozinho. Perdido em um vale profundo, me sentindo sozinho e incapaz até de me levantar sozinho, olhei para a névoa que me envolvia para ver meu amado Senhor ali comigo, com as mãos estendidas para me ajudar a levantar para que Ele pudesse me guiar para fora do meu desespero.
+
+Minha jornada não foi fácil. Na verdade, minha jornada ainda não terminou e vai continuar até o dia prometido em que “não haverá mais morte e dor”. Por todo o caminho, Deus colocou pessoas maravilhosas na minha vida para me ajudar a chegar ao ponto em que estou agora. Mas, mais do que isso, Deus Se colocou na minha vida. Nem sempre reconheci que Ele estava perto, mas olhando para trás vejo que sim, Ele sempre esteve perto.
+
+Sei que muitas das pessoas que já ouviram “I still believe” podem se identificar e pensar: “Estou vivendo este momento”. Minha oração sincera para cada uma dessas pessoas é que encontrem a esperança e a cura do Senhor que me curou. Por algum tempo, fiquei preso neste mesmo vale sombrio. Da mesma forma como Deus usou Jon Courson para me ajudar quando o visitei no Oregon, posso dizer para você que Deus fornece um caminho para nos tirar das sombras.
+
+Gostaria de dizer que você vai sair dessa. Mas não posso.
+
+As pessoas são diferentes. Cada um de nós lida com nossas circunstâncias de forma diferente. Mas temos um Deus que lida conosco individualmente. Ele criou cada um de nós, e Ele te criou com um plano específico, só seu. Aceite as pessoas que Deus coloca em sua vida para ajudar com as dificuldades. E aceite o Senhor. Você pode se perguntar, como eu me perguntei, se Ele vai te ouvir. Se Ele realmente cuida de cada situação. Se Ele ao menos está por perto. Acredite em mim: Ele ouve o seu lamento, gritos e gemidos. Ele cuida de você. Ele está perto de você — bem ao seu lado.
+
+Então levante e O adore. Agora mesmo. Não espere já ter atravessado este momento para fazer isso. Deus precisa ser louvado todo o tempo. Não perca a oportunidade de glorificá-Lo em meio à incerteza. Seu momento pode estar ruim, mas Deus é sempre bom. Abra seu coração para Deus, diga a Ele com toda honestidade como você se sente e então descubra quão intensamente Ele pode usá-lo, mesmo quando você não se sente profícuo.
+
+Eu já estive lá, e não posso imaginar nem querer voltar a esse lugar. Mas agora eu estou muito agradecido de saber que, pela dor, pela solidão, pela confusão, pela agonia, Deus estava comigo — me ajudando a crescer, me maturando, me amando, carinhosamente me levando para perto Dele. A vida é cheia de desilusão e dor, mas Deus é fiel.
+
+Por isso, mesmo quando não estou em um bom dia, posso subir no palco e cantar “I still believe”.
+
+Porque eu realmente ainda acredito.
+
+E, porque Deus me curou, eu sempre acreditarei.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+end;
+$migration$;
