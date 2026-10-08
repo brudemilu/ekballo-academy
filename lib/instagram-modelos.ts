@@ -40,6 +40,26 @@ export const MODELOS = {
     detalhe:
       "Cada linha numa tira de papel recortado, levemente torta, por cima da foto.",
   },
+  sereno: {
+    nome: "Sereno",
+    detalhe:
+      "Paisagem calma com a frase em serifada clara: o começo grande, o resto menor ao lado.",
+  },
+  contraste: {
+    nome: "Contraste",
+    detalhe:
+      "Foto com a frase em letra fina maiúscula e a palavra entre {chaves} em itálico serifado.",
+  },
+  carimbo: {
+    nome: "Carimbo",
+    detalhe:
+      "Fundo de cor forte e gasto, a primeira frase enorme e a segunda em tiras claras.",
+  },
+  gravura: {
+    nome: "Gravura",
+    detalhe:
+      "Papel claro com um desenho a traço; a primeira frase em serifada e a segunda numa tarja preta.",
+  },
   foto: {
     nome: "Papel (antigo)",
     detalhe: "O desenho anterior: foto com papel, pincelada e moldura.",
@@ -83,6 +103,10 @@ export const MODELOS_AUTOMATICOS: ModeloSlide[] = [
   "editorial",
   "impacto",
   "recorte",
+  "sereno",
+  "contraste",
+  "carimbo",
+  "gravura",
 ];
 export const TEMAS_AUTOMATICOS = [
   "dourado",
@@ -121,7 +145,11 @@ export type ModeloEditorial =
   | "cartaz"
   | "editorial"
   | "impacto"
-  | "recorte";
+  | "recorte"
+  | "sereno"
+  | "contraste"
+  | "carimbo"
+  | "gravura";
 export function ehModeloEditorial(m: ModeloSlide): m is ModeloEditorial {
   return (
     m === "cinema" ||
@@ -129,7 +157,11 @@ export function ehModeloEditorial(m: ModeloSlide): m is ModeloEditorial {
     m === "cartaz" ||
     m === "editorial" ||
     m === "impacto" ||
-    m === "recorte"
+    m === "recorte" ||
+    m === "sereno" ||
+    m === "contraste" ||
+    m === "carimbo" ||
+    m === "gravura"
   );
 }
 
@@ -140,8 +172,40 @@ export const MODELOS_COM_FOTO: ModeloSlide[] = [
   "cartaz",
   "impacto",
   "recorte",
+  "sereno",
+  "contraste",
+  "carimbo",
+  "gravura",
   "foto",
 ];
+
+/**
+ * O acabamento que a imagem gerada recebe em cada modelo: reportagem escura
+ * (o padrão dos modelos novos), paisagem contemplativa ou desenho a traço.
+ */
+export function estiloDaImagem(
+  m: ModeloSlide,
+): "devocional" | "documental" | "gravura" {
+  if (m === "gravura") return "gravura";
+  if (m === "sereno" || !ehModeloEditorial(m)) return "devocional";
+  return "documental";
+}
+
+/**
+ * Parte a frase em duas: a principal e o complemento. Corta no primeiro fim de
+ * frase; sem ele, na primeira vírgula depois de pelo menos três palavras. Frase
+ * sem pausa nenhuma fica inteira na principal. É o que os modelos de dois
+ * tamanhos (sereno, contraste, carimbo, gravura) usam — nenhuma palavra muda
+ * de lugar.
+ */
+export function partirFrase<T extends { t: string }>(palavras: T[]): [T[], T[]] {
+  const ultimo = palavras.length - 1;
+  let corte = palavras.findIndex((p, i) => i < ultimo && /[.!?…:]["”’)]?$/.test(p.t));
+  if (corte < 0)
+    corte = palavras.findIndex((p, i) => i >= 2 && i < ultimo && /[,;–—]$/.test(p.t));
+  if (corte < 0) return [palavras, []];
+  return [palavras.slice(0, corte + 1), palavras.slice(corte + 1)];
+}
 
 /**
  * As palavras do slide, marcando as que vieram entre {chaves}. A frase
@@ -277,6 +341,14 @@ export function instrucaoDoModelo(modelo: ModeloSlide): string {
       return `FORMATO DOS SLIDES (obrigatório): cada "texto" é UMA frase de 6 a 14 palavras, afirmativa e forte, com 1 ou 2 palavras {destacadas}. Sem ((manuscrita)). ${CENA_DOCUMENTAL}`;
     case "recorte":
       return `FORMATO DOS SLIDES (obrigatório): cada "texto" é UMA frase de 5 a 12 palavras, em tom de conversa, com 1 ou 2 palavras {destacadas}. Sem ((manuscrita)). ${CENA_DOCUMENTAL}`;
+    case "sereno":
+      return 'FORMATO DOS SLIDES (obrigatório): cada "texto" é UMA frase em duas partes separadas por vírgula — a primeira de 4 a 7 palavras, a segunda de 5 a 9 — em tom calmo, de quem aconselha. Sem {chaves} e sem ((manuscrita)). O "prompt" descreve, em INGLÊS, uma PAISAGEM quieta e sem gente: árvore sozinha na névoa, banco vazio, estrada de terra ao amanhecer, mar parado.';
+    case "contraste":
+      return `FORMATO DOS SLIDES (obrigatório): cada "texto" são DUAS frases curtas — a primeira de 5 a 8 palavras, com UMA palavra {destacada} (o verbo ou o sentimento); a segunda de 6 a 10 palavras, que responde à primeira. Sem ((manuscrita)). ${CENA_DOCUMENTAL}`;
+    case "carimbo":
+      return `FORMATO DOS SLIDES (obrigatório): cada "texto" são DUAS frases curtas e secas — a primeira de 4 a 6 palavras, a segunda de 3 a 6 palavras que vira a primeira do avesso. Sem {chaves} e sem ((manuscrita)). ${CENA_DOCUMENTAL}`;
+    case "gravura":
+      return 'FORMATO DOS SLIDES (obrigatório): cada "texto" são DUAS frases curtas — a primeira de 4 a 8 palavras (o problema ou o limite), a segunda de 2 a 4 palavras (o que Deus fez). Sem {chaves} e sem ((manuscrita)). O "prompt" descreve, em INGLÊS, UM desenho simples da cena: um personagem de costas e um elemento só (um homem com cajado diante do mar aberto, um barco na tempestade, uma ovelha no ombro do pastor).';
     case "foto":
       return "";
   }

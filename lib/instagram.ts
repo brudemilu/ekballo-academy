@@ -64,7 +64,16 @@ const ESTILO_DOCUMENTAL = [
   "no text, no letters, no watermark, no logo, no illustration, no cgi look, no distorted faces, no deformed hands, no extra fingers",
 ].join(", ");
 
-export type EstiloFoto = "devocional" | "documental";
+// Desenho a traço para o modelo "gravura" (issue #248): não é foto. O fundo
+// branco liso é o que deixa a ilustração se fundir com o papel do slide.
+const ESTILO_GRAVURA = [
+  "black ink line art illustration, vintage engraving style, fine cross-hatching, hand-drawn pen sketch",
+  "monochrome black lines only, plain off-white paper background, no shading in the background",
+  "single centered subject in the lower half, wide empty white space at the top, figure seen from behind",
+  "no text, no letters, no watermark, no frame, no color, no photograph, no gray wash",
+].join(", ");
+
+export type EstiloFoto = "devocional" | "documental" | "gravura";
 
 // Formato nativo do post (4:5). O FLUX.2 exige múltiplos de 16; a sobra de
 // 8 px em cada eixo some no `objectFit: cover` do canvas 1080×1350.
@@ -212,7 +221,12 @@ export function gerarFundoLivre(
   estilo: EstiloFoto = "devocional",
 ): Promise<string | null> {
   if (!prompt.trim()) return Promise.resolve(null);
-  const acabamento = estilo === "documental" ? ESTILO_DOCUMENTAL : ESTILO_DEVOCIONAL;
+  const acabamento =
+    estilo === "documental"
+      ? ESTILO_DOCUMENTAL
+      : estilo === "gravura"
+        ? ESTILO_GRAVURA
+        : ESTILO_DEVOCIONAL;
   return gerarImagem(`${prompt.trim()}. ${acabamento}`, { seed, formato });
 }
 

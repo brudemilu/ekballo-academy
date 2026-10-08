@@ -2,7 +2,12 @@ import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { obterFundo } from "@/lib/fundo-cache";
 import { renderSlideEditorial } from "@/lib/instagram-editorial-render";
-import { ehModeloDeTexto, ehModeloEditorial, lerModelo } from "@/lib/instagram-modelos";
+import {
+  ehModeloDeTexto,
+  ehModeloEditorial,
+  estiloDaImagem,
+  lerModelo,
+} from "@/lib/instagram-modelos";
 import { renderSlideModelo } from "@/lib/instagram-modelos-render";
 import {
   BRUSH_FILE,
@@ -135,7 +140,11 @@ export async function GET(req: NextRequest) {
   //                 3) fallback local.
   // A IA vem primeiro porque a foto de banco é escolhida por palavra-chave e
   // raramente conversa com o texto do slide; a gerada segue o prompt.
-  let bgSrc = `${selfOrigin}/fundos/${foto}${story ? "-story" : ""}.jpg`;
+  // A gravura não usa a foto de reserva: sem o desenho, sai só o papel.
+  let bgSrc =
+    modelo === "gravura"
+      ? ""
+      : `${selfOrigin}/fundos/${foto}${story ? "-story" : ""}.jpg`;
   // Foto enviada pelo pastor: vale mais que qualquer foto gerada. Só aceita o
   // que está no nosso próprio Storage — a rota não vira busca de URL alheia.
   const img = url.searchParams.get("img")?.trim() || "";
@@ -151,10 +160,14 @@ export async function GET(req: NextRequest) {
         : prompt,
       seed,
       story ? "story" : "feed",
-      ehModeloEditorial(modelo) ? "documental" : "devocional",
+      estiloDaImagem(modelo),
     );
     if (gerado) {
       bgSrc = gerado;
+    } else if (modelo === "gravura") {
+      // Sem o desenho, a gravura sai só com o texto: foto de banco no papel
+      // claro destoa mais do que papel vazio.
+      bgSrc = "";
     } else {
       const pex = await buscarFotoPexels(prompt, seed, TAMANHO_W, altura);
       if (pex) bgSrc = pex;
@@ -163,6 +176,7 @@ export async function GET(req: NextRequest) {
 
   // modo "só fundo": devolve a foto crua (sem texto/papel) — usada pela prévia da foto.
   if (soFundo) {
+    if (!bgSrc) return new Response("sem imagem de fundo", { status: 404 });
     if (bgSrc.startsWith("data:")) {
       const b64 = bgSrc.split(",")[1] || "";
       const bin = atob(b64);
@@ -187,12 +201,14 @@ export async function GET(req: NextRequest) {
       loadFont(selfOrigin, SCRIPT_FONT_FILE),
       loadFont(selfOrigin, FONTE_TEXTO_FILE),
     ]);
+    const italica = await loadFont(selfOrigin, "cormorant-italic.ttf");
     return new ImageResponse(
       renderSlideEditorial({
         modelo,
         texto: verso,
         cor,
-        bgSrc: modelo === "editorial" ? undefined : bgSrc,
+        bgSrc: modelo === "editorial" || !bgSrc ? undefined : bgSrc,
+        grungeSrc: `${selfOrigin}/texturas/${GRUNGE_FILE}`,
         graoSrc: `${selfOrigin}/texturas/grao.png`,
         top,
         ref,
@@ -208,6 +224,7 @@ export async function GET(req: NextRequest) {
           { name: "Legenda", data: legenda, weight: 500, style: "normal" },
           { name: "Script", data: script, weight: 400, style: "normal" },
           { name: "Serifada", data: serifada, weight: 400, style: "normal" },
+          { name: "Italica", data: italica, weight: 400, style: "italic" },
         ],
         headers: cabecalhos,
       },

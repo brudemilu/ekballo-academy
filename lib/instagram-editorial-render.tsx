@@ -11,7 +11,7 @@
  *
  * Fontes esperadas no ImageResponse: "Condensada" (Anton), "Grotesca"
  * (Inter 800), "Legenda" (Inter 500), "Script" (manuscrita) e "Serifada"
- * (DM Serif, só no recorte).
+ * (DM Serif) e "Italica" (Cormorant itálica, só no contraste).
  *
  * Lembretes do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — top/left/width/height por extenso.
@@ -27,6 +27,7 @@ import {
   type ModeloEditorial,
   type Palavra,
   palavrasDoSlide,
+  partirFrase,
 } from "@/lib/instagram-modelos";
 
 const TINTA = "#0C0C0C";
@@ -42,6 +43,8 @@ export type EditorialPayload = {
   bgSrc?: string;
   /** Textura de grão, por cima da foto. */
   graoSrc?: string;
+  /** Textura de tinta gasta (só o carimbo usa). */
+  grungeSrc?: string;
   /** Linha pequena do topo (assinatura, tema, série). */
   top?: string;
   /** Referência, autoria ou numeração ("Lição #08"). */
@@ -904,6 +907,553 @@ function Recorte({ p }: { p: EditorialPayload }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Os quatro modelos da terceira leva de referências (issue #248). Todos
+// partem a frase em principal + complemento (`partirFrase`), sem tirar
+// nenhuma palavra do lugar.
+// ---------------------------------------------------------------------------
+
+/** Quebra em linhas de largura parecida, mirando `letrasPorLinha`. */
+function emLinhas(palavras: Palavra[], fonte: FonteMedida, letrasPorLinha: number) {
+  if (!palavras.length) return [];
+  const linhas = Math.max(
+    1,
+    Math.round(textoDaLinha(palavras).length / letrasPorLinha),
+  );
+  return quebrarEmLinhas(palavras, fonte, alvoParaLinhas(palavras, fonte, linhas));
+}
+
+/** O maior tamanho em que todas as linhas cabem na largura. */
+function tamanhoDasLinhas(
+  linhas: Palavra[][],
+  fonte: FonteMedida,
+  largura: number,
+  teto: number,
+  aperto = 0,
+) {
+  return Math.min(
+    teto,
+    ...linhas.map((l) =>
+      tamanhoParaCaber(textoDaLinha(l), fonte, largura, teto, aperto),
+    ),
+  );
+}
+
+// --- Sereno — paisagem calma, serifada clara em dois tamanhos ---------------
+
+function Sereno({ p }: { p: EditorialPayload }) {
+  // A serifada é medida pela grotesca (mais larga): sobra folga, não estoura.
+  const fonte: FonteMedida = "inter800";
+  const { palavras } = palavrasDoSlide(p.texto);
+  const [principal, resto] = partirFrase(palavras);
+  const margem = 120;
+  const util = p.largura - margem * 2;
+  const linhasG = emLinhas(principal, fonte, 13);
+  const tamG = tamanhoDasLinhas(linhasG, fonte, util * 0.78, 150);
+  const linhasP = emLinhas(resto, fonte, 13);
+  const tamP = Math.min(
+    Math.round(tamG * 0.52),
+    tamanhoDasLinhas(linhasP, fonte, util * 0.5, 80),
+  );
+  const tinta = "#F4E3CF";
+  const linha = (l: Palavra[], tamanho: number, chave: string) => (
+    <Linha
+      key={chave}
+      palavras={l}
+      familia="Serifada"
+      tamanho={tamanho}
+      cor={tinta}
+      corDestaque={tinta}
+      espaco={Math.round(tamanho * -0.035)}
+      entrelinha={0.98}
+    />
+  );
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#141815",
+      }}
+    >
+      <Fundo
+        p={p}
+        veu="linear-gradient(180deg, rgba(10,14,12,0.42) 0%, rgba(10,14,12,0.30) 45%, rgba(10,14,12,0.55) 100%)"
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          position: "absolute",
+          top: Math.round(p.altura * 0.2),
+          left: margem,
+          width: util,
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {linhasG.map((l, i) => linha(l, tamG, `g${i}`))}
+        </div>
+        {linhasP.length ? (
+          // o complemento desce para a direita, como quem continua a conversa
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              marginTop: Math.round(tamG * 0.12),
+              marginLeft: Math.round(util * 0.5),
+            }}
+          >
+            {linhasP.map((l, i) => linha(l, tamP, `p${i}`))}
+          </div>
+        ) : null}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          position: "absolute",
+          left: 0,
+          bottom: Math.round(p.altura * 0.07),
+          width: p.largura,
+        }}
+      >
+        <Rotulo
+          texto={p.ref || p.top || "Ekballo Academy"}
+          cor="rgba(244,227,207,0.78)"
+          tamanho={22}
+          espaco={7}
+        />
+      </div>
+    </div>
+  );
+}
+
+// --- Contraste — letra fina maiúscula e a palavra forte em itálico serifado --
+
+/** Uma linha em que o destaque troca de família (itálico serifado, minúsculo). */
+function LinhaMista({
+  palavras,
+  tamanho,
+  cor,
+}: {
+  palavras: Palavra[];
+  tamanho: number;
+  cor: string;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline" }}>
+      {palavras.map((w, i) => (
+        <div
+          key={`${i}-${w.t}`}
+          style={{
+            display: "flex",
+            fontFamily: w.destaque ? "Italica" : "Legenda",
+            fontStyle: w.destaque ? "italic" : "normal",
+            fontSize: w.destaque ? Math.round(tamanho * 1.16) : tamanho,
+            lineHeight: 1.04,
+            letterSpacing: w.destaque ? 0 : Math.round(tamanho * -0.045),
+            marginRight: i < palavras.length - 1 ? Math.round(tamanho * 0.24) : 0,
+            color: cor,
+          }}
+        >
+          {w.destaque ? w.t.toLowerCase() : w.t.toUpperCase()}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Contraste({ p }: { p: EditorialPayload }) {
+  const fonte: FonteMedida = "inter800";
+  const { palavras } = palavrasDoSlide(p.texto);
+  const [principal, resto] = partirFrase(palavras);
+  const margem = 92;
+  const util = p.largura - margem * 2;
+  const maiusculas = (l: Palavra[]) => textoDaLinha(l).toUpperCase();
+  const linhasG = emLinhas(principal, fonte, 17);
+  const tamG = Math.min(
+    104,
+    ...linhasG.map((l) => tamanhoParaCaber(maiusculas(l), fonte, util * 0.9, 104)),
+  );
+  const linhasP = emLinhas(resto, fonte, 30);
+  const tamP = Math.min(
+    Math.round(tamG * 0.46),
+    ...linhasP.map((l) => tamanhoParaCaber(maiusculas(l), fonte, util * 0.8, 46)),
+  );
+  const branco = "#FFFFFF";
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#0B0907",
+      }}
+    >
+      <Fundo
+        p={p}
+        veu="linear-gradient(180deg, rgba(8,6,4,0.45) 0%, rgba(8,6,4,0.40) 50%, rgba(8,6,4,0.30) 100%)"
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          position: "absolute",
+          top: Math.round(p.altura * 0.055),
+          left: 0,
+          width: p.largura,
+        }}
+      >
+        <Rotulo
+          texto={p.top || "Ekballo Academy"}
+          cor={branco}
+          tamanho={24}
+          espaco={2}
+        />
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          position: "absolute",
+          top: Math.round(p.altura * 0.34),
+          left: margem,
+          width: util,
+        }}
+      >
+        {linhasG.map((l, i) => (
+          <LinhaMista
+            key={`g${i}-${textoDaLinha(l)}`}
+            palavras={l}
+            tamanho={tamG}
+            cor={branco}
+          />
+        ))}
+        {linhasP.length ? (
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 22 }}>
+            {linhasP.map((l, i) => (
+              <LinhaMista
+                key={`p${i}-${textoDaLinha(l)}`}
+                palavras={l}
+                tamanho={tamP}
+                cor={branco}
+              />
+            ))}
+          </div>
+        ) : null}
+        {/* o fio que fecha o bloco, no lugar da seta da referência */}
+        <div
+          style={{
+            display: "flex",
+            marginTop: 40,
+            width: 110,
+            height: 3,
+            backgroundColor: branco,
+          }}
+        />
+        {p.ref ? (
+          <div style={{ display: "flex", marginTop: 22 }}>
+            <Rotulo
+              texto={p.ref}
+              cor="rgba(255,255,255,0.85)"
+              tamanho={22}
+              espaco={5}
+            />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// --- Carimbo — cor forte e gasta, frase enorme e o complemento em tiras -----
+
+function Carimbo({ p }: { p: EditorialPayload }) {
+  const fonte: FonteMedida = "anton";
+  const { palavras } = palavrasDoSlide(p.texto, true);
+  const [principal, resto] = partirFrase(palavras);
+  const margem = 70;
+  const util = p.largura - margem * 2;
+  const linhasG = emLinhas(principal, fonte, 13);
+  const tamG = Math.min(
+    Math.floor((p.altura * 0.36) / Math.max(1, linhasG.length)),
+    tamanhoDasLinhas(linhasG, fonte, util, 250),
+  );
+  const tiras = emLinhas(resto, "inter800", 18);
+  const tamT = tamanhoDasLinhas(tiras, "inter800", util * 0.78, 62, -0.03);
+  const creme = "#F1E4C8";
+  const caixa = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: p.largura,
+    height: p.altura,
+  } as const;
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: p.cor,
+      }}
+    >
+      {p.bgSrc ? (
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
+        <img
+          src={p.bgSrc}
+          alt=""
+          width={p.largura}
+          height={p.altura}
+          style={{ ...caixa, objectFit: "cover" }}
+        />
+      ) : null}
+      {/* a cor cobre o topo inteiro e vai soltando a foto para baixo */}
+      <div
+        style={{
+          ...caixa,
+          display: "flex",
+          backgroundImage: `linear-gradient(180deg, ${p.cor} 0%, ${p.cor} 44%, ${p.cor}B8 58%, rgba(10,6,4,0.55) 100%)`,
+        }}
+      />
+      {p.grungeSrc ? (
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
+        <img
+          src={p.grungeSrc}
+          alt=""
+          width={p.largura}
+          height={p.altura}
+          style={{ ...caixa, objectFit: "cover", opacity: 0.5 }}
+        />
+      ) : null}
+      {p.graoSrc ? (
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
+        <img
+          src={p.graoSrc}
+          alt=""
+          width={p.largura}
+          height={p.altura}
+          style={{ ...caixa, objectFit: "cover", opacity: 0.22 }}
+        />
+      ) : null}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          position: "absolute",
+          top: Math.round(p.altura * 0.075),
+          left: margem,
+          width: util,
+        }}
+      >
+        {linhasG.map((l, i) => (
+          <Linha
+            key={`g${i}-${textoDaLinha(l)}`}
+            palavras={l}
+            familia="Condensada"
+            tamanho={tamG}
+            cor={creme}
+            corDestaque={creme}
+            espaco={1}
+            entrelinha={1.08}
+          />
+        ))}
+        {tiras.map((l, i) => (
+          <div
+            key={`t${i}-${textoDaLinha(l)}`}
+            style={{
+              display: "flex",
+              marginTop: i ? 8 : 26,
+              padding: `6px 18px 8px`,
+              backgroundColor: creme,
+              transform: `rotate(${i % 2 ? 0.8 : -0.8}deg)`,
+              fontFamily: "Grotesca",
+              fontSize: tamT,
+              lineHeight: 1.1,
+              letterSpacing: Math.round(tamT * -0.03),
+              color: TINTA,
+            }}
+          >
+            {textoDaLinha(l)}
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          left: margem,
+          bottom: Math.round(p.altura * 0.055),
+        }}
+      >
+        <Rotulo
+          texto={p.ref || p.top || "Ekballo Academy"}
+          cor={creme}
+          tamanho={24}
+          espaco={3}
+        />
+      </div>
+    </div>
+  );
+}
+
+// --- Gravura — papel claro, desenho a traço, a segunda frase numa tarja ------
+
+function Gravura({ p }: { p: EditorialPayload }) {
+  const fonte: FonteMedida = "inter800";
+  const { palavras } = palavrasDoSlide(p.texto);
+  const [principal, resto] = partirFrase(palavras);
+  const papel = "#EFEDE8";
+  const margem = 118;
+  const util = p.largura - margem * 2;
+  const linhasG = emLinhas(principal, fonte, 17);
+  const tamG = tamanhoDasLinhas(linhasG, fonte, util * 0.82, 84);
+  const tarjas = emLinhas(resto, fonte, 16);
+  const tamT = tamanhoDasLinhas(tarjas, fonte, util * 0.72, 78);
+  const caixa = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: p.largura,
+    height: p.altura,
+  } as const;
+  // Sem desenho, o texto desce para o meio do papel.
+  const topo = Math.round(p.altura * (p.bgSrc ? 0.15 : 0.32));
+  // O papel liso vai até onde o texto acaba; só depois o desenho aparece.
+  const altoTexto =
+    linhasG.length * tamG * 1.12 +
+    (tarjas.length ? 40 + tarjas.length * (tamT * 1.05 + 26) : 0);
+  const fimDoPapel = Math.min(
+    78,
+    Math.round(((topo + altoTexto + 16) / p.altura) * 100),
+  );
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: papel,
+      }}
+    >
+      {p.bgSrc ? (
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
+        <img
+          src={p.bgSrc}
+          alt=""
+          width={p.largura}
+          height={p.altura}
+          style={{ ...caixa, objectFit: "cover" }}
+        />
+      ) : null}
+      {/* o papel cobre a metade de cima e se desfaz sobre o desenho */}
+      <div
+        style={{
+          ...caixa,
+          display: "flex",
+          backgroundImage: `linear-gradient(180deg, ${papel} 0%, ${papel} ${fimDoPapel}%, rgba(239,237,232,0) ${fimDoPapel + 12}%)`,
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          position: "absolute",
+          top: Math.round(p.altura * 0.055),
+          left: 78,
+          width: p.largura - 156,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            padding: "5px 18px",
+            border: `2px solid ${TINTA}`,
+            borderRadius: 20,
+            fontFamily: "Legenda",
+            fontSize: 18,
+            letterSpacing: 2,
+            color: TINTA,
+          }}
+        >
+          {String(new Date().getFullYear())}
+        </div>
+        <Rotulo
+          texto={p.top || "Ekballo Academy"}
+          cor={TINTA}
+          tamanho={15}
+          espaco={6}
+        />
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          position: "absolute",
+          top: topo,
+          left: margem,
+          width: util,
+        }}
+      >
+        {linhasG.map((l, i) => (
+          <Linha
+            key={`g${i}-${textoDaLinha(l)}`}
+            palavras={l}
+            familia="Serifada"
+            tamanho={tamG}
+            cor={TINTA}
+            corDestaque={TINTA}
+            espaco={Math.round(tamG * -0.03)}
+            entrelinha={1.12}
+          />
+        ))}
+        {tarjas.map((l, i) => (
+          <div
+            key={`t${i}-${textoDaLinha(l)}`}
+            style={{
+              display: "flex",
+              marginTop: i ? 6 : 40,
+              padding: `8px 20px 12px`,
+              backgroundColor: TINTA,
+              fontFamily: "Serifada",
+              fontSize: tamT,
+              lineHeight: 1.05,
+              color: "#F6F4EE",
+            }}
+          >
+            {textoDaLinha(l).toUpperCase()}
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          left: 78,
+          bottom: Math.round(p.altura * 0.045),
+          // um pedaço de papel atrás, para o traço do desenho não cortar a letra
+          padding: "6px 12px",
+          backgroundColor: papel,
+        }}
+      >
+        <Rotulo
+          texto={p.ref || "Ekballo Academy"}
+          cor={TINTA}
+          tamanho={15}
+          espaco={5}
+        />
+      </div>
+    </div>
+  );
+}
+
 /** Desenha um slide em um dos modelos novos. */
 export function renderSlideEditorial(p: EditorialPayload) {
   if (p.modelo === "cinema") return <Cinema p={p} />;
@@ -911,5 +1461,9 @@ export function renderSlideEditorial(p: EditorialPayload) {
   if (p.modelo === "cartaz") return <Cartaz p={p} />;
   if (p.modelo === "impacto") return <Impacto p={p} />;
   if (p.modelo === "recorte") return <Recorte p={p} />;
+  if (p.modelo === "sereno") return <Sereno p={p} />;
+  if (p.modelo === "contraste") return <Contraste p={p} />;
+  if (p.modelo === "carimbo") return <Carimbo p={p} />;
+  if (p.modelo === "gravura") return <Gravura p={p} />;
   return <Editorial p={p} />;
 }

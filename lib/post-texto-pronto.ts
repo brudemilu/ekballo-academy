@@ -31,6 +31,10 @@ export const MODELOS_TEXTO_PRONTO: ModeloSlide[] = [
   "editorial",
   "impacto",
   "recorte",
+  "sereno",
+  "contraste",
+  "carimbo",
+  "gravura",
 ];
 
 /** Tira acento e caixa, para comparar. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ehModeloEditorial,
+  estiloDaImagem,
   instrucaoDoModelo,
   itensDoChecklist,
   lerModelo,
@@ -8,6 +9,7 @@ import {
   MODELOS_AUTOMATICOS,
   MODELOS_COM_FOTO,
   palavrasDoSlide,
+  partirFrase,
   sortearDiferente,
   tamanhoPorTexto,
   tamanhoQueCabe,
@@ -194,5 +196,64 @@ describe("sortearDiferente · o post seguinte não sai igual ao anterior", () =>
     );
     // Lista de um item só: não há como ser diferente, devolve o que tem.
     expect(sortearDiferente(["cinema"], "cinema", 0.5)).toBe("cinema");
+  });
+});
+
+// Os quatro modelos da terceira leva de referências.
+describe("sereno, contraste, carimbo e gravura", () => {
+  const novos = ["sereno", "contraste", "carimbo", "gravura"] as const;
+
+  it("são conhecidos, usam imagem e entram no sorteio", () => {
+    for (const m of novos) {
+      expect(lerModelo(m)).toBe(m);
+      expect(ehModeloEditorial(m)).toBe(true);
+      expect(MODELOS_COM_FOTO).toContain(m);
+      expect(MODELOS_AUTOMATICOS).toContain(m);
+      expect(instrucaoDoModelo(m)).toContain("FORMATO DOS SLIDES");
+    }
+  });
+
+  it("cada um pede a imagem no acabamento certo", () => {
+    expect(estiloDaImagem("gravura")).toBe("gravura");
+    expect(estiloDaImagem("sereno")).toBe("devocional");
+    expect(estiloDaImagem("contraste")).toBe("documental");
+    expect(estiloDaImagem("cinema")).toBe("documental");
+    expect(estiloDaImagem("foto")).toBe("devocional");
+  });
+});
+
+describe("partirFrase", () => {
+  const p = (t: string) => t.split(" ").map((w) => ({ t: w }));
+  const junta = (l: { t: string }[]) => l.map((w) => w.t).join(" ");
+
+  it("corta no primeiro fim de frase", () => {
+    const [a, b] = partirFrase(p("A mesa não é só um lugar. É onde histórias mudam."));
+    expect(junta(a)).toBe("A mesa não é só um lugar.");
+    expect(junta(b)).toBe("É onde histórias mudam.");
+  });
+
+  it("sem ponto no meio, corta na vírgula", () => {
+    const [a, b] = partirFrase(
+      p("Você não pode pular a parte difícil, porque é nela que você cresce."),
+    );
+    expect(junta(a)).toBe("Você não pode pular a parte difícil,");
+    expect(junta(b)).toBe("porque é nela que você cresce.");
+  });
+
+  it("vírgula logo no começo não serve de corte", () => {
+    const [a, b] = partirFrase(p("Pai, perdoa o que eles fazem"));
+    expect(junta(a)).toBe("Pai, perdoa o que eles fazem");
+    expect(b).toEqual([]);
+  });
+
+  it("frase sem pausa fica inteira, e nenhuma palavra se perde", () => {
+    const frase = "Deus não desperdiça nenhuma dor.";
+    const [a, b] = partirFrase(p(frase));
+    expect(junta(a)).toBe(frase);
+    expect(b).toEqual([]);
+    const longa =
+      'Onde Lúcifer disse "eu subirei", Jesus disse "eu descerei". Precisamos decidir.';
+    const [c, d] = partirFrase(p(longa));
+    expect(`${junta(c)} ${junta(d)}`).toBe(longa);
   });
 });
