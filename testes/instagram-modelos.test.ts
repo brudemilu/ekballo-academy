@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   ehModeloEditorial,
   estiloDaImagem,
+  falasDoTexto,
   instrucaoDoModelo,
   itensDoChecklist,
   lerModelo,
   MAX_ITENS_CHECKLIST,
   MODELOS_AUTOMATICOS,
   MODELOS_COM_FOTO,
+  MODELOS_SEM_FOTO_DE_RESERVA,
   palavrasDoSlide,
   partirFrase,
   sortearDiferente,
@@ -255,5 +257,57 @@ describe("partirFrase", () => {
       'Onde Lúcifer disse "eu subirei", Jesus disse "eu descerei". Precisamos decidir.';
     const [c, d] = partirFrase(p(longa));
     expect(`${junta(c)} ${junta(d)}`).toBe(longa);
+  });
+});
+
+// Os quatro modelos "de cenário": a IA faz o fundo, o texto é desenhado aqui.
+describe("quadrinho, caderno, chamada e muro", () => {
+  const novos = ["quadrinho", "caderno", "chamada", "muro"] as const;
+
+  it("são conhecidos e têm pedido próprio à IA", () => {
+    for (const m of novos) {
+      expect(lerModelo(m)).toBe(m);
+      expect(ehModeloEditorial(m)).toBe(true);
+      expect(MODELOS_COM_FOTO).toContain(m);
+      expect(instrucaoDoModelo(m)).toContain("FORMATO DOS SLIDES");
+    }
+  });
+
+  it("cada um pede o cenário certo", () => {
+    expect(estiloDaImagem("quadrinho")).toBe("cena3d");
+    expect(estiloDaImagem("caderno")).toBe("caderno");
+    expect(estiloDaImagem("muro")).toBe("parede");
+    expect(estiloDaImagem("chamada")).toBe("documental");
+  });
+
+  it("só caderno e muro entram no sorteio; quadrinho e chamada são por pedido", () => {
+    expect(MODELOS_AUTOMATICOS).toContain("caderno");
+    expect(MODELOS_AUTOMATICOS).toContain("muro");
+    expect(MODELOS_AUTOMATICOS).not.toContain("quadrinho");
+    expect(MODELOS_AUTOMATICOS).not.toContain("chamada");
+  });
+
+  it("papel claro não recebe foto de banco no lugar do desenho", () => {
+    expect(MODELOS_SEM_FOTO_DE_RESERVA).toEqual(["gravura", "caderno"]);
+  });
+});
+
+describe("falasDoTexto", () => {
+  it("uma fala por frase", () => {
+    expect(
+      falasDoTexto("Olha só vocês aqui! Vão viajar de novo? Sim, amanhã."),
+    ).toEqual(["Olha só vocês aqui!", "Vão viajar de novo?", "Sim, amanhã."]);
+  });
+
+  it("frases demais: o excedente entra no último balão, sem perder nada", () => {
+    const texto = "Um. Dois. Três. Quatro. Cinco.";
+    const falas = falasDoTexto(texto);
+    expect(falas).toHaveLength(3);
+    expect(falas.join(" ")).toBe(texto);
+  });
+
+  it("texto sem pontuação vira um balão só; vazio, nenhum", () => {
+    expect(falasDoTexto("Deus {abriu} o mar")).toEqual(["Deus abriu o mar"]);
+    expect(falasDoTexto("")).toEqual([]);
   });
 });

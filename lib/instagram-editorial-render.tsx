@@ -11,7 +11,8 @@
  *
  * Fontes esperadas no ImageResponse: "Condensada" (Anton), "Grotesca"
  * (Inter 800), "Legenda" (Inter 500), "Script" (manuscrita) e "Serifada"
- * (DM Serif) e "Italica" (Cormorant itálica, só no contraste).
+ * (DM Serif), "Italica" (Cormorant itálica, só no contraste), "Pincel"
+ * (Caveat Brush, o caderno) e "Tinta" (Rubik Wet Paint, o muro).
  *
  * Lembretes do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — top/left/width/height por extenso.
@@ -24,10 +25,12 @@ import {
   textoDaLinha,
 } from "@/lib/instagram-letras";
 import {
+  falasDoTexto,
   type ModeloEditorial,
   type Palavra,
   palavrasDoSlide,
   partirFrase,
+  tamanhoPorTexto,
 } from "@/lib/instagram-modelos";
 
 const TINTA = "#0C0C0C";
@@ -1454,6 +1457,617 @@ function Gravura({ p }: { p: EditorialPayload }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Os quatro modelos "de cenário" da terceira leva (issue #248): a IA faz o
+// cenário e o texto é sempre desenhado aqui — ela não sabe escrever português
+// dentro da imagem.
+// ---------------------------------------------------------------------------
+
+/** A imagem no quadro inteiro, sem escurecer (cenário claro). */
+function Cenario({ p, veu }: { p: EditorialPayload; veu?: string }) {
+  const caixa = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: p.largura,
+    height: p.altura,
+  } as const;
+  return (
+    <>
+      {p.bgSrc ? (
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
+        <img
+          src={p.bgSrc}
+          alt=""
+          width={p.largura}
+          height={p.altura}
+          style={{ ...caixa, objectFit: "cover" }}
+        />
+      ) : null}
+      {veu ? <div style={{ ...caixa, display: "flex", backgroundImage: veu }} /> : null}
+    </>
+  );
+}
+
+// --- Quadrinho — cena em 3D, cada frase num balão de fala -------------------
+
+function Quadrinho({ p }: { p: EditorialPayload }) {
+  const falas = falasDoTexto(p.texto);
+  const balao = "#F4E8D0";
+  const margem = 54;
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#2A2620",
+      }}
+    >
+      <Cenario
+        p={p}
+        veu="linear-gradient(180deg, rgba(20,16,10,0.18) 0%, rgba(20,16,10,0.0) 45%, rgba(20,16,10,0.25) 100%)"
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          position: "absolute",
+          top: Math.round(p.altura * 0.06),
+          left: margem,
+          width: p.largura - margem * 2,
+        }}
+      >
+        {falas.map((fala, i) => {
+          const direita = i % 2 === 1;
+          const tamanho = tamanhoPorTexto(
+            fala.length,
+            [
+              [110, 30],
+              [70, 36],
+              [38, 42],
+            ],
+            50,
+          );
+          return (
+            <div
+              key={`${i}-${fala}`}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignSelf: direita ? "flex-end" : "flex-start",
+                alignItems: direita ? "flex-end" : "flex-start",
+                maxWidth: Math.round(p.largura * 0.6),
+                marginTop: i ? 34 : 0,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  padding: "26px 32px 30px",
+                  backgroundColor: balao,
+                  borderRadius: 26,
+                  boxShadow: "0 6px 0 rgba(0,0,0,0.22)",
+                  fontFamily: "Serifada",
+                  fontSize: tamanho,
+                  lineHeight: 1.16,
+                  color: TINTA,
+                }}
+              >
+                {fala}
+              </div>
+              {/* o rabicho: um quadrado girado, meio escondido atrás do balão */}
+              <div
+                style={{
+                  display: "flex",
+                  width: 34,
+                  height: 34,
+                  marginTop: -20,
+                  marginLeft: direita ? 0 : 70,
+                  marginRight: direita ? 70 : 0,
+                  backgroundColor: balao,
+                  transform: "rotate(45deg) skewX(18deg)",
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          left: margem,
+          bottom: Math.round(p.altura * 0.04),
+          padding: "8px 16px",
+          backgroundColor: "rgba(12,12,12,0.55)",
+          borderRadius: 8,
+        }}
+      >
+        <Rotulo
+          texto={p.ref || p.top || "Ekballo Academy"}
+          cor="#FFFFFF"
+          tamanho={20}
+          espaco={4}
+        />
+      </div>
+    </div>
+  );
+}
+
+// --- Caderno — folha de caderno, frase em letra de pincel -------------------
+
+function Caderno({ p }: { p: EditorialPayload }) {
+  // A letra de pincel é estreita como a condensada: mede-se por ela.
+  const fonte: FonteMedida = "anton";
+  const { palavras } = palavrasDoSlide(p.texto);
+  const papel = "#F5F0E4";
+  const util = Math.round(p.largura * 0.74);
+  // Trecho destacado ganha a linha só dele (é o que vai na cor do tema).
+  const linhas: Palavra[][] = [];
+  let pendentes: Palavra[] = [];
+  let forte: Palavra[] = [];
+  const despejar = () => {
+    if (pendentes.length) linhas.push(...emLinhas(pendentes, fonte, 13));
+    pendentes = [];
+  };
+  for (const w of palavras) {
+    if (w.destaque) {
+      despejar();
+      forte.push(w);
+      continue;
+    }
+    if (forte.length) {
+      linhas.push(...emLinhas(forte, fonte, 14));
+      forte = [];
+    }
+    pendentes.push(w);
+  }
+  if (forte.length) linhas.push(...emLinhas(forte, fonte, 14));
+  despejar();
+  const medir = (teto: number) =>
+    linhas.map((l) =>
+      Math.max(
+        46,
+        tamanhoParaCaber(
+          textoDaLinha(l),
+          fonte,
+          util,
+          l[0]?.destaque ? teto : teto * 0.72,
+        ),
+      ),
+    );
+  let teto = 230;
+  let tamanhos = medir(teto);
+  while (teto > 80 && tamanhos.reduce((s, t) => s + t * 1.04, 0) > p.altura * 0.6) {
+    teto -= 10;
+    tamanhos = medir(teto);
+  }
+  const giros = [-2.4, 1.2, -1.4, 1.8, -1, 2];
+  const furos = Math.floor((p.altura - 80) / 58);
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: papel,
+      }}
+    >
+      {p.bgSrc ? (
+        <Cenario
+          p={p}
+          // o meio da folha fica limpo para a letra
+          veu={`radial-gradient(ellipse at center, ${papel} 0%, ${papel} 46%, rgba(245,240,228,0) 74%)`}
+        />
+      ) : (
+        // sem a folha da IA: a espiral é desenhada, furo por furo
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            position: "absolute",
+            top: 40,
+            left: 26,
+            height: p.altura - 80,
+          }}
+        >
+          {Array.from({ length: furos }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                width: 26,
+                height: 26,
+                borderRadius: 13,
+                backgroundColor: "#D8D2C4",
+                border: "3px solid #9A958A",
+              }}
+            />
+          ))}
+        </div>
+      )}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: p.largura,
+          height: p.altura,
+        }}
+      >
+        {linhas.map((l, i) => {
+          const destaque = Boolean(l[0]?.destaque);
+          return (
+            <div
+              key={`${i}-${textoDaLinha(l)}`}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                transform: `rotate(${giros[i % giros.length]}deg)`,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  fontFamily: "Pincel",
+                  fontSize: tamanhos[i],
+                  lineHeight: 1.04,
+                  color: destaque ? p.cor : "#141414",
+                }}
+              >
+                {textoDaLinha(l)}
+              </div>
+              {/* o traço embaixo da primeira linha, como quem sublinha à mão */}
+              {i === 0 ? (
+                <div
+                  style={{
+                    display: "flex",
+                    width: Math.round(util * 0.5),
+                    height: 7,
+                    marginTop: -4,
+                    borderRadius: 4,
+                    backgroundColor: p.cor,
+                  }}
+                />
+              ) : null}
+            </div>
+          );
+        })}
+        <div
+          style={{
+            display: "flex",
+            marginTop: 54,
+            padding: "12px 44px 16px",
+            border: `5px solid ${p.cor}`,
+            borderRadius: 60,
+            fontFamily: "Pincel",
+            fontSize: 44,
+            color: "#141414",
+            transform: "rotate(-1.5deg)",
+          }}
+        >
+          {p.ref || p.top || "Ekballo Academy"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Chamada — um celular tocando; quem liga é a palavra destacada ----------
+
+function Chamada({ p }: { p: EditorialPayload }) {
+  const fonte: FonteMedida = "inter800";
+  const { palavras } = palavrasDoSlide(p.texto, true);
+  const [principal, resto] = partirFrase(palavras);
+  const quem = textoDaLinha(palavras.filter((w) => w.destaque)).replace(
+    /[.,;:!?"”“]/g,
+    "",
+  );
+  const margem = 70;
+  const util = p.largura - margem * 2;
+  const aperto = -0.055;
+  const linhasG = emLinhas(principal, fonte, 14);
+  const tamG = Math.min(
+    Math.floor((p.altura * 0.2) / Math.max(1, linhasG.length)),
+    tamanhoDasLinhas(linhasG, fonte, util * 0.86, 128, aperto),
+  );
+  const linhasP = emLinhas(resto, fonte, 30);
+  const tamP = Math.min(40, tamanhoDasLinhas(linhasP, fonte, util * 0.8, 40));
+  // O aparelho cabe inteiro no quadro: os dois botões precisam aparecer.
+  const altCel = Math.round(p.altura * 0.56);
+  const largCel = Math.round(altCel / 1.9);
+  const botao = (cor: string, rotulo: string) => (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 104,
+          height: 104,
+          borderRadius: 52,
+          backgroundColor: cor,
+        }}
+      >
+        {/* o fone: uma barra arredondada, deitada */}
+        <div
+          style={{
+            display: "flex",
+            width: 50,
+            height: 16,
+            borderRadius: 8,
+            backgroundColor: "#FFFFFF",
+            transform: cor === "#E5432F" ? "rotate(135deg)" : "rotate(-45deg)",
+          }}
+        />
+      </div>
+      <div
+        style={{
+          display: "flex",
+          marginTop: 12,
+          fontFamily: "Legenda",
+          fontSize: 20,
+          color: "rgba(255,255,255,0.85)",
+        }}
+      >
+        {rotulo}
+      </div>
+    </div>
+  );
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#120C08",
+      }}
+    >
+      <Fundo
+        p={p}
+        veu="linear-gradient(180deg, rgba(8,6,4,0.62) 0%, rgba(8,6,4,0.40) 45%, rgba(8,6,4,0.55) 100%)"
+      />
+      {/* o aparelho, torto sobre a mesa; sai um pouco pela base do quadro */}
+      <div
+        style={{
+          display: "flex",
+          position: "absolute",
+          top: Math.round(p.altura * 0.395),
+          left: Math.round((p.largura - largCel) / 2),
+          width: largCel,
+          height: altCel,
+          padding: 12,
+          borderRadius: 78,
+          backgroundColor: "#060606",
+          border: "4px solid #2B2B2B",
+          boxShadow: "0 30px 60px rgba(0,0,0,0.6)",
+          transform: "rotate(-11deg)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            height: "100%",
+            padding: "34px 38px 56px",
+            borderRadius: 66,
+            backgroundImage:
+              "linear-gradient(180deg, #3A3F45 0%, #1B1D21 55%, #0D0E10 100%)",
+          }}
+        >
+          <div
+            style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+          >
+            {/* a "ilha" da câmera */}
+            <div
+              style={{
+                display: "flex",
+                width: 150,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: "#000000",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                marginTop: 44,
+                fontFamily: "Legenda",
+                fontSize: 24,
+                color: "rgba(255,255,255,0.7)",
+              }}
+            >
+              chamando…
+            </div>
+            <div
+              style={{
+                display: "flex",
+                marginTop: 6,
+                fontFamily: "Legenda",
+                fontSize: quem.length > 9 ? 52 : 70,
+                letterSpacing: 2,
+                color: "#FFFFFF",
+              }}
+            >
+              {quem || "DEUS"}
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
+            {botao("#E5432F", "Recusar")}
+            {botao("#3DBB5A", "Atender")}
+          </div>
+        </div>
+      </div>
+      {/* a frase por cima de tudo */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          position: "absolute",
+          top: Math.round(p.altura * 0.05),
+          left: margem,
+          width: util,
+        }}
+      >
+        <div style={{ display: "flex", marginBottom: 34 }}>
+          <Rotulo
+            texto={p.ref || p.top || "Ekballo Academy"}
+            cor="rgba(243,233,207,0.85)"
+            tamanho={20}
+            espaco={5}
+          />
+        </div>
+        {linhasG.map((l, i) => (
+          <Linha
+            key={`g${i}-${textoDaLinha(l)}`}
+            palavras={l}
+            familia="Grotesca"
+            tamanho={tamG}
+            cor={p.cor}
+            corDestaque={p.cor}
+            espaco={Math.round(tamG * aperto)}
+            entrelinha={0.94}
+          />
+        ))}
+        {linhasP.length ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: 22,
+            }}
+          >
+            {linhasP.map((l, i) => (
+              <Linha
+                key={`p${i}-${textoDaLinha(l)}`}
+                palavras={l}
+                familia="Legenda"
+                tamanho={tamP}
+                cor={CREME}
+                corDestaque={CREME}
+                espaco={1}
+                entrelinha={1.2}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// --- Muro — a frase pintada na parede, com a tinta escorrendo ---------------
+
+function Muro({ p }: { p: EditorialPayload }) {
+  // A fonte de tinta é ~8% mais larga que a grotesca medida.
+  const fonte: FonteMedida = "inter800";
+  const { palavras } = palavrasDoSlide(p.texto, true);
+  const util = Math.round(p.largura * 0.7);
+  const total = textoDaLinha(palavras).length;
+  const linhas = emLinhas(palavras, fonte, total > 70 ? 16 : total > 36 ? 12 : 9);
+  const tetoPelaAltura = Math.floor((p.altura * 0.5) / Math.max(1, linhas.length));
+  const tamanho = Math.min(
+    tetoPelaAltura,
+    ...linhas.map((l) => tamanhoParaCaber(textoDaLinha(l), fonte, util / 1.08, 190)),
+  );
+  return (
+    <div
+      style={{
+        display: "flex",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#CDBFA6",
+      }}
+    >
+      <Cenario p={p} />
+      {p.graoSrc ? (
+        // biome-ignore lint/performance/noImgElement: Satori só entende <img>; next/image não existe dentro do ImageResponse
+        <img
+          src={p.graoSrc}
+          alt=""
+          width={p.largura}
+          height={p.altura}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: p.largura,
+            height: p.altura,
+            objectFit: "cover",
+            opacity: 0.12,
+          }}
+        />
+      ) : null}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          position: "absolute",
+          top: Math.round(p.altura * 0.16),
+          left: Math.round(p.largura * 0.12),
+          width: util + 60,
+          height: Math.round(p.altura * 0.66),
+          // a parede nunca está de frente: a frase sobe um pouco para a direita
+          transform: "rotate(-7deg)",
+        }}
+      >
+        {linhas.map((l, i) => (
+          <div
+            key={`${i}-${textoDaLinha(l)}`}
+            style={{
+              display: "flex",
+              // linhas levemente desencontradas, como letra pintada à mão
+              marginLeft: i % 2 ? 26 : 0,
+              fontFamily: "Tinta",
+              fontSize: tamanho,
+              lineHeight: 1.02,
+              color: "rgba(18,16,14,0.9)",
+            }}
+          >
+            {textoDaLinha(l)}
+          </div>
+        ))}
+        <div
+          style={{
+            display: "flex",
+            marginTop: 18,
+            marginLeft: 40,
+            fontFamily: "Grotesca",
+            fontSize: 26,
+            color: "rgba(18,16,14,0.82)",
+          }}
+        >
+          {p.ref || p.top || "@brunofesantos"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Desenha um slide em um dos modelos novos. */
 export function renderSlideEditorial(p: EditorialPayload) {
   if (p.modelo === "cinema") return <Cinema p={p} />;
@@ -1465,5 +2079,9 @@ export function renderSlideEditorial(p: EditorialPayload) {
   if (p.modelo === "contraste") return <Contraste p={p} />;
   if (p.modelo === "carimbo") return <Carimbo p={p} />;
   if (p.modelo === "gravura") return <Gravura p={p} />;
+  if (p.modelo === "quadrinho") return <Quadrinho p={p} />;
+  if (p.modelo === "caderno") return <Caderno p={p} />;
+  if (p.modelo === "chamada") return <Chamada p={p} />;
+  if (p.modelo === "muro") return <Muro p={p} />;
   return <Editorial p={p} />;
 }
