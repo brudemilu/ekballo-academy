@@ -64,7 +64,49 @@ const ESTILO_DOCUMENTAL = [
   "no text, no letters, no watermark, no logo, no illustration, no cgi look, no distorted faces, no deformed hands, no extra fingers",
 ].join(", ");
 
-export type EstiloFoto = "devocional" | "documental";
+// Desenho a traço para o modelo "gravura" (issue #248): não é foto. O fundo
+// branco liso é o que deixa a ilustração se fundir com o papel do slide.
+const ESTILO_GRAVURA = [
+  "black ink line art illustration, vintage engraving style, fine cross-hatching, hand-drawn pen sketch",
+  "monochrome black lines only, plain off-white paper background, no shading in the background",
+  "single centered subject in the lower half, wide empty white space at the top, figure seen from behind",
+  "no text, no letters, no watermark, no frame, no color, no photograph, no gray wash",
+].join(", ");
+
+// Os três acabamentos abaixo servem aos modelos "quadrinho", "caderno" e
+// "muro" (issue #248). Em todos, o texto é desenhado por nós: a IA só faz o
+// cenário, e por isso o pedido insiste em não escrever nada.
+const ESTILO_CENA3D = [
+  "3D render of stylized low-poly characters with simple faceless heads, soft clay and papercraft look",
+  "warm golden hour cinematic lighting, shallow depth of field, rich but soft colors",
+  "characters in the lower two thirds of the frame, calm empty background in the upper third",
+  "no text, no letters, no speech bubbles, no captions, no watermark, no logo",
+].join(", ");
+
+const ESTILO_CADERNO = [
+  "top-down flat photograph of a blank cream spiral notebook page filling the whole frame, spiral binding on the left edge",
+  "small hand-drawn blue and black ballpoint pen doodles only in the four corners and along the outer edges",
+  "the entire center of the page completely empty and clean, soft even daylight",
+  "no words, no letters, no handwriting, no numbers, no watermark",
+].join(", ");
+
+const ESTILO_PAREDE = [
+  "photograph of a large weathered painted wall of an old building filling most of the frame",
+  "completely blank wall, peeling plaster, water stains, faded warm paint, bright natural daylight, strip of blue sky at the top",
+  "slight low angle, shot on 35mm film, visible grain",
+  "no graffiti, no text, no letters, no signs, no posters, no people, no watermark",
+].join(", ");
+
+const ACABAMENTOS = {
+  devocional: ESTILO_DEVOCIONAL,
+  documental: ESTILO_DOCUMENTAL,
+  gravura: ESTILO_GRAVURA,
+  cena3d: ESTILO_CENA3D,
+  caderno: ESTILO_CADERNO,
+  parede: ESTILO_PAREDE,
+} as const;
+
+export type EstiloFoto = keyof typeof ACABAMENTOS;
 
 // Formato nativo do post (4:5). O FLUX.2 exige múltiplos de 16; a sobra de
 // 8 px em cada eixo some no `objectFit: cover` do canvas 1080×1350.
@@ -212,7 +254,7 @@ export function gerarFundoLivre(
   estilo: EstiloFoto = "devocional",
 ): Promise<string | null> {
   if (!prompt.trim()) return Promise.resolve(null);
-  const acabamento = estilo === "documental" ? ESTILO_DOCUMENTAL : ESTILO_DEVOCIONAL;
+  const acabamento = ACABAMENTOS[estilo] ?? ESTILO_DEVOCIONAL;
   return gerarImagem(`${prompt.trim()}. ${acabamento}`, { seed, formato });
 }
 

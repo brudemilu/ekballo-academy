@@ -12,6 +12,7 @@
  * testes/post-texto-pronto.test.ts.
  */
 import {
+  MODELOS,
   type ModeloSlide,
   sortearDiferente,
   TEMAS_AUTOMATICOS,
@@ -31,6 +32,14 @@ export const MODELOS_TEXTO_PRONTO: ModeloSlide[] = [
   "editorial",
   "impacto",
   "recorte",
+  "sereno",
+  "contraste",
+  "carimbo",
+  "gravura",
+  "quadrinho",
+  "caderno",
+  "chamada",
+  "muro",
 ];
 
 /** Tira acento e caixa, para comparar. */
@@ -208,6 +217,8 @@ export type Ajuste = {
   ref?: string;
   outraFoto?: boolean;
   outroModelo?: boolean;
+  /** O modelo pedido pelo nome ("modelo muro"). */
+  modelo?: ModeloSlide;
   /** Descrição da foto nova, quando o pastor disse o que quer ver. */
   prompt?: string;
 };
@@ -215,7 +226,7 @@ export type Ajuste = {
 // Os verbos que abrem um pedido de ajuste. Só valem com um rascunho na tela:
 // "mudar a reunião para quinta" é da agenda.
 const RE_ABRE_AJUSTE =
-  /^(?:ajust\w*|corrig\w*|corrij\w*|arrum\w*|mud(?:ar|a|e)|alter(?:ar|a|e)|troc(?:ar|a|que)|destac\w*|destaqu\w*|colo(?:car|ca|que)|poe|deix(?:ar|a|e)|tir(?:ar|a|e)|pint\w*|(?:o\s+)?texto\s*[:–—-]|outr[oa]\s+(?:foto|imagem|fundo|cor|modelo))(?![a-z])/;
+  /^(?:ajust\w*|corrig\w*|corrij\w*|arrum\w*|mud(?:ar|a|e)|alter(?:ar|a|e)|troc(?:ar|a|que)|destac\w*|destaqu\w*|colo(?:car|ca|que)|poe|deix(?:ar|a|e)|tir(?:ar|a|e)|pint\w*|(?:o\s+)?texto\s*[:–—-]|outr[oa]\s+(?:foto|imagem|fundo|cor|modelo)|(?:no\s+)?modelo\s+[a-z]+)(?![a-z])/;
 
 /** A mensagem parece um pedido para mexer no rascunho que está na tela? */
 export function pareceAjuste(dito: string): boolean {
@@ -257,6 +268,12 @@ export function interpretarAjuste(dito: string): Ajuste | null {
 
   const p = plano(pedido);
   const ajuste: Ajuste = {};
+  // "modelo muro", "no modelo caderno": o modelo pedido pelo nome.
+  const nomeado = p.match(/\bmodelo\s+(?:para\s+(?:o\s+)?|d[eo]\s+)?([a-z]+)/)?.[1];
+  const chave = (Object.keys(MODELOS) as ModeloSlide[]).find(
+    (k) => k === nomeado || plano(MODELOS[k].nome) === nomeado,
+  );
+  if (chave && chave !== "foto") ajuste.modelo = chave;
   // "outro modelo" chega aqui pelo "refazer" só com a última palavra.
   if (/^(?:modelo|layout|estilo|visual)$/.test(p)) return { outroModelo: true };
   if (/^(?:foto|imagem|fundo)$/.test(p)) return { outraFoto: true };
@@ -373,7 +390,10 @@ export function aplicarAjuste<S extends SlideAjustavel>(
     mudou.push("a cor");
   }
 
-  if (ajuste.outroModelo) {
+  if (ajuste.modelo && ajuste.modelo !== slide.modelo) {
+    novo.modelo = ajuste.modelo;
+    mudou.push("o modelo");
+  } else if (ajuste.outroModelo) {
     novo.modelo = sortearDiferente(MODELOS_TEXTO_PRONTO, slide.modelo, sorteio);
     mudou.push("o modelo");
   }
