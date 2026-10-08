@@ -551,6 +551,18 @@ class Livro:
             total += len(xs)
         self.justificado = total > 0 and cheias / total > 0.55
         self.corpo = self.corpo_livro
+        # Livro em espaco duplo ("espaco_duplo"): o espaco entre linhas do
+        # mesmo paragrafo ja passa do limite normal, entao o limite sobe junto
+        # com a entrelinha medida no proprio livro.
+        saltos = []
+        for linhas in self.paginas.values():
+            corpo = [l for l in linhas if self._eh_corpo(l["tamanho"]) and len(l["texto"]) > 40]
+            for a, b in zip(corpo, corpo[1:]):
+                if 0 <= b["y0"] - a["y1"] < 3 * (a["y1"] - a["y0"]):
+                    saltos.append((b["y0"] - a["y1"]) / max(a["y1"] - a["y0"], 1))
+        saltos.sort()
+        mediana = saltos[len(saltos) // 2] if saltos else 0
+        self.salto = mediana + 0.4 if self.book.get("espaco_duplo") else self.book.get("salto", 0.45)
 
     def _ruido(self, linha: dict) -> bool:
         texto = linha["texto"]
@@ -604,6 +616,12 @@ class Livro:
                 break
             self.corpo = self.corpo_pagina.get(n, self.corpo_livro)
             linhas = [l for l in self.paginas[n] if not self._ruido(l)]
+            # Corte pela posicao que o sumario embutido aponta: a mesa pode
+            # comecar e terminar no meio da pagina.
+            if n == inicio and "y_ini" in opts:
+                linhas = [l for l in linhas if l["y0"] >= opts["y_ini"] - 3]
+            if n == fim and "y_fim" in opts:
+                linhas = [l for l in linhas if l["y0"] < opts["y_fim"] - 3]
             # Trecho que nao vira prosa (tabela de referencias): sai, e fica
             # uma nota no lugar para o leitor saber que havia algo ali.
             for p0, y0, p1, y1, nota in omitir:
@@ -697,10 +715,10 @@ class Livro:
                         curta = anterior["x1"] - anterior["x0"] < 0.8 * maior
                         fecha = anterior["texto"].endswith(FIM_DE_FRASE) and curta
                         versiculo = re.search(r"\d:\d+(?:-\d+)?\)?$", anterior["texto"])
-                        novo = espaco > 0.45 * altura or fecha or bool(versiculo)
+                        novo = espaco > self.salto * altura or fecha or bool(versiculo)
                     elif (not self._eh_corpo(linha["tamanho"]) and mesmo_corpo) or (centrada and ultimo["centrada"]):
                         # Destaque em corpo proprio ou epigrafe centralizada: so o espaco separa.
-                        novo = espaco > 0.45 * altura
+                        novo = espaco > self.salto * altura
                     else:
                         # Recuo pendente de item de lista nao abre paragrafo.
                         pendente = ultimo["marcador"] and len(ultimo["linhas"]) == 1
@@ -709,7 +727,7 @@ class Livro:
                         # bloco tem margem direita propria.
                         largura = min(direita, max(ultimo["x1"], linha["x1"]))
                         curta = self.justificado and anterior["x1"] < largura - 0.1 * (largura - margem)
-                        salto = espaco > 0.45 * altura
+                        salto = espaco > self.salto * altura
                         if self.book.get("salto_exige_frase"):
                             # Conversao com entrelinha irregular: espaco no meio da
                             # frase nao e paragrafo.
@@ -730,13 +748,20 @@ class Livro:
                     paragrafos.append({
                         "tipo": tipo, "linhas": [linha["texto"]], "x1": linha["x1"],
                         "marcador": marcador, "centrada": centrada, "nota": linha.get("nota", False),
+                        "menor": linha["tamanho"] < 0.85 * self.corpo,
                     })
                 else:
                     paragrafos[-1]["linhas"].append(linha["texto"])
                     paragrafos[-1]["x1"] = max(paragrafos[-1]["x1"], linha["x1"])
                     paragrafos[-1]["centrada"] = paragrafos[-1]["centrada"] and centrada
+                    paragrafos[-1]["menor"] = paragrafos[-1]["menor"] and linha["tamanho"] < 0.85 * self.corpo
                 paragrafos[-1]["cheia"] = linha["x1"] >= direita - 6
                 anterior = linha
+
+        if self.book.get("tirar_notas_finais"):
+            # Notas no fim do capitulo, em corpo menor e ja sem o numero.
+            while paragrafos and paragrafos[-1]["menor"]:
+                paragrafos.pop()
 
         saida: list[str] = []
         for i, paragrafo in enumerate(paragrafos):
