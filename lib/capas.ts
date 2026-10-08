@@ -295,6 +295,5 @@ export const CAPA_LIVRO: Record<string, string> = {
   "o-desafio-da-pregacao": "/capas/o-desafio-da-pregacao.jpg",
   "o-passo-a-passo-de-jesus": "/capas/o-passo-a-passo-de-jesus.jpg",
   "o-pequeno-peregrino": "/capas/o-pequeno-peregrino.jpg",
-  "ocupado-demais-para-deixar-de-orar":
-    "/capas/ocupado-demais-para-deixar-de-orar.jpg",
+  "ocupado-demais-para-deixar-de-orar": "/capas/ocupado-demais-para-deixar-de-orar.jpg",
 };
