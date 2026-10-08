@@ -279,4 +279,22 @@ export const CAPA_LIVRO: Record<string, string> = {
   "o-desafio-de-amar": "/capas/o-desafio-de-amar.jpg",
   "enquanto-estivermos-juntos": "/capas/enquanto-estivermos-juntos.jpg",
   "deus-esta-no-controle": "/capas/deus-esta-no-controle.jpg",
+  "a-torre-sombria": "/capas/a-torre-sombria.jpg",
+  "a-ultima-noite-do-mundo": "/capas/a-ultima-noite-do-mundo.jpg",
+  "ate-que-tenhamos-rostos": "/capas/ate-que-tenhamos-rostos.jpg",
+  "deus-no-banco-dos-reus": "/capas/deus-no-banco-dos-reus.jpg",
+  "cartas-a-malcolm": "/capas/cartas-a-malcolm.jpg",
+  "todo-meu-caminho-diante-de-mim": "/capas/todo-meu-caminho-diante-de-mim.jpg",
+  "um-experimento-em-critica-literaria":
+    "/capas/um-experimento-em-critica-literaria.jpg",
+  "o-regresso-do-peregrino": "/capas/o-regresso-do-peregrino.jpg",
+  "sobre-historias": "/capas/sobre-historias.jpg",
+  "reflexoes-sobre-salmos": "/capas/reflexoes-sobre-salmos.jpg",
+  "george-macdonald-uma-antologia": "/capas/george-macdonald-uma-antologia.jpg",
+  "ministerios-de-misericordia": "/capas/ministerios-de-misericordia.jpg",
+  "o-desafio-da-pregacao": "/capas/o-desafio-da-pregacao.jpg",
+  "o-passo-a-passo-de-jesus": "/capas/o-passo-a-passo-de-jesus.jpg",
+  "o-pequeno-peregrino": "/capas/o-pequeno-peregrino.jpg",
+  "ocupado-demais-para-deixar-de-orar":
+    "/capas/ocupado-demais-para-deixar-de-orar.jpg",
 };
