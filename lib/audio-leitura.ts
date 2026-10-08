@@ -4,11 +4,12 @@
 // (spoken audio tolera concatenação de frames MP3). Chamada pelo worker
 // /api/cron/gerar-audio-tick.
 
+import { createHash } from "node:crypto";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
-import { createHash } from "crypto";
-import { mkdir, readFile, writeFile, rm } from "fs/promises";
-import { join } from "path";
-import { tmpdir } from "os";
+import { ehFigura, parseFigura } from "@/lib/estrutura-livro";
 
 // Thalita (nativa pt-BR, geração "multilingual") — escolhida em 03/09/2026 por
 // soar como conversa, e não como locutor lendo. A anterior era pt-BR-Antonio-
@@ -20,12 +21,23 @@ const RATE = process.env.AUDIO_RATE || "-4%"; // ritmo tranquilo de leitura
 // pedaços longos/sob carga com "Stream closed before the synthesis completed").
 const MAX_CHARS = 1200;
 
+// O que a voz lê de um parágrafo. O texto dos livros traz marcadores que são
+// instrução para a tela, não conteúdo: "[figura] /figuras/livro/p020.jpg" vira
+// imagem no leitor, mas lido em voz alta é "figura barra figuras barra...".
+// Da figura só se narra a legenda, quando existe; "[cite] " some e fica a
+// citação.
+export function paragrafoNarrado(paragrafo: string): string {
+  const p = paragrafo.trim();
+  if (ehFigura(p)) return parseFigura(p).legenda;
+  return p.startsWith("[cite] ") ? p.slice(7).trim() : p;
+}
+
 // Quebra o conteúdo em pedaços (~MAX_CHARS) em fronteira de parágrafo/frase.
 export function quebrarEmPedacos(conteudo: string): string[] {
   const paragrafos = conteudo
     .replace(/\r\n/g, "\n")
     .split(/\n{2,}/)
-    .map((p) => p.trim())
+    .map(paragrafoNarrado)
     .filter(Boolean);
 
   const pedacos: string[] = [];
@@ -41,19 +53,19 @@ export function quebrarEmPedacos(conteudo: string): string[] {
       const frases = par.match(/[^.!?…]+[.!?…]+|\S+$/g) || [par];
       let buf = "";
       for (const fr of frases) {
-        if ((buf + " " + fr).trim().length > MAX_CHARS) {
+        if (`${buf} ${fr}`.trim().length > MAX_CHARS) {
           empurra(buf);
           buf = fr;
         } else {
-          buf = (buf + " " + fr).trim();
+          buf = `${buf} ${fr}`.trim();
         }
       }
       empurra(buf);
-    } else if ((atual + "\n\n" + par).trim().length > MAX_CHARS) {
+    } else if (`${atual}\n\n${par}`.trim().length > MAX_CHARS) {
       empurra(atual);
       atual = par;
     } else {
-      atual = atual ? atual + "\n\n" + par : par;
+      atual = atual ? `${atual}\n\n${par}` : par;
     }
   }
   empurra(atual);
@@ -71,6 +83,7 @@ export function sanitizarParaSSML(texto: string): string {
     texto
       .replace(/[\u0900-\u097f\u0980-\u09ff\u0a00-\u0dff]+/g, " ")
       // eslint-disable-next-line no-control-regex
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: é exatamente o que este replace tira — caractere de controle que sobra da extração do PDF e quebra o SSML
       .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, " ")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -108,9 +121,7 @@ class SessaoTTS {
 // Sintetiza UM pedaço em MP3 (Buffer). O Edge fecha o stream no meio às vezes
 // (rede/throttle) — retry com espera exponencial, conexão nova a cada tentativa
 // e SÓ aceita síntese completa (resolve no 'end'; 'close' antes do 'end' = falha).
-const ESPERAS_MS = [
-  3000, 6000, 12000, 25000, 45000, 60000, 60000, 60000, 60000,
-];
+const ESPERAS_MS = [3000, 6000, 12000, 25000, 45000, 60000, 60000, 60000, 60000];
 const TIMEOUT_PEDACO_MS = 90_000;
 
 async function ttsPedaco(
@@ -145,9 +156,7 @@ async function ttsPedaco(
         audioStream.on("error", (e) => fim(() => reject(e)));
         audioStream.on("close", () => {
           if (!terminou)
-            fim(() =>
-              reject(new Error("stream fechou antes de terminar a síntese")),
-            );
+            fim(() => reject(new Error("stream fechou antes de terminar a síntese")));
         });
       });
       if (buf.length > 0) return buf;
@@ -155,9 +164,7 @@ async function ttsPedaco(
     } catch (e) {
       ultimoErro = e;
       const msg = e instanceof Error ? e.message : String(e);
-      console.warn(
-        `[audio] pedaço falhou (tentativa ${t + 1}/${tentativas}): ${msg}`,
-      );
+      console.warn(`[audio] pedaço falhou (tentativa ${t + 1}/${tentativas}): ${msg}`);
       // conexão suspeita → derruba e reabre na próxima tentativa
       sessao.descartar();
       if (t < tentativas - 1) {
@@ -187,11 +194,7 @@ export type OpcoesLeitura = {
   cacheKey?: string;
   // Chamado a cada pedaço concluído. O worker usa pra renovar o lock (capítulo
   // grande passa de 30 min) e pra saber que houve avanço mesmo se falhar depois.
-  aoAvancar?: (
-    feitos: number,
-    total: number,
-    doCache: boolean,
-  ) => void | Promise<void>;
+  aoAvancar?: (feitos: number, total: number, doCache: boolean) => void | Promise<void>;
   // Chamado entre as tentativas de um pedaço que está falhando (as esperas
   // chegam a 60s). Serve pro worker renovar o lock mesmo sem avanço.
   pulso?: () => void | Promise<void>;
@@ -214,10 +217,7 @@ export async function gerarMp3Leitura(
   const dirCache = opcoes.cacheKey ? join(CACHE_RAIZ, opcoes.cacheKey) : null;
   if (dirCache) await mkdir(dirCache, { recursive: true }).catch(() => {});
   const caminho = (i: number) =>
-    join(
-      dirCache!,
-      `${String(i).padStart(4, "0")}-${pedacoId(pedacos[i])}.mp3`,
-    );
+    join(dirCache!, `${String(i).padStart(4, "0")}-${pedacoId(pedacos[i])}.mp3`);
 
   const partes: Buffer[] = new Array(pedacos.length);
   let feitos = 0;
@@ -227,18 +227,13 @@ export async function gerarMp3Leitura(
   const registra = async (i: number, buf: Buffer, doCache: boolean) => {
     partes[i] = buf;
     feitos += 1;
-    if (opcoes.aoAvancar)
-      await opcoes.aoAvancar(feitos, pedacos.length, doCache);
+    if (opcoes.aoAvancar) await opcoes.aoAvancar(feitos, pedacos.length, doCache);
   };
 
   try {
     for (let inicio = 0; inicio < pedacos.length; inicio += CONCORRENCIA) {
       const indices = [];
-      for (
-        let i = inicio;
-        i < Math.min(inicio + CONCORRENCIA, pedacos.length);
-        i += 1
-      )
+      for (let i = inicio; i < Math.min(inicio + CONCORRENCIA, pedacos.length); i += 1)
         indices.push(i);
 
       let sintetizou = false;
