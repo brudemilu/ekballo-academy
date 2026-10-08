@@ -511,6 +511,32 @@ class Livro:
         self.descartar = [re.compile(p, re.IGNORECASE) for p in book.get("descartar", [])]
         self._cabecalhos()
         self._margens()
+        if book.get("figuras"):
+            self._figuras()
+
+    def _figuras(self) -> None:
+        """Livro ilustrado: cada ilustracao vira um arquivo em public/figuras e
+        entra no texto, na altura em que aparece na pagina, como um paragrafo
+        "[figura] caminho" — o marcador que lib/estrutura-livro.ts ja conhece."""
+        pasta = ROOT / "public/figuras" / self.book["slug"]
+        pasta.mkdir(parents=True, exist_ok=True)
+        for n, linhas in self.paginas.items():
+            pagina = self.doc[n - 1]
+            imagens = [i for i in pagina.get_image_info() if i["bbox"][2] - i["bbox"][0] > 120]
+            imagens.sort(key=lambda i: i["bbox"][1])
+            for k, imagem in enumerate(imagens):
+                caixa = fitz.Rect(imagem["bbox"]) & pagina.rect
+                nome = f"p{n:03d}.jpg" if len(imagens) == 1 else f"p{n:03d}-{k + 1}.jpg"
+                # Recorte da pagina (e nao o arquivo embutido): ja sai sobre
+                # fundo branco, sem depender de mascara de transparencia.
+                escala = min(imagem["width"], 760) / caixa.width
+                pix = pagina.get_pixmap(matrix=fitz.Matrix(escala, escala), clip=caixa, colorspace=fitz.csGRAY, alpha=False)
+                (pasta / nome).write_bytes(pix.tobytes("jpeg", jpg_quality=72))
+                linhas.append({
+                    "x0": caixa.x0, "y0": caixa.y0, "x1": caixa.x1, "y1": caixa.y1,
+                    "texto": f"[figura] /figuras/{self.book['slug']}/{nome}",
+                    "tamanho": self.corpo, "negrito": False, "nota": True,
+                })
 
     def _cabecalhos(self) -> None:
         """Cabecalho corrido e rodape: linha curta nas faixas de cima/baixo

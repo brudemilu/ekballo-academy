@@ -286,11 +286,19 @@ def pequeno_peregrino() -> list[tuple]:
     primeira = list(range(um + 1, dois))
     segunda = list(range(dois + 1, fim))
     aulas += em_grupos(itens, primeira, 5, lambda a, b: f"Cristão - capítulos {a} a {b}", dois)
+    # A primeira mesa de cada parte comeca na pagina de abertura da parte, que
+    # traz o titulo e uma ilustracao de pagina inteira.
+    def desde(aula: tuple, i: int) -> tuple:
+        return (aula[0], itens[i]["pagina"], aula[2], {**aula[3], "y_ini": itens[i]["y"]})
+
+    aulas[1] = desde(aulas[1], um)
     base_n = len(primeira)
     grupos = em_grupos(itens, segunda[:-1], 5, lambda a, b: f"Cristiana - capítulos {a + base_n} a {b + base_n}", segunda[-1])
     ultimo = grupos.pop()
     inicio_do_grupo = base_n + 1 + 5 * len(grupos)
-    grupos.append((f"Cristiana - capítulos {inicio_do_grupo} a {base_n + len(segunda)}", ultimo[1], 326, {"y_ini": ultimo[3]["y_ini"]}))
+    # Depois do ultimo capitulo (pagina 326) ha seis paginas so de ilustracao.
+    grupos.append((f"Cristiana - capítulos {inicio_do_grupo} a {base_n + len(segunda)}", ultimo[1], 332, {"y_ini": ultimo[3]["y_ini"]}))
+    grupos[0] = desde(grupos[0], dois)
     return aulas + grupos
 
 
@@ -409,7 +417,7 @@ BOOKS = [
         "migration": 360, "slug": "o-pequeno-peregrino", "titulo": "O Pequeno Peregrino",
         "autor": "Helen L. Taylor", "categoria": "infantil", "arquivo": "O pequeno peregrino",
         "resumo": "O Peregrino de John Bunyan recontado para crianças por Helen L. Taylor: a viagem do pequeno Cristão até a Cidade Celestial e, depois, a de Cristiana e seus amigos. Cada aula reúne cinco capítulos curtos.",
-        "aulas": pequeno_peregrino(), "manter_abertura": True, "minimo": 1000,
+        "aulas": pequeno_peregrino(), "manter_abertura": True, "minimo": 1000, "figuras": True,
     },
     {
         "migration": 361, "slug": "ocupado-demais-para-deixar-de-orar", "titulo": "Ocupado Demais para Deixar de Orar",
@@ -440,11 +448,35 @@ def abertura_em_frase(conteudo: str) -> str:
     return "\n\n".join(paragrafos)
 
 
+def figura_depois_do_paragrafo(conteudo: str) -> str:
+    """Ilustracao no meio de um paragrafo (a frase continua depois dela, ou na
+    pagina seguinte): o paragrafo e emendado e a figura vai logo abaixo."""
+    blocos = conteudo.split("\n\n")
+    saida: list[str] = []
+    i = 0
+    while i < len(blocos):
+        bloco = blocos[i]
+        if bloco.startswith("[figura]") and saida and i + 1 < len(blocos):
+            anterior, seguinte = saida[-1], blocos[i + 1]
+            aberto = not anterior.startswith("[figura]") and not anterior.endswith(base.FIM_DE_FRASE) and anterior.upper() != anterior
+            if aberto and not seguinte.startswith("[figura]"):
+                emenda = anterior[:-1] + seguinte if anterior.endswith("-") else f"{anterior} {seguinte}"
+                saida[-1] = emenda
+                blocos[i + 1] = bloco  # a figura passa para depois do paragrafo emendado
+                i += 1
+                continue
+        saida.append(bloco)
+        i += 1
+    return "\n\n".join(saida)
+
+
 _aula_original = base.Livro.aula
 
 
 def _aula(self, ordem, inicio, fim, opts):
     conteudo = _aula_original(self, ordem, inicio, fim, opts)
+    if self.book.get("figuras"):
+        conteudo = figura_depois_do_paragrafo(conteudo)
     if self.book.get("abre_em_caixa_alta"):
         conteudo = abertura_em_frase(conteudo)
     return conteudo

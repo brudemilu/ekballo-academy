@@ -51,7 +51,23 @@ Helen L. Taylor
 
 Nosso objetivo é, e sempre será, preservar o encanto e a honestidade da obraprima de Helen Taylor tão amada pelas crianças. Ao longo desta edição ilustrada, o leitor talvez note dois tipos de atualizações que decidimos fazer. Usamos de alguma licença artística — tanto ilustrativa como narrativa — nesta história antropomórfica, no intuito de desenvolver os personagens e reimaginá-los num mundo animal. Além disso, realizamos alguns pequenos ajustes de linguagem, de exemplos e de histórias que, assim, tornarão a leitura mais familiar, precisa e útil para o público de hoje.
 
-Moody Publishers$conteudo$)
+Moody Publishers
+
+[figura] /figuras/o-pequeno-peregrino/p007.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p008.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p009.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p010.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p011.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p012.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p013.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p014.jpg$conteudo$)
     returning id into v_aula_id;
   end if;
 
@@ -59,11 +75,19 @@ Moody Publishers$conteudo$)
   if v_aula_id is null then
     insert into public.aulas (curso_id, titulo, ordem, conteudo)
     values (v_curso_id, $t$Cristão - capítulos 1 a 5$t$, 2,
-$conteudo$1. O PEQUENO CRISTÃO OUVE FALAR DA CIDADE CELESTIAL
+$conteudo$PARTE UM
+
+CRISTÃO
+
+[figura] /figuras/o-pequeno-peregrino/p016.jpg
+
+1. O PEQUENO CRISTÃO OUVE FALAR DA CIDADE CELESTIAL
 
 O pequeno Cristão vivia em uma grande cidade chamada Destruição. As ruas de Destruição estavam cheias de jovens animais que riam e brincavam o dia todo. Em pleno verão, o sol brilhava e a cidade parecia radiante e agradável. Nos dias chuvosos de inverno as crianças não ficavam tão felizes, e às vezes se contentavam em se sentar sossegadamente e escutar histórias.
 
 De vez em quando alguns forasteiros vinham passar algum tempo na cidade, e esses gentis visitantes sempre tentavam fazer amizade com as crianças e se dispunham a lhes contar histórias sempre que elas quisessem ouvi-las.
+
+[figura] /figuras/o-pequeno-peregrino/p017.jpg
 
 — Existe uma bela terra, muito longe desta cidade — diziam. — Um Rei muito bom e sábio a governa. Esse Rei gosta muito de animais pequenos. O Príncipe que governa a cidade de vocês é mau e cruel, e odeia nosso bom Rei. Porém um dia um exército virá das terras do Rei para lutar contra esse Príncipe. Esta cidade será incendiada, e todos os que nela habitam serão mortos.
 
@@ -83,6 +107,8 @@ Se ele estivesse aqui agora, pensou o pequeno Cristão, talvez me levasse de vol
 
 Então lágrimas lhe vieram aos olhos e desceram pelas faces. Caíram sobre as roupas e, ao passar a mão para afastá-las, ele viu quão sujas e empoeiradas as roupas haviam ficado. Ele estava usando aquelas roupas havia muito tempo e brincara tanto que o tecido já estava ficando puído e surrado. Isso fez com que sua tristeza aumentasse, pois achou que, se encontrasse o caminho para a Cidade Celestial, suas roupas estariam gastas muito antes de chegar lá. Como poderia esperar que o Rei recebesse um coelho pequeno que usava trajes esfarrapados?
 
+[figura] /figuras/o-pequeno-peregrino/p020.jpg
+
 Finalmente, ele pegou o Livro e voltou para casa. A babá quis saber por que ele parecia tão cansado e triste. Ele lhe contou que gostaria de ir à Cidade Celestial, mas ela riu como seus amiguinhos e falou:
 
 — Você é um coelhinho bobo. Não existe Cidade Celestial. Se sair andando pelas estradas atrás desses forasteiros, vai acabar se perdendo.
@@ -98,6 +124,8 @@ Quando o pequeno Cristão saiu na manhã seguinte, o sol estava brilhando e seus
 Então eles correram para longe, e o pequeno Cristão ficou sozinho. Nesse momento, Cristiana surgiu na rua com sua irmãzinha menor. Ela estava por perto quando os meninos haviam rido de Cristão no dia anterior e sentira muita pena ao vê-los zombando dele. Cristão gostava de Cristiana e ficou feliz de vê-la se aproximando.
 
 Ela parou para conversar com ele.
+
+[figura] /figuras/o-pequeno-peregrino/p022.jpg
 
 — Você está chorando de novo, pequeno Cristão! Não devia escutar o que os forasteiros dizem, se isso o deixa tão infeliz. Venha para a campina! Vamos fazer colares de margaridas para o bebê.
 
@@ -122,6 +150,8 @@ O pequeno Cristão se sentiu tão confortado pelo som da voz gentil do outro que
 Evangelista fitou-o com bondade. — As histórias são todas verdadeiras — declarou. — O Rei ama as criancinhas. Se você quer obedecer ao Rei e iniciar sua jornada, ele cuidará de você durante todo o caminho, e quando chegar à Cidade Celestial você será feliz para sempre.
 
 — Eu iria agora, se conhecesse o caminho — afirmou o pequeno Cristão.
+
+[figura] /figuras/o-pequeno-peregrino/p024.jpg
 
 Evangelista se virou e fitou a campina, na direção de onde viera. — Consegue ver que há uma porta do outro lado da campina? — E apontou para o local com o indicador.
 
@@ -191,6 +221,8 @@ Volúvel, no entanto, não gostava muito de Obstinado e estava apreciando a idei
 
 Agora me diga que tipo de lugar é essa Cidade Celestial — pediu Volúvel, quando os dois foram deixados a sós.
 
+[figura] /figuras/o-pequeno-peregrino/p029.jpg
+
 — É muito bonita — respondeu o pequeno Cristão. — Você nunca escutou os forasteiros falarem sobre ela? O Rei vive lá, e seu povo nunca se sente cansado ou infeliz. Eles vestem roupas brilhantes que nunca se sujam e nunca envelhecem.
 
 — Não creio que vão nos deixar entrar. — Ah, sim, vão deixar; Evangelista disse que iriam. Veja, ele me deu isto — e o pequeno Cristão abriu a mensagem do Rei e deixou que Volúvel lesse as palavras por si mesmo. — O Rei me enviou essa mensagem, para que eu soubesse que ele gostaria que eu fosse para a Cidade dele.
@@ -202,6 +234,8 @@ Agora me diga que tipo de lugar é essa Cidade Celestial — pediu Volúvel, qua
 — Antes de tudo, gostaria de ver o Rei. E, se ele for bondoso, vou lhe perguntar onde está minha mãe. Você sabe que ela foi embora quando eu ainda era bem pequeno, e às vezes sinto muita vontade de vê-la. Um dos forasteiros me contou que ela estava com o Rei, então acho que ela deve viver na Cidade Celestial.
 
 — Eu me pergunto quanto tempo leva para chegar lá. Você perguntou isso a Evangelista? Acho que podíamos andar um pouco mais rápido.
+
+[figura] /figuras/o-pequeno-peregrino/p030.jpg
 
 — Gostaria de poder! — o pequeno Cristão suspirou, pois já estava cansado. — Receio que vá levar muito tempo para chegar. É este fardo, que é tão pesado que faz com que eu ande devagar.
 
@@ -242,6 +276,8 @@ O pequeno Cristão tremia, com lágrimas nos olhos.
 — Gostaria de ir, mas receio que o caminho seja difícil demais para mim. Talvez seja melhor eu esperar até ser mais velho.
 
 — Não, você não deve esperar. O Rei o vigiará e, sempre que precisar da ajuda de um amigo, ele enviará alguém.
+
+[figura] /figuras/o-pequeno-peregrino/p033.jpg
 
 — Tem certeza? — perguntou o pequeno Cristão. — Sou um coelho tão pequeno, e todos os outros disseram que sou tolo.
 
@@ -307,6 +343,8 @@ O pequeno Cristão seguiu na direção da vila o mais rápido que podia, mas log
 
 No entanto, quando completou uma curva na estrada que contornava a colina, quase se esqueceu do fardo, pois nunca tinha visto nada tão terrível quanto aquele caminho. A encosta da colina era bastante escarpada, e havia pedras suspensas sobre a estrada prestes a caírem.
 
+[figura] /figuras/o-pequeno-peregrino/p039.jpg
+
 O pequeno Cristão avançou um pouco, mas logo ficou com tanto medo que não ousou dar mais um passo. Imaginava estar vendo chamas de fogo sendo lançadas das rochas. Todo seu corpo tremeu de medo.
 
 — Ai, gostaria de não ter vindo! O que devo fazer? — perguntou, soluçando.
@@ -345,6 +383,8 @@ A porta estava encravada em um belo arco de pedra, sobre o qual havia uma lampar
 
 Foi exatamente isso o que Evangelista disse, pensou Cristão, e começou a bater à porta. Prestou atenção, mas não escutou ninguém chegando, então bateu de novo e em poucos minutos a porta foi aberta por uma coruja que se parecia com Evangelista. Usava o mesmo tipo de manto longo, e seu rosto era sério e calmo. Ele sorriu quando viu Cristão e perguntou:
 
+[figura] /figuras/o-pequeno-peregrino/p043.jpg
+
 — Quem é esta criancinha? — Sou o pequeno Cristão. Posso entrar? — Você veio da Cidade da Destruição? — inquiriu o porteiro, que se chamava Boa Vontade.
 
 — Sim, e gostaria de ver o Rei.
@@ -370,6 +410,8 @@ O pequeno Cristão olhou ao redor, viu as flechas caídas no chão e ficou muito
 — Obstinado e Volúvel vieram atrás de mim. Obstinado ficou zangado, mas Volúvel falou que gostaria de ir à Cidade Celestial. Então caímos no Pântano, e ele ficou assustado, por isso voltou para casa. Pensei que nunca conseguiria sair, mas Auxílio chegou e foi muito bondoso comigo.
 
 — E depois? O pequeno Cristão corou.
+
+[figura] /figuras/o-pequeno-peregrino/p045.jpg
 
 — Eu fui tão mau quanto Volúvel, porque, quando encontrei Mundano, dei ouvidos a ele e me afastei indo em direção à vila. A estrada era apavorante, e fiquei com medo de que as rochas me esmagassem. Mas Evangelista me encontrou e me trouxe de volta à campina.
 
@@ -406,6 +448,8 @@ Ele passou a mão na cabeça da criança. — O que posso fazer por você, meu c
 O Intérprete sorriu. — Boa Vontade é meu amigo. Você é um dos pequenos peregrinos do Rei? Entre, e vou lhe mostrar algo que você vai gostar de ver.
 
 Segurou a mão de Cristão e o levou até o saguão, onde o criado ainda estava esperando. O Intérprete pediu que lhe trouxesse um candeeiro e, quando o criado o trouxe para ele, abriu a porta de uma grande sala. As cortinas das janelas estavam fechadas, mas a luz do candeeiro preencheu toda a sala com seu brilho. Na parede oposta à porta, estava pendurado um quadro e, quando o pequeno Cristão o viu, apertou as mãos uma contra a outra e ficou imóvel.
+
+[figura] /figuras/o-pequeno-peregrino/p048.jpg
 
 Era o retrato de um leão cujo rosto era mais belo do que qualquer coisa que o pequeno Cristão já havia imaginado. Ele estava caminhando por uma trilha em uma montanha. Ao redor dele, entre os rochedos, cresciam arbustos e espinhos, que lhe haviam rasgado as roupas em muitos lugares, e os pés dele estavam sangrando, pois as pedras ásperas o haviam ferido. Nos braços, ele carregava um cordeirinho. Este estava cansado e reclinava a cabeça sobre o ombro do leão, que o fitava com olhos gentis e amorosos. Embaixo do quadro, em letras douradas, estavam escritas as palavras:
 
@@ -485,6 +529,8 @@ Devo estar sonhando, pensou. Mas, embora tenha ficado imóvel por alguns minutos
 
 — Agora posso andar tão rápido quanto quiser! — exclamou.
 
+[figura] /figuras/o-pequeno-peregrino/p054.jpg
+
 E ficou olhando para a Cruz, com o coração cheio de alegria e gratidão. Eu lhes contei antes que o próprio Filho do Rei certa vez visitara a região onde o pequeno Cristão vivia; mas, apesar de ser bom e amável com todos, muitas pessoas o odiaram e, ao final, capturaram-no e mataram-no de um modo muito cruel, pregando-o em uma cruz de madeira. E essa Cruz estava agora à beira da estrada, para que os peregrinos à Cidade Celestial pudessem vê-la e lembrar-se do que havia sido feito por sua causa. O pequeno Cristão havia lido toda a história em seu Livro e, enquanto permanecia ao lado da Cruz, pensou como deveria ser bom o Filho do Rei. Desde esse instante, não se perguntou mais por que Evangelista e os outros forasteiros o amavam tanto e nunca se cansavam de falar sobre ele.
 
 — Talvez quando eles eram peregrinos tenham carregado fardos como o meu — disse a si mesmo. — E então, quando chegaram à Cruz, eles se livraram do fardo, assim como aconteceu comigo. Mas gostaria que as pessoas não tivessem sido tão cruéis com o Filho do Rei!
@@ -496,6 +542,8 @@ Nesse momento, ele ouviu uma voz atrás de si dizendo: — A paz seja com você.
 Devem ter vindo da Cidade Celestial, pensou. São tão resplandecentes e belos! — Você desagradou ao Rei muitas vezes — declarou um deles. — Apesar disso, venho lhe dizer que ele o perdoou, e as coisas más que você fez não serão mais lembradas.
 
 Então o segundo o tomou pela mão, dizendo: — Essa roupa que você está vestindo está rasgada e suja. O Rei deseja que seus peregrinos usem roupas limpas e sem defeitos. Por isso eu lhe trouxe roupas novas.
+
+[figura] /figuras/o-pequeno-peregrino/p055.jpg
 
 E, antes que o pequeno Cristão tivesse tempo de pensar em que resposta deveria dar, seu traje surrado foi removido e ele estava vestido todo de branco.
 
@@ -510,6 +558,8 @@ Imaginem quão feliz o pequeno Cristão se sentia ao caminhar!
 — Não preciso mais carregar meu fardo, e o Rei me deu estas belas roupas! Acho que teria iniciado minha jornada muito tempo atrás se soubesse que bom seria ser um pequeno peregrino — disse a si mesmo.
 
 Nesse instante ele se lembrou de Cristiana e lamentou que ela não tivesse vindo com ele. Mas ele não imaginava como ela teria conseguido, pois tinha três irmãos, além da irmã que ainda era bebê, e precisava cuidar de todos eles.
+
+[figura] /figuras/o-pequeno-peregrino/p057.jpg
 
 Poderíamos nos revezar para carregar o bebê, ele pensou. Mas, mesmo assim, os meninos teriam se cansado muito. Talvez quando eu chegar à Cidade eu possa pedir ao Rei que envie alguém para ajudá-la com as crianças, pois gostaria que ela viesse também.
 
@@ -599,6 +649,8 @@ Antes de chegar ao topo do morro, encontrou dois gambás correndo muito rápido.
 
 — Isso mesmo — confirmou o outro, que se chamava Desconfiança. — Há dois grandes lobos no caminho, e não sabemos se estão dormindo ou não. Mas tenho certeza de que, se tentarmos passar por eles, seremos estraçalhados.
 
+[figura] /figuras/o-pequeno-peregrino/p064.jpg
+
 Ao ouvir esse relato, o pequeno Cristão começou a ficar assustado também. — O que devo fazer? — Ora, volte conosco — sugeriu Hesitante. — Você não pode ser tão tolo a ponto de arriscar a sorte com esses animais selvagens!
 
 — Não sei — replicou o pequeno Cristão. — Se eu voltar, nunca verei o Rei.
@@ -635,6 +687,8 @@ Mas a busca pelo rolo atrasara o pequeno peregrino e, embora ele houvesse subido
 
 É tudo minha culpa, pensou. Se eu não tivesse sido tão preguiçoso, não teria perdido o rolo e teria tido tempo de encontrar um lugar para descansar antes de anoitecer.
 
+[figura] /figuras/o-pequeno-peregrino/p067.jpg
+
 Então ele se lembrou dos lobos e perguntou-se quão longe estaria do local onde eles estavam. Sabia que esses animais selvagens sempre rondam à procura de presas na escuridão, e à medida que as sombras iam escurecendo a seu redor ele ia ficando cada vez mais apavorado.
 
 Bem quando a luz ficou realmente fraca, uma grande construção surgiu à distância. À medida que Cristão se apressava, viu que era um grande palácio e que o Caminho do Rei o levaria para perto de seus portões. Havia uma pequena cabana dentro dos portões, que ele supunha ser onde morava o porteiro. Andou às pressas em sua direção, esperando que o deixassem passar a noite ali.
@@ -644,6 +698,8 @@ O caminho se tornou bastante estreito. Quando havia quase chegado aos portões d
 O nome do porteiro era Vigilante, um cão branco grande e peludo. Sabendo o quanto os peregrinos temiam os lobos, ele saía frequentemente à porta de sua casa para ver se alguém estava se aproximando. Quando viu o pequeno Cristão, disse para ele:
 
 — Não tenha medo, ambos os lobos estão acorrentados. Mantenha-se no meio do caminho e eles não o machucarão.
+
+[figura] /figuras/o-pequeno-peregrino/p068.jpg
 
 Então Cristão avançou, tremendo e com muito medo, mas teve o cuidado de se manter no meio da trilha. Embora os grandes animais tenham rugido enquanto ele passou entre eles, permaneceram imóveis e nem sequer estenderam as enormes patas para tocá-lo.
 
@@ -684,6 +740,8 @@ A seguir Discrição começou a fazer várias perguntas ao pequeno Cristão. Qui
 Ela entrou na casa e voltou com três jovens coelhas. Duas delas eram mais velhas do que Cristão. Chamavam-se Piedade e Prudência. Caridade, a mais jovem, tinha a mesma idade que ele.
 
 — Este é um dos pequenos peregrinos do Rei — anunciou Discrição. — Creio que conseguiremos arranjar lugar para ele no palácio, não é?
+
+[figura] /figuras/o-pequeno-peregrino/p071.jpg
 
 — Ah, claro! — respondeu Prudência. Caridade correu para ele e segurou sua mão, como Cristiana costumava fazer quando ele ainda estava em casa.
 
@@ -761,6 +819,8 @@ Cristão, como muitos outros animaizinhos, gostava de ler histórias e de olhar 
 
 Cristão gostou desse quadro e ficou diante dele por algum tempo, até Caridade chamá-lo para olhar um de seus favoritos. Chamava-se “O Anjo da Guarda”. Um pequeno coelho estava caminhando por um caminho bem estreito, e logo atrás dele havia um belo anjo, com as mãos estendidas para tocar os ombros dele dos dois lados.
 
+[figura] /figuras/o-pequeno-peregrino/p076.jpg
+
 — Como você vê, não existe a possibilidade de ele cair — explicou Caridade. — O Rei enviou o anjo ao coelhinho e, se ele escorregar, o anjo irá ampará-lo.
 
 O tempo passou tão rápido que o pequeno peregrino ficou surpreso quando a noite chegou. Discrição estivera ocupada o dia todo, mas, antes que os candeeiros fossem acesos, ela entrou na biblioteca onde Cristão estava lendo. Ele largou o livro e ela o tomou nos braços, falando com ele em um tom suave e gentil, contando-lhe muitas coisas sobre o bom Rei e o Príncipe, Filho dele.
@@ -802,6 +862,8 @@ Nesse exato instante, eles escutaram a voz de Discrição chamando-os. — Preci
 As faces de Cristão se ruborizaram de satisfação quando descobriu que estava prestes a ganhar uma armadura para si. Discrição e as filhas também pareciam contentes.
 
 — Gosto de ver você como soldado — disse Caridade, e Cristão desejou que Cristiana pudesse estar ali também.
+
+[figura] /figuras/o-pequeno-peregrino/p079.jpg
 
 — Você precisa cuidar da sua armadura — avisou Discrição enquanto escolhia um capacete do tamanho certo. — Ela precisa estar sempre limpa e reluzente.
 
@@ -848,6 +910,8 @@ Ele é um dos inimigos do Rei, pensou Cristão, e vai tentar me ferir. O que dev
 A princípio, pensou em dar meia-volta e correr para o sopé do morro. Talvez Discrição olhasse para trás e o visse, ou talvez Vigilante estivesse no portão do palácio e mandasse alguém para ajudá-lo.
 
 Mas então ele se lembrou de que não possuía armadura nas costas e que seu peitoral e escudo não lhe valeriam de nada a não ser que ficasse frente a frente com o inimigo. Assim, decidiu ter fé no Rei e seguir adiante. Como ele era tão pequeno, talvez Ego passasse por ele sem sequer notá-lo. Cristão caminhou com firmeza e, em poucos minutos, Ego estava bem perto dele.
+
+[figura] /figuras/o-pequeno-peregrino/p083.jpg
 
 — Gostaria de saber de onde você veio — ele disse, parando diante de Cristão e observando sua armadura brilhante.
 
@@ -899,7 +963,9 @@ Então ele se lembrou de que Discrição lhe dera um pouco de comida. Sentou-se 
 
 Preciso me apressar, pensou, porque perdi muito tempo. Gostaria de saber se Ego realmente foi embora ou se vai voltar para me levar. E ele disse que há soldados em toda a parte. Preciso estar pronto para enfrentá-los.
 
-Assim, manteve a espada na mão e olhou com cuidado para todos os lados, entre os rochedos e arbustos, enquanto avançava.$conteudo$)
+Assim, manteve a espada na mão e olhou com cuidado para todos os lados, entre os rochedos e arbustos, enquanto avançava.
+
+[figura] /figuras/o-pequeno-peregrino/p087.jpg$conteudo$)
     returning id into v_aula_id;
   end if;
 
@@ -957,6 +1023,8 @@ Em seguida olhou para a frente e se sentiu ainda mais grato porque o sol havia n
 
 Ao fim do Vale Sombrio havia uma ampla caverna na encosta da montanha. Nessa caverna, duas tartarugas gigantes e poderosas haviam morado outrora. Sempre que os peregrinos passavam por sua morada, as tartarugas gigantes os atacavam e tentavam matá-los, e por um longo tempo esse foi um dos lugares mais perigosos no caminho da Cidade Celestial. Mas uma das duas tartarugas gigantes morreu, e a outro ficou velha e seus membros se enrijeceram, de modo que não conseguia mais se lançar sobre os peregrinos.
 
+[figura] /figuras/o-pequeno-peregrino/p093.jpg
+
 Quando o pequeno Cristão se aproximou da caverna, viu a velha tartaruga gigante sentada do lado de fora dela. Ficou um pouco assustado, mas a tartaruga gigante não se moveu, então ele seguiu em frente. A tartaruga gigante se enfureceu quando o viu. Gostaria de agarrar o coelho e arrastá-lo para dentro da caverna, mas não tinha forças para isso, e o pequeno Cristão passou em segurança.
 
 O Vale Sombrio, com todos os seus terrores, havia ficado agora para trás. Diante dele, o chão se erguia um pouco. Cristão escalou rapidamente e, quando chegou ao topo da subida, viu que conseguia enxergar a estrada a alguma distância.
@@ -987,6 +1055,8 @@ Os dois pequenos peregrinos ficaram muito felizes por se encontrarem, pois havia
 
 O pequeno Cristão se lembrou de como ele havia se desviado do caminho quando Mundano o enganara.
 
+[figura] /figuras/o-pequeno-peregrino/p096.jpg
+
 — Você deve ficar feliz por não ter dado ouvidos a ela. Encontrou mais alguém? — indagou.
 
 — Não por algum tempo. Quando cheguei ao Morro da Dificuldade, vi um cão bastante idoso sentado à beira da estrada. Ele me perguntou se eu estava indo para a Cidade Celestial, e disse que seria bem melhor eu ir morar com ele, que ele seria bom para mim e, quando morresse, que eu ficaria com todas as suas riquezas. Ele era tão simpático que não pude deixar de ouvir o que dizia. Ele quase me convenceu a ir com ele.
@@ -1015,6 +1085,8 @@ Os meninos prosseguiram juntos, conversando alegremente, até que chegaram a um 
 
 — Eu adoraria — respondeu o corvo, atravessando a estrada e começando a conversar com Fiel.
 
+[figura] /figuras/o-pequeno-peregrino/p098.jpg
+
 Ele tinha muito a dizer sobre o Rei, seus servos e suas leis, e o pequeno Fiel ficou bem contente por ter encontrado um novo amigo que parecia tão bom e esperto.
 
 Então ele esperou por Cristão, que estava caminhando um pouco atrás deles, e sussurrou:
@@ -1028,6 +1100,8 @@ O pequeno Cristão sorriu. — Você não sabe quem ele é? — perguntou. — N
 Fiel deu outra corrida para alcançar Tagarela. Talvez, pensou Fiel, ele não seja tão mau quanto Cristão pensa e possamos convencê-lo a ir conosco.
 
 No entanto, quanto mais o corvo falava, menos Fiel gostava dele. Finalmente, convenceu-se de que jamais seriam amigos. Era evidente que Tagarela era vaidoso e tolo. Embora louvasse o Rei e falasse quão maravilhoso era ser servo dele, Fiel percebia que não havia um real desejo de entrar na Cidade Celestial e que Tagarela estava apenas fingindo ser peregrino para se divertir.
+
+[figura] /figuras/o-pequeno-peregrino/p100.jpg
 
 Fiel escutou em silêncio por algum tempo, enquanto o companheiro falava sobre a bondade do Rei, e então disse:
 
@@ -1066,6 +1140,8 @@ Logo em seguida, Fiel pensou ter escutado passos atrás de si e, olhando para tr
 — Vai nos contar mais sobre a estrada? — perguntou Cristão. — Vai ficar mais fácil agora, ou há outros lugares horríveis para atravessarmos?
 
 Evangelista ficou sério. — Vim encontrar vocês aqui — ele respondeu — porque logo chegarão aos portões de uma grande cidade que pertence ao Príncipe Malvado. É uma bela cidade, cheia de todos os tipos de coisas atraentes. Muitos peregrinos, quando entram nela, são tentados a permanecer lá em vez de prosseguir a jornada. Não desejo que vocês sejam assim tão tolos, então vim avisá-los sobre isso.
+
+[figura] /figuras/o-pequeno-peregrino/p103.jpg
 
 — Por que precisamos passar por ela? — perguntou Fiel. — O Príncipe Malvado ordenou que ela fosse construída de ambos os lados do Caminho do Rei, de modo que os peregrinos não conseguem chegar à Cidade Celestial sem passar pelo meio dela.
 
@@ -1120,6 +1196,8 @@ Entretanto, quando os três animais os alcançaram, todos cercaram os pequenos p
 Cristão nem sabia o que dizer, pois os garotos falavam todos ao mesmo tempo, e ele ficou bastante confuso. Mas o pequeno Fiel respondeu corajosamente:
 
 — Não queremos nada das suas coisas. Estamos indo para a Cidade Celestial.
+
+[figura] /figuras/o-pequeno-peregrino/p107.jpg
 
 Ao ouvir isso, os meninos riram rudemente, e um deles empurrou Fiel com tanta força que ele teria caído se não estivesse segurado a mão de Cristão.
 
@@ -1185,6 +1263,8 @@ Havia doze animais sentados no tribunal cujo dever era escutar tudo o que fosse 
 
 Apesar disso, sempre fingiam tratar os prisioneiros justamente. Assim, quando Fiel perguntou se podia falar com eles, o juiz respondeu:
 
+[figura] /figuras/o-pequeno-peregrino/p112.jpg
+
 — Você devia ser executado imediatamente por tudo o que fez, mas primeiro ouviremos o que tem a dizer.
 
 Cristão se perguntou como Fiel reunira tanta coragem. O rosto dele estava pálido, mas ele não parecia estar com medo, apesar de o juiz e os animais no tribunal parecerem malvados e cruéis. Depois Cristão soube que o Rei havia ajudado o pequeno peregrino e transformado o menino tímido em forte e corajoso, fazendo com que ele não tivesse receio de falar e assumir que amava muito o Rei e não obedeceria a mais ninguém.
@@ -1218,6 +1298,8 @@ Ficou ali por algum tempo, sentindo-se fraco demais para se mexer ou falar. Mas 
 — A senhora seria mais feliz com o Rei — afirmou Cristão. — Fiel se foi. Eu vi os anjos esperando por ele. E, se eles me deixarem sair da prisão, viajarei o mais rápido que conseguir para completar minha jornada.
 
 A coelha acariciou os pelos da cabeça do menino suavemente.
+
+[figura] /figuras/o-pequeno-peregrino/p115.jpg
 
 — Fiel está morto — ela sussurrou. — Fiquei triste quando me contaram, mas eles não vão matar você.
 
@@ -1309,6 +1391,8 @@ Demas sabia muito bem que era extremamente perigoso. Mas ele era servo do Prínc
 
 Então Demas gritou: — Se vocês não vêm, podem ao menos esperar por mim, e irei com vocês. Sou peregrino também.
 
+[figura] /figuras/o-pequeno-peregrino/p121.jpg
+
 — Não creio que você seja um dos peregrinos do Rei — replicou Cristão. — Se fosse, não tentaria atrapalhar nossa jornada. Não podemos esperar por ninguém.
 
 Então Demas não falou mais. Ficou esperando por Interesse Próprio e os outros meninos, que não estavam muito longe. Esperançoso virou-se para ver o que eles fariam. Eles não amavam de fato o Rei e não estavam verdadeiramente interessados na Cidade Celestial, para onde fingiam estar indo. Assim, quando ouviram falar do tesouro escondido na encosta, correram avidamente para a entrada da caverna. Demas sabia que os animais que iam lá para escavar em busca de prata quase sempre se perdiam ou eram mortos, mas disse a Interesse Próprio e seus amigos que era seguro, e eles estavam prontos a acreditar em tudo o que ele dizia.
@@ -1373,6 +1457,8 @@ Depois de todas as tribulações que Cristão havia enfrentado, o Vale da Paz er
 
 — Creio que não estamos longe da Cidade Celestial. Ficarei tão feliz quando chegarmos lá! — exclamou. — Depois deste bom descanso, creio que conseguiremos andar mais rápido.
 
+[figura] /figuras/o-pequeno-peregrino/p126.jpg
+
 33. PRADO ATALHO
 
 Os pequenos peregrinos deixaram o Vale da Paz de manhã cedo e andaram pelo Caminho do Rei durante todo o dia. Ao final da tarde, chegaram a um lugar onde uma escada conduzia a um vasto prado verde, que se chamava Atalho e pertencia a uma lebre, um gigante cruel e poderoso chamado Desespero. Ele era um dos mais famosos soldados no exército do Príncipe Malvado e morava em um sólido castelo do outro lado do prado. O castelo podia ser avistado do Caminho do Rei. Tudo isso estava escrito no Livro de Cristão, mas ele não pensou em procurar isso no Livro naquele momento.
@@ -1397,6 +1483,8 @@ Mas Esperançoso não estava satisfeito e, quando a noite chegou e as sombras fi
 
 — O que será que aconteceu? — ele perguntou. Gritou chamando Vã Confiança, mas não recebeu resposta. Entretanto, em meio à escuridão, os meninos conseguiam escutar os gemidos de alguém que parecia estar sentindo dores terríveis.
 
+[figura] /figuras/o-pequeno-peregrino/p128.jpg
+
 — Tenho certeza de que não estamos no caminho certo — declarou Esperançoso. — E está tão escuro!
 
 Cristão não respondeu. Sabia agora que havia errado ao subir a escada e indagou-se como podia ter sido tão tolo a ponto de pensar que qualquer caminho que se desviasse do caminho reto pudesse ser seguro.
@@ -1404,6 +1492,8 @@ Cristão não respondeu. Sabia agora que havia errado ao subir a escada e indago
 Mas, antes que pudesse falar novamente, sentiu pesados pingos de chuva no rosto. Então um raio brilhante cruzou o céu, e o estrondo de um trovão se seguiu. A chuva caiu torrencialmente, e os trovões e raios eram mais assustadores do que qualquer um que já tivessem ouvido ou visto.
 
 Cristão começou a chorar e a desejar não ter sido tão imprudente.
+
+[figura] /figuras/o-pequeno-peregrino/p129.jpg
 
 — Foi culpa minha. Ah, Esperançoso, sinto muito! Mereço ser morto, mas você nunca teria vindo se eu não o tivesse persuadido.
 
@@ -1418,6 +1508,8 @@ A tempestade durou por muitas horas e, embora Cristão e Esperançoso lutassem v
 34. CAPTURADOS PELO GIGANTE
 
 A tempestade passou antes que o dia raiasse, e o sol surgiu no céu límpido, brilhando sobre o Caminho do Rei. Cristão e Esperançoso estavam deitados à sombra da cerca e não se deram conta do calor dos raios de sol. Desse modo, em vez de seguirem de volta à escada no início da manhã, como haviam planejado, dormiram profundamente e não perceberam o perigo que se aproximava.
+
+[figura] /figuras/o-pequeno-peregrino/p131.jpg
 
 O gigante Desespero tinha ouvido os estrondos da tempestade. Desceu do castelo logo após o nascer do sol e cruzou os campos e prados para ver se o vento e a chuva haviam causado algum estrago. Finalmente, atravessou o Prado Atalho e, em seu caminho para casa, passou exatamente pelo local onde os pequenos peregrinos dormiam.
 
@@ -1475,6 +1567,8 @@ Isso era verdade, mas o gigante achou que, se Cristão tivesse uma das chaves do
 
 A pequena chave, que se chamava a Chave da Promessa, estava no bolso de Cristão. Fora-lhe dada no Palácio Belo. Porém, em todo o seu sofrimento, ele havia se esquecido completamente dela.
 
+[figura] /figuras/o-pequeno-peregrino/p137.jpg
+
 Nem ele nem Esperançoso conseguiram dormir naquela noite. Depois de conversar por algum tempo, começaram a orar para o Rei e suplicar-lhe ansiosamente que os ajudasse.
 
 — Ele irá nos escutar — disse Cristão. — Mesmo que não possamos vê-lo. E estou começando a sentir que devemos mesmo escapar, afinal.
@@ -1488,6 +1582,8 @@ Esperançoso se ergueu de um salto. — Vamos tentar! Deve ser noite ainda, e co
 Tatearam cuidadosamente em meio à escuridão até encontrar a fechadura da porta do calabouço, e Cristão introduziu a chave nela. A chave girou com facilidade. Com o coração acelerado, os meninos deram um passo para fora do calabouço e ficaram escutando. Uma pálida luz iluminava a passagem, e logo encontraram o caminho até a porta que dava para o pátio. Cristão a abriu também. Sem ousar sequer sussurrar, Esperançoso o seguiu. A lua brilhava intensamente. Havia só mais uma porta entre os pequenos peregrinos e o prado verde.
 
 No entanto, essa última fechadura estava emperrada e, por mais que Cristão se esforçasse, não conseguia girar a chave. Nesse momento as passadas do gigante ressoaram nas escadas do castelo, pois ele havia escutado alguém se movendo. Os pequenos peregrinos acharam que ele os alcançaria e estavam prestes a desmaiar de medo. Porém, assim que Desespero chegou ao portal, a clava caiu de suas mãos, e ele tombou pesadamente ao solo.
+
+[figura] /figuras/o-pequeno-peregrino/p138.jpg
 
 — Use mais força, para que possamos sair antes que ele se recupere do ataque! — gritou Esperançoso.
 
@@ -1553,13 +1649,19 @@ No dia seguinte, quando os pequenos peregrinos estavam se preparando para contin
 
 Cristão e Esperançoso acharam que isso seria ótimo, então os pastores subiram com eles os vastos declives verdes e percorreram os caminhos que haviam sido abertos nas encostas das montanhas.
 
+[figura] /figuras/o-pequeno-peregrino/p143.jpg
+
 — Não é seguro para forasteiros andarem sozinhos por estas montanhas — alertou Conhecimento —, mas o Rei nos permite levar alguns peregrinos para observar a vista da Cidade Celestial.
 
 Finalmente, eles chegaram a um caminho íngreme que era escarpado e não muito fácil de escalar. Esse caminho levava a um alto rochedo. Chegando ao cume, Cristão e Esperançoso ficaram gratos por poder segurar a mão dos pastores com bastante firmeza. O rochedo ficava na encosta de uma montanha e, quando os pequenos peregrinos olharam para baixo, avistaram um vale ao longe, lá embaixo. Sobre o solo, ao fundo do vale, espalhavam-se os corpos de muitos animais mortos.
 
+[figura] /figuras/o-pequeno-peregrino/p144.jpg
+
 — Eles caíram deste rochedo? — perguntou Esperançoso. — Sim — responderam os pastores. — Este é o Rochedo do Erro, e os peregrinos que saem do Caminho do Rei e vagueiam sozinhos pelas montanhas gostam de subir esta trilha, porque acham que terão uma vista melhor do rochedo. Mas, quando olham, a vista do vale profundo lhes dá vertigem, e eles caem e morrem.
 
 Então os pastores levaram as crianças a outro lugar, que se chamava Montanha Cautela. Lá de cima eles viram uma vasta planície, onde muitos animais, jovens e velhos, caminhavam para cima e para baixo. Mas andavam de um jeito estranho, estendendo as mãos, como que para tatear o que havia diante deles. Cristão reparou que eles tropeçavam nas rochas.
+
+[figura] /figuras/o-pequeno-peregrino/p145.jpg
 
 — São cegos? — ele perguntou. Experiência respondeu que sim. — Está vendo uma escada no lado esquerdo da estrada, não muito longe destas montanhas? — perguntou Atento.
 
@@ -1586,6 +1688,8 @@ Mas a luz era mais intensa do que a do sol do meio-dia, e sua glória era grande
 — Só consigo ver que está brilhando — confessou o pequeno Cristão. — É brilhante demais para você — explicou Sincero —, mas temos um tipo de telescópio chamado Fé, que tornará tudo mais claro.
 
 Cristão pegou o telescópio, mas só de pensar na Cidade do Rei, que ele tanto ansiava por ver, começou a tremer, e sua mão tremeu tanto que não conseguiu segurar o instrumento com firmeza. A seguir Esperançoso tentou, mas lágrimas lhe vieram aos olhos.
+
+[figura] /figuras/o-pequeno-peregrino/p148.jpg
 
 — Ela me ofusca, mas acho que consigo ver algo semelhante a um portão — disse ele.
 
@@ -1659,6 +1763,8 @@ Nesse momento, apareceu um guaxinim atrás deles. Seu rosto era sombrio e feio, 
 
 — Qual é o problema? — ele perguntou. — Vocês parecem bastante confusos.
 
+[figura] /figuras/o-pequeno-peregrino/p155.jpg
+
 — Ah, estamos indo para a Cidade do Rei e não conseguimos decidir qual desses caminhos é o correto! — explicou Cristão.
 
 O guaxinim riu. — Só isso? Não precisam se preocupar. Eu mesmo estou indo para a Cidade Celestial. Sigam-me e lhes mostrarei o caminho.
@@ -1705,6 +1811,8 @@ O Ser Resplandecente se virou para o Caminho do Rei e ordenou que os meninos o s
 
 — Vocês consultaram o mapa quando ficaram confusos? — Não — sussurrou Esperançoso. Cristão acrescentou: — Nós nos esquecemos.
 
+[figura] /figuras/o-pequeno-peregrino/p159.jpg
+
 — E o que mais os pastores lhes disseram? Não os preveniram sobre o Adulador?
 
 — Eles nos disseram que não deveríamos dar-lhe ouvidos. — E, no entanto, vocês lhe deram ouvidos. Como isso foi acontecer? — Nós não pensamos que aquele guaxinim pudesse ser o Adulador, porque ele falou tão gentilmente conosco!
@@ -1731,9 +1839,13 @@ Depois que o Ser Resplandecente os deixou, os pequenos peregrinos seguiram em fr
 
 — Não vamos mais dar ouvidos a nenhum Adulador — disse Esperançoso. — Não é uma doninha que está diante de nós na estrada agora?
 
+[figura] /figuras/o-pequeno-peregrino/p162.jpg
+
 — É — replicou Cristão, virando o rosto no sentido contrário ao da Cidade Celestial. — E deve estar vindo ao nosso encontro.
 
 — Acho que não é um dos Seres Resplandecentes — comentou Esperançoso quando a doninha se aproximou. — Não é mesmo: ele usa roupa de peregrino, mas está andando no sentido errado.
+
+[figura] /figuras/o-pequeno-peregrino/p163.jpg
 
 A doninha, cujo nome era Incrédulo, parou quando encontrou as crianças e perguntou-lhes para onde estavam indo. Tinha uma expressão amistosa e voz gentil, mas os meninos sabiam que não deviam confiar em suas palavras.
 
@@ -1833,6 +1945,8 @@ No entanto Ignorância agora se cansara de conversar. — Eu realmente não cons
 
 E, como os pequenos peregrinos não sabiam o que mais dizer a ele, foram em frente e o deixaram ir atrás tão devagar quanto desejasse.
 
+[figura] /figuras/o-pequeno-peregrino/p171.jpg
+
 45. A TERRA DA ALEGRIA
 
 Os pequenos peregrinos, depois de saírem do Solo Enfeitiçado, se viram na Terra da Alegria. Era a região mais bonita que já tinham visto. As montanhas estavam cobertas de árvores, e os vales eram verdes devido à grama macia e enfeitados com as mais adoráveis flores. À distância brilhava a luz gloriosa que os pastores lhes haviam mostrado a partir das Montanhas Aprazíveis. Quando os olhos das crianças se acostumaram ao brilho, elas conseguiram distinguir os muros e portões da Cidade Celestial.
@@ -1876,6 +1990,8 @@ A Terra da Alegria ficava tão perto da Cidade Celestial que os Seres Resplandec
 Contei-lhes que eles dormiram uma noite no jardim do Rei. Na manhã seguinte, quando estavam caminhando lentamente entre as videiras, viram dois Seres Resplandecentes descendo o caminho para encontrá-los.
 
 — Vocês estão viajando para a Cidade Celestial? — perguntaram. — Sim — responderam as crianças. Então os Seres Reesplandecentes lhes fizeram muitas perguntas e pediram tanto a Cristão quanto a Esperançoso que lhes contassem tudo o que havia acontecido desde o início de sua peregrinação. Cristão relatou todas as suas dificuldades e perigos, e Esperançoso contou que havia perdido muito tempo na Feira das Vaidades.
+
+[figura] /figuras/o-pequeno-peregrino/p175.jpg
 
 — Nós muitas vezes nos comportamos mal — confessaram —, mas nos arrependemos muito e amamos o Rei de todo o coração.
 
@@ -1922,6 +2038,8 @@ Havia um barco, mas pertencia ao Príncipe Malvado, e os peregrinos do Rei nunca
 — Está na hora de você atravessar o rio — ele disse. — Trouxe meu barco para você.
 
 Ignorância ficou feliz e se ergueu de imediato, dizendo: — Suponho que o Rei o tenha enviado. — Sim — respondeu o roedor. — A água não é muito funda em alguns lugares, e muitos peregrinos tentam atravessar a pé. Mas não há necessidade de fazer isso, porque estou sempre pronto a levá-los para o outro lado.
+
+[figura] /figuras/o-pequeno-peregrino/p178.jpg
 
 Ele estendeu a mão, e Ignorância a segurou e entrou no barco. Depois disso, Vã Esperança pegou os remos e remou depressa pelas águas agitadas.
 
@@ -1977,6 +2095,8 @@ A Cidade Celestial era construída sobre uma colina, e uma ampla estrada reta co
 
 — Ela está vindo encontrá-lo — respondeu o Ser Resplandecente. — Ela sabe que você está conosco e está muito feliz que sua peregrinação tenha terminado e que você tenha atravessado o rio a salvo.
 
+[figura] /figuras/o-pequeno-peregrino/p183.jpg
+
 49. A CIDADE CELESTIAL
 
 Os pequenos peregrinos estavam agora bem perto da Cidade, e um grupo de servos do Rei, que estivera assistindo a tudo do portão, desceu rapidamente a estrada íngreme para encontrá-los.
@@ -2001,6 +2121,8 @@ Perto das muralhas da Cidade Celestial várias criaturas estavam postadas com tr
 
 Os moradores da Cidade haviam escutado o som das trombetas de prata e sabiam o que significava. Quando Cristão e Esperançoso passaram pelo portão de entrada, encontraram uma grande multidão esperando para recebê-los com música suave e canções de boas-vindas. Todos pareciam alegres e felizes, porque não havia sofrimento, cansaço ou dor na Cidade Celestial.
 
+[figura] /figuras/o-pequeno-peregrino/p186.jpg
+
 A princípio, os olhos das crianças estavam ofuscados pela luz dourada que brilhava a seu redor, mas aos poucos elas foram se acostumando com a luz e conseguiram olhar para cima. Diante delas, no centro da Cidade, erguia-se um palácio magnífico, muito mais glorioso do que o Palácio Belo.
 
 — O Rei mora lá? — sussurrou Cristão para a mãe, que ainda estava de mãos dadas com ele.
@@ -2011,7 +2133,15 @@ A princípio, os olhos das crianças estavam ofuscados pela luz dourada que bril
 
 — Ah, sim — ela respondeu —, mas o amor do Rei é muito maior do que o meu!
 
-Os pequenos peregrinos haviam chegado à entrada do Palácio e, quando as portas se escancararam, ouviram o som da música mais delicada. O próprio Príncipe estava esperando para recebê-los. Sorriu para eles e segurou-lhes as mãos entre as suas. Em seguida os levou para dentro do Palácio, e toda a Cidade se encheu de alegria, porque sua peregrinação havia se encerrado e eles haviam sido levados a salvo através do Rio da Morte à presença do Rei.$conteudo$)
+Os pequenos peregrinos haviam chegado à entrada do Palácio e, quando as portas se escancararam, ouviram o som da música mais delicada. O próprio Príncipe estava esperando para recebê-los. Sorriu para eles e segurou-lhes as mãos entre as suas. Em seguida os levou para dentro do Palácio, e toda a Cidade se encheu de alegria, porque sua peregrinação havia se encerrado e eles haviam sido levados a salvo através do Rio da Morte à presença do Rei.
+
+[figura] /figuras/o-pequeno-peregrino/p188.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p189.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p190.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p191.jpg$conteudo$)
     returning id into v_aula_id;
   end if;
 
@@ -2019,7 +2149,13 @@ Os pequenos peregrinos haviam chegado à entrada do Palácio e, quando as portas
   if v_aula_id is null then
     insert into public.aulas (curso_id, titulo, ordem, conteudo)
     values (v_curso_id, $t$Cristiana - capítulos 50 a 54$t$, 12,
-$conteudo$50. UMA CARTA DO REI
+$conteudo$PARTE DOIS
+
+CRISTIANA
+
+[figura] /figuras/o-pequeno-peregrino/p193.jpg
+
+50. UMA CARTA DO REI
 
 Cristiana sempre amara o pequeno Cristão e, quando outras crianças lhe contaram que ele havia fugido pela planície e que elas achavam que ele havia realmente partido rumo à Cidade Celestial, ficou muito triste.
 
@@ -2055,6 +2191,8 @@ Sabedoria depositou a mão gentilmente sobre o ombro da menina. — Acho que voc
 
 — Eles estão com o Rei, em sua gloriosa Cidade. — Ah! — exclamou Cristiana. — Tenho ouvido com frequência que as histórias sobre o Rei e a Cidade Celestial não são verdadeiras.
 
+[figura] /figuras/o-pequeno-peregrino/p196.jpg
+
 — Elas são verdadeiras — replicou Sabedoria. — O Rei sente muito que você não creia em mim. Ele me enviou para lhe dizer que deseja que você comece sua peregrinação de imediato e que leve os meninos e Inocência com você.
 
 Cristiana se espantou: — Todos nós? — Sim. A Cidade do Rei é ampla e há espaço nela para todos os peregrinos que cheguem aos seus portões. Você não sabe como os seus entes queridos ficarão felizes quando souberem que aqueles portões estão se abrindo para você?
@@ -2085,6 +2223,8 @@ Nesse exato instante a porta se abriu, e os dois coelhinhos mais novos entraram 
 
 — Cristiana recebeu uma carta — explicou Mateus. Mateus depositou o papel sobre a mesa, para que os irmãos pudessem ler a carta enquanto estavam todos reunidos.
 
+[figura] /figuras/o-pequeno-peregrino/p199.jpg
+
 — É do Rei! — exclamou José. — Por que ele escreveu pra Cristiana? — Quem trouxe? — perguntou Tiago. — Acha que veio mesmo do Rei? — Uma das forasteiras trouxe. O nome dela é Sabedoria. Vocês já devem tê-la visto nas ruas.
 
 — Sei quem é. Ela falou comigo um dia, e gostei dela. A gente vai? — perguntou José, aproximando-se e apoiando-se na cadeira da irmã, fitando-lhe o rosto.
@@ -2098,6 +2238,8 @@ Nesse exato instante a porta se abriu, e os dois coelhinhos mais novos entraram 
 — Eu gostaria de ser peregrino — disse Tiago. — Mas Inocência é tão pequena! Você não pode deixar Inocência aqui.
 
 — Não, é claro que não. Ela pode caminhar um pouco, e nós precisamos carregá-la quando ela estiver cansada — sugeriu Mateus.
+
+[figura] /figuras/o-pequeno-peregrino/p200.jpg
 
 — Quando vamos? — perguntou José. — Temos de passar por aquela porta com a luz em cima, não é? Ah, você não se lembra? Volúvel foi com o pequeno Cristão na primavera passada, e eles caíram no Pântano.
 
@@ -2145,6 +2287,8 @@ Inocência bateu palmas com as mãozinhas quando viu as margaridas balançando a
 
 — Parem! — ela gritou. — Por favor, me deixem falar com a Cristiana. Cristiana se virou. — É Misericórdia — ela disse.
 
+[figura] /figuras/o-pequeno-peregrino/p203.jpg
+
 Misericórdia estava sem fôlego devido à corrida, mas segurou a mão de Cristiana com firmeza.
 
 — Não quis ir com as outras meninas — ela explicou. — Posso andar um pouco com você?
@@ -2152,6 +2296,8 @@ Misericórdia estava sem fôlego devido à corrida, mas segurou a mão de Cristi
 — Ora, claro! — respondeu Cristiana. — Por que não faz a jornada toda conosco?
 
 — Não recebi nenhuma mensagem — disse Misericórdia, que havia estado na casa de Cristiana com as coleguinhas e visto a carta do Rei.
+
+[figura] /figuras/o-pequeno-peregrino/p204.jpg
 
 — Isso não tem importância — afirmou Mateus. — Estou certo de que ouvi Evangelista dizer que o Rei gostaria que todas as crianças se tornassem peregrinas.
 
@@ -2229,6 +2375,8 @@ Cristiana sorriu. — Você bateu forte mesmo! — exclamou ela. — Até achei 
 
 — Bem, não consegui evitar — disse Misericórdia. — A porta se fechou, e aquele cachorro feroz devia estar em algum lugar por perto. Você teria batido com força se estivesse tão assustada quanto eu! Boa Vontade ficou zangado? O que ele falou?
 
+[figura] /figuras/o-pequeno-peregrino/p210.jpg
+
 — Ele estava sorrindo. Não creio que tenha se zangado. Mas me pergunto por que ele conserva aquele cachorro. Se eu soubesse dele antes, não estou certa de que teria ousado vir. Agora, porém, estamos a salvo, e estou muito feliz.
 
 — Eu também — disse Misericórdia. — Acho que vou perguntar a Boa Vontade por que ele permite que um cachorro tão feroz fique perto da porta.
@@ -2268,6 +2416,8 @@ As crianças não estavam longe da Porta Estreita quando viram dois jovens gatos
 — Devem ser príncipes — disse o pequeno José. — Será que o Rei os enviou para nos encontrar?
 
 — Não acredito que os servos do Rei se vistam de modo tão chamativo — replicou Cristiana. — E estou certo de que não são príncipes da Cidade Celestial, pois a expressão deles é maligna e feia. Vamos andar mais rápido e não olhar para eles.
+
+[figura] /figuras/o-pequeno-peregrino/p212.jpg
 
 Os gatos estavam rindo e conversando. Quando Cristiana e as crianças se aproximaram deles, postaram-se no meio do caminho e não deixavam os pequenos peregrinos passarem. Mateus e os irmãos ficaram assustados, e Cristiana não sabia o que fazer.
 
@@ -2345,6 +2495,8 @@ Em seguida, o idoso texugo levou os pequenos visitantes a uma sala opaca e sombr
 
 — Por que ele está recolhendo isso? — perguntou Mateus. — Ele acha que tudo isso é muito precioso — replicou o Intérprete. — Ele serve o Príncipe Malvado há um longo tempo e acredita que, algum dia, em meio a todas essas palhas inúteis, encontrará um tesouro maravilhoso. O Rei sente pena dele e todos os dias envia um mensageiro para lhe oferecer uma coroa de ouro em vez de palhas.
 
+[figura] /figuras/o-pequeno-peregrino/p218.jpg
+
 Enquanto o Intérprete falava, apontou para cima. Quando as crianças ergueram os olhos, viram, lá no alto, no ar, a bela figura de um anjo segurando uma coroa brilhante na mão.
 
 — Mas ele não está vendo! — exclamou Misericórdia. — É — disse o Intérprete. — Ele não quer olhar para cima. Lágrimas vieram aos olhos de Cristiana. — Receio que eu fosse exatamente como ele — observou ela. — Não me importava com o Rei e sua Cidade. Mas agora me importo.
@@ -2392,6 +2544,8 @@ Grande Coração era um texugo alto, de boa aparência, não muito mais velho do
 — Deixe-me carregá-la um pouco, e depois ela poderá correr na grama até se cansar.
 
 O Intérprete e seus filhos foram até a porta e assistiram à partida do pequeno grupo: Grande Coração carregava Inocência, enquanto Tiago e José caminhavam solenemente de mãos dadas a seu lado, depois vinham Cristiana e Misericórdia, e, ao final, Mateus, cuja cabeça doía, embora ele não quisesse contar isso a ninguém. As frutas que comera no dia anterior eram venenosas e não lhe haviam feito bem. Mas o tolo coelhinho sentia vergonha de confessar que se sentia mal, então andava atrás de Cristiana e esperava que o Palácio Belo não ficasse muito longe.
+
+[figura] /figuras/o-pequeno-peregrino/p223.jpg
 
 59. DESCANSO JUNTO À CRUZ
 
@@ -2457,6 +2611,8 @@ Os pequenos peregrinos se sentaram em silêncio no caramanchão do Rei, comendo 
 
 — Não devemos ficar muito tempo descansando — ele disse, por fim —, pois ainda temos alguma distância a percorrer, e o sol logo irá se pôr.
 
+[figura] /figuras/o-pequeno-peregrino/p228.jpg
+
 Tiago e José se ergueram de um pulo e recomeçaram a andar de mãos dadas. Toda a sua bravura havia voltado, e eles sussurraram um para o outro que não teriam muito medo mesmo se estivessem sozinhos.
 
 — Grande Coração falou que o Rei é muito bom, e sabemos que ele cuidou do pequeno Cristão — disse José.
@@ -2495,6 +2651,8 @@ Mas todas as crianças estavam assustadas, e até Cristiana ficava feliz em sabe
 
 O nome do javali gigante era Atemorizante, e ele construíra seu lar perto do Caminho do Rei. Havia ensinado os lobos a lhe obedecerem e frequentemente ia alimentá-los e assustar os peregrinos que por acaso estivessem passando.
 
+[figura] /figuras/o-pequeno-peregrino/p232.jpg
+
 Quando ele viu Grande Coração, adentrou o caminho estreito e ficou parado com as mãos sobre a nuca dos dois lobos. Grande Coração avançou corajosamente, mas as crianças se agarraram umas às outras e esperaram para ver o que aconteceria.
 
 — O que pensa que está fazendo, andando por esse caminho? — perguntou o gigante.
@@ -2516,6 +2674,8 @@ A armadura dele brilhava intensamente diante deles em meio às sombras (pois a l
 63. VIGILANTE RECEBE AS CRIANÇAS
 
 Quando Grande Coração ergueu a espada para golpear uma segunda vez, o gigante se abaixou para soltar as correntes dos lobos. Todavia, antes que pudesse fazer isso, a arma afiada atingiu seu capacete, e ele caiu de joelhos. Tentou se levantar de novo, mas o Rei ajudou seu jovem e corajoso soldado, e, após uma breve luta, o terrível gigante tombou morto aos pés de Grande Coração.
+
+[figura] /figuras/o-pequeno-peregrino/p234.jpg
 
 Então Grande Coração se virou à procura dos pequenos peregrinos. Misericórdia havia escondido o rosto, mas Cristiana assistira à batalha. Quando o gigante havia gritado de dor, no entanto, ela não conseguiu evitar a tremedeira.
 
@@ -2560,6 +2720,8 @@ Prudência respondeu que ninguém estava ocupando aquele quarto e ela ficaria sa
 Cristiana e Misericórdia ficaram acordadas por um longo tempo, conversando sobre tudo o que havia acontecido desde que haviam saído da Cidade da Destruição.
 
 — Nunca pensei, quando o pequeno Cristão me falava sobre o Rei, que um dia iria querer ser peregrina — observou Cristiana.
+
+[figura] /figuras/o-pequeno-peregrino/p237.jpg
 
 — Pois é, e você nunca pensou que iria ficar neste grande palácio e dormir no mesmo quarto em que Cristão dormiu — comentou Misericórdia.
 
@@ -2631,6 +2793,8 @@ A pobre Cristiana ficou tão perturbada que nem conseguia falar, mas José excla
 
 — Ah, você não se lembra das frutas? Estavam penduradas no muro junto à Porta Estreita, e você nos mandou jogar fora, mas Mateus quis comer mesmo assim.
 
+[figura] /figuras/o-pequeno-peregrino/p244.jpg
+
 — Sim, foi isso mesmo — respondeu Cristiana. — Eu disse a ele que não comesse, mas me lembro de que ele não quis me dar ouvidos.
 
 — Ah! Eu tinha certeza de que ele havia comido algo venenoso! — afirmou o médico. — E aquelas frutas são piores do que todas as outras, pois crescem no jardim do Príncipe Malvado!
@@ -2658,6 +2822,8 @@ O tempo foi passando de modo agradável e, por volta do fim do mês, José lembr
 Prudência e suas irmãs ficaram tristes em se despedir das crianças e, naqueles últimos dias, cuidaram de lhes mostrar todos os tesouros pelos quais o Palácio Belo era tão famoso. Entre outros objetos, Cristiana viu e admirou uma pequena âncora dourada.
 
 — Fique com ela, se quiser. Pode usá-la sempre e, quando olhar para ela, não se esqueça do que significa — aconselhou-lhe Piedade.
+
+[figura] /figuras/o-pequeno-peregrino/p246.jpg
 
 — O que significa? — perguntou Misericórdia. — Você sabe para que serve uma âncora: se ela for presa firmemente pelos marinheiros, não importa quão agitado o mar possa estar, a âncora segura o navio e o mantém a salvo, mesmo que as ondas possam sacudi-lo e o vento uivar ao redor. Então, se você ama o Rei, a esperança de que ele a ajudará impedirá que seu coração fraqueje. E, por maior que seja o perigo ou dificuldade em que esteja, você jamais sentirá medo.
 
@@ -2723,9 +2889,13 @@ Tiago e José estavam apavorados. Os ruídos estranhos entre as rochas e a escur
 
 O pobre pequeno Tiago, no entanto, não conseguiu andar muito até que seus pés escorregaram de repente, e teria caído se Mateus não o tivesse segurado nos braços. Grande Coração recuou, inclinou-se e sentou o coelhinho em seu joelho. Cristiana fitou-o ansiosamente, pois temia que alguém o houvesse machucado.
 
+[figura] /figuras/o-pequeno-peregrino/p252-1.jpg
+
 — Ele só está fraco — disse Grande Coração. — Se lhe der um pouco do remédio entregue por Aptidão, ele logo se recuperará.
 
 O remédio não era gostoso, mas Cristiana convenceu o menino a tomá-lo, e ele acabou abrindo os olhos e se sentindo melhor.
+
+[figura] /figuras/o-pequeno-peregrino/p252-2.jpg
 
 — Eu estava com medo — ele confessou. — Imaginei ter visto coisas horríveis. Será que o Rei se zangará comigo?
 
@@ -2742,6 +2912,8 @@ $conteudo$70. TERRORES DO CAMINHO
 O Vale Sombrio era realmente um lugar terrível, e até Cristiana se intimidou e imaginou ver formas estranhas entre as sombras. Mas Grande Coração seguiu em frente com firmeza, e os pequenos peregrinos o seguiram de perto até haverem passado metade do caminho pelo vale.
 
 Foi quando Misericórdia, ao se virar para trás, viu um lobo andando atrás deles. O lobo começou a uivar quando se aproximou, e Grande Coração puxou as crianças para trás de si enquanto esperava pelo animal selvagem. Entretanto, quando o animal viu que o inimigo estava preparado para lutar em vez de sair correndo, agachou-se no caminho e não avançou mais.
+
+[figura] /figuras/o-pequeno-peregrino/p255.jpg
 
 Logo depois disso, o próprio Grande Coração foi obrigado a parar, pois descobriu que o caminho estreito havia se interrompido, e um poço profundo se abria diante dele. Grande Coração não sabia como levar os pequenos peregrinos para o outro lado do poço, já que, embora um coelho alto e ágil como Mateus pudesse atravessá-lo, as meninas e os meninos pequenos não conseguiriam fazê-lo. E, de repente, enquanto ele ponderava no que fazer, uma densa neblina se ergueu a seu redor, fazendo com que eles não conseguissem enxergar nem um ao outro.
 
@@ -2793,6 +2965,8 @@ E, agarrando sua grande clava, desceu o caminho pedregoso na direção do Caminh
 
 Grande Coração se defendeu: — Sou servo do Rei. Não sou raptor. Meu Senhor me ordenou que levasse as crianças a salvo para casa e, se você quiser lutar contra mim porque obedeço a ele, estou pronto.
 
+[figura] /figuras/o-pequeno-peregrino/p259.jpg
+
 Quando o gigante escutou isso, precipitou-se sobre Grande Coração e desferiu-lhe um violento golpe com a clava, fazendo-o cair de joelhos. Os pobres pequenos peregrinos gritaram de susto, pois pensaram que seu guia fiel seria morto. Mas Grande Coração se levantou rapidamente e feriu o braço do gigante com a espada. Depois disso, os dois travaram uma longa luta, enquanto as crianças assistiam e tremiam, pois embora soubessem que Grande Coração era corajoso e confiassem em que o Rei o ajudaria, viam que o gigante era jovem e muito forte, e temiam que pudesse sair vitorioso.
 
 Finalmente o gigante se cansou e não quis mais lutar, mas continuou se recusando a deixar que Grande Coração passasse. Sentou-se à beira da estrada para descansar. Grande Coração se virou e orou ao Rei para lhe dar novas forças a fim de que pudesse vencer a batalha.
@@ -2802,6 +2976,8 @@ Os pequenos peregrinos oraram também. Massacrante viu o que eles estavam fazend
 72. GRANDE CORAÇÃO VENCE O GIGANTE
 
 O Rei não abandonou Grande Coração. Quando a luta recomeçou, o rapaz sentiu que sua força e coragem estavam aumentando a cada instante, e não demorou muito até conseguir derrubar o gigante ao solo. Massacrante gritou por clemência, e Grande Coração deixou que ele se levantasse. Mas, assim que se levantou, ele golpeou o jovem soldado com a clava. O golpe atingiu a cabeça de Grande Coração e, se o capacete fosse menos resistente, poderia tê-lo matado. Depois disso a coragem de Massacrante declinou. A espada de Grande Coração havia ferido sua lateral, e ele começou a se sentir fraco, sem conseguir mais segurar a pesada clava. Esta lhe caiu das mãos, o que levou ao fim da batalha. Em poucos instantes, Grande Coração era o único dos dois em pé sobre a trilha, e o gigante jazia morto a seus pés.
+
+[figura] /figuras/o-pequeno-peregrino/p262.jpg
 
 As crianças se encheram de alegria, pois, ainda que houvesse sido uma luta terrível de assistir, sabiam que o gigante era um dos inimigos do Rei e que era correto que Grande Coração o matasse. Perto da caverna onde o gigante vivera havia diversas rochas grandes. Os garotos escalaram as rochas e fizeram com que várias pedras rolassem para a trilha lá embaixo. Construíram com elas uma coluna, sobre a qual colocaram a cabeça do gigante, para que os peregrinos que saíssem do Vale Sombrio pudessem vê-la e saber que o inimigo estava morto.
 
@@ -2816,6 +2992,8 @@ A uma pequena distância da caverna, havia uma colina verde de onde se podia avi
 Já era tarde e, embora estivessem no verão, a luz começara a diminuir. Diante disso, os pequenos peregrinos foram forçados a apressar o passo. Muitos belos carvalhos cresciam na planície, e alguns deles ficavam bem próximos ao Caminho do Rei.
 
 As crianças andavam rapidamente. De repente, avistaram um gato muito idoso sentado no chão sob um desses carvalhos. Segurava uma bengala na mão, mas seus olhos estavam fechados. Parecia estar dormindo.
+
+[figura] /figuras/o-pequeno-peregrino/p264.jpg
 
 — Ele está vestido como um peregrino — comentou Mateus. — Sim. Ele é um peregrino, mas não devemos deixá-lo dormir aqui — disse Grande Coração.
 
@@ -2871,6 +3049,8 @@ O resto da história de Temente logo foi contado. Boa Vontade escreveu uma carta
 
 — Sim. Ele ficou contente quando chegamos à Cruz e não se importou com o Morro da Dificuldade nem com os lobos. Não tinha medo desse tipo de coisa. Só temia que o Rei não o considerasse digno de ser peregrino. No Palácio Belo, ele foi muito feliz. Não quis se envolver muito com a família nem com os outros hóspedes, mas gostava de ouvi-los falar. Vocês se lembram de que há um grande biombo no salão? Ele costumava se sentar atrás dele, onde não podia ser visto, e escutar o que diziam. Permanecemos um longo tempo no Vale da Humilhação, porque meu senhor me disse para não apressálo, e ele parecia gostar tanto da grama e das flores que não suportava a ideia de deixá-los.
 
+[figura] /figuras/o-pequeno-peregrino/p269.jpg
+
 — Como ele passou pelo Vale Sombrio? — Tive receio de que o Vale Sombrio pudesse ser terrível para ele, e realmente foi. Mas o Rei não deixou que ele fosse perturbado como muitos peregrinos são. Nunca vi o vale tão claro e calmo, em nenhuma outra vez. Na Feira das Vaidades ele ficou muito zangado com a perversidade que viu a seu redor. Foi mais corajoso do que em todos os outros lugares e estava pronto para lutar contra os inimigos do Rei a todo momento. Todavia, passamos pela cidade sem sermos feridos e, depois de viajar vagarosamente por várias semanas, chegamos ao rio.
 
 — Ele não ficou contente quando viu o portão da Cidade Celestial? — Nem um pouco. Ficou vagando pela margem do rio, olhando para as muralhas brilhantes do outro lado e chorando porque jamais seria recebido lá. Estava certo de que se perderia no rio. Mas, quando a mensagem veio para ele, desci para vê-lo atravessar, e a água estava tão baixa que ele passou com facilidade. Então os Seres Resplandecentes foram encontrá-lo, e não o vi mais.
@@ -2905,6 +3085,8 @@ Inocência estava dormindo profundamente, com a cabeça apoiada no ombro da irm�
 
 Gaio recebeu o pequeno grupo de peregrinos amavelmente. Ele sempre conservava vários quartos para o uso de viajantes, e seus servos se alegravam tanto quanto o dono da casa por ter a oportunidade de receber os peregrinos do Rei. Enquanto o cozinheiro preparava a ceia, Gaio levou os hóspedes até a sala de visitas, onde puderam se sentar e descansar.
 
+[figura] /figuras/o-pequeno-peregrino/p272.jpg
+
 Ele tinha muito a dizer ao velho amigo Honesto, e também a Grande Coração, e as crianças escutaram em silêncio e sentindo-se felizes.
 
 Em seguida a criada entrou, estendeu uma toalha sobre a mesa e distribuiu os pratos e pão. Então o cozinheiro mandou servir a ceia, e os viajantes famintos ficaram agradecidos ao verem a boa comida que lhes foi servida: carne e batatas, leite, manteiga e mel, e um prato de grandes maçãs.
@@ -2916,6 +3098,8 @@ Quando Mateus viu as frutas, corou, pois pensou nas frutas envenenadas que o hav
 Depois da ceia, Gaio deu aos meninos algumas nozes para quebrar e, enquanto eles as comiam, conversou com Grande Coração. Finalmente, Cristiana achou que seria melhor que os mais novos fossem para a cama, e ela mesma também estava bastante cansada. Então Gaio lhe mostrou os quartos que lhes haviam sido preparados, um para ela e Misericórdia e outro para os garotos. Não demorou muito até todos estarem dormindo em suas camas confortáveis. Quanto ao Sr. Honesto, ficou tão contente em rever o velho amigo que ficou sentado junto à lareira durante toda a noite para conversar com ele, e Grande Coração os acompanhou até que o sol nasceu e os servos começaram a arrumar a casa para o dia.
 
 Enquanto tomavam o café da manhã, Gaio contou aos hóspedes sobre um sapo gigante malvado chamado Guerra ao Bem, que tinha vindo viver nas montanhas a cerca de um quilômetro e meio de sua casa.
+
+[figura] /figuras/o-pequeno-peregrino/p274.jpg
 
 — Ele é muito forte e violento, mas, se vocês forem atacá-lo comigo, tenho certeza de que o Rei nos ajudará e nos dará forças para destruí-lo.
 
@@ -2931,7 +3115,11 @@ Hesitante nunca havia sido uma marmota forte e não parecia, de modo algum, apto
 
 — Apesar disso, decidi que encontrarei a Cidade do Rei e, se for fraco demais para percorrer todo o caminho a pé, rastejarei apoiado nas mãos e nos joelhos! — declarou ele. — Todos têm sido muito bons para mim, e cheguei até aqui a salvo. Não conseguiria ter subido o Morro da Dificuldade, mas Intérprete enviou um servo para me acompanhar, e ele me carregou nas costas até o topo do caminho pedregoso. Essa foi a maior dificuldade que encontrei, mas, ao entrar na caverna do gigante a noite passada, orei para o Rei e tive certeza de que ele me salvaria. Como vocês veem, ele me salvou mesmo!
 
+[figura] /figuras/o-pequeno-peregrino/p276.jpg
+
 Gaio tinha uma filha cujo nome era Febe. Ela queria muito ir à Cidade Celestial, e seu pai achou que ela iria gostar de viajar com Cristiana e Misericórdia. Então eles permaneceram ali por alguns dias enquanto ela se preparava para a jornada. No último dia, Gaio ofereceu um banquete ao grupo e, ao final, Grande Coração perguntou quanto deveria pagar pela hospedagem. Gaio, contudo, não quis aceitar dinheiro. Disse que amava o Rei e, por causa dele, mantinha a casa aberta a todos os peregrinos que desejassem ficar ali.
+
+[figura] /figuras/o-pequeno-peregrino/p277.jpg
 
 Quando as crianças estavam se despedindo, Grande Coração viu Hesitante parado em silêncio à porta e lhe perguntou:
 
@@ -2953,11 +3141,15 @@ Quando Hesitante o viu, exclamou: — Ora! Como chegou aqui? Isso porque Hesitan
 
 — Não podemos viajar rápido demais. Se vocês não conseguirem acompanhar o ritmo, sempre podemos esperar por vocês — disse Grande Coração.
 
+[figura] /figuras/o-pequeno-peregrino/p279.jpg
+
 Em seguida o pequeno grupo partiu uma vez mais. O Sr. Honesto caminhava à frente junto com Grande Coração e Mateus, e os dois irmãos menores o seguiam.
 
 Depois vinham Cristiana, Misericórdia e Febe com a pequena Inocência e, ao final, Prestes a Tropeçar e Hesitante.
 
 — Tenho certeza de que conseguiremos ajudar um ao outro e, quando você estiver cansado, posso lhe emprestar uma de minhas muletas — disse Prestes a Tropeçar.
+
+[figura] /figuras/o-pequeno-peregrino/p280.jpg
 
 77. ATRAVESSANDO A PLANÍCIE
 
@@ -3023,6 +3215,8 @@ Os meninos puderam se mostrar úteis de várias formas, e as meninas passaram o 
 
 Acontece que, embora a maioria dos animais na Feira das Vaidades se vestisse elegantemente, alguns haviam desperdiçado todo o seu dinheiro e se vestiam apenas com farrapos. Essas criaturas infelizes ficavam muito agradecidas a qualquer um que as ajudasse. Graça e Marta costumavam visitar muitas delas e levar-lhes comida, roupas novas e falar-lhes do Rei e de sua bondade. Cristiana, Misericórdia e Febe ficaram felizes em ajudar nessa boa obra, de modo que os dias que passaram na Feira das Vaidades foram tanto atarefados quanto felizes.
 
+[figura] /figuras/o-pequeno-peregrino/p285.jpg
+
 79. O GRANDE DRAGÃO
 
 Perto da Feira das Vaidades havia uma grande floresta, e nessa floresta vivia um dragão medonho. Era uma criatura feroz e cruel, e todos tinham muito medo dele. Era tão ousado que muitas vezes ia até o centro da cidade e atacava os animais, e às vezes capturava criancinhas e as levava para sua caverna.
@@ -3039,7 +3233,9 @@ Graça e Marta, as duas filhas de Mnasom, estavam esperando por um guia que as l
 
 Vários servos do Rei foram aos portões da cidade se despedir dos peregrinos, e Cristiana não pôde deixar de pensar em como o Rei havia sido bom em tornar todos tão amáveis para com ela e seus companheiros.
 
-— Poderíamos ter sido tratados tão mal quanto Cristão e Fiel foram — ela disse a Misericórdia. — Eu estava realmente com muito medo de que nos colocassem na prisão, mas, como você vê, encontramos amigos até aqui, e o Rei nos manteve a salvo dentro desta cidade perversa.$conteudo$)
+— Poderíamos ter sido tratados tão mal quanto Cristão e Fiel foram — ela disse a Misericórdia. — Eu estava realmente com muito medo de que nos colocassem na prisão, mas, como você vê, encontramos amigos até aqui, e o Rei nos manteve a salvo dentro desta cidade perversa.
+
+[figura] /figuras/o-pequeno-peregrino/p287.jpg$conteudo$)
     returning id into v_aula_id;
   end if;
 
@@ -3071,6 +3267,8 @@ No dia seguinte, Cristiana levou Inocência para passear nos prados e a conduziu
 
 A ama viu as lágrimas nos olhos de Cristiana. — Você não quer se separar dela!
 
+[figura] /figuras/o-pequeno-peregrino/p289.jpg
+
 — Não, e não tenho nenhuma outra irmã. Pensei que ficaríamos sempre juntas.
 
 — Querida coelhinha! — exclamou a ama. — Não admira que você a ame. Ela será muito feliz aqui, e não demorará muito até estar forte o bastante para segui-la.
@@ -3090,6 +3288,8 @@ Então ele contou a Cristiana que o Filho do Rei, o bom Príncipe a quem todos e
 81. O CASTELO DA DÚVIDA
 
 Quando os pequenos peregrinos chegaram à escada que levava ao Prado Atalho, viram a pedra que Cristão e Esperançoso haviam colocado à beira da estrada. As crianças estavam cansadas de andar, pois aquele trecho da estrada era muito escarpado, então se sentaram para descansar um pouco e logo começaram a conversar sobre o terrível gigante Desespero.
+
+[figura] /figuras/o-pequeno-peregrino/p291.jpg
 
 — Por que alguém não o mata? — perguntou José. — Não somos fortes o bastante, somos? — indagou Tiago, olhando para Grande Coração. — Mas você poderia matar até o maior dos gigantes, não é?
 
@@ -3126,6 +3326,8 @@ Era uma noite límpida e brilhante, mas, como Desesperança e sua filha estavam 
 Aqueles bondosos pastores acolheram todo o grupo em suas tendas, deram-lhes comida e prepararam camas para eles, de modo que, de manhã, eles se levantaram revigorados e fortalecidos.
 
 Os pastores sempre ficavam contentes quando algum dos peregrinos do Rei se hospedava em suas tendas, e gostavam de levar os visitantes para admirar a vista da Cidade Celestial e os vários lugares estranhos nas montanhas.
+
+[figura] /figuras/o-pequeno-peregrino/p294.jpg
 
 Cristiana e seus amigos apreciaram bastante a caminhada nas montanhas e, quando terminaram de admirar todas as vistas maravilhosas que haviam sido mostradas a Cristão e Esperançoso, ainda restava algum tempo livre antes de continuarem a jornada. Então, em vez de retornar às tendas, os pastores levaram os peregrinos a uma bela elevação chamada Monte Inocente.
 
@@ -3167,6 +3369,8 @@ A tímida Misericórdia corou bastante, mas ergueu os olhos para o pastor e resp
 
 — É o espelho na sala de jantar. O espelho em que se pode ver o Príncipe.
 
+[figura] /figuras/o-pequeno-peregrino/p298.jpg
+
 Sincero havia seguido Experiência e, quando escutou o que Misericórdia falou, entrou na casa imediatamente e trouxe o espelho. Misericórdia mal sabia o que dizer quando ele entregou o espelho em suas mãos, mas os pastores viram como ela havia ficado embaraçada, e entendiam perfeitamente que ela se sentia feliz e grata demais para expressar em palavras.
 
 Então aqueles generosos pastores retiraram de seus tesouros um presente para cada um dos peregrinos e, depois de lhes desejar uma agradável jornada, observaram o pequeno grupo se afastar até desaparecer de vista.
@@ -3198,6 +3402,8 @@ Grande Coração sorriu. — Você é um dos nossos verdadeiros servos do Rei! D
 — E você lutou durante três horas? Não estava a ponto de desmaiar de cansaço? — indagou Grande Coração.
 
 — Não. Lutei até a espada grudar em minha mão, como se fosse parte do meu braço. Mas acho que isso me tornou mais forte.
+
+[figura] /figuras/o-pequeno-peregrino/p302.jpg
 
 — Você foi muito corajoso! — comentou Grande Coração. — Deve terminar a jornada conosco. Ficaremos todos felizes em ter sua companhia.
 
@@ -3270,6 +3476,8 @@ Perto do poço havia outro caramanchão, e nele estavam dois peregrinos, dormind
 Estava agora tão escuro que os peregrinos mal conseguiam encontrar o caminho. Por esse motivo, suplicaram a Grande Coração que acendesse a lanterna. Com ela para guiá-los e animá-los, eles andaram com mais segurança, mas as meninas e os dois meninos menores estavam ficando cansados demais e começaram a orar para que o Rei os ajudasse a vencer o cansaço.
 
 Então uma brisa refrescante soprou e, ao percorrer a planície, o ar se tornou mais límpido. Embora a lua ainda estivesse oculta pelas nuvens, as crianças podiam ver umas às outras enquanto caminhavam.
+
+[figura] /figuras/o-pequeno-peregrino/p308.jpg
 
 — Falta pouco para terminarmos de atravessar a planície? — perguntou Cristiana.
 
@@ -3353,7 +3561,9 @@ Todos os peregrinos estavam em silêncio e pensativos quando deixaram a planíci
 
 Cristiana e Misericórdia nunca se distanciavam muito, e os dois meninos pequenos encaravam o velho e bem-humorado Honesto como um amigo especial. Assim, deram os últimos passos da jornada juntos e acabaram entrando em uma das vinhas do Rei, onde Grande Coração manifestou o desejo de que eles descansassem.
 
-— Éramos tão poucos quando começamos — comentou Misericórdia, enquanto se ajeitava sobre a grama macia, com a mão segurando a de Cristiana. — E agora já somos um grupo até que grande! Alguns mais novos e alguns mais velhos, alguns fracos e alguns fortes. Apesar disso, o Rei está cuidando de todos nós.$conteudo$)
+— Éramos tão poucos quando começamos — comentou Misericórdia, enquanto se ajeitava sobre a grama macia, com a mão segurando a de Cristiana. — E agora já somos um grupo até que grande! Alguns mais novos e alguns mais velhos, alguns fracos e alguns fortes. Apesar disso, o Rei está cuidando de todos nós.
+
+[figura] /figuras/o-pequeno-peregrino/p314.jpg$conteudo$)
     returning id into v_aula_id;
   end if;
 
@@ -3367,6 +3577,8 @@ Os peregrinos se sentiram muito felizes na Terra da Alegria. Os servos do Rei pr
 
 Cristiana passava a maior parte do tempo ensinando Tiago e José. Além disso, ia frequentemente com outros servos do Rei saudar os novos peregrinos que chegavam ali quase todos os dias. Às vezes ia com Misericórdia caminhar perto do Rio da Morte. A vista daquelas águas agitadas fazia Misericórdia tremer, mas Cristiana sempre olhava para o outro lado à procura da bela luz dourada. Aos poucos, Misericórdia começou a perder o medo e tentou pensar como Cristiana, que a vinda do mensageiro do Rei seria o início de uma felicidade maior do que a que ela já conhecera.
 
+[figura] /figuras/o-pequeno-peregrino/p316.jpg
+
 — Se apenas as águas fossem menos escuras e agitadas — ela dizia —, ou se você pudesse atravessar comigo… Mas se eu for sozinha, será apavorante!
 
 — Você não deve pensar na água — Cristiana respondia sempre. — Deve pensar na gloriosa Cidade e no Rei que vive lá, em nosso amado Príncipe e nos Seres Resplandecentes que irão recebê-la. Ah, Misericórdia, você não precisa ter medo!
@@ -3374,6 +3586,8 @@ Cristiana passava a maior parte do tempo ensinando Tiago e José. Além disso, i
 No entanto, embora seu medo houvesse diminuído, Misericórdia não gostava de olhar para o rio. Preferia passear nos jardins do Rei e conversar com as crianças que passavam várias horas entre as videiras e flores. Uma tarefa que o Rei solicitava que até as crianças menores desempenhassem era colher flores todos os dias para os peregrinos mais velhos, principalmente para aqueles que eram fracos demais para caminhar no jardim e desfrutar da beleza e perfume das flores.
 
 Depois de algum tempo, quando Inocência foi viver novamente com a irmã, o maior prazer de Misericórdia era ajudar a menininha a escolher as flores e levá-las aos amigos.
+
+[figura] /figuras/o-pequeno-peregrino/p317.jpg
 
 O Sr. Honesto encontrava-as com frequência nos jardins de manhã cedo e costumava dizer:
 
@@ -3408,6 +3622,8 @@ Pensou em se despedir de Grande Coração, então mandou chamá-lo e contou-lhe 
 Quando os outros peregrinos souberam que Cristiana estava indo embora, vieram falar com ela também. Cristiana pediu a Valente que fosse amigo de seus irmãos, e ele prometeu que cuidaria deles enquanto permanecesse naquele local.
 
 Em seguida ela se despediu de todos, mas eles não quiseram deixá-la ir sozinha. Acompanharam-na até a beira da água e ficaram observando até ela desaparecer de vista. Eles puderam ver os Seres Resplandecentes esperando-a do outro lado e souberam quando Cristiana chegara a salvo na outra margem, porque o grupo brilhante se deslocou vagarosamente para longe do rio, subindo a trilha íngreme até os portões dourados e, finalmente, desaparecendo na glória da Cidade Celestial.
+
+[figura] /figuras/o-pequeno-peregrino/p320.jpg
 
 A pobre pequena Inocência chorou quando a irmã a deixou, assim como Tiago e José, mas Mateus e Misericórdia os levaram para casa e os consolaram.
 
@@ -3457,9 +3673,23 @@ Valente também foi convocado a cruzar o Rio. Não sentia medo da travessia, poi
 
 Ansiava por ver a esposa e o amado filhinho novamente, e sabia quão felizes Cristão e sua mãe ficariam quando soubessem que ele estava esperando para receber suas boas-vindas.
 
+[figura] /figuras/o-pequeno-peregrino/p325.jpg
+
 — Minha peregrinação foi árdua — admitiu —, e tive de enfrentar muitas dificuldades e perigos. Mas agora estou indo para meu verdadeiro lar na Cidade Celestial, onde estarei a salvo e feliz para sempre.
 
-O bom soldado não teria mais uso para sua espada. Assim, deixou a arma reluzente aos cuidados de Grande Coração e pediu-lhe que a desse a algum outro peregrino. Logo depois entrou no Rio. Os amigos logo o perderam de vista, mas, em seguida, o som das trombetas de prata se ouviu na outra margem e eles souberam que Valente estava a caminho dos portões da Cidade.$conteudo$)
+O bom soldado não teria mais uso para sua espada. Assim, deixou a arma reluzente aos cuidados de Grande Coração e pediu-lhe que a desse a algum outro peregrino. Logo depois entrou no Rio. Os amigos logo o perderam de vista, mas, em seguida, o som das trombetas de prata se ouviu na outra margem e eles souberam que Valente estava a caminho dos portões da Cidade.
+
+[figura] /figuras/o-pequeno-peregrino/p327.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p328.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p329.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p330.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p331.jpg
+
+[figura] /figuras/o-pequeno-peregrino/p332.jpg$conteudo$)
     returning id into v_aula_id;
   end if;
 end;
