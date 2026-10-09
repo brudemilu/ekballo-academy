@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
 import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
+  ESPERA_REEL_TELA_SEG,
   instagramConfigurado,
   publicarInstagram,
   publicarReel,
@@ -108,6 +109,7 @@ export async function POST(req: NextRequest) {
           token: process.env.META_ACCESS_TOKEN!,
           videoUrl,
           legenda,
+          esperaSeg: ESPERA_REEL_TELA_SEG,
         })
       : ehStory(slides)
         ? // Story: uma imagem 9:16, sem legenda, que some em 24 h.
