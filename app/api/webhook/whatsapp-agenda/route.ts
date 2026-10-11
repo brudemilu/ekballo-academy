@@ -7,10 +7,16 @@ import { pareceAjuste } from "@/lib/post-texto-pronto";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 import { chatEhDoDono } from "@/lib/whatsapp-agenda-auth";
 import {
+  pareceCompromisso,
+  pedidoDaAgenda,
+  semGatilhoDaAgenda,
+} from "@/lib/whatsapp-agenda-gatilho";
+import {
   type ComandoInstagram,
   ehDoRobo,
   interpretarComando,
   interpretarFormato,
+  MARCA_ROBO,
 } from "@/lib/whatsapp-instagram";
 import {
   executarComandoInstagram,
@@ -199,7 +205,7 @@ export async function POST(req: NextRequest) {
   }
 
   let pedido = "";
-  const m = text.match(/^\s*(?:agenda|agendar|agende)\b[:,\s-]+([\s\S]+)/i);
+  const doTexto = pedidoDaAgenda(text);
   // A imagem é testada ANTES do texto de propósito: quando a foto tem legenda,
   // a legenda sozinha ("agenda esse convite") não diz o que agendar — o que
   // importa está na imagem. No chat "Você", toda imagem pode ser interpretada.
@@ -226,10 +232,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, imagem: "sem_texto" });
     }
     // a legenda completa o que o convite não traz ("sexta que vem", "às 20h")
-    const obs = legenda.replace(/^\s*(?:agenda|agendar|agende)\b[:,\s-]*/i, "").trim();
+    const obs = semGatilhoDaAgenda(legenda);
     pedido = obs ? `${daImagem}\n\nObservação de quem enviou: ${obs}` : daImagem;
-  } else if (m) {
-    pedido = m[1].trim();
+  } else if (doTexto) {
+    pedido = doTexto;
   } else if (hasAudio) {
     // áudio pra você mesmo: o Evolution já manda o base64; transcreve (a IA filtra)
     if (!midiaB64) {
@@ -248,6 +254,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, audio: "transcribe_fail" });
     }
   } else {
+    // Sem gatilho, mas com cara de compromisso: uma dica vale mais que o
+    // silêncio — quem não vê resposta acha que falhou e reenvia (issue #252).
+    // A marca do robô impede que a dica volte por aqui e seja lida de novo.
+    if (pareceCompromisso(text)) {
+      await responder(
+        numero,
+        `${MARCA_ROBO} Isso é para a agenda? Mande de novo começando com *agenda* — por exemplo:\n"agenda ${text.trim()}"`,
+      );
+      return NextResponse.json({ ok: true, semGatilho: true, dica: true });
+    }
     return NextResponse.json({ ok: true, semGatilho: true });
   }
 
