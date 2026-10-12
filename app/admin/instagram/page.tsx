@@ -14,6 +14,7 @@ import { PainelInstagram } from "@/components/PainelInstagram";
 import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
 import { PilotoConteudo } from "@/components/PilotoConteudo";
 import { RoteirosConteudo } from "@/components/RoteirosConteudo";
+import { StatusWhatsAppToggle } from "@/components/StatusWhatsAppToggle";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
 import { travado } from "@/lib/cortes";
@@ -340,6 +341,7 @@ export default async function AdminInstagramPage({
             <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
               Agendados e rascunhos
             </h2>
+            <StatusWhatsAppToggle />
             <ListaCarrosseisInstagram itens={carrosseis} />
           </div>
         </>
