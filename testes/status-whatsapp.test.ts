@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  avisoParaEncaminhar,
   chamadaDaLegenda,
   escolherParaStatus,
   MAX_POR_RODADA,
@@ -143,5 +144,20 @@ describe("texto do Reel", () => {
     expect(textoDoReel(reel("A", "2026-10-13T22:01:00Z"))).toMatch(
       /Assista aqui: https:\/\/www\.instagram\.com\/reel\/A\/$/,
     );
+  });
+});
+
+describe("modo aviso", () => {
+  it("manda a mesma peça e diz o que fazer com ela", () => {
+    const [item] = escolherParaStatus({
+      midias: [reel("A", "2026-10-13T22:01:00Z")],
+      stories: [],
+      jaEnviados: new Set(),
+      desde: LIGADO,
+    });
+    const aviso = avisoParaEncaminhar(item);
+    expect(aviso.midia).toBe(item.envio);
+    expect(aviso.instrucao).toContain("Reel");
+    expect(aviso.instrucao).toContain("Meu status");
   });
 });

@@ -5,6 +5,7 @@ import {
   interpretarComando,
   interpretarFormato,
   interpretarQuando,
+  MARCA_INVISIVEL,
   MARCA_ROBO,
 } from "@/lib/whatsapp-instagram";
 
@@ -292,5 +293,15 @@ describe("interpretarComando · colaboração", () => {
 
   it("sem @ não é comando: a mensagem segue para a agenda", () => {
     expect(interpretarComando("colaborar com a igreja no sábado")).toBeNull();
+  });
+});
+
+// O que o robô manda pronto para encaminhar não leva o 🤖 (iria junto para o
+// Status), mas precisa continuar sendo reconhecido como dele.
+describe("marca invisível", () => {
+  it("é reconhecida como mensagem do robô e não vira comando", () => {
+    expect(ehDoRobo(`${MARCA_INVISIVEL}🎬 Reel novo no Instagram`)).toBe(true);
+    expect(interpretarComando(`${MARCA_INVISIVEL}post sobre família`)).toBeNull();
+    expect(ehDoRobo("🎬 Reel novo no Instagram")).toBe(false);
   });
 });

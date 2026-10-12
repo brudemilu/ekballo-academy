@@ -3,9 +3,20 @@
  * recentes do perfil, escolhe o que ainda não foi (lib/status-whatsapp.ts),
  * registra e publica no Status. Chamado pelo cron de 5 em 5 minutos.
  */
-import { escolherParaStatus, type MidiaIG } from "@/lib/status-whatsapp";
+import { getPilotoConfig } from "@/lib/db";
+import {
+  avisoParaEncaminhar,
+  escolherParaStatus,
+  type ItemStatus,
+  type MidiaIG,
+} from "@/lib/status-whatsapp";
 import { createServiceClient } from "@/lib/supabase/service";
-import { enviarStatusWhatsApp } from "@/lib/whatsapp-enviar";
+import {
+  enviarMidiaWhatsApp,
+  enviarStatusWhatsApp,
+  enviarTextoWhatsApp,
+} from "@/lib/whatsapp-enviar";
+import { MARCA_INVISIVEL, MARCA_ROBO } from "@/lib/whatsapp-instagram";
 
 const GRAPH = process.env.META_GRAPH_BASE || "https://graph.instagram.com/v21.0";
 
@@ -23,8 +34,48 @@ async function lerIG(caminho: string): Promise<MidiaIG[]> {
   return json.data ?? [];
 }
 
+/** O número do pastor: o do piloto, ou o dono do chat "Você" da agenda. */
+async function numeroDoPastor(): Promise<string> {
+  const doPiloto = await getPilotoConfig(true)
+    .then((c) => c.telefone || "")
+    .catch(() => "");
+  if (doPiloto) return doPiloto;
+  const dono = (process.env.AGENDA_WHATSAPP_DONOS || "")
+    .split(/[\s,]+/)
+    .map((v) => v.replace(/\D+/g, ""))
+    .find((v) => v.length >= 10);
+  return dono || "";
+}
+
+/**
+ * Modo aviso: manda ao próprio pastor a peça pronta para encaminhar ao Status,
+ * e logo depois uma linha dizendo o que fazer. A legenda começa com a marca
+ * invisível — sem ela, o webhook da agenda leria a imagem como um convite.
+ */
+async function avisarParaEncaminhar(
+  item: ItemStatus,
+  numero: string,
+): Promise<string | null> {
+  const aviso = avisoParaEncaminhar(item);
+  const erro =
+    aviso.midia.tipo === "text"
+      ? await enviarTextoWhatsApp(numero, `${MARCA_INVISIVEL}${aviso.midia.conteudo}`)
+      : await enviarMidiaWhatsApp(
+          numero,
+          aviso.midia.url,
+          aviso.midia.tipo,
+          `${MARCA_INVISIVEL}${aviso.midia.legenda ?? ""}`,
+        );
+  if (erro) return erro;
+  // A instrução é do robô e não vai para o Status: leva o 🤖 de sempre.
+  await enviarTextoWhatsApp(numero, `${MARCA_ROBO} ${aviso.instrucao}`);
+  return null;
+}
+
 export type ResultadoStatus = {
   ligado: boolean;
+  /** "aviso" (manda para o pastor encaminhar) ou "automatico" (publica direto). */
+  modo?: string;
   enviados: number;
   falhas: { id: string; erro: string }[];
   /** Leituras que falharam (ex.: o token não libera os stories). */
@@ -47,11 +98,18 @@ export async function repetirNoStatus(): Promise<ResultadoStatus> {
   const sb = createServiceClient();
   const { data: config } = await sb
     .from("whatsapp_status_config")
-    .select("ativo, ativado_em")
+    .select("ativo, ativado_em, modo")
     .eq("id", 1)
     .maybeSingle();
   if (!config?.ativo) return resultado;
   resultado.ligado = true;
+  const automatico = config.modo === "automatico";
+  resultado.modo = automatico ? "automatico" : "aviso";
+  const numero = automatico ? "" : await numeroDoPastor();
+  if (!automatico && !numero) {
+    resultado.avisos.push("sem o número do pastor para mandar o aviso");
+    return resultado;
+  }
 
   // Uma leitura que falha não impede a outra: sem os stories, os Reels seguem.
   const campos =
@@ -92,7 +150,9 @@ export async function repetirNoStatus(): Promise<ResultadoStatus> {
       erro: "enviando",
     });
     if (jaExiste) continue;
-    const erro = await enviarStatusWhatsApp(item.envio);
+    const erro = automatico
+      ? await enviarStatusWhatsApp(item.envio)
+      : await avisarParaEncaminhar(item, numero);
     // Falhou: fica registrado e NÃO é tentado de novo. Repetir às cegas um
     // envio que vai para todos os contatos é pior que perder um Status.
     await sb

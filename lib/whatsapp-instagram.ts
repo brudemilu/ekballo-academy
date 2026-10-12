@@ -27,9 +27,17 @@ import {
  */
 export const MARCA_ROBO = "🤖";
 
+/**
+ * A mesma marca, sem aparecer: dois "separadores invisíveis". É para o que o
+ * robô manda PRONTO PARA ENCAMINHAR (a capa do Reel que vai para o Status) —
+ * ali um 🤖 na frente iria junto para o Status do pastor.
+ */
+export const MARCA_INVISIVEL = "\u2063\u2063";
+
 /** A mensagem (ou legenda de imagem) foi escrita pelo robô? */
 export function ehDoRobo(texto: string): boolean {
-  return (texto || "").trimStart().startsWith(MARCA_ROBO);
+  const t = (texto || "").trimStart();
+  return t.startsWith(MARCA_ROBO) || t.startsWith(MARCA_INVISIVEL);
 }
 
 /** O que o pastor quer que saia: uma imagem só, um carrossel ou um story (9:16, some em 24 h). */

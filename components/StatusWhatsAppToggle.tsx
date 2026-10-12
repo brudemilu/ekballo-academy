@@ -42,11 +42,12 @@ export function StatusWhatsAppToggle() {
     <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-mesa-200 bg-white p-4">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-mesa-800">
-          📲 Repetir no Status do WhatsApp
+          📲 Avisar para pôr no Status do WhatsApp
         </p>
         <p className="mt-1 text-xs text-mesa-500">
-          Todo Reel publicado no Instagram vira um Status com o link; todo story é
-          repetido no Status. Vale também para o que você postar direto no aplicativo.
+          Quando sair um Reel ou story no Instagram, mando no seu WhatsApp a capa com o
+          link (ou o story) pronto: é só encaminhar para “Meu status”. Vale também para
+          o que você postar direto no aplicativo.
         </p>
         {erro && <p className="mt-1 text-xs text-red-600">{erro}</p>}
       </div>

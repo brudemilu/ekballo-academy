@@ -117,3 +117,19 @@ export function escolherParaStatus(entrada: {
     .slice(0, entrada.max ?? MAX_POR_RODADA)
     .map(({ quando: _quando, ...item }) => item);
 }
+
+/**
+ * Modo aviso: o que mandar ao pastor para ele encaminhar ao Status em dois
+ * toques, e a linha de instrução que vai em seguida. A peça é a mesma do envio
+ * automático — só muda quem aperta o botão.
+ */
+export function avisoParaEncaminhar(item: ItemStatus): {
+  midia: EnvioStatus;
+  instrucao: string;
+} {
+  const oQue = item.origem === "reel" ? "Seu Reel está no ar" : "Seu story está no ar";
+  return {
+    midia: item.envio,
+    instrucao: `👆 ${oQue}. Para pôr no Status: segure a mensagem acima → *Encaminhar* → *Meu status*.`,
+  };
+}
