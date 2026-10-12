@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { EditorPostInstagram, type EdSlide } from "@/components/EditorPostInstagram";
 
 type Item = {
@@ -13,15 +13,30 @@ type Item = {
   criado_em?: string;
   tipo?: "carrossel" | "reel";
   video_url?: string;
+  colaboradores?: string[] | null;
+  aviso?: string | null;
 };
 
 function badge(it: Item) {
   if (it.status === "agendado") {
-    const quando = it.agendado_para ? new Date(it.agendado_para).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "";
-    return { txt: `🗓️ Agendado · ${quando}`, cls: "bg-blue-50 text-blue-700 border-blue-200" };
+    const quando = it.agendado_para
+      ? new Date(it.agendado_para).toLocaleString("pt-BR", {
+          dateStyle: "short",
+          timeStyle: "short",
+        })
+      : "";
+    return {
+      txt: `🗓️ Agendado · ${quando}`,
+      cls: "bg-blue-50 text-blue-700 border-blue-200",
+    };
   }
-  if (it.status === "publicado") return { txt: "✅ Publicado", cls: "bg-oliveira-50 text-oliveira-700 border-oliveira-200" };
-  if (it.status === "erro") return { txt: "⚠️ Erro ao publicar", cls: "bg-red-50 text-red-700 border-red-200" };
+  if (it.status === "publicado")
+    return {
+      txt: "✅ Publicado",
+      cls: "bg-oliveira-50 text-oliveira-700 border-oliveira-200",
+    };
+  if (it.status === "erro")
+    return { txt: "⚠️ Erro ao publicar", cls: "bg-red-50 text-red-700 border-red-200" };
   return { txt: "📝 Rascunho", cls: "bg-mesa-100 text-mesa-600 border-mesa-200" };
 }
 
@@ -29,6 +44,9 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
   const router = useRouter();
   const [lista, setLista] = useState(itens);
   const [excluindo, setExcluindo] = useState<string | null>(null);
+  // texto digitado no campo de colaboração, por post (undefined = não mexeu)
+  const [colab, setColab] = useState<Record<string, string>>({});
+  const [salvandoColab, setSalvandoColab] = useState<string | null>(null);
   const [publicandoId, setPublicandoId] = useState<string | null>(null);
   const [quando, setQuando] = useState<Record<string, string>>({});
   const [reagendandoId, setReagendandoId] = useState<string | null>(null);
@@ -55,7 +73,11 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d?.error || "Falha");
       setLista((prev) =>
-        prev.map((x) => (x.id === it.id ? { ...x, status: "agendado", agendado_para: dt.toISOString() } : x)),
+        prev.map((x) =>
+          x.id === it.id
+            ? { ...x, status: "agendado", agendado_para: dt.toISOString() }
+            : x,
+        ),
       );
       router.refresh();
       alert("Reagendado ✓");
@@ -67,7 +89,8 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
   }
 
   async function publicar(it: Item) {
-    if (!window.confirm("Publicar AGORA no Instagram? Vai ao ar de verdade no perfil.")) return;
+    if (!window.confirm("Publicar AGORA no Instagram? Vai ao ar de verdade no perfil."))
+      return;
     setPublicandoId(it.id);
     try {
       const res = await fetch("/api/admin/instagram/publicar", {
@@ -77,7 +100,9 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
       });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d?.error || "Falha");
-      setLista((prev) => prev.map((x) => (x.id === it.id ? { ...x, status: "publicado" } : x)));
+      setLista((prev) =>
+        prev.map((x) => (x.id === it.id ? { ...x, status: "publicado" } : x)),
+      );
       router.refresh();
       alert("Publicado no Instagram ✓");
     } catch (e) {
@@ -89,7 +114,8 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
   }
 
   async function excluir(it: Item) {
-    const oque = it.status === "agendado" ? "cancelar este agendamento" : "excluir este item";
+    const oque =
+      it.status === "agendado" ? "cancelar este agendamento" : "excluir este item";
     if (!window.confirm(`Tem certeza que quer ${oque}?`)) return;
     setExcluindo(it.id);
     try {
@@ -104,6 +130,27 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
       alert("Não consegui excluir. Tente de novo.");
     } finally {
       setExcluindo(null);
+    }
+  }
+
+  async function salvarColaboradores(it: Item) {
+    setSalvandoColab(it.id);
+    try {
+      const res = await fetch("/api/admin/instagram", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: it.id, colaboradores: colab[it.id] ?? "" }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d?.error || "Falha");
+      router.refresh();
+    } catch (e) {
+      alert(
+        "Não consegui salvar os colaboradores: " +
+          (e instanceof Error ? e.message : "erro"),
+      );
+    } finally {
+      setSalvandoColab(null);
     }
   }
 
@@ -125,15 +172,34 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`inline-block rounded-full border px-3 py-1 text-xs font-medium ${b.cls}`}>{b.txt}</span>
+                  <span
+                    className={`inline-block rounded-full border px-3 py-1 text-xs font-medium ${b.cls}`}
+                  >
+                    {b.txt}
+                  </span>
                   {it.tipo === "reel" && (
-                    <span className="inline-block rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-700">🎬 Reel</span>
+                    <span className="inline-block rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-xs font-semibold text-purple-700">
+                      🎬 Reel
+                    </span>
                   )}
                 </div>
-                <p className="mt-2 line-clamp-2 text-sm text-mesa-700">{it.legenda || "(sem legenda)"}</p>
+                <p className="mt-2 line-clamp-2 text-sm text-mesa-700">
+                  {it.legenda || "(sem legenda)"}
+                </p>
                 <p className="mt-1 text-xs text-mesa-400">
                   {it.tipo === "reel" ? (
-                    it.video_url ? <a href={it.video_url} target="_blank" rel="noreferrer" className="text-laranja-600 hover:underline">ver vídeo</a> : "vídeo"
+                    it.video_url ? (
+                      <a
+                        href={it.video_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-laranja-600 hover:underline"
+                      >
+                        ver vídeo
+                      </a>
+                    ) : (
+                      "vídeo"
+                    )
                   ) : (
                     `${n} ${n === 1 ? "imagem" : "imagens"}`
                   )}
@@ -141,6 +207,7 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
               </div>
               {(it.status === "agendado" || it.status === "erro") && (
                 <button
+                  type="button"
                   onClick={() => publicar(it)}
                   disabled={publicandoId === it.id}
                   className="shrink-0 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
@@ -149,17 +216,23 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
                 </button>
               )}
               <button
+                type="button"
                 onClick={() => setEditandoId((cur) => (cur === it.id ? null : it.id))}
                 className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm font-medium text-mesa-700 transition hover:bg-mesa-100"
               >
                 {editandoId === it.id ? "Fechar" : "👁️ Ver / Editar"}
               </button>
               <button
+                type="button"
                 onClick={() => excluir(it)}
                 disabled={excluindo === it.id}
                 className="shrink-0 rounded-lg border border-mesa-200 px-3 py-2 text-sm text-red-500 transition hover:bg-red-50 disabled:opacity-40"
               >
-                {excluindo === it.id ? "…" : it.status === "agendado" ? "Cancelar" : "Excluir"}
+                {excluindo === it.id
+                  ? "…"
+                  : it.status === "agendado"
+                    ? "Cancelar"
+                    : "Excluir"}
               </button>
             </div>
 
@@ -171,13 +244,53 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
                   setLista((prev) =>
                     prev.map((x) =>
                       x.id === it.id
-                        ? { ...x, legenda: p.legenda, slides: p.slides as EdSlide[], video_url: p.video_url ?? x.video_url }
+                        ? {
+                            ...x,
+                            legenda: p.legenda,
+                            slides: p.slides as EdSlide[],
+                            video_url: p.video_url ?? x.video_url,
+                          }
                         : x,
                     ),
                   );
                   router.refresh();
                 }}
               />
+            )}
+            {it.status === "publicado" && it.aviso && (
+              <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                ⚠️ {it.aviso}
+              </p>
+            )}
+            {/* Colaboração: o convite vai junto na publicação (story não aceita) */}
+            {it.status !== "publicado" && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-mesa-100 pt-3">
+                <label
+                  htmlFor={`colab-${it.id}`}
+                  className="text-xs font-medium text-mesa-500"
+                >
+                  🤝 Colaboração:
+                </label>
+                <input
+                  id={`colab-${it.id}`}
+                  type="text"
+                  placeholder="@perfil, @outro (até 3)"
+                  value={
+                    colab[it.id] ??
+                    (it.colaboradores ?? []).map((p) => `@${p}`).join(", ")
+                  }
+                  onChange={(e) => setColab((c) => ({ ...c, [it.id]: e.target.value }))}
+                  className="min-w-0 flex-1 rounded-lg border border-mesa-200 bg-mesa-50 px-2 py-1 text-xs text-mesa-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => salvarColaboradores(it)}
+                  disabled={salvandoColab === it.id || colab[it.id] === undefined}
+                  className="rounded-lg border border-mesa-300 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:bg-mesa-100 disabled:opacity-50"
+                >
+                  {salvandoColab === it.id ? "…" : "Salvar"}
+                </button>
+              </div>
             )}
             {/* Reagendar */}
             <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-mesa-100 pt-3">
@@ -189,6 +302,7 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
                 className="rounded-lg border border-mesa-200 bg-mesa-50 px-2 py-1 text-xs text-mesa-800"
               />
               <button
+                type="button"
                 onClick={() => reagendar(it)}
                 disabled={reagendandoId === it.id}
                 className="rounded-lg border border-mesa-300 bg-white px-3 py-1.5 text-xs font-medium text-mesa-700 transition hover:bg-mesa-100 disabled:opacity-50"

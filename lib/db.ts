@@ -2319,7 +2319,7 @@ export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[
   const { data, error } = await supabase
     .from("instagram_carrosseis")
     .select(
-      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url",
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso",
     )
     .order("criado_em", { ascending: false })
     .limit(50);
@@ -2903,7 +2903,7 @@ export async function getCarrosselInstagram(
   const { data, error } = await agendaSR()
     .from("instagram_carrosseis")
     .select(
-      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url",
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso",
     )
     .eq("id", id)
     .maybeSingle();
@@ -2983,6 +2983,8 @@ export type AtualizarCarrosselInput = {
   slides?: CarrosselInstagramMock["slides"];
   legenda?: string;
   videoUrl?: string;
+  /** Perfis convidados a colaborar (já normalizados). */
+  colaboradores?: string[];
 };
 export async function atualizarConteudoCarrosselInstagram(
   id: string,
@@ -2996,6 +2998,7 @@ export async function atualizarConteudoCarrosselInstagram(
       if (patch.slides !== undefined) c.slides = patch.slides;
       if (patch.legenda !== undefined) c.legenda = patch.legenda;
       if (patch.videoUrl !== undefined) c.video_url = patch.videoUrl;
+      if (patch.colaboradores !== undefined) c.colaboradores = patch.colaboradores;
     }
     return;
   }
@@ -3004,6 +3007,7 @@ export async function atualizarConteudoCarrosselInstagram(
   if (patch.slides !== undefined) fields.slides = patch.slides;
   if (patch.legenda !== undefined) fields.legenda = patch.legenda;
   if (patch.videoUrl !== undefined) fields.video_url = patch.videoUrl;
+  if (patch.colaboradores !== undefined) fields.colaboradores = patch.colaboradores;
   if (!Object.keys(fields).length) return;
   const supabase = await banco(servico);
   const { error } = await supabase

@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
+import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
 import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
   ESPERA_REEL_TELA_SEG,
   instagramConfigurado,
+  type Publicado,
   publicarInstagram,
   publicarReel,
   publicarStory,
@@ -54,6 +56,7 @@ export async function POST(req: NextRequest) {
   let postId: string | null = null;
   let tipo = "carrossel";
   let videoUrl = "";
+  let colaboradores: string[] = [];
   try {
     const body = await req.json();
     postId = typeof body.id === "string" ? body.id : null;
@@ -62,7 +65,7 @@ export async function POST(req: NextRequest) {
       const supabase = await createClient();
       const { data, error } = await supabase
         .from("instagram_carrosseis")
-        .select("slides, legenda, tipo, video_url")
+        .select("slides, legenda, tipo, video_url, colaboradores")
         .eq("id", postId)
         .single();
       if (error || !data) {
@@ -72,11 +75,13 @@ export async function POST(req: NextRequest) {
       legenda = typeof data.legenda === "string" ? data.legenda : "";
       tipo = data.tipo === "reel" ? "reel" : "carrossel";
       videoUrl = typeof data.video_url === "string" ? data.video_url : "";
+      colaboradores = normalizarColaboradores(data.colaboradores);
     } else {
       tipo = body.tipo === "reel" ? "reel" : "carrossel";
       slides = Array.isArray(body.slides) ? body.slides : [];
       legenda = typeof body.legenda === "string" ? body.legenda : "";
       videoUrl = typeof body.videoUrl === "string" ? body.videoUrl : "";
+      colaboradores = normalizarColaboradores(body.colaboradores);
     }
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
@@ -103,13 +108,14 @@ export async function POST(req: NextRequest) {
   const imageUrls = isReel ? [] : await prepararImageUrls(origin, slides);
 
   try {
-    const { id } = isReel
+    const publicado: Publicado = isReel
       ? await publicarReel({
           igUserId: process.env.IG_USER_ID!,
           token: process.env.META_ACCESS_TOKEN!,
           videoUrl,
           legenda,
           esperaSeg: ESPERA_REEL_TELA_SEG,
+          colaboradores,
         })
       : ehStory(slides)
         ? // Story: uma imagem 9:16, sem legenda, que some em 24 h.
@@ -123,7 +129,10 @@ export async function POST(req: NextRequest) {
             token: process.env.META_ACCESS_TOKEN!,
             imageUrls,
             legenda,
+            colaboradores,
           });
+    const aviso = publicado.aviso ?? null;
+    const id = publicado.id;
     if (postId) {
       const supabase = await createClient();
       await supabase
@@ -133,10 +142,11 @@ export async function POST(req: NextRequest) {
           publicado_em: new Date().toISOString(),
           ig_post_id: id,
           erro: null,
+          aviso,
         })
         .eq("id", postId);
     }
-    return NextResponse.json({ ok: true, id });
+    return NextResponse.json({ ok: true, id, aviso });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Falha ao publicar.";
     if (postId) {

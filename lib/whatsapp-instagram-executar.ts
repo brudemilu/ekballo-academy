@@ -26,6 +26,7 @@ import {
   ultimoVisualUsado,
 } from "@/lib/db";
 import { gerarCarrosselIA } from "@/lib/instagram";
+import { comArroba } from "@/lib/instagram-colaboradores";
 import { ehStory, ogUrlDoSlide, type SlidePub } from "@/lib/instagram-imagens";
 import {
   instrucaoDoModelo,
@@ -369,6 +370,32 @@ async function ajustar(numero: string, pedido: string): Promise<void> {
   );
 }
 
+/** Guarda os perfis convidados no post que está na tela; o convite sai na publicação. */
+async function colaborar(numero: string, perfis: string[]): Promise<void> {
+  const pendente = await getPendenteWhatsApp();
+  const post = pendente?.carrossel_id
+    ? await getCarrosselInstagram(pendente.carrossel_id)
+    : null;
+  if (!post || post.status === "publicado") {
+    await dizer(
+      numero,
+      "Não há post esperando para eu pôr a colaboração. Mande *post* + a ideia, e depois *colaborar com @perfil*.",
+    );
+    return;
+  }
+  if (perfis.length && ehStory((post.slides ?? []) as { formato?: string }[])) {
+    await dizer(numero, "Story não aceita colaboração no Instagram; só post e Reel.");
+    return;
+  }
+  await atualizarConteudoCarrosselInstagram(post.id, { colaboradores: perfis }, true);
+  await dizer(
+    numero,
+    perfis.length
+      ? `🤝 Colaboração marcada com ${comArroba(perfis)}. O convite vai junto quando o post for publicado, e ele só aparece no perfil convidado depois que a pessoa aceitar.`
+      : "Colaboração retirada. O post sai só no seu perfil.",
+  );
+}
+
 async function refazer(numero: string, ajuste: string): Promise<void> {
   const pendente = await getPendenteWhatsApp();
   if (!pendente?.ideia) {
@@ -516,6 +543,9 @@ export async function executarComandoInstagram(
         return;
       case "ajustar":
         await ajustar(numero, comando.pedido);
+        return;
+      case "colaborar":
+        await colaborar(numero, comando.perfis);
         return;
       case "cancelar":
         if (comando.alvo === "rascunho") await cancelarRascunho(numero, comando.motivo);

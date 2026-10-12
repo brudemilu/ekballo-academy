@@ -273,3 +273,24 @@ describe("interpretarFormato · a resposta à pergunta do formato", () => {
     expect(interpretarFormato("")).toBeNull();
   });
 });
+
+// Colaboração pelo WhatsApp (issue #256).
+describe("interpretarComando · colaboração", () => {
+  it("convida os perfis citados com @", () => {
+    expect(interpretarComando("colaborar com @pr.moises e @imw.olaria")).toEqual({
+      tipo: "colaborar",
+      perfis: ["pr.moises", "imw.olaria"],
+    });
+  });
+
+  it("“sem colaboração” tira o convite", () => {
+    expect(interpretarComando("sem colaboração")).toEqual({
+      tipo: "colaborar",
+      perfis: [],
+    });
+  });
+
+  it("sem @ não é comando: a mensagem segue para a agenda", () => {
+    expect(interpretarComando("colaborar com a igreja no sábado")).toBeNull();
+  });
+});

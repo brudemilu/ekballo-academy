@@ -20,7 +20,12 @@ export type PublicarParams = {
   /** URLs públicas das imagens (1 = imagem única; 2+ = carrossel). */
   imageUrls: string[];
   legenda: string;
+  /** Perfis convidados a colaborar (sem "@", até 3). Ver lib/instagram-colaboradores.ts. */
+  colaboradores?: string[];
 };
+
+/** O que a publicação devolve: o id do post e, se algo ficou de fora, o aviso. */
+export type Publicado = { id: string; aviso?: string };
 
 type GraphErr = { error?: { message?: string; error_user_msg?: string } };
 
@@ -48,6 +53,32 @@ async function criarContainer(
   extra: Record<string, string>,
 ): Promise<string> {
   return graphPost(`${p.igUserId}/media`, { access_token: p.token, ...extra });
+}
+
+/**
+ * Cria o contêiner que vai virar o post, com o convite aos colaboradores. Se o
+ * Instagram recusar a criação COM o convite, tenta de novo sem ele: o post do
+ * pastor não pode deixar de sair porque um perfil convidado não existe, é
+ * privado ou a conta não aceita colaboração. O motivo volta como aviso.
+ */
+async function criarContainerDoPost(
+  p: PublicarParams,
+  extra: Record<string, string>,
+): Promise<{ id: string; aviso?: string }> {
+  const perfis = (p.colaboradores ?? []).filter(Boolean);
+  if (!perfis.length) return { id: await criarContainer(p, extra) };
+  try {
+    return {
+      id: await criarContainer(p, { ...extra, collaborators: JSON.stringify(perfis) }),
+    };
+  } catch (e) {
+    const motivo = e instanceof Error ? e.message : "motivo não informado";
+    const id = await criarContainer(p, extra);
+    return {
+      id,
+      aviso: `Publicado sem o convite de colaboração (${perfis.map((x) => `@${x}`).join(", ")}): ${motivo}`,
+    };
+  }
 }
 
 async function publicar(p: PublicarParams, creationId: string): Promise<string> {
@@ -111,17 +142,18 @@ async function esperarPronto(
 }
 
 /** Publica imagem única ou carrossel. Retorna o id do post publicado. */
-export async function publicarInstagram(p: PublicarParams): Promise<{ id: string }> {
+export async function publicarInstagram(p: PublicarParams): Promise<Publicado> {
   if (!p.igUserId || !p.token)
     throw new Error("Instagram não configurado (faltam token/ID).");
   if (!p.imageUrls.length) throw new Error("Nenhuma imagem pra publicar.");
 
   let creationId: string;
+  let aviso: string | undefined;
   if (p.imageUrls.length === 1) {
-    creationId = await criarContainer(p, {
+    ({ id: creationId, aviso } = await criarContainerDoPost(p, {
       image_url: p.imageUrls[0],
       caption: p.legenda,
-    });
+    }));
     await esperarPronto(p, creationId);
   } else {
     const children: string[] = [];
@@ -133,16 +165,17 @@ export async function publicarInstagram(p: PublicarParams): Promise<{ id: string
       await esperarPronto(p, child); // cada filho precisa estar pronto
       children.push(child);
     }
-    creationId = await criarContainer(p, {
+    // O convite vai no contêiner do carrossel, não em cada imagem.
+    ({ id: creationId, aviso } = await criarContainerDoPost(p, {
       media_type: "CAROUSEL",
       children: children.join(","),
       caption: p.legenda,
-    });
+    }));
     await esperarPronto(p, creationId);
   }
 
   const id = await publicar(p, creationId);
-  return { id };
+  return aviso ? { id, aviso } : { id };
 }
 
 /**
@@ -157,7 +190,8 @@ export async function publicarReel(params: {
   legenda: string;
   /** Tempo máximo esperando o vídeo ficar pronto. Padrão: o do agendador. */
   esperaSeg?: number;
-}): Promise<{ id: string }> {
+  colaboradores?: string[];
+}): Promise<Publicado> {
   if (!params.igUserId || !params.token)
     throw new Error("Instagram não configurado (faltam token/ID).");
   if (!params.videoUrl) throw new Error("Nenhum vídeo pra publicar.");
@@ -166,8 +200,9 @@ export async function publicarReel(params: {
     token: params.token,
     imageUrls: [],
     legenda: params.legenda,
+    colaboradores: params.colaboradores,
   };
-  const creationId = await criarContainer(p, {
+  const { id: creationId, aviso } = await criarContainerDoPost(p, {
     media_type: "REELS",
     video_url: params.videoUrl,
     caption: params.legenda,
@@ -182,7 +217,7 @@ export async function publicarReel(params: {
     intervalo,
   );
   const id = await publicar(p, creationId);
-  return { id };
+  return aviso ? { id, aviso } : { id };
 }
 
 /** Publica um Story de imagem (some em 24h). image_url tem que ser 9:16 público. */
