@@ -31,7 +31,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   const body = (await req.json().catch(() => null)) as { ativo?: unknown } | null;
   if (typeof body?.ativo !== "boolean")
-    return NextResponse.json({ error: "informe ativo: true ou false" }, { status: 400 });
+    return NextResponse.json(
+      { error: "informe ativo: true ou false" },
+      { status: 400 },
+    );
   try {
     await salvarStatusWhatsAppAtivo(body.ativo);
     return NextResponse.json({ ok: true, ativo: body.ativo });

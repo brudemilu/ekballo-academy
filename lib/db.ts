@@ -3075,14 +3075,12 @@ export async function salvarStatusWhatsAppAtivo(ativo: boolean): Promise<void> {
   }
   const agora = new Date().toISOString();
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("whatsapp_status_config")
-    .upsert({
-      id: 1,
-      ativo,
-      atualizado_em: agora,
-      ...(ativo ? { ativado_em: agora } : {}),
-    });
+  const { error } = await supabase.from("whatsapp_status_config").upsert({
+    id: 1,
+    ativo,
+    atualizado_em: agora,
+    ...(ativo ? { ativado_em: agora } : {}),
+  });
   if (error) throw new Error(error.message);
 }
 
