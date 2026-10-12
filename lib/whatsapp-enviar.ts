@@ -33,9 +33,19 @@ export async function enviarTextoWhatsApp(
  * Envia uma imagem (por URL pública) com legenda. Devolve null se enviou;
  * senão, o motivo. Nunca lança.
  */
-export async function enviarImagemWhatsApp(
+export function enviarImagemWhatsApp(
   destinatario: string,
   url: string,
+  legenda?: string,
+): Promise<string | null> {
+  return enviarMidiaWhatsApp(destinatario, url, "image", legenda);
+}
+
+/** Envia imagem ou vídeo (por URL pública) com legenda. Nunca lança. */
+export async function enviarMidiaWhatsApp(
+  destinatario: string,
+  url: string,
+  tipo: "image" | "video",
   legenda?: string,
 ): Promise<string | null> {
   const base = supabaseFunctionsBase();
@@ -49,7 +59,7 @@ export async function enviarImagemWhatsApp(
       body: JSON.stringify({
         destinatario,
         url,
-        tipo: "image",
+        tipo,
         ...(legenda ? { legenda } : {}),
       }),
       // A URL é a rota que desenha o slide: o gateway espera a imagem ficar pronta.
