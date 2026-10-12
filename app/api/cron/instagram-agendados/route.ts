@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
 import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
   instagramConfigurado,
+  type Publicado,
   publicarInstagram,
   publicarReel,
   publicarStory,
@@ -64,7 +66,7 @@ export async function GET(req: NextRequest) {
   // pega os que já venceram (limite pequeno por execução)
   const { data: pendentes, error } = await supabase
     .from("instagram_carrosseis")
-    .select("id, slides, legenda, tipo, video_url, agendado_para")
+    .select("id, slides, legenda, tipo, video_url, agendado_para, colaboradores")
     .eq("status", "agendado")
     .lte("agendado_para", new Date().toISOString())
     .order("agendado_para", { ascending: true })
@@ -89,8 +91,10 @@ export async function GET(req: NextRequest) {
     if (!reservado?.length) continue; // outra rodada já está com ele
     const isReel = post.tipo === "reel";
     const slides = Array.isArray(post.slides) ? (post.slides as SlideRow[]) : [];
+    // Story não aceita colaborador; nos outros formatos o convite vai junto.
+    const colaboradores = normalizarColaboradores(post.colaboradores);
     try {
-      const { id: postId } = isReel
+      const publicado: Publicado = isReel
         ? await (async () => {
             if (!post.video_url) throw new Error("sem vídeo");
             return publicarReel({
@@ -98,6 +102,7 @@ export async function GET(req: NextRequest) {
               token: process.env.META_ACCESS_TOKEN!,
               videoUrl: post.video_url,
               legenda: post.legenda || "",
+              colaboradores,
             });
           })()
         : await (async () => {
@@ -116,8 +121,10 @@ export async function GET(req: NextRequest) {
               token: process.env.META_ACCESS_TOKEN!,
               imageUrls,
               legenda: post.legenda || "",
+              colaboradores,
             });
           })();
+      const postId = publicado.id;
       await supabase
         .from("instagram_carrosseis")
         .update({
@@ -125,6 +132,8 @@ export async function GET(req: NextRequest) {
           publicado_em: new Date().toISOString(),
           ig_post_id: postId,
           erro: null,
+          // o post saiu, mas o convite de colaboração não: fica registrado
+          aviso: publicado.aviso ?? null,
           // devolve a hora que o pastor marcou (a reserva a tinha empurrado)
           agendado_para: post.agendado_para,
         })

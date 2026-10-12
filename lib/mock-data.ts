@@ -564,6 +564,10 @@ export type CarrosselInstagramMock = {
   criado_em: string;
   tipo?: "carrossel" | "reel";
   video_url?: string;
+  /** Perfis convidados a colaborar (sem "@"). */
+  colaboradores?: string[];
+  /** O post saiu, mas algo ficou de fora (ex.: convite recusado pela API). */
+  aviso?: string | null;
 };
 const MOCK_CARROSSEIS: CarrosselInstagramMock[] = [];
 export function addMockCarrossel(c: CarrosselInstagramMock) {
