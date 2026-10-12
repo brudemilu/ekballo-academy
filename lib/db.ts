@@ -60,6 +60,7 @@ import {
   getMockPendenteWhatsApp,
   getMockPerfilConteudo,
   getMockPiloto,
+  getMockStatusWhatsAppAtivo,
   type IdeiaConteudoMock,
   isMockMode,
   listMockCarrosseis,
@@ -101,6 +102,7 @@ import {
   setMockPendenteWhatsApp,
   setMockPerfilConteudo,
   setMockPiloto,
+  setMockStatusWhatsAppAtivo,
   updateMockCompromisso,
 } from "@/lib/mock-data";
 import { PERMISSOES, type Permissao } from "@/lib/permissoes";
@@ -3040,6 +3042,43 @@ export async function salvarComentariosAtivo(ativo: boolean): Promise<void> {
   const { error } = await supabase
     .from("conteudo_comentarios_config")
     .upsert({ id: 1, ativo, atualizado_em: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Instagram → Status do WhatsApp (issue #258)
+// =============================================================
+export async function getStatusWhatsAppAtivo(): Promise<boolean> {
+  if (isMockMode()) return getMockStatusWhatsAppAtivo();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("whatsapp_status_config")
+    .select("ativo")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.ativo);
+}
+
+/**
+ * Liga ou desliga. Ao LIGAR, a linha de corte vira agora: o que foi publicado
+ * enquanto estava desligado não vai para o Status de uma vez só.
+ */
+export async function salvarStatusWhatsAppAtivo(ativo: boolean): Promise<void> {
+  if (isMockMode()) {
+    setMockStatusWhatsAppAtivo(ativo);
+    return;
+  }
+  const agora = new Date().toISOString();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("whatsapp_status_config")
+    .upsert({
+      id: 1,
+      ativo,
+      atualizado_em: agora,
+      ...(ativo ? { ativado_em: agora } : {}),
+    });
   if (error) throw new Error(error.message);
 }
 

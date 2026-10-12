@@ -62,3 +62,32 @@ export async function enviarImagemWhatsApp(
     return e instanceof Error ? e.message : "erro de rede";
   }
 }
+
+/**
+ * Publica um Status do WhatsApp (o "story" do WhatsApp) para os contatos da
+ * conta. Devolve null se publicou; senão, o motivo. Nunca lança.
+ */
+export async function enviarStatusWhatsApp(
+  envio:
+    | { tipo: "text"; conteudo: string }
+    | { tipo: "image" | "video"; url: string; legenda?: string },
+): Promise<string | null> {
+  const base = supabaseFunctionsBase();
+  const secret = process.env.INTERNAL_SECRET;
+  if (!base || !secret)
+    return "envio não configurado (SUPABASE_FUNCTIONS_URL/INTERNAL_SECRET)";
+  try {
+    const res = await fetch(`${base}/enviar-whatsapp-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-internal-secret": secret },
+      body: JSON.stringify(envio),
+      // O gateway baixa a mídia e a distribui aos contatos: pode demorar.
+      signal: AbortSignal.timeout(50_000),
+    });
+    if (!res.ok)
+      return `${res.status} ${await res.text().catch(() => "")}`.trim().slice(0, 300);
+    return null;
+  } catch (e) {
+    return e instanceof Error ? e.message : "erro de rede";
+  }
+}

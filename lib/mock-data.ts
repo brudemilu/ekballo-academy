@@ -823,6 +823,14 @@ export function getMockComentariosAtivo(): boolean {
 export function setMockComentariosAtivo(ativo: boolean) {
   MOCK_COMENTARIOS_CONFIG.ativo = ativo;
 }
+// ---- Instagram → Status do WhatsApp (mock mutável) ----
+const MOCK_STATUS_WHATSAPP = { ativo: true };
+export function getMockStatusWhatsAppAtivo(): boolean {
+  return MOCK_STATUS_WHATSAPP.ativo;
+}
+export function setMockStatusWhatsAppAtivo(ativo: boolean) {
+  MOCK_STATUS_WHATSAPP.ativo = ativo;
+}
 const MOCK_REGRAS_COMENTARIO: RegraComentario[] = [];
 export function listMockRegrasComentario(): RegraComentario[] {
   return MOCK_REGRAS_COMENTARIO;
