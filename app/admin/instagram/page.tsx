@@ -7,6 +7,7 @@ import { ComentariosAuto } from "@/components/ComentariosAuto";
 import { ContasInstagram } from "@/components/ContasInstagram";
 import { CortesConteudo } from "@/components/CortesConteudo";
 import { CrescimentoInstagram } from "@/components/CrescimentoInstagram";
+import { IdentidadeInstagram } from "@/components/IdentidadeInstagram";
 import { ImagensConteudo } from "@/components/ImagensConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
@@ -45,6 +46,7 @@ import {
 } from "@/lib/db";
 import { comConta, contaDoCookie } from "@/lib/instagram-conta-atual";
 import { contaEmUso, ehIdDeConta, rotuloDaConta } from "@/lib/instagram-contas";
+import { identidadeDaConta } from "@/lib/instagram-identidade";
 import { analisarPerfil } from "@/lib/instagram-insights";
 import { diasSugeridos } from "@/lib/pacote";
 import {
@@ -274,7 +276,10 @@ export default async function AdminInstagramPage({
 
       {/* A chave refaz as telas ao trocar de conta: elas guardam em memória o
           que receberam, e sem isso mostrariam os dados da conta anterior. */}
-      <div key={contaAtiva.id}>
+      <IdentidadeInstagram
+        key={contaAtiva.id}
+        identidade={identidadeDaConta(contaAtiva)}
+      >
         {aba === "painel" && dadosPainel ? (
           <PainelInstagram
             conectado={dadosPainel.conectado}
@@ -405,7 +410,7 @@ export default async function AdminInstagramPage({
             </div>
           </>
         )}
-      </div>
+      </IdentidadeInstagram>
     </AdminShell>
   );
 }

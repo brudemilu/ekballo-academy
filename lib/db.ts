@@ -9,6 +9,7 @@ import { cache } from "react";
 import { contaAtualId } from "@/lib/instagram-conta-atual";
 import { CONTA_PRINCIPAL_ID, type ContaCadastrada } from "@/lib/instagram-contas";
 import { principalPeloAmbiente, situacaoDosTokens } from "@/lib/instagram-credenciais";
+import { type Identidade, identidadeDaConta } from "@/lib/instagram-identidade";
 import { createClient } from "@/lib/supabase/server";
 import { visaoAlunoAtiva } from "@/lib/visao";
 
@@ -2326,6 +2327,50 @@ export async function listContasInstagram(): Promise<ContaCadastrada[]> {
       (Boolean(c.principal) && principalPeloAmbiente()),
     expira_em: tokens.get(c.id as string) ?? null,
   }));
+}
+
+/**
+ * A assinatura e o @ de uma conta — a da vez quando `contaId` não vem. É o que
+ * as artes dela levam. Cliente de serviço, como `listContasInstagram`.
+ */
+export async function getIdentidadeInstagram(contaId?: string): Promise<Identidade> {
+  const id = contaId ?? (await contaAtualId());
+  if (isMockMode()) {
+    const c = listMockContas().find((x) => x.id === id);
+    return c ? identidadeDaConta(c) : {};
+  }
+  const { data, error } = await agendaSR()
+    .from("instagram_contas")
+    .select("assinatura, usuario")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data
+    ? identidadeDaConta({
+        assinatura: data.assinatura as string,
+        usuario: data.usuario as string,
+      })
+    : {};
+}
+
+/**
+ * Como os textos da IA chamam o ministério da conta da vez. Vazio na conta
+ * principal: ela mantém o texto de sempre (lib/instagram-identidade.ts).
+ */
+export async function getMinisterioInstagram(): Promise<string> {
+  const id = await contaAtualId();
+  if (id === CONTA_PRINCIPAL_ID) return "";
+  if (isMockMode()) {
+    const c = listMockContas().find((x) => x.id === id);
+    return c ? c.assinatura || c.nome : "";
+  }
+  const { data, error } = await agendaSR()
+    .from("instagram_contas")
+    .select("nome, assinatura")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? (data.assinatura as string) || (data.nome as string) : "";
 }
 
 export async function criarContaInstagram(input: {

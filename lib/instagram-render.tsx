@@ -16,6 +16,8 @@
  *  - ignora text-decoration:underline → o sublinhado é uma barrinha desenhada.
  */
 
+import { MARCA_PADRAO } from "@/lib/instagram-identidade";
+
 export type FonteKey = "anton" | "bebas" | "dm-serif" | "cormorant";
 export type RealceModo = "circulo" | "grifo" | "marca" | "dourado" | "nenhum";
 
@@ -97,6 +99,8 @@ export type SlideRenderPayload = {
   top?: string;
   /** Referência opcional (rodapé pequeno, sobre a faixa). */
   ref?: string;
+  /** Assinatura da conta, no rodapé. */
+  marca?: string;
   /**
    * Tom do slide. "escuro" (padrão): título creme sobre a foto escurecida —
    * lê em qualquer imagem, inclusive nas cinematográficas que a IA gera.
@@ -576,7 +580,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
               color: "#F6ECCB",
             }}
           >
-            EKBALLO ACADEMY
+            {(p.marca || MARCA_PADRAO).toUpperCase()}
           </div>
         </div>
       </div>

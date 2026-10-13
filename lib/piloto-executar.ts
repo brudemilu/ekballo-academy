@@ -15,6 +15,7 @@ import {
   atualizarExecucaoPiloto,
   criarIdeiaConteudo,
   getCorteConteudo,
+  getMinisterioInstagram,
   getPerfilConteudo,
   getPilotoConfig,
   listAulasByCurso,
@@ -233,6 +234,7 @@ export async function executarPiloto(
       comPecas: config.pecas.carrossel,
       // O Reel da IA é montado em cima do roteiro, mesmo que o pastor não queira gravá-lo.
       comRoteiro: config.pecas.roteiro || config.pecas.reel_ia,
+      ministerio: await getMinisterioInstagram().catch(() => ""),
     });
     const horarios = horariosDaExecucao(agora, config);
 

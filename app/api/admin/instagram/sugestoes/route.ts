@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/db";
+import { getCurrentSession, getMinisterioInstagram } from "@/lib/db";
 import { instagramConectado } from "@/lib/instagram-credenciais";
 import { analisarPerfil, listarPostsComMetricas } from "@/lib/instagram-insights";
 import { gerarSugestoes } from "@/lib/instagram-sugestoes";
@@ -48,7 +48,11 @@ export async function POST(req: NextRequest) {
       );
     }
     const resumo = analisarPerfil(posts);
-    const sugestoes = await gerarSugestoes(resumo, n);
+    const sugestoes = await gerarSugestoes(
+      resumo,
+      n,
+      await getMinisterioInstagram().catch(() => ""),
+    );
     return NextResponse.json({ resumo, sugestoes });
   } catch (e) {
     return NextResponse.json(

@@ -17,6 +17,7 @@
  * Lembretes do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — top/left/width/height por extenso.
  */
+import { ARROBA_PADRAO, MARCA_PADRAO } from "@/lib/instagram-identidade";
 import {
   alvoParaLinhas,
   type FonteMedida,
@@ -52,6 +53,10 @@ export type EditorialPayload = {
   top?: string;
   /** Referência, autoria ou numeração ("Lição #08"). */
   ref?: string;
+  /** Assinatura da conta, usada onde `top` e `ref` não vêm. */
+  marca?: string;
+  /** O @ da conta (só o modelo "muro" escreve). */
+  arroba?: string;
   largura: number;
   altura: number;
 };
@@ -220,7 +225,7 @@ function Cinema({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.top || "Ekballo Academy"}
+          texto={p.top || p.marca || MARCA_PADRAO}
           cor={CREME}
           tamanho={30}
           espaco={16}
@@ -454,7 +459,7 @@ function Cartaz({ p }: { p: EditorialPayload }) {
       >
         <div style={{ display: "flex", maxWidth: Math.round(util * 0.68) }}>
           <Rotulo
-            texto={textoDaLinha(apoio) || p.top || "Ekballo Academy"}
+            texto={textoDaLinha(apoio) || p.top || p.marca || MARCA_PADRAO}
             cor={CREME}
             tamanho={30}
             espaco={10}
@@ -550,7 +555,7 @@ function Editorial({ p }: { p: EditorialPayload }) {
             {/* Sem rótulo próprio, a assinatura ocupa o lugar — nunca um tema
                 fixo ("mesa de discipulado") num post que fala de outra coisa. */}
             <Rotulo
-              texto={p.top || "Ekballo Academy"}
+              texto={p.top || p.marca || MARCA_PADRAO}
               cor={TINTA}
               tamanho={32}
               espaco={9}
@@ -567,7 +572,12 @@ function Editorial({ p }: { p: EditorialPayload }) {
           </div>
           <div style={{ display: "flex", width: 150 }}>
             {p.top ? (
-              <Rotulo texto="Ekballo Academy" cor={TINTA} tamanho={17} espaco={5} />
+              <Rotulo
+                texto={p.marca || MARCA_PADRAO}
+                cor={TINTA}
+                tamanho={17}
+                espaco={5}
+              />
             ) : null}
           </div>
         </div>
@@ -900,7 +910,7 @@ function Recorte({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || "Ekballo Academy"}
+          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
           cor={TINTA}
           tamanho={22}
           espaco={5}
@@ -1023,7 +1033,7 @@ function Sereno({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || "Ekballo Academy"}
+          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
           cor="rgba(244,227,207,0.78)"
           tamanho={22}
           espaco={7}
@@ -1111,7 +1121,7 @@ function Contraste({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.top || "Ekballo Academy"}
+          texto={p.top || p.marca || MARCA_PADRAO}
           cor={branco}
           tamanho={24}
           espaco={2}
@@ -1295,7 +1305,7 @@ function Carimbo({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || "Ekballo Academy"}
+          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
           cor={creme}
           tamanho={24}
           espaco={3}
@@ -1388,7 +1398,7 @@ function Gravura({ p }: { p: EditorialPayload }) {
           {String(new Date().getFullYear())}
         </div>
         <Rotulo
-          texto={p.top || "Ekballo Academy"}
+          texto={p.top || p.marca || MARCA_PADRAO}
           cor={TINTA}
           tamanho={15}
           espaco={6}
@@ -1447,7 +1457,7 @@ function Gravura({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || "Ekballo Academy"}
+          texto={p.ref || p.marca || MARCA_PADRAO}
           cor={TINTA}
           tamanho={15}
           espaco={5}
@@ -1586,7 +1596,7 @@ function Quadrinho({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || "Ekballo Academy"}
+          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
           cor="#FFFFFF"
           tamanho={20}
           espaco={4}
@@ -1755,7 +1765,7 @@ function Caderno({ p }: { p: EditorialPayload }) {
             transform: "rotate(-1.5deg)",
           }}
         >
-          {p.ref || p.top || "Ekballo Academy"}
+          {p.ref || p.top || p.marca || MARCA_PADRAO}
         </div>
       </div>
     </div>
@@ -1931,7 +1941,7 @@ function Chamada({ p }: { p: EditorialPayload }) {
       >
         <div style={{ display: "flex", marginBottom: 34 }}>
           <Rotulo
-            texto={p.ref || p.top || "Ekballo Academy"}
+            texto={p.ref || p.top || p.marca || MARCA_PADRAO}
             cor="rgba(243,233,207,0.85)"
             tamanho={20}
             espaco={5}
@@ -2061,7 +2071,7 @@ function Muro({ p }: { p: EditorialPayload }) {
             color: "rgba(18,16,14,0.82)",
           }}
         >
-          {p.ref || p.top || "@brunofesantos"}
+          {p.ref || p.top || p.arroba || ARROBA_PADRAO}
         </div>
       </div>
     </div>

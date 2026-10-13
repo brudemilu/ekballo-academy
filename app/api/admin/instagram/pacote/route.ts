@@ -3,6 +3,7 @@ import { montarFonte, type PedidoFonte } from "@/lib/conteudo-fonte";
 import {
   criarIdeiaConteudo,
   getCurrentSession,
+  getMinisterioInstagram,
   getPerfilConteudo,
   getReferenciaConteudo,
   salvarCarrosselInstagram,
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
       referencia,
       foco,
       duracaoReel: DURACAO_REEL,
+      ministerio: await getMinisterioInstagram().catch(() => ""),
     });
     if (!gerado.pecas && !gerado.roteiro) {
       throw new Error(

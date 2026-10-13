@@ -10,7 +10,9 @@
  * O servidor não guarda a conversa: o navegador manda o histórico a cada
  * pergunta. Regras puras, testadas em testes/assistente.test.ts.
  */
+
 import { FORMATOS_IDEIA, type FormatoIdeiaCal } from "@/lib/conteudo-calendario";
+import { ministerioParaIA } from "@/lib/instagram-identidade";
 import { lerJSONdaIA } from "@/lib/json-ia";
 
 export type MensagemChat = { papel: "pastor" | "assistente"; texto: string };
@@ -67,8 +69,10 @@ export function systemAssistente(
   hoje: string,
   /** Datas do calendário cristão que vêm aí, uma por linha (lib/calendario-cristao.ts). */
   datas = "",
+  /** Nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+  ministerio = "",
 ): string {
-  return `Você é o assistente de conteúdo do Instagram de um ministério cristão de discipulado (Ekballo).
+  return `Você é o assistente de conteúdo do Instagram de ${ministerioParaIA(ministerio)}.
 Conversa com o pastor responsável pelo perfil. Hoje é ${hoje}.
 
 COMO AJUDAR

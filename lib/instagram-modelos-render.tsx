@@ -9,6 +9,7 @@
  * Lembrete do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — por isso top/left/right/bottom por extenso.
  */
+import { MARCA_PADRAO } from "@/lib/instagram-identidade";
 import {
   itensDoChecklist,
   type ModeloDeTexto,
@@ -35,6 +36,8 @@ export type ModeloRenderPayload = {
   top?: string;
   /** Referência / autoria. */
   ref?: string;
+  /** Assinatura da conta, usada onde `top` não vem. */
+  marca?: string;
   largura: number;
   altura: number;
 };
@@ -73,7 +76,7 @@ function Assinatura({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
           color: c.suave,
         }}
       >
-        {(p.top || "Ekballo Academy").toUpperCase()}
+        {(p.top || p.marca || MARCA_PADRAO).toUpperCase()}
       </div>
     </div>
   );
@@ -296,7 +299,7 @@ function Cartao({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
     ],
     72,
   );
-  const nome = p.top || "Ekballo Academy";
+  const nome = p.top || p.marca || MARCA_PADRAO;
   return (
     <div
       style={{
@@ -444,7 +447,7 @@ export function renderSlideModelo(p: ModeloRenderPayload) {
         c={c}
         texto={
           p.modelo === "cartao"
-            ? "EKBALLO ACADEMY"
+            ? (p.marca || MARCA_PADRAO).toUpperCase()
             : p.modelo !== "citacao" && p.ref
               ? p.ref.toUpperCase()
               : " "
