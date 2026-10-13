@@ -11,6 +11,8 @@
  *    não "chute" do modelo.
  */
 
+import { credenciaisInstagram } from "@/lib/instagram-credenciais";
+
 // Mesma base da publicação (Instagram API com login do Instagram).
 const GRAPH = process.env.META_GRAPH_BASE || "https://graph.instagram.com/v21.0";
 const TZ = "America/Sao_Paulo";
@@ -51,18 +53,6 @@ export type PerfilResumo = {
     permalink: string;
   }[];
 };
-
-function igEnv() {
-  return {
-    igUserId: process.env.IG_USER_ID,
-    token: process.env.META_ACCESS_TOKEN,
-  };
-}
-
-export function instagramLeituraConfigurada(): boolean {
-  const { igUserId, token } = igEnv();
-  return Boolean(igUserId && token);
-}
 
 type MediaRaw = {
   id: string;
@@ -135,10 +125,9 @@ async function buscarMetricas(
  * conseguir nem listar as mídias (ex.: escopo/instagram_business_basic ausente).
  */
 export async function listarPostsComMetricas(limit = 25): Promise<PostMetrica[]> {
-  const { igUserId, token } = igEnv();
-  if (!igUserId || !token) {
-    throw new Error("Instagram não conectado (faltam IG_USER_ID e META_ACCESS_TOKEN).");
-  }
+  const cred = await credenciaisInstagram();
+  if (!cred) throw new Error("Esta conta ainda não está conectada ao Instagram.");
+  const { igUserId, token } = cred;
 
   const campos =
     "id,caption,media_type,media_product_type,timestamp,like_count,comments_count,permalink";

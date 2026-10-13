@@ -34,7 +34,13 @@ type Resumo = {
   melhorFaixaHoraria: string;
   melhorHorario: string;
   formatoTop: string;
-  topPosts: { caption: string; likes: number; comments: number; reach: number | null; permalink: string }[];
+  topPosts: {
+    caption: string;
+    likes: number;
+    comments: number;
+    reach: number | null;
+    permalink: string;
+  }[];
 };
 
 export type IdeiaEscolhida = {
@@ -48,7 +54,11 @@ export type IdeiaEscolhida = {
  * com foco em ABENÇOAR + engajar. "Usar essa ideia" entrega o roteiro pronto ao
  * editor (via onUsarIdeia) — nada é publicado aqui.
  */
-export function SugestoesInstagram({ onUsarIdeia }: { onUsarIdeia: (ideia: IdeiaEscolhida) => void }) {
+export function SugestoesInstagram({
+  onUsarIdeia,
+}: {
+  onUsarIdeia: (ideia: IdeiaEscolhida) => void;
+}) {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [resumo, setResumo] = useState<Resumo | null>(null);
@@ -85,17 +95,22 @@ export function SugestoesInstagram({ onUsarIdeia }: { onUsarIdeia: (ideia: Ideia
             ✨ Analise meu perfil e me sugira posts
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-mesa-600">
-            A IA lê seus posts e o engajamento real do @brunofesantos e sugere ideias pensadas
-            primeiro pra <strong>abençoar</strong> quem vê — e que tendem a engajar. Você escolhe uma e
-            cai direto no editor.
+            A IA lê seus posts e o engajamento real do perfil e sugere ideias pensadas
+            primeiro pra <strong>abençoar</strong> quem vê — e que tendem a engajar.
+            Você escolhe uma e cai direto no editor.
           </p>
         </div>
         <button
+          type="button"
           onClick={analisar}
           disabled={carregando}
           className="rounded-full bg-laranja-500 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-40"
         >
-          {carregando ? "Analisando perfil…" : resumo ? "🔄 Sugerir de novo" : "✨ Analisar e sugerir"}
+          {carregando
+            ? "Analisando perfil…"
+            : resumo
+              ? "🔄 Sugerir de novo"
+              : "✨ Analisar e sugerir"}
         </button>
       </div>
 
@@ -105,15 +120,23 @@ export function SugestoesInstagram({ onUsarIdeia }: { onUsarIdeia: (ideia: Ideia
       {resumo && (
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Posts analisados" valor={String(resumo.totalPosts)} />
-          <Stat label="Engajamento médio" valor={`${resumo.engajamentoMedio}`} sub="curtidas + comentários" />
-          <Stat label="Melhor horário" valor={resumo.melhorDia} sub={resumo.melhorFaixaHoraria} />
+          <Stat
+            label="Engajamento médio"
+            valor={`${resumo.engajamentoMedio}`}
+            sub="curtidas + comentários"
+          />
+          <Stat
+            label="Melhor horário"
+            valor={resumo.melhorDia}
+            sub={resumo.melhorFaixaHoraria}
+          />
           <Stat label="Formato que engaja" valor={resumo.formatoTop} />
         </div>
       )}
       {resumo && !resumo.temReach && (
         <p className="mt-2 text-xs text-mesa-500">
-          (Alcance indisponível no token atual — a análise usou curtidas e comentários. Pra incluir
-          alcance, adicione a permissão de insights no app Meta.)
+          (Alcance indisponível no token atual — a análise usou curtidas e comentários.
+          Pra incluir alcance, adicione a permissão de insights no app Meta.)
         </p>
       )}
 
@@ -138,7 +161,9 @@ export function SugestoesInstagram({ onUsarIdeia }: { onUsarIdeia: (ideia: Ideia
 function Stat({ label, valor, sub }: { label: string; valor: string; sub?: string }) {
   return (
     <div className="rounded-xl border border-mesa-200 bg-white px-4 py-3">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-mesa-400">{label}</p>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-mesa-400">
+        {label}
+      </p>
       <p className="mt-0.5 truncate font-semibold text-mesa-800" title={valor}>
         {valor}
       </p>
@@ -157,11 +182,16 @@ function CardSugestao({ s, onUsar }: { s: Sugestao; onUsar: () => void }) {
             <span className="rounded-full bg-laranja-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-laranja-700">
               {PILAR_LABEL[s.pilar] || "Reflexão"}
             </span>
-            <span className="text-xs font-medium uppercase tracking-wide text-mesa-500">{s.tema}</span>
+            <span className="text-xs font-medium uppercase tracking-wide text-mesa-500">
+              {s.tema}
+            </span>
           </div>
-          <p className="mt-1.5 font-serif text-lg font-semibold text-mesa-800">“{s.gancho}”</p>
+          <p className="mt-1.5 font-serif text-lg font-semibold text-mesa-800">
+            “{s.gancho}”
+          </p>
         </div>
         <button
+          type="button"
           onClick={onUsar}
           className="shrink-0 rounded-full bg-mesa-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-mesa-800"
         >
@@ -176,12 +206,18 @@ function CardSugestao({ s, onUsar }: { s: Sugestao; onUsar: () => void }) {
       )}
 
       <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-mesa-500">
-        <span>🗓️ Melhor: <strong className="text-mesa-700">{s.melhorHorario}</strong></span>
-        <span>🖼️ {s.roteiro.length === 1 ? "Imagem única" : `Carrossel de ${s.roteiro.length}`}</span>
+        <span>
+          🗓️ Melhor: <strong className="text-mesa-700">{s.melhorHorario}</strong>
+        </span>
+        <span>
+          🖼️{" "}
+          {s.roteiro.length === 1 ? "Imagem única" : `Carrossel de ${s.roteiro.length}`}
+        </span>
         {s.ideiaVisual && <span>🎨 {s.ideiaVisual}</span>}
       </div>
 
       <button
+        type="button"
         onClick={() => setAberto((v) => !v)}
         className="mt-3 text-sm font-medium text-laranja-700 hover:underline"
       >
@@ -191,10 +227,15 @@ function CardSugestao({ s, onUsar }: { s: Sugestao; onUsar: () => void }) {
       {aberto && (
         <div className="mt-3 space-y-4">
           <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-mesa-400">Slides</p>
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-mesa-400">
+              Slides
+            </p>
             <ol className="space-y-2">
               {s.roteiro.map((sl, k) => (
-                <li key={k} className="rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2">
+                <li
+                  key={k}
+                  className="rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2"
+                >
                   <p className="text-sm font-semibold text-mesa-800">
                     {k + 1}. {sl.texto}
                   </p>
@@ -204,7 +245,9 @@ function CardSugestao({ s, onUsar }: { s: Sugestao; onUsar: () => void }) {
             </ol>
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-mesa-400">Legenda</p>
+            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-mesa-400">
+              Legenda
+            </p>
             <p className="whitespace-pre-wrap rounded-lg border border-mesa-200 bg-mesa-50 px-3 py-2 text-sm text-mesa-700">
               {s.legenda}
             </p>

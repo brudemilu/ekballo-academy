@@ -3,10 +3,12 @@
  * da conta. Fica separado de lib/painel.ts (que é só conta) porque aqui tem
  * rede, cache e modo demonstração — issue #189.
  */
+import { contaAtualId } from "@/lib/instagram-conta-atual";
 import {
-  instagramLeituraConfigurada,
-  listarPostsComMetricas,
-} from "@/lib/instagram-insights";
+  type CredenciaisInstagram,
+  credenciaisInstagram,
+} from "@/lib/instagram-credenciais";
+import { listarPostsComMetricas } from "@/lib/instagram-insights";
 import { isMockMode } from "@/lib/mock-data";
 import type { PostPainel } from "@/lib/painel";
 
@@ -38,15 +40,14 @@ export type DadosPainel = {
 // post (o alcance vem de um endpoint por mídia). Dez minutos é fresco o
 // bastante para números que mudam ao longo de dias.
 const VALIDADE_MS = 10 * 60 * 1000;
-let cache: { em: number; dados: DadosPainel } | null = null;
+// Um cache por conta: os números de um perfil não podem aparecer no painel de outro.
+const cache = new Map<string, { em: number; dados: DadosPainel }>();
 
 /** Quantos posts ler: cobre 90 dias mesmo postando quase todo dia. */
 const LIMITE_POSTS = 60;
 
-async function buscarConta(): Promise<ContaInstagram | null> {
-  const id = process.env.IG_USER_ID;
-  const token = process.env.META_ACCESS_TOKEN;
-  if (!id || !token) return null;
+async function buscarConta(cred: CredenciaisInstagram): Promise<ContaInstagram | null> {
+  const { igUserId: id, token } = cred;
   try {
     const res = await fetch(
       `${GRAPH}/${id}?fields=username,followers_count,media_count&access_token=${encodeURIComponent(token)}`,
@@ -228,20 +229,23 @@ export async function carregarDadosPainel(): Promise<DadosPainel> {
     };
   }
 
-  if (!instagramLeituraConfigurada()) {
+  const contaId = await contaAtualId();
+  const cred = await credenciaisInstagram(contaId).catch(() => null);
+  if (!cred) {
     return { conectado: false, posts: [], conta: null, erro: null, lidoEm };
   }
 
-  if (cache && Date.now() - cache.em < VALIDADE_MS) return cache.dados;
+  const guardado = cache.get(contaId);
+  if (guardado && Date.now() - guardado.em < VALIDADE_MS) return guardado.dados;
 
   let dados: DadosPainel;
   try {
     const [posts, conta] = await Promise.all([
       listarPostsComMetricas(LIMITE_POSTS),
-      buscarConta(),
+      buscarConta(cred),
     ]);
     dados = { conectado: true, posts, conta, erro: null, lidoEm };
-    cache = { em: Date.now(), dados };
+    cache.set(contaId, { em: Date.now(), dados });
   } catch (e) {
     // Falha não entra no cache: o próximo acesso tenta de novo.
     dados = {

@@ -3,6 +3,8 @@ import { transcreverAudio } from "@/lib/agenda-audio";
 import { lerImagem } from "@/lib/agenda-imagem";
 import { parseCompromissoIA } from "@/lib/agenda-parse";
 import { addCompromisso, getPendenteWhatsApp } from "@/lib/db";
+import { comConta } from "@/lib/instagram-conta-atual";
+import { CONTA_PRINCIPAL_ID } from "@/lib/instagram-contas";
 import { pareceAjuste } from "@/lib/post-texto-pronto";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 import { chatEhDoDono } from "@/lib/whatsapp-agenda-auth";
@@ -200,7 +202,11 @@ export async function POST(req: NextRequest) {
       comando = { tipo: "ajustar", pedido: dito };
   }
   if (comando) {
-    void executarComandoInstagram(comando, numero);
+    // O controle pelo WhatsApp mexe só na conta principal (issue #264).
+    const pedidoInstagram = comando;
+    void comConta(CONTA_PRINCIPAL_ID, () =>
+      executarComandoInstagram(pedidoInstagram, numero),
+    );
     return NextResponse.json({ ok: true, instagram: comando.tipo });
   }
 

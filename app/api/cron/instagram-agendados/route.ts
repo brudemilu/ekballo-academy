@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
+import { credenciaisInstagram } from "@/lib/instagram-credenciais";
 import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
-  instagramConfigurado,
   type Publicado,
   publicarInstagram,
   publicarReel,
@@ -53,9 +53,6 @@ export async function GET(req: NextRequest) {
   if (!autorizado(req)) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
-  if (!instagramConfigurado()) {
-    return NextResponse.json({ error: "Instagram não configurado" }, { status: 503 });
-  }
 
   // As imagens são geradas pela rota OG do próprio app e sobem para o Storage
   // (é de lá que a Meta busca). A chamada é interna: pelo domínio público,
@@ -66,7 +63,9 @@ export async function GET(req: NextRequest) {
   // pega os que já venceram (limite pequeno por execução)
   const { data: pendentes, error } = await supabase
     .from("instagram_carrosseis")
-    .select("id, slides, legenda, tipo, video_url, agendado_para, colaboradores")
+    .select(
+      "id, slides, legenda, tipo, video_url, agendado_para, colaboradores, conta_id",
+    )
     .eq("status", "agendado")
     .lte("agendado_para", new Date().toISOString())
     .order("agendado_para", { ascending: true })
@@ -94,12 +93,19 @@ export async function GET(req: NextRequest) {
     // Story não aceita colaborador; nos outros formatos o convite vai junto.
     const colaboradores = normalizarColaboradores(post.colaboradores);
     try {
+      // Cada post sai pela conta dona dele (issue #264). Conta sem token não
+      // trava a fila das outras: o post vai para "erro", com o motivo à vista.
+      const cred = await credenciaisInstagram(post.conta_id as string);
+      if (!cred) {
+        throw new Error(
+          "a conta deste post não está conectada ao Instagram (aba Contas)",
+        );
+      }
       const publicado: Publicado = isReel
         ? await (async () => {
             if (!post.video_url) throw new Error("sem vídeo");
             return publicarReel({
-              igUserId: process.env.IG_USER_ID!,
-              token: process.env.META_ACCESS_TOKEN!,
+              ...cred,
               videoUrl: post.video_url,
               legenda: post.legenda || "",
               colaboradores,
@@ -111,14 +117,12 @@ export async function GET(req: NextRequest) {
             // Story: uma imagem 9:16, sem legenda, que some em 24 h.
             if (ehStory(slides)) {
               return publicarStory({
-                igUserId: process.env.IG_USER_ID!,
-                token: process.env.META_ACCESS_TOKEN!,
+                ...cred,
                 imageUrl: imageUrls[0],
               });
             }
             return publicarInstagram({
-              igUserId: process.env.IG_USER_ID!,
-              token: process.env.META_ACCESS_TOKEN!,
+              ...cred,
               imageUrls,
               legenda: post.legenda || "",
               colaboradores,

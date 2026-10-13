@@ -165,6 +165,17 @@ Sem nenhum backend (ou ambos falhando): o template cai em gradiente CSS escuro c
 
 **Página admin:** [/admin/imagens](app/admin/imagens/page.tsx) — gerador livre com preview ao vivo, form em [components/GeradorImagemForm.tsx](components/GeradorImagemForm.tsx).
 
+### Instagram: várias contas no mesmo painel (issue #264)
+
+`/admin/instagram` opera mais de um perfil. Cada registro do copiloto (`instagram_carrosseis` e as tabelas `conteudo_*`) tem `conta_id`; perfil de conteúdo, piloto e respostas automáticas são **uma linha por conta**. A conta que já existia é a **principal**, com id fixo (`CONTA_PRINCIPAL_ID`, o mesmo da migration `370_instagram_contas.sql`).
+
+- **Quem decide a conta da vez** é [lib/instagram-conta-atual.ts](lib/instagram-conta-atual.ts), nesta ordem: `comConta(id, fn)` (crons e trabalho em segundo plano) → cabeçalho `x-ig-conta` (a conta que a aba está mostrando) → cookie `ig_conta` (a escolhida no seletor) → principal. As funções de [lib/db.ts](lib/db.ts) perguntam a `contaAtualId()`; **não** recebem a conta por parâmetro. Função nova que lista ou insere nessas tabelas precisa filtrar/carimbar `conta_id` do mesmo jeito.
+- **O cabeçalho vem antes do cookie de propósito.** Com duas janelas em contas diferentes, o cookie é o da última que trocou; o cabeçalho (posto em toda chamada a `/api/admin/instagram*` por [components/SeletorContaInstagram.tsx](components/SeletorContaInstagram.tsx)) garante que cada janela grave e publique na conta que ela mostra.
+- **Post salvo sai pela conta dona dele** (`conta_id` do post), nunca pela conta aberta no painel: vale para o "publicar agora" e para o cron dos agendados.
+- **Trabalho que continua depois da resposta** (`void algo()`) não tem mais cookie nem cabeçalho: embrulhe em `comConta(await contaAtualId(), () => algo())`. Cron que serve a todas as contas percorre `listContasInstagram()` chamando `comConta` para cada uma.
+- **Token**: [lib/instagram-credenciais.ts](lib/instagram-credenciais.ts). Fica em `instagram_contas_credenciais`, tabela **sem política de acesso** (só a chave de serviço lê), e nunca volta numa resposta. É cadastrado na aba **Contas**, que antes de gravar pergunta ao Instagram de quem ele é (`/me`) e preenche o @ e o ID sozinha. A conta principal ainda aceita `IG_USER_ID` + `META_ACCESS_TOKEN` do ambiente enquanto ninguém colar um token para ela pela tela. **Não leia essas duas variáveis em outro lugar** — use `credenciaisInstagram()`.
+- **Só da conta principal, por decisão**: os comandos pelo WhatsApp (`post …`, `publicar`, `cancelar`), o Instagram → Status do WhatsApp e o botão de story do devocional. O WhatsApp e o devocional são do Bruno/Ekballo, não das outras contas.
+
 ### Download de áudio do YouTube (admin)
 
 Página [app/admin/youtube/page.tsx](app/admin/youtube/page.tsx) deixa o admin colar um link do YouTube e converter em MP3. **Funciona em produção (Vercel)**.

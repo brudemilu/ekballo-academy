@@ -263,12 +263,23 @@ const NOME_FONTE: Record<TipoFontePiloto, string> = {
   devocional: "o devocional",
 };
 
-/** O aviso que chega no WhatsApp do pastor. `link` abre a tela do piloto. */
+/**
+ * O aviso que chega no WhatsApp do pastor. `link` abre a tela do piloto.
+ * `outraConta` é o nome da conta quando o aviso NÃO é da principal: aparece no
+ * título e o cancelamento passa a ser só pela tela, porque os comandos
+ * respondidos no WhatsApp mexem apenas na conta principal.
+ */
 export function mensagemDoPiloto(
   e: Pick<ExecucaoPiloto, "fonte" | "pecas">,
   link: string,
+  outraConta = "",
 ): string {
-  const linhas: string[] = ["🤖 *Piloto automático do Instagram*", ""];
+  const linhas: string[] = [
+    outraConta
+      ? `🤖 *Piloto automático do Instagram — ${outraConta}*`
+      : "🤖 *Piloto automático do Instagram*",
+    "",
+  ];
   if (e.fonte)
     linhas.push(
       `Preparei a semana a partir de ${NOME_FONTE[e.fonte.tipo]}: _${e.fonte.titulo}_`,
@@ -300,9 +311,11 @@ export function mensagemDoPiloto(
   }
 
   linhas.push(
-    agendadas.length
-      ? "Se estiver tudo certo, não precisa fazer nada. Para cancelar, responda aqui *cancelar carrossel*, *cancelar reel* ou *cancelar tudo*. Para ver as peças:"
-      : "Para ver o que ficou pronto:",
+    !agendadas.length
+      ? "Para ver o que ficou pronto:"
+      : outraConta
+        ? "Se estiver tudo certo, não precisa fazer nada. Para cancelar alguma peça desta conta, abra o piloto:"
+        : "Se estiver tudo certo, não precisa fazer nada. Para cancelar, responda aqui *cancelar carrossel*, *cancelar reel* ou *cancelar tudo*. Para ver as peças:",
     link,
   );
   return linhas.join("\n");
