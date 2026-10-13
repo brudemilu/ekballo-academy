@@ -24,6 +24,12 @@ export type ContaCadastrada = {
   usuario: string;
   /** O que assina as artes desta conta. */
   assinatura: string;
+  /** Logo que vai em toda arte; vazio = sem logo. */
+  logo_url: string;
+  /** A mesma logo, na versão para fundo escuro. */
+  logo_clara_url: string;
+  /** Texto embaixo da logo (ex.: "2ª Região"). */
+  logo_legenda: string;
   principal: boolean;
   /** Há token para publicar e ler os números? */
   conectada: boolean;

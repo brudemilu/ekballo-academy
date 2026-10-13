@@ -80,6 +80,7 @@ function CartaoDaConta({
 }) {
   const [nome, setNome] = useState(conta.nome);
   const [assinatura, setAssinatura] = useState(conta.assinatura);
+  const [legendaLogo, setLegendaLogo] = useState(conta.logo_legenda);
   const [token, setToken] = useState("");
   const [trocandoToken, setTrocandoToken] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -87,7 +88,35 @@ function CartaoDaConta({
   const [feito, setFeito] = useState("");
 
   const mudouDados =
-    nome.trim() !== conta.nome || assinatura.trim() !== conta.assinatura;
+    nome.trim() !== conta.nome ||
+    assinatura.trim() !== conta.assinatura ||
+    legendaLogo.trim() !== conta.logo_legenda;
+
+  // Envia o arquivo para o nosso Storage e grava o endereço na conta.
+  async function enviarLogo(arquivo: File) {
+    setOcupado(true);
+    setErro("");
+    setFeito("");
+    try {
+      const form = new FormData();
+      form.append("file", arquivo);
+      form.append("id", conta.id);
+      const res = await fetch("/api/admin/instagram/contas/logo", {
+        method: "POST",
+        body: form,
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || !d?.contas) {
+        throw new Error(d?.error || "Não consegui enviar a logo.");
+      }
+      aoMudar(d.contas as ContaCadastrada[]);
+      setFeito("Logo gravada. Ela entra em todas as artes desta conta.");
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Não consegui enviar a logo.");
+    } finally {
+      setOcupado(false);
+    }
+  }
 
   async function enviar(corpo: object, mensagem: string) {
     setOcupado(true);
@@ -151,6 +180,67 @@ function CartaoDaConta({
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap items-end gap-4">
+        <div>
+          <span className={ROTULO}>Logo nas artes</span>
+          <div className="flex items-center gap-3">
+            {conta.logo_url ? (
+              // biome-ignore lint/performance/noImgElement: miniatura da logo enviada, no Storage; next/image exigiria liberar o domínio
+              <img
+                src={conta.logo_url}
+                alt={`Logo de ${rotuloDaConta(conta)}`}
+                className="h-14 w-24 rounded-lg border border-mesa-200 bg-white object-contain p-1"
+              />
+            ) : (
+              <span className="flex h-14 w-24 items-center justify-center rounded-lg border border-dashed border-mesa-300 text-xs text-mesa-500">
+                sem logo
+              </span>
+            )}
+            <label className={`${BOTAO_SECUNDARIO} cursor-pointer`}>
+              {conta.logo_url ? "Trocar a logo" : "Enviar a logo"}
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                className="sr-only"
+                disabled={ocupado}
+                onChange={(e) => {
+                  const arquivo = e.target.files?.[0];
+                  e.target.value = "";
+                  if (arquivo) void enviarLogo(arquivo);
+                }}
+              />
+            </label>
+            {conta.logo_url && (
+              <button
+                type="button"
+                className={BOTAO_SECUNDARIO}
+                disabled={ocupado}
+                onClick={() => enviar({ removerLogo: true }, "Logo removida.")}
+              >
+                Tirar
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="min-w-[12rem] flex-1">
+          <label className={ROTULO} htmlFor={`legenda-logo-${conta.id}`}>
+            Texto embaixo da logo
+          </label>
+          <input
+            id={`legenda-logo-${conta.id}`}
+            className={CAMPO}
+            value={legendaLogo}
+            maxLength={24}
+            onChange={(e) => setLegendaLogo(e.target.value)}
+            placeholder="Ex.: 2ª Região"
+          />
+        </div>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-mesa-600">
+        A logo entra no canto de toda arte gerada para esta conta, direto sobre o fundo.
+        Envie em PNG com fundo transparente; a versão para fundo escuro é feita sozinha.
+      </p>
+
       {peloServidor && (
         <p className="mt-4 text-sm leading-relaxed text-mesa-600">
           Esta conta está conectada pela configuração antiga do servidor. Quando o token
@@ -182,7 +272,9 @@ function CartaoDaConta({
             type="button"
             className={BOTAO_PRIMARIO}
             disabled={ocupado || !nome.trim()}
-            onClick={() => enviar({ nome, assinatura }, "Salvo.")}
+            onClick={() =>
+              enviar({ nome, assinatura, logo_legenda: legendaLogo }, "Salvo.")
+            }
           >
             Salvar
           </button>

@@ -308,6 +308,8 @@ test.describe("Instagram do ministério (admin)", () => {
       .click();
     // "IMW 2ª Região" é a assinatura da conta de demonstração.
     await expect(page.locator('img[src*="marca=IMW"]').first()).toBeVisible();
+    // …e a logo dela, que entra no selo de toda arte.
+    await expect(page.locator('img[src*="logo=%2Fmarcas%2F"]').first()).toBeVisible();
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });

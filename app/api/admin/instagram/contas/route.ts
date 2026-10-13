@@ -21,7 +21,7 @@ export const runtime = "nodejs";
  * Cadastro das contas de Instagram do painel (issue #264). Admin-only.
  *
  *  POST  { nome, assinatura?, token? }                    cria a conta
- *  PATCH { id, nome?, assinatura?, token?, desconectar? } altera a conta
+ *  PATCH { id, nome?, assinatura?, logo_legenda?, removerLogo?, token?, desconectar? }
  *
  * O token nunca volta numa resposta: a tela só fica sabendo se a conta está
  * conectada e quando o token vence.
@@ -29,6 +29,7 @@ export const runtime = "nodejs";
 
 const NOME_MAX = 80;
 const ASSINATURA_MAX = 40;
+const LEGENDA_LOGO_MAX = 24;
 
 function recusa(error: string, status = 400) {
   return NextResponse.json({ error }, { status });
@@ -121,7 +122,13 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    const patch: { nome?: string; assinatura?: string } = {};
+    const patch: {
+      nome?: string;
+      assinatura?: string;
+      logo_url?: string;
+      logo_clara_url?: string;
+      logo_legenda?: string;
+    } = {};
     if (corpo.nome !== undefined) {
       const nome = texto(corpo.nome, NOME_MAX);
       if (!nome) return recusa("O nome não pode ficar vazio.");
@@ -129,6 +136,14 @@ export async function PATCH(req: NextRequest) {
     }
     if (corpo.assinatura !== undefined) {
       patch.assinatura = texto(corpo.assinatura, ASSINATURA_MAX);
+    }
+    // A logo entra pela rota de envio (contas/logo), que a prepara; aqui só sai.
+    if (corpo.removerLogo === true) {
+      patch.logo_url = "";
+      patch.logo_clara_url = "";
+    }
+    if (corpo.logo_legenda !== undefined) {
+      patch.logo_legenda = texto(corpo.logo_legenda, LEGENDA_LOGO_MAX);
     }
     await atualizarContaInstagram(id, patch);
 
