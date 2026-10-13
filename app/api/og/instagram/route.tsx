@@ -2,7 +2,11 @@ import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { obterFundo } from "@/lib/fundo-cache";
 import { renderSlideEditorial } from "@/lib/instagram-editorial-render";
-import { identidadeDoEndereco } from "@/lib/instagram-identidade";
+import {
+  identidadeDoEndereco,
+  seloDoEndereco,
+  storagePublico,
+} from "@/lib/instagram-identidade";
 import {
   ehModeloDeTexto,
   ehModeloEditorial,
@@ -30,6 +34,7 @@ import {
   TEMAS,
   type TemaKey,
 } from "@/lib/instagram-render";
+import { ARQUIVO_DA_FONTE_DO_SELO, comSelo, FONTE_DO_SELO } from "@/lib/instagram-selo";
 import { buscarFotoPexels } from "@/lib/pexels";
 
 // Rota OG do carrossel (template "papel" 4:5). Compõe texto navy/dourado sobre
@@ -81,6 +86,22 @@ export async function GET(req: NextRequest) {
   const ref = url.searchParams.get("ref")?.trim() || undefined;
   // A assinatura da conta (issue #264): sem os parâmetros, é a da conta principal.
   const { marca, arroba } = identidadeDoEndereco(url.searchParams);
+  // O selo com a logo da conta, por cima da arte pronta. Sem logo, não há selo.
+  const selo = seloDoEndereco(url.searchParams, {
+    storagePublico: storagePublico(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    origem: selfOrigin,
+  });
+  const fontesDoSelo = async () =>
+    selo?.legenda
+      ? [
+          {
+            name: FONTE_DO_SELO,
+            data: await loadFont(selfOrigin, ARQUIVO_DA_FONTE_DO_SELO),
+            weight: 800 as const,
+            style: "normal" as const,
+          },
+        ]
+      : [];
   const prompt = url.searchParams.get("prompt")?.trim() || "";
   const seed = parseInt(url.searchParams.get("seed") || "0", 10) || 0;
   const foto = url.searchParams.get("foto")?.trim() || "fallback";
@@ -110,18 +131,24 @@ export async function GET(req: NextRequest) {
       loadFont(selfOrigin, FONTE_TEXTO_FILE),
     ]);
     return new ImageResponse(
-      renderSlideModelo({
-        modelo,
-        texto: verso,
-        cor,
-        tom,
-        maiusculas: FONTES[fonteKey].upper,
-        top,
-        ref,
-        marca,
-        largura: TAMANHO_W,
+      comSelo(
+        renderSlideModelo({
+          modelo,
+          texto: verso,
+          cor,
+          tom,
+          maiusculas: FONTES[fonteKey].upper,
+          top,
+          ref,
+          marca,
+          largura: TAMANHO_W,
+          altura,
+        }),
+        selo,
+        TAMANHO_W,
         altura,
-      }),
+        modelo,
+      ),
       {
         width: TAMANHO_W,
         height: altura,
@@ -134,6 +161,7 @@ export async function GET(req: NextRequest) {
           },
           { name: "Script", data: script, weight: 400, style: "normal" },
           { name: "Texto", data: textoFonte, weight: 400, style: "normal" },
+          ...(await fontesDoSelo()),
         ],
         headers: cabecalhos,
       },
@@ -211,20 +239,26 @@ export async function GET(req: NextRequest) {
       loadFont(selfOrigin, "rubik-wet-paint.ttf"),
     ]);
     return new ImageResponse(
-      renderSlideEditorial({
-        modelo,
-        texto: verso,
-        cor,
-        bgSrc: modelo === "editorial" || !bgSrc ? undefined : bgSrc,
-        grungeSrc: `${selfOrigin}/texturas/${GRUNGE_FILE}`,
-        graoSrc: `${selfOrigin}/texturas/grao.png`,
-        top,
-        ref,
-        marca,
-        arroba,
-        largura: TAMANHO_W,
+      comSelo(
+        renderSlideEditorial({
+          modelo,
+          texto: verso,
+          cor,
+          bgSrc: modelo === "editorial" || !bgSrc ? undefined : bgSrc,
+          grungeSrc: `${selfOrigin}/texturas/${GRUNGE_FILE}`,
+          graoSrc: `${selfOrigin}/texturas/grao.png`,
+          top,
+          ref,
+          marca,
+          arroba,
+          largura: TAMANHO_W,
+          altura,
+        }),
+        selo,
+        TAMANHO_W,
         altura,
-      }),
+        modelo,
+      ),
       {
         width: TAMANHO_W,
         height: altura,
@@ -237,6 +271,7 @@ export async function GET(req: NextRequest) {
           { name: "Italica", data: italica, weight: 400, style: "italic" },
           { name: "Pincel", data: pincel, weight: 400, style: "normal" },
           { name: "Tinta", data: tinta, weight: 400, style: "normal" },
+          ...(await fontesDoSelo()),
         ],
         headers: cabecalhos,
       },
@@ -274,7 +309,7 @@ export async function GET(req: NextRequest) {
     altura,
   });
 
-  return new ImageResponse(jsx, {
+  return new ImageResponse(comSelo(jsx, selo, TAMANHO_W, altura), {
     width: TAMANHO_W,
     height: altura,
     fonts: [
@@ -285,6 +320,7 @@ export async function GET(req: NextRequest) {
         style: FONTES[fonteKey].style,
       },
       { name: "Script", data: scriptFont, weight: 400, style: "normal" },
+      ...(await fontesDoSelo()),
     ],
     headers: cabecalhos,
   });

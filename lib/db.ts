@@ -2310,7 +2310,9 @@ export async function listContasInstagram(): Promise<ContaCadastrada[]> {
   const [{ data, error }, tokens] = await Promise.all([
     agendaSR()
       .from("instagram_contas")
-      .select("id, nome, usuario, ig_user_id, assinatura, principal")
+      .select(
+        "id, nome, usuario, ig_user_id, assinatura, logo_url, logo_legenda, principal",
+      )
       .order("principal", { ascending: false })
       .order("criado_em", { ascending: true }),
     situacaoDosTokens(),
@@ -2321,6 +2323,8 @@ export async function listContasInstagram(): Promise<ContaCadastrada[]> {
     nome: c.nome as string,
     usuario: c.usuario as string,
     assinatura: c.assinatura as string,
+    logo_url: (c.logo_url as string) || "",
+    logo_legenda: (c.logo_legenda as string) || "",
     principal: Boolean(c.principal),
     conectada:
       (tokens.has(c.id as string) && Boolean(c.ig_user_id)) ||
@@ -2341,7 +2345,7 @@ export async function getIdentidadeInstagram(contaId?: string): Promise<Identida
   }
   const { data, error } = await agendaSR()
     .from("instagram_contas")
-    .select("assinatura, usuario")
+    .select("assinatura, usuario, logo_url, logo_legenda")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -2349,6 +2353,8 @@ export async function getIdentidadeInstagram(contaId?: string): Promise<Identida
     ? identidadeDaConta({
         assinatura: data.assinatura as string,
         usuario: data.usuario as string,
+        logo_url: data.logo_url as string,
+        logo_legenda: data.logo_legenda as string,
       })
     : {};
 }
@@ -2384,6 +2390,8 @@ export async function criarContaInstagram(input: {
       nome: input.nome,
       usuario: "",
       assinatura: input.assinatura,
+      logo_url: "",
+      logo_legenda: "",
       principal: false,
       conectada: false,
       expira_em: null,
@@ -2399,13 +2407,22 @@ export async function criarContaInstagram(input: {
   return { id: data.id as string };
 }
 
+type PatchDaConta = {
+  nome?: string;
+  assinatura?: string;
+  logo_url?: string;
+  logo_legenda?: string;
+};
+
 export async function atualizarContaInstagram(
   id: string,
-  patch: { nome?: string; assinatura?: string },
+  patch: PatchDaConta,
 ): Promise<void> {
-  const campos: { nome?: string; assinatura?: string } = {};
+  const campos: PatchDaConta = {};
   if (patch.nome !== undefined) campos.nome = patch.nome;
   if (patch.assinatura !== undefined) campos.assinatura = patch.assinatura;
+  if (patch.logo_url !== undefined) campos.logo_url = patch.logo_url;
+  if (patch.logo_legenda !== undefined) campos.logo_legenda = patch.logo_legenda;
   if (!Object.keys(campos).length) return;
   if (isMockMode()) {
     const c = listMockContas().find((x) => x.id === id);

@@ -12,6 +12,7 @@ import {
   removerToken,
   TokenRecusado,
 } from "@/lib/instagram-credenciais";
+import { logoPermitida, storagePublico } from "@/lib/instagram-identidade";
 import { isMockMode, listMockContas } from "@/lib/mock-data";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -21,7 +22,7 @@ export const runtime = "nodejs";
  * Cadastro das contas de Instagram do painel (issue #264). Admin-only.
  *
  *  POST  { nome, assinatura?, token? }                    cria a conta
- *  PATCH { id, nome?, assinatura?, token?, desconectar? } altera a conta
+ *  PATCH { id, nome?, assinatura?, logo_url?, logo_legenda?, token?, desconectar? }
  *
  * O token nunca volta numa resposta: a tela só fica sabendo se a conta está
  * conectada e quando o token vence.
@@ -29,6 +30,7 @@ export const runtime = "nodejs";
 
 const NOME_MAX = 80;
 const ASSINATURA_MAX = 40;
+const LEGENDA_LOGO_MAX = 24;
 
 function recusa(error: string, status = 400) {
   return NextResponse.json({ error }, { status });
@@ -121,7 +123,12 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    const patch: { nome?: string; assinatura?: string } = {};
+    const patch: {
+      nome?: string;
+      assinatura?: string;
+      logo_url?: string;
+      logo_legenda?: string;
+    } = {};
     if (corpo.nome !== undefined) {
       const nome = texto(corpo.nome, NOME_MAX);
       if (!nome) return recusa("O nome não pode ficar vazio.");
@@ -129,6 +136,19 @@ export async function PATCH(req: NextRequest) {
     }
     if (corpo.assinatura !== undefined) {
       patch.assinatura = texto(corpo.assinatura, ASSINATURA_MAX);
+    }
+    if (corpo.logo_url !== undefined) {
+      const pedida = texto(corpo.logo_url, 400);
+      const aceita = logoPermitida(
+        pedida,
+        storagePublico(process.env.NEXT_PUBLIC_SUPABASE_URL),
+      );
+      // Vazio tira a logo; qualquer outra coisa precisa ser um envio nosso.
+      if (pedida && !aceita) return recusa("Envie a logo por aqui (PNG ou JPG).");
+      patch.logo_url = aceita;
+    }
+    if (corpo.logo_legenda !== undefined) {
+      patch.logo_legenda = texto(corpo.logo_legenda, LEGENDA_LOGO_MAX);
     }
     await atualizarContaInstagram(id, patch);
 
