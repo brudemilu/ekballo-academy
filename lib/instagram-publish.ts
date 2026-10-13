@@ -241,7 +241,3 @@ export async function publicarStory(params: {
   const id = await publicar(p, creationId);
   return { id };
 }
-
-export function instagramConfigurado(): boolean {
-  return Boolean(process.env.IG_USER_ID && process.env.META_ACCESS_TOKEN);
-}

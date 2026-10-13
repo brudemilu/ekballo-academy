@@ -12,6 +12,7 @@ import {
   EGO_REFLEXOES,
 } from "@/lib/ego-transformado-atividades";
 import { EGO_K1, EGO_K2, EGO_K3, EGO_K4 } from "@/lib/ego-transformado-content";
+import { CONTA_PRINCIPAL_ID, type ContaCadastrada } from "@/lib/instagram-contas";
 import { type ExecucaoPiloto, PILOTO_PADRAO, type PilotoConfig } from "@/lib/piloto";
 import type { RoteiroSalvo } from "@/lib/roteiro";
 import type { Alternativa, Atividade, Aula, Curso, Profile } from "@/lib/types";
@@ -538,6 +539,35 @@ export function aulaCompleta(alunoId: string, aulaId: string): boolean {
     }
   }
   return true;
+}
+
+// ---- Contas de Instagram (issue #264, mock mutável) ----
+// Duas contas para o seletor aparecer: a principal e uma segunda ainda sem token.
+const MOCK_CONTAS: ContaCadastrada[] = [
+  {
+    id: CONTA_PRINCIPAL_ID,
+    nome: "Bruno Fernandes",
+    usuario: "brunofesantos",
+    assinatura: "Ekballo Academy",
+    principal: true,
+    conectada: false,
+    expira_em: null,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000002",
+    nome: "2ª Região",
+    usuario: "",
+    assinatura: "IMW 2ª Região",
+    principal: false,
+    conectada: false,
+    expira_em: null,
+  },
+];
+export function listMockContas(): ContaCadastrada[] {
+  return MOCK_CONTAS;
+}
+export function addMockConta(c: ContaCadastrada) {
+  MOCK_CONTAS.push(c);
 }
 
 // ---------------------------------------------------------------------------

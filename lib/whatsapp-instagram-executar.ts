@@ -27,6 +27,7 @@ import {
 } from "@/lib/db";
 import { gerarCarrosselIA } from "@/lib/instagram";
 import { comArroba } from "@/lib/instagram-colaboradores";
+import { instagramConectado } from "@/lib/instagram-credenciais";
 import { ehStory, ogUrlDoSlide, type SlidePub } from "@/lib/instagram-imagens";
 import {
   instrucaoDoModelo,
@@ -34,7 +35,6 @@ import {
   sortearDiferente,
   TEMAS_AUTOMATICOS,
 } from "@/lib/instagram-modelos";
-import { instagramConfigurado } from "@/lib/instagram-publish";
 import { lerJSONdaIA } from "@/lib/json-ia";
 import { chamarLLMLendo } from "@/lib/llm";
 import { podeVetar, quandoPorExtenso } from "@/lib/piloto";
@@ -277,7 +277,7 @@ async function publicar(numero: string, quando: string, agora: Date): Promise<vo
     );
     return;
   }
-  if (!instagramConfigurado()) {
+  if (!(await instagramConectado())) {
     await dizer(
       numero,
       "O Instagram não está conectado no servidor, então não consigo publicar. O rascunho continua guardado no site.",

@@ -230,6 +230,66 @@ test.describe("Instagram do ministério (admin)", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 
+  test("trocar de conta troca os dados, e a outra conta começa vazia", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=calendario");
+
+    // Abre na conta principal, com as ideias dela.
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "@brunofesantos",
+    );
+    await expect(page.getByText(/convite para a próxima turma/i)).toBeVisible();
+
+    // Na segunda conta, nada da primeira aparece — e a tela avisa que falta o token.
+    await page.getByRole("button", { name: /2ª Região/ }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("2ª Região");
+    await expect(page.getByText(/convite para a próxima turma/i)).toHaveCount(0);
+    await expect(
+      page.getByText(/ainda não está conectada ao Instagram/i),
+    ).toBeVisible();
+
+    // O que nasce nela fica nela.
+    await page.getByRole("button", { name: "+ Ideia" }).last().click();
+    const titulo = `Ideia da região ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    await page.getByLabel("Título").fill(titulo);
+    await page.getByRole("button", { name: "Salvar" }).click();
+    await expect(page.getByText(titulo)).toBeVisible();
+
+    await page.getByRole("button", { name: /@brunofesantos/ }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "@brunofesantos",
+    );
+    await expect(page.getByText(/convite para a próxima turma/i)).toBeVisible();
+    await expect(page.getByText(titulo)).toHaveCount(0);
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
+  test("a aba Contas recusa a chave do aplicativo colada no lugar do token", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=contas");
+
+    await expect(
+      page.getByRole("heading", { name: /adicionar uma conta/i }),
+    ).toBeVisible();
+    const nome = `Conta de fumaça ${Date.now()}`;
+    await page.getByLabel("Nome no painel").last().fill(nome);
+    await page
+      .getByLabel(/token do instagram \(opcional agora\)/i)
+      .fill("47a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5");
+    await page.getByRole("button", { name: "Adicionar conta" }).click();
+
+    await expect(page.getByText(/parece a chave secreta do aplicativo/i)).toBeVisible();
+    // Token recusado não deixa conta pela metade.
+    await expect(page.getByRole("heading", { name: nome })).toHaveCount(0);
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
   test("a aba Perfil abre e guarda um criador de referência", async ({ page }) => {
     const erros = vigiarErros(page);
     await page.goto("/admin/instagram?aba=perfil");

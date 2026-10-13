@@ -3,14 +3,15 @@
  * recentes do perfil, escolhe o que ainda não foi (lib/status-whatsapp.ts),
  * registra e publica no Status. Chamado pelo cron de 5 em 5 minutos.
  */
+import { CONTA_PRINCIPAL_ID } from "@/lib/instagram-contas";
+import { credenciaisInstagram } from "@/lib/instagram-credenciais";
 import { escolherParaStatus, type MidiaIG } from "@/lib/status-whatsapp";
 import { createServiceClient } from "@/lib/supabase/service";
 import { enviarStatusWhatsApp } from "@/lib/whatsapp-enviar";
 
 const GRAPH = process.env.META_GRAPH_BASE || "https://graph.instagram.com/v21.0";
 
-async function lerIG(caminho: string): Promise<MidiaIG[]> {
-  const token = process.env.META_ACCESS_TOKEN || "";
+async function lerIG(caminho: string, token: string): Promise<MidiaIG[]> {
   const res = await fetch(
     `${GRAPH}/${caminho}${caminho.includes("?") ? "&" : "?"}access_token=${encodeURIComponent(token)}`,
     { signal: AbortSignal.timeout(20_000) },
@@ -39,11 +40,14 @@ export async function repetirNoStatus(): Promise<ResultadoStatus> {
     avisos: [],
   };
   if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") return resultado;
-  const igUserId = process.env.IG_USER_ID;
-  if (!igUserId || !process.env.META_ACCESS_TOKEN) {
+  // O Status é o do WhatsApp do pastor: repete só o que sai na conta principal,
+  // nunca o que as outras contas do painel publicam (issue #264).
+  const cred = await credenciaisInstagram(CONTA_PRINCIPAL_ID);
+  if (!cred) {
     resultado.avisos.push("Instagram não configurado");
     return resultado;
   }
+  const { igUserId, token } = cred;
   const sb = createServiceClient();
   const { data: config } = await sb
     .from("whatsapp_status_config")
@@ -57,11 +61,11 @@ export async function repetirNoStatus(): Promise<ResultadoStatus> {
   const campos =
     "id,media_type,media_product_type,permalink,thumbnail_url,media_url,caption,timestamp";
   const [midias, stories] = await Promise.all([
-    lerIG(`${igUserId}/media?fields=${campos}&limit=12`).catch((e) => {
+    lerIG(`${igUserId}/media?fields=${campos}&limit=12`, token).catch((e) => {
       resultado.avisos.push(`feed: ${e instanceof Error ? e.message : e}`);
       return [] as MidiaIG[];
     }),
-    lerIG(`${igUserId}/stories?fields=${campos}`).catch((e) => {
+    lerIG(`${igUserId}/stories?fields=${campos}`, token).catch((e) => {
       resultado.avisos.push(`stories: ${e instanceof Error ? e.message : e}`);
       return [] as MidiaIG[];
     }),
