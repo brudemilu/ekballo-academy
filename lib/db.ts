@@ -2311,7 +2311,7 @@ export async function listContasInstagram(): Promise<ContaCadastrada[]> {
     agendaSR()
       .from("instagram_contas")
       .select(
-        "id, nome, usuario, ig_user_id, assinatura, logo_url, logo_legenda, principal",
+        "id, nome, usuario, ig_user_id, assinatura, logo_url, logo_clara_url, logo_legenda, principal",
       )
       .order("principal", { ascending: false })
       .order("criado_em", { ascending: true }),
@@ -2324,6 +2324,7 @@ export async function listContasInstagram(): Promise<ContaCadastrada[]> {
     usuario: c.usuario as string,
     assinatura: c.assinatura as string,
     logo_url: (c.logo_url as string) || "",
+    logo_clara_url: (c.logo_clara_url as string) || "",
     logo_legenda: (c.logo_legenda as string) || "",
     principal: Boolean(c.principal),
     conectada:
@@ -2345,7 +2346,7 @@ export async function getIdentidadeInstagram(contaId?: string): Promise<Identida
   }
   const { data, error } = await agendaSR()
     .from("instagram_contas")
-    .select("assinatura, usuario, logo_url, logo_legenda")
+    .select("assinatura, usuario, logo_url, logo_clara_url, logo_legenda")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -2354,6 +2355,7 @@ export async function getIdentidadeInstagram(contaId?: string): Promise<Identida
         assinatura: data.assinatura as string,
         usuario: data.usuario as string,
         logo_url: data.logo_url as string,
+        logo_clara_url: data.logo_clara_url as string,
         logo_legenda: data.logo_legenda as string,
       })
     : {};
@@ -2391,6 +2393,7 @@ export async function criarContaInstagram(input: {
       usuario: "",
       assinatura: input.assinatura,
       logo_url: "",
+      logo_clara_url: "",
       logo_legenda: "",
       principal: false,
       conectada: false,
@@ -2411,6 +2414,7 @@ type PatchDaConta = {
   nome?: string;
   assinatura?: string;
   logo_url?: string;
+  logo_clara_url?: string;
   logo_legenda?: string;
 };
 
@@ -2422,6 +2426,7 @@ export async function atualizarContaInstagram(
   if (patch.nome !== undefined) campos.nome = patch.nome;
   if (patch.assinatura !== undefined) campos.assinatura = patch.assinatura;
   if (patch.logo_url !== undefined) campos.logo_url = patch.logo_url;
+  if (patch.logo_clara_url !== undefined) campos.logo_clara_url = patch.logo_clara_url;
   if (patch.logo_legenda !== undefined) campos.logo_legenda = patch.logo_legenda;
   if (!Object.keys(campos).length) return;
   if (isMockMode()) {

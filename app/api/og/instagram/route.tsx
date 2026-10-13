@@ -148,6 +148,7 @@ export async function GET(req: NextRequest) {
         TAMANHO_W,
         altura,
         modelo,
+        tom,
       ),
       {
         width: TAMANHO_W,
@@ -258,6 +259,7 @@ export async function GET(req: NextRequest) {
         TAMANHO_W,
         altura,
         modelo,
+        tom,
       ),
       {
         width: TAMANHO_W,
@@ -309,7 +311,7 @@ export async function GET(req: NextRequest) {
     altura,
   });
 
-  return new ImageResponse(comSelo(jsx, selo, TAMANHO_W, altura), {
+  return new ImageResponse(comSelo(jsx, selo, TAMANHO_W, altura, modelo, tom), {
     width: TAMANHO_W,
     height: altura,
     fonts: [

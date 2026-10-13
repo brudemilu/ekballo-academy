@@ -16,8 +16,10 @@ export type Identidade = {
   marca?: string;
   /** O @ do perfil, com arroba. */
   arroba?: string;
-  /** Endereço da logo que vai no selo de toda arte. */
+  /** Endereço da logo que vai em toda arte. */
   logo?: string;
+  /** A versão da logo para fundo escuro. */
+  logoClara?: string;
   /** Texto escrito embaixo da logo (ex.: "2ª Região"). */
   legendaLogo?: string;
 };
@@ -58,17 +60,25 @@ export function identidadeDaConta(c: {
   assinatura: string;
   usuario: string;
   logo_url?: string | null;
+  logo_clara_url?: string | null;
   logo_legenda?: string | null;
 }): Identidade {
   const marca = limpo(c.assinatura);
   const usuario = limpo(c.usuario).replace(/^@+/, "");
   const logo = (c.logo_url ?? "").trim();
+  const logoClara = (c.logo_clara_url ?? "").trim();
   const legendaLogo = (c.logo_legenda ?? "").trim().slice(0, LEGENDA_LOGO_MAX);
   return {
     ...(marca ? { marca } : {}),
     ...(usuario ? { arroba: `@${usuario}` } : {}),
     // A legenda só existe embaixo de uma logo.
-    ...(logo ? { logo, ...(legendaLogo ? { legendaLogo } : {}) } : {}),
+    ...(logo
+      ? {
+          logo,
+          ...(logoClara ? { logoClara } : {}),
+          ...(legendaLogo ? { legendaLogo } : {}),
+        }
+      : {}),
   };
 }
 
@@ -85,6 +95,8 @@ export function identidadeNoEndereco(p: URLSearchParams, i?: Identidade | null):
   const logo = (i?.logo ?? "").trim();
   if (logo) {
     p.set("logo", logo);
+    const clara = (i?.logoClara ?? "").trim();
+    if (clara) p.set("logoc", clara);
     const legenda = (i?.legendaLogo ?? "").trim().slice(0, LEGENDA_LOGO_MAX);
     if (legenda) p.set("logot", legenda);
   }
@@ -97,11 +109,14 @@ export function identidadeNoEndereco(p: URLSearchParams, i?: Identidade | null):
 export function seloDoEndereco(
   p: URLSearchParams,
   onde: { storagePublico: string; origem: string },
-): { logoSrc: string; legenda: string } | null {
+): { logoSrc: string; logoClaraSrc: string; legenda: string } | null {
   const logo = logoPermitida(p.get("logo"), onde.storagePublico);
   if (!logo) return null;
+  const clara = logoPermitida(p.get("logoc"), onde.storagePublico);
+  const absoluto = (v: string) => (v.startsWith("/") ? `${onde.origem}${v}` : v);
   return {
-    logoSrc: logo.startsWith("/") ? `${onde.origem}${logo}` : logo,
+    logoSrc: absoluto(logo),
+    logoClaraSrc: clara ? absoluto(clara) : "",
     legenda: (p.get("logot") ?? "").trim().slice(0, LEGENDA_LOGO_MAX),
   };
 }

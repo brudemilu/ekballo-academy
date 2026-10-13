@@ -100,15 +100,16 @@ function CartaoDaConta({
     try {
       const form = new FormData();
       form.append("file", arquivo);
-      const res = await fetch("/api/admin/instagram/upload", {
+      form.append("id", conta.id);
+      const res = await fetch("/api/admin/instagram/contas/logo", {
         method: "POST",
         body: form,
       });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok || !d?.url)
+      if (!res.ok || !d?.contas) {
         throw new Error(d?.error || "Não consegui enviar a logo.");
-      const { contas } = await chamar("PATCH", { id: conta.id, logo_url: d.url });
-      aoMudar(contas);
+      }
+      aoMudar(d.contas as ContaCadastrada[]);
       setFeito("Logo gravada. Ela entra em todas as artes desta conta.");
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não consegui enviar a logo.");
@@ -214,7 +215,7 @@ function CartaoDaConta({
                 type="button"
                 className={BOTAO_SECUNDARIO}
                 disabled={ocupado}
-                onClick={() => enviar({ logo_url: "" }, "Logo removida.")}
+                onClick={() => enviar({ removerLogo: true }, "Logo removida.")}
               >
                 Tirar
               </button>
@@ -236,8 +237,8 @@ function CartaoDaConta({
         </div>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-mesa-600">
-        A logo entra num selo branco no canto de toda arte gerada para esta conta. PNG
-        com fundo transparente fica melhor.
+        A logo entra no canto de toda arte gerada para esta conta, direto sobre o fundo.
+        Envie em PNG com fundo transparente; a versão para fundo escuro é feita sozinha.
       </p>
 
       {peloServidor && (

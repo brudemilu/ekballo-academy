@@ -1,16 +1,19 @@
 /**
- * O selo da conta: a logo, com um texto embaixo, sobre uma plaquinha branca
- * no canto de toda arte (issue #264). A plaquinha existe porque a logo é
- * desenhada para fundo claro e as artes são quase todas escuras ou com foto.
+ * O selo da conta: a logo, com um texto embaixo, no canto de toda arte
+ * (issue #264). Vai direto sobre o fundo da arte, sem moldura — pedido do
+ * Bruno. Por isso a logo tem duas versões (lib/logo-variantes.ts): a original
+ * nas artes de fundo claro e a "clara" nas escuras e nas de foto.
  *
- * Fica por cima da arte pronta, em vez de dentro de cada modelo: são mais de
- * quinze modelos, e assim nenhum deles precisa saber que o selo existe.
+ * Fica por cima da arte pronta, em vez de dentro de cada modelo: são dezenove
+ * modelos, e assim nenhum deles precisa saber que o selo existe.
  */
 import type { ReactElement } from "react";
 
 export type Selo = {
-  /** Endereço da logo, já conferido pela rota. */
+  /** A logo original (para fundo claro), já conferida pela rota. */
   logoSrc: string;
+  /** A versão para fundo escuro; sem ela, usa-se a original. */
+  logoClaraSrc: string;
   /** Texto embaixo da logo; vazio = só a logo. */
   legenda: string;
 };
@@ -20,6 +23,7 @@ export const FONTE_DO_SELO = "Selo";
 export const ARQUIVO_DA_FONTE_DO_SELO = "inter-800.ttf";
 
 const TINTA = "#161D4E";
+const CLARO = "#FFFFFF";
 
 type Canto = "topo-direita" | "base-direita" | "base-esquerda";
 
@@ -33,23 +37,36 @@ const CANTO_POR_MODELO: Record<string, Canto> = {
   chamada: "base-esquerda",
 };
 
+// Modelos cujo fundo é sempre claro (papel, off-white): neles vai a logo
+// original. Os de texto puro seguem o tom escolhido; o resto é escuro ou foto.
+const SEMPRE_CLAROS = new Set(["editorial", "gravura", "caderno"]);
+const SEGUEM_O_TOM = new Set(["citacao", "checklist", "manchete"]);
+
+/** O canto onde o selo fica tem fundo claro? Decide qual versão da logo usar. */
+export function fundoClaro(modelo: string, tom: "escuro" | "claro"): boolean {
+  if (SEMPRE_CLAROS.has(modelo)) return true;
+  return SEGUEM_O_TOM.has(modelo) && tom === "claro";
+}
+
 export function comSelo(
   arte: ReactElement,
   selo: Selo | null,
   largura: number,
   altura: number,
-  /** O modelo da arte, para escolher o canto que ele deixa livre. */
+  /** O modelo e o tom da arte: escolhem o canto livre e a versão da logo. */
   modelo = "",
+  tom: "escuro" | "claro" = "escuro",
 ): ReactElement {
   if (!selo) return arte;
   // Tudo proporcional à largura: a arte de 1080 é a medida de referência.
   const u = largura / 1080;
   const story = altura / largura > 1.5;
   const canto = CANTO_POR_MODELO[modelo] ?? "topo-direita";
-  const margem = Math.round(44 * u);
+  const claro = fundoClaro(modelo, tom);
+  const margem = Math.round(48 * u);
   // No story, o alto e o pé ficam sob a interface do Instagram.
   const recuo = Math.round((story ? 230 : 44) * u);
-  const larguraDoSelo = Math.round(196 * u);
+  const larguraDoSelo = Math.round(176 * u);
   const posicao = {
     ...(canto === "topo-direita" ? { top: recuo } : { bottom: recuo }),
     left: canto === "base-esquerda" ? margem : largura - margem - larguraDoSelo,
@@ -67,29 +84,25 @@ export function comSelo(
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          padding: `${Math.round(14 * u)}px ${Math.round(12 * u)}px`,
-          borderRadius: Math.round(18 * u),
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0 6px 22px rgba(0,0,0,0.28)",
         }}
       >
         {/* biome-ignore lint/performance/noImgElement: desenhado pelo Satori, fora do navegador */}
         <img
-          src={selo.logoSrc}
+          src={claro ? selo.logoSrc : selo.logoClaraSrc || selo.logoSrc}
           alt=""
-          width={Math.round(164 * u)}
-          height={Math.round(92 * u)}
+          width={larguraDoSelo}
+          height={Math.round(100 * u)}
           style={{ objectFit: "contain" }}
         />
         {selo.legenda ? (
           <div
             style={{
               display: "flex",
-              marginTop: Math.round(8 * u),
+              marginTop: Math.round(6 * u),
               fontFamily: FONTE_DO_SELO,
-              fontSize: Math.round(21 * u),
-              letterSpacing: Math.round(2 * u),
-              color: TINTA,
+              fontSize: Math.round(22 * u),
+              letterSpacing: Math.round(3 * u),
+              color: claro ? TINTA : CLARO,
             }}
           >
             {selo.legenda.toUpperCase()}

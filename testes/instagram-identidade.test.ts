@@ -15,6 +15,7 @@ import {
   seloDoEndereco,
 } from "@/lib/instagram-identidade";
 import { ogUrlDoSlide } from "@/lib/instagram-imagens";
+import { fundoClaro } from "@/lib/instagram-selo";
 import { systemPacote } from "@/lib/pacote";
 import { systemRoteiro } from "@/lib/roteiro";
 
@@ -115,6 +116,7 @@ describe("a logo da conta", () => {
       assinatura: "IMW 2ª Região",
       usuario: "iwe2regiao",
       logo_url: "/marcas/iwe-2-regiao.png",
+      logo_clara_url: "/marcas/iwe-2-regiao-clara.png",
       logo_legenda: "2ª Região",
     });
     const url = new URL(ogUrlDoSlide("https://x", slide, identidade));
@@ -125,6 +127,7 @@ describe("a logo da conta", () => {
       }),
     ).toEqual({
       logoSrc: "http://127.0.0.1:3000/marcas/iwe-2-regiao.png",
+      logoClaraSrc: "http://127.0.0.1:3000/marcas/iwe-2-regiao-clara.png",
       legenda: "2ª Região",
     });
   });
@@ -152,6 +155,23 @@ describe("a logo da conta", () => {
     expect(
       seloDoEndereco(p, { storagePublico: storage, origem: "http://x" }),
     ).toBeNull();
+  });
+});
+
+describe("qual versão da logo vai em cada arte", () => {
+  it("fundo de papel leva a logo original; foto e fundo escuro, a clara", () => {
+    for (const m of ["editorial", "gravura", "caderno"]) {
+      expect(fundoClaro(m, "escuro")).toBe(true);
+    }
+    for (const m of ["cinema", "impacto", "foto", "cartao", "muro", ""]) {
+      expect(fundoClaro(m, "claro")).toBe(false);
+    }
+  });
+
+  it("os modelos só de texto seguem o tom escolhido", () => {
+    expect(fundoClaro("checklist", "claro")).toBe(true);
+    expect(fundoClaro("checklist", "escuro")).toBe(false);
+    expect(fundoClaro("citacao", "claro")).toBe(true);
   });
 });
 
