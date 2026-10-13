@@ -267,9 +267,7 @@ test.describe("Instagram do ministério (admin)", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 
-  test("na segunda conta, a prévia da arte leva a assinatura dela", async ({
-    page,
-  }) => {
+  test("na segunda conta, a prévia da arte leva a logo dela", async ({ page }) => {
     const erros = vigiarErros(page);
     await page.goto("/admin/instagram?aba=criar");
     await page.getByRole("button", { name: /2ª Região/ }).click();
@@ -306,9 +304,8 @@ test.describe("Instagram do ministério (admin)", () => {
       .getByRole("button", { name: /ver \/ editar/i })
       .first()
       .click();
-    // "IMW 2ª Região" é a assinatura da conta de demonstração.
-    await expect(page.locator('img[src*="marca=IMW"]').first()).toBeVisible();
-    // …e a logo dela, que entra no selo de toda arte.
+    // A conta de demonstração tem logo: a arte leva a logo no lugar da assinatura escrita.
+    await expect(page.locator('img[src*="semmarca=1"]').first()).toBeVisible();
     await expect(page.locator('img[src*="logo=%2Fmarcas%2F"]').first()).toBeVisible();
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);

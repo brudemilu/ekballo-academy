@@ -11,6 +11,7 @@ import {
   identidadeNoEndereco,
   logoPermitida,
   MARCA_PADRAO,
+  marcaDaArte,
   ministerioParaIA,
   seloDoEndereco,
 } from "@/lib/instagram-identidade";
@@ -155,6 +156,30 @@ describe("a logo da conta", () => {
     expect(
       seloDoEndereco(p, { storagePublico: storage, origem: "http://x" }),
     ).toBeNull();
+  });
+});
+
+describe("conta com logo dispensa a assinatura escrita", () => {
+  it("o endereço da arte pede a logo e avisa que não quer a assinatura", () => {
+    const url = new URL(
+      ogUrlDoSlide("https://x", slide, {
+        marca: "IMW 2ª Região",
+        logo: "/marcas/iwe-2-regiao.png",
+      }),
+    );
+    expect(url.searchParams.has("marca")).toBe(false);
+    expect(identidadeDoEndereco(url.searchParams).marca).toBe("");
+  });
+
+  it("assinatura vazia é escolha, não esquecimento: a arte não cai no padrão", () => {
+    expect(marcaDaArte("")).toBe("");
+    expect(marcaDaArte(undefined)).toBe(MARCA_PADRAO);
+    expect(marcaDaArte("IMW 2ª Região")).toBe("IMW 2ª Região");
+  });
+
+  it("conta sem logo continua assinando por escrito", () => {
+    const url = new URL(ogUrlDoSlide("https://x", slide, { marca: "IMW 2ª Região" }));
+    expect(identidadeDoEndereco(url.searchParams).marca).toBe("IMW 2ª Região");
   });
 });
 

@@ -11,6 +11,15 @@ export const ARROBA_PADRAO = "@brunofesantos";
 
 const TAMANHO_MAX = 40;
 
+/**
+ * A assinatura que a arte escreve. `undefined` = ninguém disse nada, vale a
+ * da conta principal; texto vazio = a conta NÃO quer assinatura escrita
+ * (a logo já diz de quem é a arte).
+ */
+export function marcaDaArte(marca: string | undefined): string {
+  return marca === undefined ? MARCA_PADRAO : marca;
+}
+
 export type Identidade = {
   /** O que assina as artes. */
   marca?: string;
@@ -94,6 +103,9 @@ export function identidadeNoEndereco(p: URLSearchParams, i?: Identidade | null):
   if (arroba && arroba !== ARROBA_PADRAO) p.set("arroba", arroba);
   const logo = (i?.logo ?? "").trim();
   if (logo) {
+    // Com a logo na arte, a assinatura escrita sobra (pedido do Bruno).
+    p.delete("marca");
+    p.set("semmarca", "1");
     p.set("logo", logo);
     const clara = (i?.logoClara ?? "").trim();
     if (clara) p.set("logoc", clara);
@@ -126,7 +138,7 @@ export function identidadeDoEndereco(
   p: URLSearchParams,
 ): Required<Pick<Identidade, "marca" | "arroba">> {
   return {
-    marca: limpo(p.get("marca")) || MARCA_PADRAO,
+    marca: p.get("semmarca") === "1" ? "" : limpo(p.get("marca")) || MARCA_PADRAO,
     arroba: limpo(p.get("arroba")) || ARROBA_PADRAO,
   };
 }

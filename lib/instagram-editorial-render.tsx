@@ -17,7 +17,7 @@
  * Lembretes do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — top/left/width/height por extenso.
  */
-import { ARROBA_PADRAO, MARCA_PADRAO } from "@/lib/instagram-identidade";
+import { ARROBA_PADRAO, marcaDaArte } from "@/lib/instagram-identidade";
 import {
   alvoParaLinhas,
   type FonteMedida,
@@ -225,7 +225,7 @@ function Cinema({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.top || p.marca || MARCA_PADRAO}
+          texto={p.top || marcaDaArte(p.marca)}
           cor={CREME}
           tamanho={30}
           espaco={16}
@@ -459,7 +459,7 @@ function Cartaz({ p }: { p: EditorialPayload }) {
       >
         <div style={{ display: "flex", maxWidth: Math.round(util * 0.68) }}>
           <Rotulo
-            texto={textoDaLinha(apoio) || p.top || p.marca || MARCA_PADRAO}
+            texto={textoDaLinha(apoio) || p.top || marcaDaArte(p.marca)}
             cor={CREME}
             tamanho={30}
             espaco={10}
@@ -555,7 +555,7 @@ function Editorial({ p }: { p: EditorialPayload }) {
             {/* Sem rótulo próprio, a assinatura ocupa o lugar — nunca um tema
                 fixo ("mesa de discipulado") num post que fala de outra coisa. */}
             <Rotulo
-              texto={p.top || p.marca || MARCA_PADRAO}
+              texto={p.top || marcaDaArte(p.marca)}
               cor={TINTA}
               tamanho={32}
               espaco={9}
@@ -566,14 +566,15 @@ function Editorial({ p }: { p: EditorialPayload }) {
                 width: 96,
                 height: 5,
                 marginTop: 22,
-                backgroundColor: p.cor,
+                // Sem assinatura (conta com logo), o traço sob ela some junto.
+                backgroundColor: p.top || marcaDaArte(p.marca) ? p.cor : "transparent",
               }}
             />
           </div>
           <div style={{ display: "flex", width: 150 }}>
             {p.top ? (
               <Rotulo
-                texto={p.marca || MARCA_PADRAO}
+                texto={marcaDaArte(p.marca)}
                 cor={TINTA}
                 tamanho={17}
                 espaco={5}
@@ -899,7 +900,8 @@ function Recorte({ p }: { p: EditorialPayload }) {
       {/* a assinatura (ou a referência) numa tira pequena, embaixo */}
       <div
         style={{
-          display: "flex",
+          // Sem nada para escrever (conta com logo), a tira não aparece vazia.
+          display: p.ref || p.top || marcaDaArte(p.marca) ? "flex" : "none",
           position: "absolute",
           left: margem,
           bottom: Math.round(p.altura * 0.06),
@@ -910,7 +912,7 @@ function Recorte({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
+          texto={p.ref || p.top || marcaDaArte(p.marca)}
           cor={TINTA}
           tamanho={22}
           espaco={5}
@@ -1033,7 +1035,7 @@ function Sereno({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
+          texto={p.ref || p.top || marcaDaArte(p.marca)}
           cor="rgba(244,227,207,0.78)"
           tamanho={22}
           espaco={7}
@@ -1121,7 +1123,7 @@ function Contraste({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.top || p.marca || MARCA_PADRAO}
+          texto={p.top || marcaDaArte(p.marca)}
           cor={branco}
           tamanho={24}
           espaco={2}
@@ -1305,7 +1307,7 @@ function Carimbo({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
+          texto={p.ref || p.top || marcaDaArte(p.marca)}
           cor={creme}
           tamanho={24}
           espaco={3}
@@ -1398,7 +1400,7 @@ function Gravura({ p }: { p: EditorialPayload }) {
           {String(new Date().getFullYear())}
         </div>
         <Rotulo
-          texto={p.top || p.marca || MARCA_PADRAO}
+          texto={p.top || marcaDaArte(p.marca)}
           cor={TINTA}
           tamanho={15}
           espaco={6}
@@ -1457,7 +1459,7 @@ function Gravura({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.marca || MARCA_PADRAO}
+          texto={p.ref || marcaDaArte(p.marca)}
           cor={TINTA}
           tamanho={15}
           espaco={5}
@@ -1596,7 +1598,7 @@ function Quadrinho({ p }: { p: EditorialPayload }) {
         }}
       >
         <Rotulo
-          texto={p.ref || p.top || p.marca || MARCA_PADRAO}
+          texto={p.ref || p.top || marcaDaArte(p.marca)}
           cor="#FFFFFF"
           tamanho={20}
           espaco={4}
@@ -1754,7 +1756,8 @@ function Caderno({ p }: { p: EditorialPayload }) {
         })}
         <div
           style={{
-            display: "flex",
+            // Sem nada para escrever (conta com logo), o carimbo não aparece vazio.
+            display: p.ref || p.top || marcaDaArte(p.marca) ? "flex" : "none",
             marginTop: 54,
             padding: "12px 44px 16px",
             border: `5px solid ${p.cor}`,
@@ -1765,7 +1768,7 @@ function Caderno({ p }: { p: EditorialPayload }) {
             transform: "rotate(-1.5deg)",
           }}
         >
-          {p.ref || p.top || p.marca || MARCA_PADRAO}
+          {p.ref || p.top || marcaDaArte(p.marca)}
         </div>
       </div>
     </div>
@@ -1941,7 +1944,7 @@ function Chamada({ p }: { p: EditorialPayload }) {
       >
         <div style={{ display: "flex", marginBottom: 34 }}>
           <Rotulo
-            texto={p.ref || p.top || p.marca || MARCA_PADRAO}
+            texto={p.ref || p.top || marcaDaArte(p.marca)}
             cor="rgba(243,233,207,0.85)"
             tamanho={20}
             espaco={5}

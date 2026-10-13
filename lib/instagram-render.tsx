@@ -16,7 +16,7 @@
  *  - ignora text-decoration:underline → o sublinhado é uma barrinha desenhada.
  */
 
-import { MARCA_PADRAO } from "@/lib/instagram-identidade";
+import { marcaDaArte } from "@/lib/instagram-identidade";
 
 export type FonteKey = "anton" | "bebas" | "dm-serif" | "cormorant";
 export type RealceModo = "circulo" | "grifo" | "marca" | "dourado" | "nenhum";
@@ -566,7 +566,8 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
               height: 4,
               marginBottom: 16,
               borderRadius: 2,
-              backgroundColor: gold,
+              // Sem assinatura (conta com logo), o traço sobre ela some junto.
+              backgroundColor: marcaDaArte(p.marca) ? gold : "transparent",
               opacity: 0.95,
             }}
           />
@@ -580,7 +581,7 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
               color: "#F6ECCB",
             }}
           >
-            {(p.marca || MARCA_PADRAO).toUpperCase()}
+            {marcaDaArte(p.marca).toUpperCase()}
           </div>
         </div>
       </div>
