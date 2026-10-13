@@ -13,6 +13,8 @@
  * Regras puras, testadas em testes/carrossel-ideia.test.ts.
  */
 
+import { ministerioParaIA } from "@/lib/instagram-identidade";
+
 export const IDEIA_MIN = 4;
 export const IDEIA_MAX = 400;
 
@@ -38,12 +40,14 @@ export function validarIdeia(
 export function systemCarrosselDaIdeia(
   tipo: "carrossel" | "unico",
   contextoPerfil: string,
+  /** Nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+  ministerio = "",
 ): string {
   const quantidade =
     tipo === "unico"
       ? "Gere EXATAMENTE 1 slide — a frase que resume a ideia."
       : "Gere de 5 a 7 slides. O 1º prende a atenção; os do meio desenvolvem UMA ideia cada, em ordem; o penúltimo traz uma aplicação prática; o último fecha com um convite simples.";
-  return `Você escreve posts de Instagram para um ministério cristão de discipulado (Ekballo).
+  return `Você escreve posts de Instagram para ${ministerioParaIA(ministerio)}.
 O pastor te deu só a IDEIA do post, em uma frase. Você escreve o carrossel.
 
 O ASSUNTO É O QUE O PASTOR PEDIU

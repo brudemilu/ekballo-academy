@@ -267,6 +267,51 @@ test.describe("Instagram do ministério (admin)", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 
+  test("na segunda conta, a prévia da arte leva a assinatura dela", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/instagram?aba=criar");
+    await page.getByRole("button", { name: /2ª Região/ }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("2ª Região");
+
+    // Um rascunho pronto, sem depender da IA para montar os slides.
+    const legenda = `Rascunho da região ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const status = await page.evaluate(async (legenda) => {
+      const r = await fetch("/api/admin/instagram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conteudo: "teste",
+          legenda,
+          slides: [
+            {
+              texto: "Antes de discipular",
+              prompt: "",
+              modo: "dourado",
+              cor: "#C9A961",
+              fonte: "anton",
+              seed: 1,
+            },
+          ],
+        }),
+      });
+      return r.status;
+    }, legenda);
+    expect(status).toBe(200);
+
+    await page.reload();
+    await expect(page.getByText(legenda)).toBeVisible();
+    await page
+      .getByRole("button", { name: /ver \/ editar/i })
+      .first()
+      .click();
+    // "IMW 2ª Região" é a assinatura da conta de demonstração.
+    await expect(page.locator('img[src*="marca=IMW"]').first()).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
   test("a aba Contas recusa a chave do aplicativo colada no lugar do token", async ({
     page,
   }) => {

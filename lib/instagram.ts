@@ -264,16 +264,20 @@ export function gerarFundoLivre(
 const MODOS_VALIDOS: RealceModo[] = ["circulo", "grifo", "marca", "dourado", "nenhum"];
 
 /** O pedido padrão (reorganizar o conteúdo colado), para quem precisa acrescentar algo a ele. */
-export function systemCarrosselPadrao(tipo: "carrossel" | "unico"): string {
-  return buildSystemPrompt(tipo);
+export function systemCarrosselPadrao(
+  tipo: "carrossel" | "unico",
+  /** Nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+  ministerio = "",
+): string {
+  return buildSystemPrompt(tipo, ministerio);
 }
 
-function buildSystemPrompt(tipo: "carrossel" | "unico"): string {
+function buildSystemPrompt(tipo: "carrossel" | "unico", ministerio = ""): string {
   const quantidade =
     tipo === "unico"
       ? "Gere EXATAMENTE 1 slide — a frase mais impactante que resume a mensagem inteira."
       : "Use quantos slides o CONTEÚDO pedir, SEM forçar número fixo: conteúdo curto = 1 a 3 slides; conteúdo longo = mais slides (até ~8). Uma ideia por slide. O 1º é um gancho forte; o último é um fecho/chamada.";
-  return `Você é um designer de posts de Instagram para um ministério cristão (Ekballo).
+  return `Você é um designer de posts de Instagram para um ministério cristão (${ministerio.trim() || "Ekballo"}).
 Recebe um conteúdo em português (trecho de mensagem, frase de livro, reflexão, versículo) e o transforma em post.
 
 Regras:

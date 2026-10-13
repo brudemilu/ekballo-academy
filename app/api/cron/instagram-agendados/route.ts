@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getIdentidadeInstagram } from "@/lib/db";
 import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
 import { credenciaisInstagram } from "@/lib/instagram-credenciais";
 import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
@@ -113,7 +114,12 @@ export async function GET(req: NextRequest) {
           })()
         : await (async () => {
             if (!slides.length) throw new Error("sem slides");
-            const imageUrls = await prepararImageUrls(origin, slides);
+            // A arte leva a assinatura da conta dona do post.
+            const imageUrls = await prepararImageUrls(
+              origin,
+              slides,
+              await getIdentidadeInstagram(post.conta_id as string),
+            );
             // Story: uma imagem 9:16, sem legenda, que some em 24 h.
             if (ehStory(slides)) {
               return publicarStory({

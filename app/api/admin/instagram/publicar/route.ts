@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/db";
+import { getCurrentSession, getIdentidadeInstagram } from "@/lib/db";
 import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
 import { contaAtualId } from "@/lib/instagram-conta-atual";
 import { ehIdDeConta } from "@/lib/instagram-contas";
@@ -111,7 +111,14 @@ export async function POST(req: NextRequest) {
   }
   // imagens: pré-gera e sobe no Storage (estático/rápido) pra o Meta não dar
   // timeout buscando a rota OG (que gera por IA, ~10s). Reel não usa imagens.
-  const imageUrls = isReel ? [] : await prepararImageUrls(origin, slides);
+  // A arte leva a assinatura da conta dona do post.
+  const imageUrls = isReel
+    ? []
+    : await prepararImageUrls(
+        origin,
+        slides,
+        await getIdentidadeInstagram(contaId).catch(() => ({})),
+      );
 
   try {
     const publicado: Publicado = isReel

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { obterFundo } from "@/lib/fundo-cache";
 import { renderSlideEditorial } from "@/lib/instagram-editorial-render";
+import { identidadeDoEndereco } from "@/lib/instagram-identidade";
 import {
   ehModeloDeTexto,
   ehModeloEditorial,
@@ -78,6 +79,8 @@ export async function GET(req: NextRequest) {
   const cor = corParam ? sanitizeCor(corParam) : tema.cor;
   const top = url.searchParams.get("top")?.trim() || undefined;
   const ref = url.searchParams.get("ref")?.trim() || undefined;
+  // A assinatura da conta (issue #264): sem os parâmetros, é a da conta principal.
+  const { marca, arroba } = identidadeDoEndereco(url.searchParams);
   const prompt = url.searchParams.get("prompt")?.trim() || "";
   const seed = parseInt(url.searchParams.get("seed") || "0", 10) || 0;
   const foto = url.searchParams.get("foto")?.trim() || "fallback";
@@ -115,6 +118,7 @@ export async function GET(req: NextRequest) {
         maiusculas: FONTES[fonteKey].upper,
         top,
         ref,
+        marca,
         largura: TAMANHO_W,
         altura,
       }),
@@ -216,6 +220,8 @@ export async function GET(req: NextRequest) {
         graoSrc: `${selfOrigin}/texturas/grao.png`,
         top,
         ref,
+        marca,
+        arroba,
         largura: TAMANHO_W,
         altura,
       }),
@@ -263,6 +269,7 @@ export async function GET(req: NextRequest) {
     cor,
     top,
     ref,
+    marca,
     tom,
     altura,
   });
