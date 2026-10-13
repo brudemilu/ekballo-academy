@@ -9,7 +9,7 @@
  * Lembrete do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — por isso top/left/right/bottom por extenso.
  */
-import { MARCA_PADRAO } from "@/lib/instagram-identidade";
+import { marcaDaArte } from "@/lib/instagram-identidade";
 import {
   itensDoChecklist,
   type ModeloDeTexto,
@@ -64,7 +64,8 @@ function Assinatura({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
           height: 6,
           marginRight: 18,
           borderRadius: 3,
-          backgroundColor: c.cor,
+          // Sem assinatura (conta com logo), o traço que a anuncia some junto.
+          backgroundColor: p.top || marcaDaArte(p.marca) ? c.cor : "transparent",
         }}
       />
       <div
@@ -76,7 +77,7 @@ function Assinatura({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
           color: c.suave,
         }}
       >
-        {(p.top || p.marca || MARCA_PADRAO).toUpperCase()}
+        {(p.top || marcaDaArte(p.marca)).toUpperCase()}
       </div>
     </div>
   );
@@ -299,7 +300,7 @@ function Cartao({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
     ],
     72,
   );
-  const nome = p.top || p.marca || MARCA_PADRAO;
+  const nome = p.top || marcaDaArte(p.marca);
   return (
     <div
       style={{
@@ -312,7 +313,14 @@ function Cartao({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
         boxShadow: "0 24px 60px rgba(0,0,0,0.28)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 44 }}>
+      {/* O cabeçalho do cartão é a assinatura: sem ela (conta com logo), sai inteiro. */}
+      <div
+        style={{
+          display: nome || p.ref ? "flex" : "none",
+          alignItems: "center",
+          marginBottom: 44,
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -447,7 +455,7 @@ export function renderSlideModelo(p: ModeloRenderPayload) {
         c={c}
         texto={
           p.modelo === "cartao"
-            ? (p.marca || MARCA_PADRAO).toUpperCase()
+            ? marcaDaArte(p.marca).toUpperCase()
             : p.modelo !== "citacao" && p.ref
               ? p.ref.toUpperCase()
               : " "
