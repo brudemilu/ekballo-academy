@@ -447,7 +447,7 @@ export function renderSlideModelo(p: ModeloRenderPayload) {
         c={c}
         texto={
           p.modelo === "cartao"
-            ? "EKBALLO ACADEMY"
+            ? (p.marca || MARCA_PADRAO).toUpperCase()
             : p.modelo !== "citacao" && p.ref
               ? p.ref.toUpperCase()
               : " "
