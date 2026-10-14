@@ -17,7 +17,7 @@
  * Lembretes do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — top/left/width/height por extenso.
  */
-import { ARROBA_PADRAO, marcaDaArte } from "@/lib/instagram-identidade";
+import { ARROBA_PADRAO, marcaDaArte, type Paleta } from "@/lib/instagram-identidade";
 import {
   alvoParaLinhas,
   type FonteMedida,
@@ -38,6 +38,13 @@ const TINTA = "#0C0C0C";
 const CLARO = "#F6F5F1";
 const CREME = "#F3E9CF";
 
+// O preto, o off-white e o creme de sempre — ou as cores da conta, quando ela
+// tem paleta própria: o fundo dela faz as vezes da tinta; o texto dela, do claro.
+type ComPaleta = { paleta?: Paleta };
+const tinta = (p: ComPaleta) => p.paleta?.fundo ?? TINTA;
+const claro = (p: ComPaleta) => p.paleta?.texto ?? CLARO;
+const creme = (p: ComPaleta) => p.paleta?.texto ?? CREME;
+
 export type EditorialPayload = {
   modelo: ModeloEditorial;
   texto: string;
@@ -57,6 +64,8 @@ export type EditorialPayload = {
   marca?: string;
   /** O @ da conta (só o modelo "muro" escreve). */
   arroba?: string;
+  /** As cores da conta; sem elas, as de sempre. */
+  paleta?: Paleta;
   largura: number;
   altura: number;
 };
@@ -226,7 +235,7 @@ function Cinema({ p }: { p: EditorialPayload }) {
       >
         <Rotulo
           texto={p.top || marcaDaArte(p.marca)}
-          cor={CREME}
+          cor={creme(p)}
           tamanho={30}
           espaco={16}
         />
@@ -237,7 +246,7 @@ function Cinema({ p }: { p: EditorialPayload }) {
               palavras={l}
               familia="Grotesca"
               tamanho={tamanho}
-              cor={CREME}
+              cor={creme(p)}
               corDestaque={p.cor}
               espaco={Math.round(tamanho * aperto)}
               entrelinha={1.04}
@@ -460,12 +469,12 @@ function Cartaz({ p }: { p: EditorialPayload }) {
         <div style={{ display: "flex", maxWidth: Math.round(util * 0.68) }}>
           <Rotulo
             texto={textoDaLinha(apoio) || p.top || marcaDaArte(p.marca)}
-            cor={CREME}
+            cor={creme(p)}
             tamanho={30}
             espaco={10}
           />
         </div>
-        {p.ref ? <Rotulo texto={p.ref} cor={CREME} tamanho={24} espaco={2} /> : null}
+        {p.ref ? <Rotulo texto={p.ref} cor={creme(p)} tamanho={24} espaco={2} /> : null}
       </div>
     </div>
   );
@@ -498,7 +507,7 @@ function Editorial({ p }: { p: EditorialPayload }) {
         position: "relative",
         width: "100%",
         height: "100%",
-        backgroundColor: CLARO,
+        backgroundColor: claro(p),
       }}
     >
       {/* fios verticais à direita: o "respiro" gráfico da referência */}
@@ -556,7 +565,7 @@ function Editorial({ p }: { p: EditorialPayload }) {
                 fixo ("mesa de discipulado") num post que fala de outra coisa. */}
             <Rotulo
               texto={p.top || marcaDaArte(p.marca)}
-              cor={TINTA}
+              cor={tinta(p)}
               tamanho={32}
               espaco={9}
             />
@@ -575,7 +584,7 @@ function Editorial({ p }: { p: EditorialPayload }) {
             {p.top ? (
               <Rotulo
                 texto={marcaDaArte(p.marca)}
-                cor={TINTA}
+                cor={tinta(p)}
                 tamanho={17}
                 espaco={5}
               />
@@ -591,7 +600,7 @@ function Editorial({ p }: { p: EditorialPayload }) {
               palavras={l}
               familia="Condensada"
               tamanho={tamanho}
-              cor={TINTA}
+              cor={tinta(p)}
               corDestaque={p.cor}
               espaco={-1}
               entrelinha={1.14}
@@ -913,7 +922,7 @@ function Recorte({ p }: { p: EditorialPayload }) {
       >
         <Rotulo
           texto={p.ref || p.top || marcaDaArte(p.marca)}
-          cor={TINTA}
+          cor={tinta(p)}
           tamanho={22}
           espaco={5}
         />
@@ -1291,7 +1300,7 @@ function Carimbo({ p }: { p: EditorialPayload }) {
               fontSize: tamT,
               lineHeight: 1.1,
               letterSpacing: Math.round(tamT * -0.03),
-              color: TINTA,
+              color: tinta(p),
             }}
           >
             {textoDaLinha(l)}
@@ -1389,19 +1398,19 @@ function Gravura({ p }: { p: EditorialPayload }) {
           style={{
             display: "flex",
             padding: "5px 18px",
-            border: `2px solid ${TINTA}`,
+            border: `2px solid ${tinta(p)}`,
             borderRadius: 20,
             fontFamily: "Legenda",
             fontSize: 18,
             letterSpacing: 2,
-            color: TINTA,
+            color: tinta(p),
           }}
         >
           {String(new Date().getFullYear())}
         </div>
         <Rotulo
           texto={p.top || marcaDaArte(p.marca)}
-          cor={TINTA}
+          cor={tinta(p)}
           tamanho={15}
           espaco={6}
         />
@@ -1423,8 +1432,8 @@ function Gravura({ p }: { p: EditorialPayload }) {
             palavras={l}
             familia="Serifada"
             tamanho={tamG}
-            cor={TINTA}
-            corDestaque={TINTA}
+            cor={tinta(p)}
+            corDestaque={tinta(p)}
             espaco={Math.round(tamG * -0.03)}
             entrelinha={1.12}
           />
@@ -1436,7 +1445,7 @@ function Gravura({ p }: { p: EditorialPayload }) {
               display: "flex",
               marginTop: i ? 6 : 40,
               padding: `8px 20px 12px`,
-              backgroundColor: TINTA,
+              backgroundColor: tinta(p),
               fontFamily: "Serifada",
               fontSize: tamT,
               lineHeight: 1.05,
@@ -1460,7 +1469,7 @@ function Gravura({ p }: { p: EditorialPayload }) {
       >
         <Rotulo
           texto={p.ref || marcaDaArte(p.marca)}
-          cor={TINTA}
+          cor={tinta(p)}
           tamanho={15}
           espaco={5}
         />
@@ -1564,7 +1573,7 @@ function Quadrinho({ p }: { p: EditorialPayload }) {
                   fontFamily: "Serifada",
                   fontSize: tamanho,
                   lineHeight: 1.16,
-                  color: TINTA,
+                  color: tinta(p),
                 }}
               >
                 {fala}
@@ -1977,8 +1986,8 @@ function Chamada({ p }: { p: EditorialPayload }) {
                 palavras={l}
                 familia="Legenda"
                 tamanho={tamP}
-                cor={CREME}
-                corDestaque={CREME}
+                cor={creme(p)}
+                corDestaque={creme(p)}
                 espaco={1}
                 entrelinha={1.2}
               />

@@ -12,6 +12,7 @@ import {
   removerToken,
   TokenRecusado,
 } from "@/lib/instagram-credenciais";
+import { lerPaleta } from "@/lib/instagram-identidade";
 import { isMockMode, listMockContas } from "@/lib/mock-data";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -21,7 +22,7 @@ export const runtime = "nodejs";
  * Cadastro das contas de Instagram do painel (issue #264). Admin-only.
  *
  *  POST  { nome, assinatura?, token? }                    cria a conta
- *  PATCH { id, nome?, assinatura?, logo_legenda?, removerLogo?, token?, desconectar? }
+ *  PATCH { id, nome?, assinatura?, logo_legenda?, removerLogo?, cores?, token?, desconectar? }
  *
  * O token nunca volta numa resposta: a tela só fica sabendo se a conta está
  * conectada e quando o token vence.
@@ -128,6 +129,9 @@ export async function PATCH(req: NextRequest) {
       logo_url?: string;
       logo_clara_url?: string;
       logo_legenda?: string;
+      cor_destaque?: string;
+      cor_fundo?: string;
+      cor_texto?: string;
     } = {};
     if (corpo.nome !== undefined) {
       const nome = texto(corpo.nome, NOME_MAX);
@@ -141,6 +145,18 @@ export async function PATCH(req: NextRequest) {
     if (corpo.removerLogo === true) {
       patch.logo_url = "";
       patch.logo_clara_url = "";
+    }
+    // As três cores vêm juntas; `cores: null` devolve a conta às cores de sempre.
+    if (corpo.cores === null) {
+      patch.cor_destaque = "";
+      patch.cor_fundo = "";
+      patch.cor_texto = "";
+    } else if (corpo.cores !== undefined) {
+      const paleta = lerPaleta(corpo.cores ?? {});
+      if (!paleta) return recusa("Escolha as três cores (destaque, fundo e texto).");
+      patch.cor_destaque = paleta.destaque;
+      patch.cor_fundo = paleta.fundo;
+      patch.cor_texto = paleta.texto;
     }
     if (corpo.logo_legenda !== undefined) {
       patch.logo_legenda = texto(corpo.logo_legenda, LEGENDA_LOGO_MAX);

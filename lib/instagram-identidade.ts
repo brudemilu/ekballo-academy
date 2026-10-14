@@ -31,7 +31,41 @@ export type Identidade = {
   logoClara?: string;
   /** Texto escrito embaixo da logo (ex.: "2ª Região"). */
   legendaLogo?: string;
+  /** As cores da conta nas artes; sem elas, valem as do tema escolhido. */
+  paleta?: Paleta;
 };
+
+/**
+ * As três cores de uma conta nas artes (issue #264). Na conta da 2ª Região
+ * são as da logo: azul-marinho, vermelho e branco.
+ */
+export type Paleta = {
+  /** A cor que chama atenção: palavra em destaque, traços, marcadores. */
+  destaque: string;
+  /** O fundo das artes sem foto e a cor do texto sobre fundo claro. */
+  fundo: string;
+  /** O texto sobre fundo escuro ou foto, e o fundo das artes claras. */
+  texto: string;
+};
+
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
+/** `null` quando falta qualquer uma das três: paleta pela metade não vale. */
+export function lerPaleta(c: {
+  destaque?: string | null;
+  fundo?: string | null;
+  texto?: string | null;
+}): Paleta | null {
+  const destaque = (c.destaque ?? "").trim();
+  const fundo = (c.fundo ?? "").trim();
+  const texto = (c.texto ?? "").trim();
+  if (!HEX.test(destaque) || !HEX.test(fundo) || !HEX.test(texto)) return null;
+  return {
+    destaque: destaque.toUpperCase(),
+    fundo: fundo.toUpperCase(),
+    texto: texto.toUpperCase(),
+  };
+}
 
 const LEGENDA_LOGO_MAX = 24;
 const ENDERECO_MAX = 400;
@@ -71,13 +105,22 @@ export function identidadeDaConta(c: {
   logo_url?: string | null;
   logo_clara_url?: string | null;
   logo_legenda?: string | null;
+  cor_destaque?: string | null;
+  cor_fundo?: string | null;
+  cor_texto?: string | null;
 }): Identidade {
   const marca = limpo(c.assinatura);
   const usuario = limpo(c.usuario).replace(/^@+/, "");
   const logo = (c.logo_url ?? "").trim();
   const logoClara = (c.logo_clara_url ?? "").trim();
   const legendaLogo = (c.logo_legenda ?? "").trim().slice(0, LEGENDA_LOGO_MAX);
+  const paleta = lerPaleta({
+    destaque: c.cor_destaque,
+    fundo: c.cor_fundo,
+    texto: c.cor_texto,
+  });
   return {
+    ...(paleta ? { paleta } : {}),
     ...(marca ? { marca } : {}),
     ...(usuario ? { arroba: `@${usuario}` } : {}),
     // A legenda só existe embaixo de uma logo.
@@ -101,6 +144,12 @@ export function identidadeNoEndereco(p: URLSearchParams, i?: Identidade | null):
   const arroba = limpo(i?.arroba);
   if (marca && marca !== MARCA_PADRAO) p.set("marca", marca);
   if (arroba && arroba !== ARROBA_PADRAO) p.set("arroba", arroba);
+  const paleta = i?.paleta ? lerPaleta(i.paleta) : null;
+  if (paleta) {
+    p.set("pd", paleta.destaque.slice(1));
+    p.set("pf", paleta.fundo.slice(1));
+    p.set("pt", paleta.texto.slice(1));
+  }
   const logo = (i?.logo ?? "").trim();
   if (logo) {
     // Com a logo na arte, a assinatura escrita sobra (pedido do Bruno).
@@ -112,6 +161,12 @@ export function identidadeNoEndereco(p: URLSearchParams, i?: Identidade | null):
     const legenda = (i?.legendaLogo ?? "").trim().slice(0, LEGENDA_LOGO_MAX);
     if (legenda) p.set("logot", legenda);
   }
+}
+
+/** Lê a paleta da conta do endereço da imagem (`pd`, `pf`, `pt`, sem o "#"). */
+export function paletaDoEndereco(p: URLSearchParams): Paleta | null {
+  const hex = (k: string) => (p.get(k) ? `#${p.get(k)}` : "");
+  return lerPaleta({ destaque: hex("pd"), fundo: hex("pf"), texto: hex("pt") });
 }
 
 /**

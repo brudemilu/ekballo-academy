@@ -16,7 +16,7 @@
  *  - ignora text-decoration:underline → o sublinhado é uma barrinha desenhada.
  */
 
-import { marcaDaArte } from "@/lib/instagram-identidade";
+import { marcaDaArte, type Paleta } from "@/lib/instagram-identidade";
 
 export type FonteKey = "anton" | "bebas" | "dm-serif" | "cormorant";
 export type RealceModo = "circulo" | "grifo" | "marca" | "dourado" | "nenhum";
@@ -101,6 +101,8 @@ export type SlideRenderPayload = {
   ref?: string;
   /** Assinatura da conta, no rodapé. */
   marca?: string;
+  /** As cores da conta; sem elas, as de sempre. */
+  paleta?: Paleta;
   /**
    * Tom do slide. "escuro" (padrão): título creme sobre a foto escurecida —
    * lê em qualquer imagem, inclusive nas cinematográficas que a IA gera.
@@ -154,7 +156,9 @@ export function renderSlideInstagram(p: SlideRenderPayload) {
 
   const { words, script } = parseTexto(p.texto, f.upper);
   const escuro = p.tom !== "claro";
-  const corTexto = escuro ? COR_CREME : COR_NAVY;
+  const corTexto = escuro
+    ? (p.paleta?.texto ?? COR_CREME)
+    : (p.paleta?.fundo ?? COR_NAVY);
 
   const plain = p.texto.replace(/[{}()]/g, "");
   // fonte GRANDE, proporcional à tela (preenche o quadro).

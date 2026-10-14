@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { coresDaLogo } from "@/lib/cores-da-logo";
 import {
   type ContaCadastrada,
   diasAteVencer,
@@ -81,6 +82,50 @@ function CartaoDaConta({
   const [nome, setNome] = useState(conta.nome);
   const [assinatura, setAssinatura] = useState(conta.assinatura);
   const [legendaLogo, setLegendaLogo] = useState(conta.logo_legenda);
+  const temCores = Boolean(conta.cor_destaque && conta.cor_fundo && conta.cor_texto);
+  const [cores, setCores] = useState({
+    destaque: conta.cor_destaque || "#C0562B",
+    fundo: conta.cor_fundo || "#14203A",
+    texto: conta.cor_texto || "#FBF5E6",
+  });
+  const mudouCores =
+    cores.destaque.toUpperCase() !== (conta.cor_destaque || "").toUpperCase() ||
+    cores.fundo.toUpperCase() !== (conta.cor_fundo || "").toUpperCase() ||
+    cores.texto.toUpperCase() !== (conta.cor_texto || "").toUpperCase();
+
+  // Lê a logo num quadro invisível e tira dela as cores (lib/cores-da-logo.ts).
+  async function usarCoresDaLogo() {
+    setErro("");
+    setFeito("");
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      await new Promise<void>((ok, falhou) => {
+        img.onload = () => ok();
+        img.onerror = () => falhou(new Error("Não consegui abrir a logo."));
+        img.src = conta.logo_url;
+      });
+      const quadro = document.createElement("canvas");
+      // Pequeno de propósito: as cores são as mesmas e a leitura é imediata.
+      quadro.width = 160;
+      quadro.height = Math.max(1, Math.round((160 * img.height) / img.width));
+      const ctx = quadro.getContext("2d");
+      if (!ctx) throw new Error("Este navegador não deixa ler a imagem.");
+      ctx.drawImage(img, 0, 0, quadro.width, quadro.height);
+      const lidas = coresDaLogo(
+        ctx.getImageData(0, 0, quadro.width, quadro.height).data,
+      );
+      if (!lidas) {
+        throw new Error(
+          "Não achei na logo uma cor escura e uma cor viva. Escolha as cores à mão.",
+        );
+      }
+      setCores(lidas);
+      setFeito("Cores tiradas da logo. Confira e clique em Salvar as cores.");
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Não consegui ler as cores da logo.");
+    }
+  }
   const [token, setToken] = useState("");
   const [trocandoToken, setTrocandoToken] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -240,6 +285,72 @@ function CartaoDaConta({
         A logo entra no canto de toda arte gerada para esta conta, direto sobre o fundo.
         Envie em PNG com fundo transparente; a versão para fundo escuro é feita sozinha.
       </p>
+
+      <div className="mt-5">
+        <span className={ROTULO}>Cores das artes</span>
+        <div className="flex flex-wrap items-end gap-4">
+          {(
+            [
+              ["destaque", "Destaque"],
+              ["fundo", "Fundo"],
+              ["texto", "Texto"],
+            ] as const
+          ).map(([chave, rotulo]) => (
+            <label
+              key={chave}
+              className="flex items-center gap-2 text-sm text-mesa-700"
+            >
+              <input
+                type="color"
+                value={cores[chave]}
+                onChange={(e) => setCores((c) => ({ ...c, [chave]: e.target.value }))}
+                className="h-10 w-14 cursor-pointer rounded-lg border border-mesa-200 bg-white p-1"
+                aria-label={`Cor de ${rotulo.toLowerCase()}`}
+              />
+              {rotulo}
+            </label>
+          ))}
+          {conta.logo_url && (
+            <button
+              type="button"
+              className={BOTAO_SECUNDARIO}
+              disabled={ocupado}
+              onClick={() => void usarCoresDaLogo()}
+            >
+              Usar as cores da logo
+            </button>
+          )}
+          {(mudouCores || !temCores) && (
+            <button
+              type="button"
+              className={BOTAO_PRIMARIO}
+              disabled={ocupado}
+              onClick={() =>
+                enviar({ cores }, "Cores salvas. Valem para todas as artes.")
+              }
+            >
+              Salvar as cores
+            </button>
+          )}
+          {temCores && (
+            <button
+              type="button"
+              className={BOTAO_SECUNDARIO}
+              disabled={ocupado}
+              onClick={() =>
+                enviar({ cores: null }, "A conta voltou às cores de sempre.")
+              }
+            >
+              Voltar às cores de sempre
+            </button>
+          )}
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-mesa-600">
+          {temCores
+            ? "Estas cores valem para todas as artes desta conta, no lugar da cor escolhida em cada post."
+            : "Sem cores próprias, a conta usa as de sempre, com a cor escolhida em cada post."}
+        </p>
+      </div>
 
       {peloServidor && (
         <p className="mt-4 text-sm leading-relaxed text-mesa-600">

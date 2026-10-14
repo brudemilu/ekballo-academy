@@ -30,6 +30,10 @@ export type ContaCadastrada = {
   logo_clara_url: string;
   /** Texto embaixo da logo (ex.: "2ª Região"). */
   logo_legenda: string;
+  /** As cores da conta nas artes ("#RRGGBB"); vazias = as de sempre. */
+  cor_destaque: string;
+  cor_fundo: string;
+  cor_texto: string;
   principal: boolean;
   /** Há token para publicar e ler os números? */
   conectada: boolean;
