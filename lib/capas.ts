@@ -279,4 +279,6 @@ export const CAPA_LIVRO: Record<string, string> = {
   "o-desafio-de-amar": "/capas/o-desafio-de-amar.jpg",
   "enquanto-estivermos-juntos": "/capas/enquanto-estivermos-juntos.jpg",
   "deus-esta-no-controle": "/capas/deus-esta-no-controle.jpg",
+  "o-poder-secreto-do-jejum-e-da-oracao":
+    "/capas/o-poder-secreto-do-jejum-e-da-oracao.jpg",
 };
