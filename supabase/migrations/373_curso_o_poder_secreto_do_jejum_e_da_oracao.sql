@@ -1,0 +1,1682 @@
+-- Curso: O Poder Secreto do Jejum e da Oração (Mahesh Chavda) — transcrição sem perguntas. Issue #270.
+do $migration$
+declare
+  v_curso_id uuid;
+  v_aula_id uuid;
+  v_next_ordem int;
+begin
+  select id into v_curso_id from public.cursos where slug = 'o-poder-secreto-do-jejum-e-da-oracao';
+
+  if v_curso_id is null then
+    select coalesce(max(ordem), 0) + 1 into v_next_ordem from public.cursos;
+    insert into public.cursos
+      (slug, titulo, autor, descricao, imagem_url, is_pago, preco_centavos, categoria, ordem, publicado)
+    values (
+      'o-poder-secreto-do-jejum-e-da-oracao',
+      $titulo$O Poder Secreto do Jejum e da Oração$titulo$,
+      $titulo$Mahesh Chavda$titulo$,
+      $desc$Leitura guiada de O Poder Secreto do Jejum e da Oração, de Mahesh Chavda. Em onze aulas: Mahesh Chavda conta o que viu em décadas de ministério sustentado por jejum e oração — curas, libertações, avivamentos — e ensina por que o jejum, longe de ser fora de moda, é o caminho da humildade e do poder de Deus na igreja. Cada aula traz a transcrição do texto, sem perguntas de reflexão.$desc$,
+      '/capas/o-poder-secreto-do-jejum-e-da-oracao.jpg',
+      false,
+      0,
+      'espiritual',
+      v_next_ordem,
+      true
+    )
+    returning id into v_curso_id;
+  else
+    update public.cursos
+    set titulo = $titulo$O Poder Secreto do Jejum e da Oração$titulo$,
+        autor = $titulo$Mahesh Chavda$titulo$,
+        descricao = $desc$Leitura guiada de O Poder Secreto do Jejum e da Oração, de Mahesh Chavda. Em onze aulas: Mahesh Chavda conta o que viu em décadas de ministério sustentado por jejum e oração — curas, libertações, avivamentos — e ensina por que o jejum, longe de ser fora de moda, é o caminho da humildade e do poder de Deus na igreja. Cada aula traz a transcrição do texto, sem perguntas de reflexão.$desc$,
+        imagem_url = '/capas/o-poder-secreto-do-jejum-e-da-oracao.jpg',
+        categoria = 'espiritual',
+        publicado = true
+    where id = v_curso_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 1;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Prefácio e Introdução$t$, 1,
+$conteudo$Descobrindo O Poder Secreto do Jejum e da Oração, por Mahesh Chavda, é apropriado e vem de encontro a uma grande necessidade da Igreja hoje. Eu não conheço outra pessoa mais competente para escrever um livro sobre jejum do que meu querido amigo Mahesh Chavda.
+
+Este livro é uma grande arma espiritual para cristãos com seriedade que estão cultivando um estilo de vida que inclui oração e jejum. Mahesh nos dá um entendimento profundo e prático dos princípios e motivação fundamentais do jejum. Sua apresentação é clara e lúcida. Seus argumentos são profundos, porém transparentes, fazendo do livro uma contribuição válida para cristãos de todos precedentes.
+
+De todo coração eu recomendo este livro para todos que querem seguir o exemplo do Senhor Jesus Cristo quando Ele buscou a face do Pai através de uma vida de jejum e oração.
+
+Paul Cain
+
+Cidade de Kansas, Missouri.
+
+INTRODUÇÃO
+
+O jejum era uma prática cristã normal, mas durante a maioria da minha experiência cristã, tem estado 'fora de moda'. Muitos procuram soluções rápidas e fáceis para seus problemas; por espiritualidade instantânea sem que haja disciplina ou sacrifício. Temos alimentos instantâneos, aprovação de crédito instantânea. Há poucas coisas que nos fazem esperar hoje em dia. E além de qualquer outra coisa que o jejum venha a ser, é também uma forma de espera – e uma espera inconfortável. Então, o jejum vai contra as tendências dos tempos.
+
+Também vai contra a teologia de alguns. Uma vez ouvi um professor de teologia ensinar uma lição sobre jejum numa sala onde as maiorias dos que estavam presentes também eram professores. Ele concluiu que o jejum era o último recurso para momentos de grandes crises. Ele concluiu também que o jejuar fora destes momentos críticos não era bíblico, e não trazia nenhum resultado. Nenhum dos que estavam na sala questionaram essas conclusões. O único que o questionou foi um pastor que não tinha o benefício de uma educação num seminário, mas que jejuava freqüentemente. Contudo, ele não tinha o mesmo nível para que pudesse discutir com os teólogos tão sofisticados daquela sala. E para o alívio da maioria, concluíram que o jejum não passa de uma parte relevante da experiência cristã.
+
+Em certos lugares, o somente mencionar da palavra 'JeJum' levanta manifestações e advertências de 'legalidade'. Seja isto de vido a abusos que ocorreram nas experiências do passado, ou devido a um desejo de se ter uma forma de cristianismo que não requer sacrifícios; eu não sei. Eu somente sei que a perda desta prática híblica tem feito com que a Igreja não desfrute da plenitude do poder do Espírito Santo e da plenitude da intimidade com Jesus, a qual Deus deseja tanto que tenhamos.
+
+A oração não tem sido melhor do que o jejum. Embora reconheçamos a importância da oração, temos dificuldade em orar constantemente. A confissão número um que eu tenho ouvido de cristãos que vão à igreja ao longo dos meus 30 anos de ministério, é que as pessoas não conseguem orar regularmente. É mais fácil fazer qualquer outra coisa do que orar. Para o que não tem prática, a oração parece ser a disciplina espiritual mais fraca. A ajuda que ela oferece é geralmente usada quando todas as outras tentativas falharam. Existem sinais que parecem indicar a volta do jejum e da oração. Grandes líderes estão chamando a Igreja para orar e jejuar pelo avivamento; e a Igreja tem começado a responder. Estou feliz em poder recomendar o novo livro de Mahesh Chavda. O valor deste livro não está nos conselhos sábios que ele oferece em como orar e jejuar; nem no motivo pelo qual devemos jejuar e orar; ou em como evitar orações e jejuns legalísticos; nem mesmo nas descrições detalhadas dos seus benefícios. O verdadeiro poder do livro é que ele foi escrito por alguém que durante a maioria de sua vida cristã, orou e jejuou. Pela graça de Deus, Mahesh Chavda tem experimentado o poder que vem de uma vida de oração e jejum, e ao mesmo tempo tem evitado tentações de legalidade e orgulho espiritual que sempre atacam aqueles que jejuam e oram. Algumas das histórias supernaturais neste livro desafiarão o leitor, e alguns terão dificuldade em acreditar. Mas se o testemunho da história da Igreja puder receber crédito, aqueles que oram e jejuam receberão respostas supernaturais às suas orações. Este é também o testemunho da Bíblia. Porque ficaríamos surpresos com as coisas maravilhosas que acontecem quando obedecemos à Deus?
+
+E aqui repousa o verdadeiro valor destas páginas. Elas são uma prova verdadeira da jornada de um homem com Deus, relatada de uma maneira que nos encoraja a fazer o que Deus quer que façamos.
+
+Jack Deire
+
+Evangelical Foundation Ministries$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 2;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 1 - Qual é a solução para Stevie?$t$, 2,
+$conteudo$No início de minha caminhada com o Senhor, fui trabalhar em um hospital para crianças com deficiência mental na cidade de Lubbock, Texas. Assim como Jesus foi levado pelo Espírito ao deserto, eu também fui impelido em meu próprio deserto no Texas; e este deserto era aquela entidade pública para crianças com sérios distúrbios mentais. Aquele era um dos lugares mais trágicos que eu poderia ter escolhido para trabalhar.
+
+Os meus dias eram repletos de dolorosas horas de relacionamentos com crianças emocional e fisicamente feridas numa atmosfera tomada pelos mais fétidos odores que alguém possa imaginar. As crianças com as quais eu trabalhava não possuíam controle das funções intestinais. Muitas das vezes elas se lambuzavam com os próprios excrementos, as portas ou até mesmo quem estivesse por perto. Eu freqüentemente orava, "Senhor é este o Seu propósito? O Senhor realmente me trouxe até aqui?”.
+
+Aquele lugar em Lubbock, Texas, foi minha escola particular em meu aprendizado sobre o Espírito Santo, pois, em meio a toda aquela penúria, compreendi que o Senhor havia me levado para aquele lugar, segundo a Sua soberana vontade a fim de ensinar-me sobre a Sua maravilhosa pessoa. Aliás, a maioria dos princípios que eu uso em meu ministério hoje aprendi naquele lugar.
+
+Existiam naquele prédio centenas de pequeninos. A maioria deles tinha sido jogada ali ou simplesmente descartada pelos seus próprios pais.Embora eles estivessem sob a tutela do governo, na realidade, eles não passavam de pequenos fragmentos humanos, ignorados e indesejados por todos. O Senhor, no entanto, me lembrou as Suas palavras em Isaías 49:15: "Pode uma mulher esquecer-se do filho que ainda mama, de modo que não se compadeça do filho do seu ventre? Mas ainda que esta se esqueça, eu, todavia, não me esquecerei de ti”.O Senhor continuou dizendo: "Eu quero que você vá e ame estes pequeninos e seja o Meu embaixador do amor”.Mediante essas palavras, não restava outra alternativa a não ser obedecer.
+
+Nas primeiras nove horas de meu turno, trabalhava com o ambulatório infantil. Esta era a ala das crianças incapacitadas de andar. Posteriormente, me ocupava com a ala não-ambulatorial para trabalhar com bebês portadores de leves distúrbios cerebrais. Muitas destas crianças eram nascidas de mães viciadas em heroína e outras caíram ali após terem sido brutalmente espancadas e feridas por seus pais, em momentos de raiva ou quando em estado de delírio alcoólico. Estes pequeninos ocupavam os berços, até serem transferidos para camas.
+
+Geralmente, sentado em uma cadeira de balanço, eu costumava tomálas em meus braços e as embalava, enquanto orava em línguas (minha linguagem de oração em Espírito). Eu tinha certeza de que Jesus as amava e que certamente Ele colocara este sentimento dentro de mim. Era como se Jesus tivesse tirado um pedaço de Seu coração e colocado dentro do meu. Como eu amava aqueles pequeninos!
+
+O SENHOR COMEÇOU A CURÁ-LAS
+
+De repente, comecei a perceber que aquelas crianças que supostamente nunca andariam, estavam andando. Uma menina, cujo prontuário médico dizia que ela tinha nascido cega, começou a enxergar e a reagir! Todas as vezes que entrava em seu quarto, embora procurasse não fazer nenhum barulho, ela sempre se virava e olhava para mim estendendo suas mãozinhas. Oh! Que realidade tremenda! O Senhor começara a curar aquelas crianças.
+
+Por aquele tempo fui designado para trabalhar num projeto que chamei de "Esforço para Adequação Psicológica" que tinha como objetivo ministrar, a alguns garotos, técnicas de modificação comportamental. Tais técnicas eram designadas para ensinar jovens com 15 a 16 anos a amarrar os cadarços ou ir ao banheiro sozinhos.
+
+Eu jamais esquecerei o dia em que conheci um jovem de 16 anos naquele grupo, a quem chamarei de "Stevie". Ele sofria da Síndrome de Down, retardamento mental, um tipo com redução drástica da capacidade intelectuais e certas deformações físicas. Stevie era afligido por outro mal ainda pior. Constantemente tinha crises, durante as quais era acometido de um sentimento de autodestruição e batia no próprio rosto.
+
+Esta equipe de psicólogos conseguiu permissão das autoridades texanas para administrar terapia de choque elétrico em Stevie durante seis meses. Este procedimento era chamado de "operação negativa de condicionamento", e tinha como objetivo modificar o comportamento de Stevie aplicando-lhe choques elétricos, sempre que ele começasse a se ferir.
+
+Durante aquele período, os psicólogos fizeram um gráfico de seu comportamento e observaram que, ao contrário da melhora esperada, o seu quadro havia se agravado ainda mais. Tive a oportunidade de ver aquele gráfico e perceber que realmente, a aplicação de choque o havia piorado ao invés de melhorá-lo. A fisionomia do garoto tornou-se péssima. A pele de seu rosto cheia de feridas inflamada parecia mais um couro seco de jacaré, devido aos ferimentos constantes que ele fazia em si mesmo.
+
+Não vislumbrando outra solução para o problema, por fim, os atendentes amarraram os braços de Stevie, de maneira que ele não podia alcançar o seu rosto.
+
+O problema agora era outro: os garotos de seu dormitório,uma vez percebendo que as mãos de Stevie estavam amarradas para baixo, criaram uma nova brincadeira: corriam atrás de Stevie a empurrá-lo com força, até que ele perdesse totalmente o equilíbrio e caísse. Stevie não podia mais instintivamente proteger seu rosto, por causa das ataduras que prendiam os seus braços. Por isto, todas as vezes que os meninos brincavam, Stevie sempre caia brutalmente com o seu rosto em terra, sem conseguir se proteger ou amortecer a queda.
+
+Qual era a solução para Stevie?
+
+Na maioria das vezes o encontrávamos com o nariz, lábios e boca esguichando sangue. Em qualquer momento que o encontrasse, Stevie era sempre capaz de sentir o amor de Deus fluindo de mim e geralmente, reclinava sua cabeça sobre o meu ombro e se desmanchava em prantos!
+
+Finalmente, orei: "Senhor, uma vez o Senhor me disse que havia me enviado a este lugar para amar essas crianças. Portanto, qual é a solução para Stevie?"
+
+Claramente, eu ouvi a voz do Espírito Santo me dizendo: "Esta casta de demônio não sai a não ser com jejum e oração”. Embora este versículo possa parecer bem familiar para você, ele soava como algo completamente novo em meu espírito naquele momento. Eu havia estudado por quatro anos em uma faculdade e me bacharelado em Teologia, no entanto, eu nem sequer sabia que o Espírito Santo tinha citado uma passagem da Bíblia, que se encontra em Mateus 17:21!
+
+Uma outra questão que eu tinha deixado de aprender durante os meus quatro anos de Seminário era a questão do jejum. Eu disse: "Jejum – ficar sem comida ou bebida?" A partir daquele exato momento eu não comi nem bebi nada mais e descobri que, quando nos abstemos de comida, geralmente sonhamos com frango, batatas fritas e deliciosos bifes. Eu também não tinha consciência de que, quando ficamos sem água, as nossas prioridades mudam.
+
+No terceiro dia de meu jejum eu comecei, por exemplo, invejar as pessoas quando as ouvia lavar as mãos na pia do banheiro. Uma vez, quando uma pessoa saiu do banheiro, eu lhe disse: “Você sabia que esta água poderia ser boa para beber?" O rapaz, confuso, respondeu: "Desculpe-me, mas eu não entendi”.Percebendo a insensatez das minhas próprias palavras, eu logo respondi: "Oh, nada, esqueça!”.
+
+Agora, ore por Stevie.
+
+No quarto dia, o Senhor me disse: "Agora você pode beber”.Então comecei a beber água. No entanto, apenas comecei a me alimentar no décimo quarto dia e então o Senhor me disse: "Agora, ore por Stevie”.
+
+Quando cheguei naquele dia, tomei Stevie e o levei para o meu pequeno escritório, e lhe disse: "Stevie, eu sei que a sua mente talvez não entenda o que estou dizendo, mas o seu espírito é eterno. Eu quero te dizer que eu sou servo do Senhor Jesus Cristo que estou aqui para pregar as Boas Novas a você. Também quero que você saiba que Jesus Cristo veio trazer liberdade aos cativos”. Havendo lhe falado estas palavras, eu continuei dizendo: “Em nome de Jesus Cristo, eu te ordeno agora, espírito de auto destruíção: 'Deixe esta vida em paz!” ‘ De repente, aquele rapaz foi como que arremessado, a quase dois metros de distância. Quando Stevie atingiu a parede, seu corpo foi elevado cerca de 30 centímetros acima do piso e, caindo novamente, soltou um longo gemido, ficando ali mesmo prostrado. Imediatamente comecei a sentir um terrível cheiro de ovos "podres" e enxofre queimado enchendo aquele recinto, mas que aos poucos foi desvanecendo.
+
+Corri, então, rapidamente para Stevie, o tomei em meus braços e tirei as ataduras que haviam sido colocadas em seus braços; enquanto isso, os seus olhos me fitavam com medo. Percebendo que podia dobrar os braços, começou a tocar carinhosamente o seu rosto, a sentir os seus olhos, nariz e orelhas. Então, profundamente emocionado, começou a soluçar.
+
+Aquele atormentado jovem, pela primeira vez na vida, percebeu que não estava tendo a compulsão de se ferir, pelo contrário; ele era capaz de afagar o seu próprio rosto, e a partir de então ter a certeza que fora totalmente liberto! – Naquele inesquecível momento, o Senhor revelou-me quão poderosa arma ele havia nos dado para destruir fortalezas e trazer liberdade aos cativos. Dentro de poucos meses, todas as feridas no rosto de Stevie haviam desaparecido, porque ele parara de se ferir.
+
+Sinceramente, você está lendo este livro por causa de Stevie. Eu agradeço a Deus por este jovem e a maneira como o Senhor usou aquela terrível situação para me comunicar esta verdade divina que estarei comunicando a você, caro leitor.
+
+O milagre que nos coloca juntos nas páginas deste livro, realmente começou muito antes, ou melhor, em 1962, no meu décimosexto ano de vida, no leste da África, em um país chamado Kênia. Eu fui criado em uma devota família hindu e o meu destino já estava traçado de acordo com a reputação das tradições indianas: Por ser filho de um hindu, descendente de alta casta militar, fui versado nos escritos sagrados do hinduísmo e treinado para ser um líder.
+
+Desde minha mais tenra infância, me ensinaram o mais importante princípio da nossa religião: "Busque a verdade." E, obedientemente, sempre procurei pela verdade. Meus pais eram indianos, mas na verdade nasci e fui criado no Kênia e, embora tenha perdido meu pai com apenas cinco anos de idade, eu ainda era membro de uma privilegiada classe de guerreiros de casta elevada no mundo hindu.
+
+A minha diligente procura pela verdade tomou, de repente, uma nova direção em um dia quente em 1962, quando a esposa de um missionário batista veio trabalhar com algumas crianças nos arredores de nossa casa. Por razões que somente Deus conhece, essa gentil senhora texana foi guiada a bater na porta de uma devota família hindu para pedir um copo de água. Coincidentemente, eu estava lá.
+
+Atendi a porta e, depois de servir-lhe o copo com água, ela me deu em troca uma Bíblia. (Não sabíamos, mas aquela simples troca da água pela Palavra redundaria na conversão de 700.000 pessoas ao Senhor Jesus Cristo nos anos que se sucederiam. Às vezes, não entendemos, mas o nosso mais insignificante gesto de obediência pode se destinar a propósitos que nunca imaginaríamos).
+
+Comecei a ler a Bíblia porque, claro, estava buscando a verdade. Este livro trouxe-me o conhecimento da figura mais estranha que eu já li. O seu nome era Jesus Cristo. Como alguém que sempre procurou a verdade, fui cativado pelas incríveis palavras deste Homem: "E conhecereis a verdade e a verdade vos libertará”.Eu disse para mim mesmo: "É isso mesmo, está certo." e acabei lendo todo o livro de João.
+
+Quando examinava a passagem onde Jesus disse: "Eu sou o caminho, a verdade e a vida, ninguém vem ao pai senão por mim", em João 14:6, as escamas da cegueira caíram dos olhos daquele ferrenho guerreiro hindu de alta casta e tão orgulhoso de suas traduções. Estive sempre em busca da verdade e, de repente, entendi que Jesus Cristo era, e é, a Verdade. Todavia, apesar daquela maravilhosa revelação, eu não O recebi como meu Senhor e Salvador imediatamente.
+
+O PREÇO ERA MUITO ALTO
+
+Apesar da revelação que tinha obtido ao ler as Escrituras, eu me debatia interiormente sobre a questão de me tornar um cristão, pois tal decisão em minha vida era muito séria e demandava um preço que para mim parecia muito alto. Se ousasse confessar a Cristo, sabia que seria rejeitados por toda a minha família, incluindo a minha mãe, minhas irmãs e irmãos. Sem dúvida, perderia também toda posição e regalias que possuía no mundo hindu. Aliás, até onde eu tenho conhecimento, eu seria a primeira pessoa de minha casta a virar as costas para a fé hindu. Finalmente, eu disse para mim mesmo: "Eu não vou mais ler a Bíblia. Eu não quero mais nem pensar em Jesus Cristo”.
+
+Em meio às minhas cogitações, de repente, caí em sono profundo. Foi tudo tão estranho! Eu não havia recebido nenhuma pancada na cabeça ou tomado algum sonífero no entanto, não podia resistir ao sono. Aquele acontecimento era algo fora do comum. Instintivamente minha cabeça se inclinou sobre a mesa e fui instantâneamente em espírito para um lugar que eu nunca havia estado antes. Eu estava andando em ruas de ouro e ouvia as mais lindas e harmoniosas vozes cantando canções que nunca tinha ouvido antes. Eu estava em perfeito "êxtase" (como diria um hindu!). Existia tremenda beleza e perfeição ao redor de mim, porém tudo aquilo se tornou insignificante quando eu vi a fonte de toda a perfeição e beleza andando em minha direção. Eu vi uma luz que brilhava mais que dez mil vezes do que o sol, no entanto, toda aquela luminosidade não queimava os meus olhos. Ele vinha em minha direção e não sei como explicar, mas tinha certeza que aquela pessoa maravilhosa era Jesus. Eu jamais esquecerei a beleza de Seus olhos e a profundidade de Seu olhar. Era como que se Ele tivesse sentido toda a dor do mundo, derramada toda a lágrima que já fora derramado na terra. O amor puro emanava de Seus olhos em perfeita combinação de vitória e triunfo... Então Ele chegou e colocou Suas mãos em meus ombros e docemente me disse: "Meu irmãozinho..."
+
+De repente acordei e descobri que a Bíblia a mim oferecida por aquela gentil senhora batista, estava aberta no evangelho de Mateus naquela passagem que Jesus conversava com o jovem rico. Jesus disse a ele: "Se você quiser ser perfeito, vá, venda tudo o que você tem e dê aos pobres e terás um tesouro no céu. Então vem e segue-me”.Aquele jovem porém ouvindo esta palavra retirou-se triste, porque possuía muitas propriedades.. Então Jesus disse aos discípulos: "Em verdade vos digo que é difícil entrar um rico no reino dos céus”.
+
+Eu cuidadosamente li aquela passagem e observei que aquele jovem rico que havia encontrado com Jesus, acabou indo embora por exatamente pensar que o preço era muito alto. Neste momento, o Senhor disse ao meu coração as seguintes palavras: "Você também vai para o mesmo caminho deste jovem?"- "Não, Senhor." - respondi imediatamente e recebi o Senhor Jesus como o meu Salvador, quebrando assim inúmeras gerações de rigorosa tradição religiosa e extrema fidelidade ao hinduísmo.
+
+Anos depois, mudei do leste da África para os Estados Unidos,onde o Senhor proporcionou-me esta gloriosa experiência com Stevie. Estudei em uma Universidade Cristã, obtendo o grau de bacharel em Teologia, depois parti para uma Universidade secular. Posteriormente intentava alcançar o meu P.H.D. em Literatura. Confesso que estava muito orgulhoso de minha inteligência.
+
+Em meio a minha diligente busca de minha realização intelectual e valorização própria através de cursos de graduação, recebi noticias que minha mãe estava morrendo de câncer em Londres (para onde toda a minha família havia se mudado), que lhe havia acometido ossos. Os médicos lhe davam apenas algumas semanas de vida pois ela tinha uma forma intratável de câncer nos ossos que estava comendo o seu corpo.
+
+EU PRECISAVA IR AO FUNDO DO POÇO
+
+Eu não vislumbrava respostas para meus dilemas e, muito menos, para minha mãe. No entanto ela estava morrendo e chamando por mim. Eu era apenas um pobre estudante no Texas sem a mínima condição financeira para ir à Inglaterra. Estava simplesmente quebrado. Eu havia chegado ao fim do poço; tudo o que eu podia fazer era chorar incontrolavelmente. Finalmente, depois de três dias de lágrimas e sofrimentos, tive uma excepcional experiência na terceira noite.
+
+Novamente aquela visão. Fui tomado em sono profundo e levado para aquele mesmo lugar, onde, anos atrás, tinha visto ruas de ouro. Desta vez eu me encontrava em lugar gramado prostrado aos pés de Jesus, contemplando a Sua face e o adorando com um cântico. Mais uma vez o Senhor colocou as Suas mãos sobre os meus ombros e eu estava surpreso em constatar que O louvava com um cântico em uma língua que eu não podia entender. Então acordei e, no meu íntimo, sabia que alguma coisa havia acontecido no mundo espiritual. Senti um grande desejo de orar e apenas disse: "Senhor Jesus". Naquele momento, um forte vento entrou pelo o meu quarto e, imediatamente, comecei a sentir alguma coisa borbulhando dentro de mim. Quando tentei abrir a minha boca, uma canção saiu da minha boca em uma língua desconhecida. Neste momento, a minha parte intelectual disse: "Oh, isso é muito estranho!"; porém o resto de meu ser parecia dizer: "Isso pode parecer estranho, mas é a melhor experiência que já tive em minha vida." Mesmo sem entender uma palavra, continuei cantando aquela estranha e doce canção por uma hora e meia. A única pessoa espiritual que conhecia naquela época era uma senhora que eu havia encontrado na Faculdade. Eu simplesmente não podia esperar para compartilhar com alguém sobre o que tinha acontecido comigo, então fui correndo me encontrar com a irmã Marsha. Quando a vi, fui logo dizendo: "Irmã Marsha, deixe-me dizer o que aconteceu comigo hoje!" Depois de contar-lhe acerca de minha experiência, lhe perguntei preocupado: "Eu estou ficando doido?" – Jamais esquecerei a sua resposta. Ela colocou seus livros sobre a mesa, olhou para mim e com regozijo em sua voz me disse: "Louve ao Senhor, meu irmão. Você foi batizado no Espírito Santo”.
+
+O Espírito Santo se tornou muito real em minha vida a partir daquele dia. Ele começou a falar comigo e logo descobri que Ele é uma pessoa. Ele me disse: "Jesus é o mesmo ontem, o mesmo hoje e o será para sempre”.Eu ainda não tinha lido estas palavras em Hebreus 13-8, então eu disse: "Uh?" Ele respondeu: "Jesus é o mesmo ontem, hoje, e para sempre. "
+
+Ore pela sua mãe!
+
+E mais uma vez o Senhor falou: "Jesus é o mesmo ontem, hoje e eternamente”.Finalmente orei e disse: "Senhor, o que está tentando me dizer?" Ele disse: "Jesus curou a 2.000 anos atrás e Ele ainda cura hoje." Então disse: "O que o Senhor quer falar-me com essas palavras?"- Neste instante o Espírito docemente me disse: "Ore pela sua mãe!"
+
+Bom, diante de tão grandioso comando, me prostrei para unir como me fora dito. Alguns dias mais tarde recebi as boas novas que minha mãe havia sido totalmente curada de sua enfermidade terminal! Depois de sua cura ela ainda viveu vinte quatro anos, tendo ainda a oportunidade de receber Cristo como seu Salvador antes morrer.
+
+Após esta maravilhosa experiência de batismo, o Espírito Santo começou a conduzir todo o meu viver. Neste período, o Senhor impulsionou-me a trabalhar em Lubbock, Texas, onde encontrei Stevie e muitas outras crianças preciosas e necessitadas do amor de Deus. A verdade sobre o jejum que aprendi naquele lugar se tornou uma palavra viva e cortante em meu viver e isto aconteceu acerca de um quarto de século atrás. Comecei a jejuar uma vez por semana em 1971.
+
+Em 1972, jejuava três vezes por semana e depois períodos de sete e quatorze dias consecutivos. Durante o ano de 1973, fui conduzido a jejuar vários períodos de 7 e 14 dias consecutivos sempre dependendo das instruções do Senhor (recomendo consultar um médico antes de entrar em um propósito de jejum, especialmente em caso de gravidez ou estando sob tratamento médico).
+
+Entre agora no propósito de dois períodos de 40 dias de jejum! No ano de 1974, pastoreando uma igreja em Levelland, Texas, o Senhor conduziu-me a entrar num período de 40 dias de jejum. Jejuei, portanto, por 40 dias e desfrutei de muita graça do Senhor. No ano seguinte, mais uma vez o Senhor impulsionou-me a observar um período de 40 dias de Jejum e posteriormente, vários períodos de 14 e 21 dias consecutivos. No ano de 1976, casei com Bonnie. Naquele mesmo ano, o Senhor, mais uma vez, me conduziu ao jejum. Todavia, desta vez, a direção era para dois períodos de 40 dias. Nos anos que se seguiram, estive sempre com o propósito de dois períodos de 40 dias de jejum por ano e pelo menos dois períodos de 21 dias.
+
+Em 1977, fui conduzido novamente pelo Espírito a outros dois períodos de 40 dias de jejum. Desta vez porém, adicionei mais alguns dias de acordo com as impressões específicas que recebia do Espírito. Nos anos seguintes segui este procedimento até o ano de 1988. Em 1989, todavia, a direção do Espírito era o propósito de apenas um período de 40 dias de jejum. Ao todo, o Espírito me guiou a 29 períodos de 40 dias de jejum, sendo que nas primeiras 19 vezes me limitei a tomar somente água e nos seguintes o Senhor me permitira tomar sucos. Segundo minha esposa, contando todo este tempo, eu jejuei uma média de 120 dias por ano desde o início de meu ministério.
+
+Na verdade, eu não entendia completamente o que o Senhor fazia naqueles dias, mas tinha certeza que O amava. Tinha certeza também que Ele me conduzira a orar e jejuar por Seu povo. O meu único objetivo era obedecê-Lo. Todos que me conheciam ou estavam intimamente associados comigo como pastor ou líder sabiam acerca dos meus períodos de jejuns. Porém, por mais de uma década eu não fui permitido pelo Senhor anunciar, explicar ou ensinar sobre a minha vida de jejum nas reuniões públicas. Ele estava fazendo um trabalho secreto e apenas recentemente, segundo o seu expresso comando, compartilhamos abertamente sobre esta prática legada à sua igreja pelo Senhor Jesus. O fazê-lo em secreto, parece-me ser a forma de jejuar na maioria das vezes.
+
+NEM TODO MUNDO ENTENDEU
+
+Rapidamente descobri que nem todo mundo entendeu ou aceitou o que eu estava fazendo. Alguns me acusaram de me comportar como um fanático; outros simplesmente pensaram que eu havia me tornado muito religioso. O meu pior crítico dizia que eu estava buscando a minha própria justiça. Tenho que admitir que aquelas censuras e mal entendimentos foram muito dolorosos.Todavia, estava convicto que quando ouvimos a voz do Senhor precisamos obedecê-la.
+
+Portanto, às vezes, é inevitável que a nossa total obediência a imperativos divinos criem oposição, mesmo entre os irmãos. Muitas das vezes também este mal é causado pelo inimigo de nossas almas, que agirá de alguma forma para levantar oposição contra toda e qualquer atividade que venha representar ameaça ao seu império das trevas. Meu querido irmão, quando você estiver em guerra espiritual através de oração, louvor, adoração e jejum, posso garantir que o inimigo insurgirá com dificuldades e obstáculos espirituais no seu caminho.
+
+Nos anos e décadas que se passaram, desde que Deus me revelara o poder secreto do jejum, através da libertação de Stevie, esta revelação se tornou uma palavra viva e fundamento em minha vida e ministério em Cristo. Agora, entendo que Deus me tem ordenado a restaurar esta verdade acerca da prática do jejum na igreja nestes últimos dias. O jejum foi um aspecto importante na vida da Igreja neotestamentária assim como o é na Igreja destes últimos dias. O Senhor com certeza conduziu-me a 29 períodos de jejum para fazer-me conhecedor desta verdade fundamental, pois não podemos comunicar nenhuma verdade espiritual, a menos que esta seja uma realidade concreta em nossas vidas.
+
+Foi há apenas dez anos atrás o Senhor me disse: "Agora que você tem esta verdade em seu coração, Eu te dou autoridade para repartir com a Igreja nestes últimos dias, para homens e mulheres que estarão realizando a minha obra." Neste mesmo instante em que escrevo estas palavras, sinto o cumprimento do propósito de algo eterno. Este livro é parte do fruto da semente semeada durante todos aqueles anos de obscuridade quando tudo que sabia era que eu estava obedecendo a palavra vinda do Trono.
+
+Deus talvez, nunca te pedirá para estar jejuando durante 40 dias (se Ele o fizer, você será capaz de fazê-lo por meio de Sua graça), no entanto um fato é incontestável: como membros da Igreja de Cristo, Deus espera que cada um de nós observe a necessidade da prática do jejum em nosso viver diário. Isto é na verdade, uma parte indispensável de nossas vidas como membros da vinha do Senhor e da gloriosa Noiva, além de ser também um estilo de vida segundo o nosso modelo maior de vida, Cristo.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 3;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 2 - Jesus, o nosso maior exemplo$t$, 3,
+$conteudo$Jesus transformou a vida de Seus discípulos quando, pouco depois de Sua ressurreição, apareceu a eles no exato momento em que se encontravam lacrados entre quatro paredes, desmanchando-se de medo. Ele disse a eles: "Assim como o pai me enviou, eu vos envio a vós”.(Jo 20:21b) Preferimos pensar que esta passagem é realmente maravilhosa para ser lida, ao invés de procurarmos ser tocados pelo o seu significado real – ou seja, um insondável chamado a segui-Lo e alcançar o mundo com as Boas Novas de Seu Evangelho.
+
+"Como o pai me enviou, eu também vos envio a vós. (Jo 20:21b)
+
+Esta é a gloriosa palavra do Senhor para todo discípulo que esteja disposto a ouvir a Sua voz. Você é um discípulo de Jesus? – Você deseja ser Seu discípulo? – Então repita agora comigo onde você estiver: "Como o Pai enviou Jesus, Ele também está me enviando!" O Senhor Jesus é o nosso maior exemplo de vida, fé e ministério. De acordo com Sua palavra, você e eu somos comissionados e ungidos para seguir os Seus passos como "enviados" ao mundo.
+
+Às vezes fico um pouco irritado com pessoas que não têm a completa visão do amor de Deus aos perdidos. É impossível, ao lermos as Escrituras Sagradas, não captarmos a vastidão de Seu amor ao homem caído. Quando falamos em alcançar as nações e salvar centenas de milhares de vidas em nome de Jesus, elas geralmente dizem: "Isto é um absurdo! Você não está sendo prático ou sensato”.
+
+Estou convencido de que estas palavras teriam soado ainda mais absurdas e não muito práticas se Jesus as tivesse proferido àqueles medrosos discípulos escondidos naquele lugar. Talvez estas poderiam ter sido as Suas palavras àqueles homens: "Vocês vão transformar o mundo e refazer sua história. Isto mesmo, até mesmo a história do Império Romano e das nações gentias, acerca das quais vocês nem ouviram falar”.Com certeza, se o Senhor tivesse lhes feito este comunicado, isto soaria muito longe da realidade deles, mas na verdade foi exatamente isso que aconteceu após o estabelecimento da Igreja. O fato é que o Senhor os enviara e nos envia da mesma forma que o Pai o enviou. Algum tempo após aquele importantíssimo encontro entre o Ressurreto Senhor e Seus frágeis discípulos, um exército ungido se levantou e seguiu adiante cheio do Espírito Santo. Este grandioso exército se movia implacavelmente de cidade em cidade, de nação em nação. Eles proclamavam o evangelho do Reino que mudava o destino da humanidade e transformava vidas onde quer que fossem. Aquele exército está se levantando novamente em nossos dias!
+
+Jesus foi enviado para realizar uma obra. Ele, como o nosso Mestre, nos concedeu a mesma visão, autoridade e responsabilidade! No momento em que recebemos as Boas Novas de Jesus em nossas vidas, fomos instantaneamente feitos novas criaturas e "transformadores sobrenaturais" da história. Podemos, sem sombra de dúvida mudar o destino de nossa igreja, nossa cidade, nosso país e até mesmo outras nações ao nosso redor através de nossa obediência à visão celestial a nós revelada pelo Senhor Jesus. Para isto vamos precisar do poder de Deus. O segredo deste poder para a realização de Sua obra encontramos em Sua própria Palavra:
+
+"Em verdade, em verdade vos digo que aquele que crê em mim também fará as obras que eu faço. E as fará maiores do que estas, porque eu vou para o Pai. E farei tudo que pedirdes em meu nome, para que o Pai seja glorificado no filho.
+
+(Jo 14: 12:13)
+
+De uma coisa podemos estar certos; o Senhor não limitou esta declaração somente para aqueles que creram Nele no primeiro Século, para Seus apóstolos ou aos judeus ortodoxos. Em outras palavras, não importa em qual século você esteja vivendo, pois a única condição necessária para fazer as mesmas obras que Ele fez; ainda é a mesma: "Simplesmente crer Nele."
+
+Eu, sinceramente, louvo a Deus pela vida de nosso querido irmão Billy Graham, por Charles Finney, John Wesley, Martin Luther King e tantos outros intrépidos no Senhor, todavia eles não são o padrão, o qual devemos almejar. Esta honra esta reservada somente para o nosso Senhor e Salvador Jesus Cristo. Tenho certeza de que estes homens concordariam comigo. O meu maior desejo nestas páginas é fazê-lo ver com a maior clareza possível o exemplo que temos para ser imitado em Cristo Jesus, tanto em vida, quanto em chamado e ministério.
+
+OCULTO DO MUNDO
+
+Embora Jesus Cristo tivesse investido três longos anos de Sua vida treinando, revelando-Se, instruindo e dando aos discípulos, aqueles homens que o haviam acompanhado tão de perto ficaram desalentados quando Ele foi crucificado. Eles enterraram o seu líder, e com Ele,os seus sonhos. A esperança deles parece ter sido selada na tumba com o corpo de Jesus. O problema, na verdade, era que eles não podiam entender o que realmente estava acontecendo no domínio espiritual. Eles também não tinham a mínima idéia que estavam destinados a desempenhar um papel sobrenatural no estabelecimento da Igreja que é, igualmente, sobrenatural. O Mestre na verdade ainda não tinha terminado o Seu trabalho: "Chegando à tarde daquele dia, o primeiro da semana, e estando cerradas as portas do lugar onde estavam os discípulos, com medo dos judeus, chegou Jesus, pôs-se no meio e lhes disse: "Paz seja convosco!" (Jo 20:19)
+
+Bom, não sejamos tão apressados em julgar aqueles pobres homens pelo fato de terem se escondido do mundo lá fora. Nós, na verdade, estamos nesta mesma situação! A Igreja em nossos dias, em sua maioria, está se ocultando das pessoas feridas e desalentadas deste mundo. Infelizmente, este isolamento tem se perpetuado século após século. Qual é o motivo deste tão "confortável" esconderijo? – Eu acredito que é devido ao fato de termos apenas o suficiente da vida de Deus para "sobrevivermos" e manter o nosso "estilo de vida”.Todavia, não temos vida o suficiente para nos aventurarmos e, ousadamente, ir por todo o mundo para ministrar aos feridos como Jesus o fez.
+
+Depois de terem, momentaneamente, perdido Jesus de vista, aqueles discípulos passaram a ter apenas o suficiente para "sobreviverem”.Eles haviam subestimado o poder de Deus em cumprir os Seus planos. Eles pensavam: "Se mataram o nosso Mestre, certamente matarão a nós também”.O motivo deste pensamento era que eles tinham uma perspectiva incorreta de quem de fato era Jesus. Eles O tinham apenas como o homem que tinha sido crucificado e não como o Deus-homem que havia se entregado e que ressurgiria da morte. Naturalmente, não compreendiam também quem eram em Cristo e qual era o Seu propósito: Mudar a história do mundo através deles.
+
+Nós o ouvimos pregando a Palavra!
+
+Há vários anos atrás, realizei uma cruzada na Costa Rica. Naquelas reuniões, o Senhor operou tremendos milagres como confirmação da Sua própria Palavra que estava sendo pregada. Além do glorioso mover de Deus naquele lugar, as nossas mensagens também foram transmitidas simultaneamente por toda a Nicarágua, Panamá e Costa Rica, inclusive no serviço público de transmissão do Aeroporto. No terceiro dia de nossa cruzada naquele país, meu filho mais velho e minha esposa voaram para estarem comigo. Logo ao chegarem ao aeroporto, a primeira coisa que ouviram foi a voz do papai ministrando.
+
+Jamais esquecerei o momento em que meu filho de 10 anos chegou perto de mim naquele dia com sua face radiante de felicidade e orgulho. Ele me disse: "Papai nós ouvimos a transmissão de sua pregação no aeroporto!" Me abençoou muito a alegria de meu filho em ver que a Palavra estava sendo proclamada. Na verdade, meu filho sempre teve um coração muito inclinado para missões e sempre impus a mão sobre ele e orei: "Senhor, se ainda o tardares a voltar, eu peço a Ti que use o meu filho Ben em Sua obra de maneira poderosa e que ele seja mais eficiente que eu”.Creio que assim devem ser os corações dos pais, não é mesmo? O profundo desejo de meu coração é que meus filhos sejam bem mais aptos a realizarem a obra de Deus do que eu e minha esposa.
+
+O Senhor Jesus revelou o coração de nosso pai celestial quando Ele disse: "... farás as obras que Eu faço. E as fará maiores do que estas, porque eu vou para o pai. " (Jo 14:12b) Este é o encorajamento, a tônica da visão celestial, a oportuna palavra do Senhor para a nossa geração! Se, de fato, estamos nos aproximando do final dos tempos e da vinda do Senhor, esta palavra será rapidamente cumprida em nossos dias. Portanto, se Jesus está voltando, brevemente esta promessa divina deve primeiro se tornar realidade na minha e na sua vida. Eu te asseguro que ainda nessa geração veremos coisas grandiosas acontecerem!
+
+Quais são as obras de Jesus Cristo?
+
+Uma vez que Jesus Cristo é o nosso maior exemplo e, levando em consideração que fomos ordenados a realizar as mesmas obras e ainda maiores, precisamos olhar para estas obras e ter pleno entendimento do suprimento que temos em Cristo. O quarto capítulo do livro de Lucas nos revela a primeira obra de Jesus: Ele estava cheio da unção do Espírito Santo.
+
+“Jesus, cheio do Espírito Santo, voltou do Jordão e foi levado pelo Espírito Santo ao deserto onde por quarenta dias não comeu coisa alguma, e terminados eles, teve fome”. (Lc 4:1,2)
+
+A Palavra nos diz que Jesus estava com fome, mas não nos relata nada se estava com sede. Em outras palavras, Jesus jejuou por quarenta dias bebendo somente água. É de suma importância você observar uma particular frase no registro sagrado: "cheio do Espírito Santo...” Jesus estava cheio do Espírito antes de ser levado pelo próprio Espírito ao deserto. Ele jejuou por 40 dias e enquanto isso era tentado. Finalmente, conclui aquele período no deserto em um confronto com o diabo.
+
+Satanás procurou tentar Jesus com as três maiores tentações que ele sempre usou contra o homem:
+
+Primeiro: Ele questionou a identidade do Senhor como o Filho de Deus e tentou levá-Lo a usar o Seu poder em benefício próprio em sua sugestão de transformar pedras em pão e satisfazer a Sua fome.
+
+Segundo: O diabo tentou o Senhor a tomar para si a autoridade e glória de todos os reinos deste mundo. Se assim o Senhor fizesse, o diabo teria alcançado o seu objetivo: ser adorado.
+
+Terceiro: Satanás novamente questionou a identidade do Senhor usando citações das Escrituras para seduzi-Lo a se lançar do penhasco, colocando assim, Sua confiança nos anjos para salvá-Lo. Esta atitude novamente tinha como objetivo fazê-lo provar alguma coisa. Jesus, no entanto, derrotou o tentador todas as vezes usando a palavra de Deus, sempre dizendo: "Está escrito. "
+
+Estas três formas de tentações continuaram sempre se manifestando de alguma forma durante o ministério de Jesus aqui na terra. Na cruz, por exemplo, Ele foi desafiado a agir em legítima defesa, a salvar-se a si mesmo para provar, quem de fato, Ele era. Semelhante ato, com certeza, teria trazido frustração ao plano de Redenção do Pai. Ele também foi tentado pela multidão a apoderar do trono e se tornar um Salvador político de Israel ao invés de Redentor espiritual. Finalmente, o desafio escarnecedor de fazer Jesus chamar os anjos enquanto Ele estava na cruz foi também uma repetição da terceira tentação, que levaria Jesus a desistir de Sua vida e a confiar nos anjos para salvarem-na. Jesus, voluntariamente, entregou a Sua vida para o resgate de muitos. Ele recusou ser salvo da morte – Pelo contrário, Ele decidiu enfrentá-la e destruí-la para sempre.
+
+O SEGREDO DO PODER
+
+Como poderia Jesus fazer tantas coisas e executar tão espantosos milagres que vemos através dos quatro evangelhos? – O segredo de Seu poder é encontrado em Lucas 4:14 que diz assim:
+
+"Então pelo poder do espírito voltou Jesus para a Galiléia...”.
+
+Observe cuidadosamente as diferenças entre os versos 1 e 14 deste mesmo capítulo de Lucas: Antes da tentação no deserto, a Bíblia diz que Jesus foi cheio do Espírito Santo. Entretanto, veja o verso 14, no final da tentação no deserto por 40 dias, no término dos 40 dias de jejum. Jesus havia derrotado o inimigo totalmente e saído daquela experiência no "poder do Espírito!" Se nos determos nestes versículos, perceberemos que existe uma clara diferença entre "estar cheio do Espírito" e "operar no poder do Espírito!" Alguma coisa havia transformado Jesus de um homem cheio do Espírito para um homem que andava no "poder" do Espírito. Oh, irmãos, como precisamos também fazer do segredo do poder de Jesus o nosso segredo. Ele é, afinal de contas, o nosso Mestre e o nosso maior exemplo de vida.
+
+Este foi o segredo que o Senhor revelou em minha experiência de deserto, quando trabalhei com Stevie e as demais crianças em Lubbock, Texas. O deserto, este é o lugar onde Deus quer que todos nós, Seus filhos, se movam. Muitos de nós funcionam no nível de estar cheios do Espírito e firmemente acreditam que o estar cheio do Espírito Santo é simplesmente maravilhoso. Porém, este é apenas o primeiro estágio de nosso progresso depois de nossa salvação. Precisamos perseverar em alcançar o nosso progresso espiritual.
+
+Mudemos do "estar cheio" para o "mover no Poder do Espírito"
+
+Jesus Cristo nos mostrou o caminho e, pessoalmente, foi modelo para nós. Ele nos demonstrou que o estar cheio do Espírito em si não nos faz aptos para estarmos funcionando na plenitude de Seu chamado em nossas vidas. Precisamos estar dispostos a nos submetermos à disciplina do Espírito e, a partir daí, o Senhor tratará conosco em pontos cruciais de nosso ser, como: a vida de oração, jejum e habilidade no manejar da Palavra de Deus. Uma vez sendo tratados nestas áreas, estaremos plenamente funcionando no poder do Espírito Santo.
+
+A Palavra de Deus tem ocupado um lugar de destaque por séculos e temos aprendido muitas coisas em todos estes anos. Em nossos dias, estamos crescendo muito e dando passos mais definitivos em obediência à disciplina da oração, todavia o jejum é raramente praticado e continua sendo um mistério para a Igreja Moderna. Não obstante, nele temos a principal chave para avançarmos além do ponto de estarmos "cheios do Espírito" para o mover pleno da plenitude de Sua vida em nós.
+
+Jesus completou o "processo" do "estar cheio do Espírito" e "mover-se no poder do Espírito" em 40 dias mas, provavelmente, eu e você levaríamos bem mais tempo. Os discípulos estiveram com Jesus por três longos anos e, durante este tempo, foram disciplinados sob a unção de Jesus Cristo. Vemos, portanto, que somente depois do "deserto" da pós-crucificação e o tempo de jejum e oração no cenáculo quando todos foram cheios do Espírito Santo. Eles receberam o "dunamis", ou melhor dizendo, o poder do Espírito Santo os capacitou a proclamar o Evangelho com autoridade, mesmo em face a toda oposição.
+
+O meu desejo é que você compreenda que o jejum leva o poder do Espírito em nossas vidas a ser liberado. Não significa, necessariamente, que você "receberá" mais graça de Deus. Todavia, Ele facilitará o livre fluir do Espírito Santo de Deus através de Você dissolvendo e removendo tudo aquilo que não tem nada a ver com Cristo em sua vida.
+
+Se você, tão somente, se entregar ao Senhor em comprometimento a uma vida de jejum e oração, a unção do Senhor começará a fluir através de seu viver. Esta, portanto, é a "primeira obra " que somos chamados para fazer. O início ou o primeiro trabalho de Jesus antes de iniciar Seu ministério no poder do Espírito foi jejuar e empreender uma luta espiritual na oração e na Palavra.
+
+Eu, particularmente, não acredito em acidentes no Reino de Deus. Não é por acidente que você está lendo estas palavras. Creio que você foi guiado a fazê-lo movido pelo Espírito porque, na verdade, você é um dos escolhidos pelo Senhor para servi-Lo em Seu exército neste tempo do fim. Você foi chamado e ungido para "realizar as obras que Cristo realizou e ainda maiores”.
+
+Deixe-me rapidamente dizê-lo que você não precisa estar dramaticamente empreendendo longos períodos de jejum para receber os benefícios do jejum e da guerra espiritual. Nem todo mundo é chamado a fazer o que Deus demanda de certos líderes ordenados para trazer a revelação de grandes verdades da parte de Deus. Eu tenho observado que, no decorrer dos anos, Deus sempre tem levantado certos homens e mulheres para receberem e viverem, de maneira prática, algumas verdades em profundidade, e assim, serem capazes de ensinar a outros com autoridade comprovada. Foi isto que aconteceu comigo. O Senhor levantou-me para ensinar com autoridade sobre a verdade gloriosa do jejum e da oração. Todavia, isto somente foi possível após tais verdades se tornarem cristalizadas em minha vida, no decorrer de duas décadas. O mesmo podemos dizer de Mike Bickle, um pastor em Kansas city que orava e intercedia numa média de seis a dez horas por dia, por uma década ou mais. Hoje ele ensina acerca da oração com muita autoridade e humildade, pois não fala de uma "teoria", mas de uma verdade baseada em uma sólida experiência de aplicação de princípios de oração encontrados na Palavra.
+
+Não se condene quando, por exemplo, ouvir ou ler acerca das "proezas" de alguns líderes e diga: "Oh, eu nunca serei capaz de fazer isso" ou, "Nunca serei capaz de me equiparar a eles." Ora irmãos, nunca foi desejo de Deus que você se comparasse com alguém. O propósito e a atuação Dele em sua vida é realizado de acordo com a Sua própria soberania. O Senhor nos dá tais pessoas como exemplo para nos aperfeiçoarmos Nele em determinadas áreas de importância em Seu plano e propósitos para as nossas vidas.
+
+A diferença entre a Unção do Espírito e o Poder do Espírito é enfaticamente ilustrada no incidente descrito no capítulo 17 do Evangelho de Mateus, logo após a transfiguração de Jesus no monte:
+
+"E, quando chegaram para junto da multidão, aproximou-se dele um homem, que se ajoelhou e disse:
+
+Senhor, compadece-te de meu filho, porque é lunático e sofre muito; pois muitas vezes cai no fogo, e outras muitas na água. Apresentei-o a teus discípulos, mas eles não puderam curá-lo. Jesus então exclamou: Ó geração incrédula e perversa! Até quando estarei convosco? Até quando vos sofrerei? Trazei-me aqui o menino.
+
+E Jesus repreendeu o demônio, e este saiu do menino; e desde aquela hora ficou o menino curado.
+
+Então os discípulos, aproximando-se de Jesus, perguntaram em particular: Porque motivo não pudemos nós expulsá-lo? E Ele lhes respondeu: Por causa da pequenez de vossa fé. Pois em verdade vos digo que, se tiveres fé como um grão de mostarda, direis a este monte: passa daqui para acolá, e ele passará. Nada vos será impossível. Mas esta casta não se expele senão por meio de oração e jejum”. (Mt 17:14-21)
+
+O motivo de Jesus ter sido tão "rigoroso" com os seus discipulos, foi o fato Dele já haver delegado a eles Sua autoridade ( ou unção )como representantes do Reino. Em Mateus, capítulo 10, Ele disse:
+
+" Curai os enfermos, limpai os leprosos, ressuscitai os mortos e expulsai demônios. De graça recebei, de graça dai." (v.8 )
+
+Os discípulos haviam desfrutado grande sucesso naquela escolha missionária" relatada no capítulo 10. Entretanto, aqueles tão bem sucedidos missionários foram confrontados com um espírito maligno que não se rendia à autoridade outorgada a eles. Apesar de todo entusiasmo da experiência anterior, ao orarem por aquele menino, foram categoricamente derrotados pois não tinham poder suficiente para expelir a casta de demônios que controlava o garoto. Alguma coisa os bloqueava. Alguma força ou potestade resistia à libertação. Existia uma nuvem opressora naquele garotinho que havia minado e colocado em descrédito a unção que os discípulos possuíam. O Senhor, no entanto, entrou em cena quando a credibilidade de Seus, ministros estava totalmente comprometida. Qual era o problema? – O pai do menino disse que seu filho era afligido por epilepsia, todavia o Senhor não o curou mas expulsou o demônio que causava aquela doença.
+
+Mais tarde, quando Jesus se encontrou a sós com os Seus discípulos, Ele lhes comunicou um dos mais importantes princípios que um filho de Deus possa aprender no sentido de sempre alcançar vitória sobre grandes obstáculos e fortalezas que o inimigo possa lançar em sua vida, em seu caminho e ministério. Este princípio, no entanto, apenas pode ser percebido e recebido na realidade do mundo espiritual, porque a nossa vitória é primeiramente nas regiões celestiais. Por isto precisamos estar conscientes de que Deus nos tem dado armas poderosas para desmantelar toda e qualquer fortaleza como nos diz o apóstolo Paulo em sua Segunda carta aos Coríntios 10:3- 6:
+
+"Porque, andando na carne, não militamos segundo a carne. Porque as armas da nossa milícia não são carnais, mas sim poderosas em Deus, para destruição das fortalezas; destruindo os conselhos, e toda a altivez que se levanta contra o conhecimento de deus, e levando cativo todo o pensamento a obediência de Cristo. E estado prontos para vingar toda a desobediência, quando for cumprida a vossa obediência. "
+
+Uma vez que nossas armas (e portanto, a nossa vitória) não são encontradas no domínio natural da "carne e do sangue", o nosso inimigo, Satanás, fará de tudo para nos arrastar para uma batalha e um combate de atmosfera natural e carnal. A maneira mais efetiva para mim e para você colocar a nossa carne em seu próprio lugar e andar em Espírito é jejuar e orar. Se o Filho de Deus jejuou e orou em "busca" de vitória em Seu ministério terreno, por que eu e você deveríamos pensar que estamos isentos destas coisas?
+
+Jesus espera que você jejue e ore. Em Mateus 6:5-7, Ele não disse: "Quando você sentir o desejo de orar..." De maneira alguma! Mas o Senhor docemente nos diz três vezes: "E quando orares... "
+
+Da mesma maneira, o nosso Senhor jamais disse: "Se um dia você decidir a jejuar, embora eu saiba que isso seja quase impossível para você..." em Mateus 6:16, 17. Ele simplesmente disse “... quando jejuardes... " Ele não nos deu uma segunda opção.
+
+Ele considerou estas práticas como algo natural, inerente à vida Cristã Em outras palavras, o Senhor deixou bem claro a Seus discípulos e interlocutores que a "oração" e o'jejum" desempenhariam um importante papel em suas vidas após a Sua partida. As palavras do Senhor não mudaram e ainda são válidas em nossos dias. Se você é um discípulo do Senhor Jesus também orará. Se você é um discípulo, então você jejuará.
+
+O desejo do Senhor é liberar sobre nossas vidas porção dobrada de Sua unção de tal maneira, que sejamos capazes de trazer sempre que for preciso, uma palavra de autoridade para cura, libertação e restauração. Se tivermos esta porção da unção do Senhor em nosso viver diário, seremos capazes de liberar uma palavra com a mesma autoridade daquela que os discípulos testemunharam na libertação daquele menino epilético. Amados, estamos presenciando o mundo sendo devastado ao nosso redor, portanto, já é tempo de realizarmos as obras de Jesus para transformá-lo.
+
+No livro de Joel, a palavra veio ao profeta "intimando" os anciãos, os filhinhos, os que mamam e até mesmo o noivo e a noiva, que esperavam pela cerimônia de casamento, a se "consagrarem" como nação diante do Senhor (veja Jl 2:15). A oração para a restauração era urgente. Deus respondeu a oração daquele povo com uma grande promessa concernente aos últimos dias que somente começou a se cumprir no dia de Pentecostes, no livro de Atos, e está sendo manifesta, como nunca antes, em nossos dias.
+
+“E há de ser que depois, derramarei do meu Espírito sobre toda a carne, e vossos filhos e vossas filhas profetizarão, os vossos velhos terão sonhos, os vossos mancebos terão visões; e também sobre os servos e sobre as servas naqueles dias derramarei o meu Espírito”.
+
+(Jl 2:28,29)
+
+A única pré-condição para que o Espírito seja derramado é que sejamos um povo disposto a ter a visão do Senhor e a pagar o preço através da oração e jejum.
+
+Se você tem sido impressionado pelo Espírito Santo ao ler palavras deste capítulo, certamente Deus o está preparando para a guerra! Ele o escolheu para realizar as mesmas obras de Jesus em sua geração e naturalmente isso só pode ser feito sob o poder do Espírito Santo. Se você deseja em seu coração tomar a "arma sobrenatural da oração e do jejum”,como parte integrante de seu "arsenal," então diga isso ao Senhor: "Assim seja, Senhor. Eu quero fazer parte de Seu propósito." Se você está disposto a pagar o preço de uma vida regular de oração e jejum você será capaz, na força do Senhor, de jogar por terra fortalezas, trazer vitória em sua vida em todos os aspectos e trazer libertação e liberdade aos cativos de sua geração. Sendo assim, diga ao Senhor: "Eis-me aqui Senhor, para onde Tu quiseres me enviar, irei”.
+
+Talvez o Senhor o conduzirá a estar jejuando uma vez por mês, um dia por semana ou simplesmente um dia a cada dois meses.Seja qual for a ordenança de Deus para a sua vida, comprometa-se a fazer isto e creia que Ele mesmo lhe dará graça para obedecê-Lo. Se você pastoreia uma congregação, o Senhor poderá estabelecer com toda a igreja um tempo específico para jejum e oração. Querido leitor, é de suma importância que você hoje se prostre diante Dele esperando a Sua provisão para o amanhã.
+
+A sua resposta obediente ao Senhor é a mais temida e mais perigosa catástrofe que pode acontecer no império das trevas. O inimigo sabe que você com sua atitude transformará o perfil e o destino de sua cidade e, até mesmo de sua nação. O Senhor tem colocado em meu espírito o "encargo" de oração acerca de Sua obra a ser realizada entre os membros de Seu exército do fim:
+
+"Senhor Deus, eu posso ver os Seus anjos equipando este exercito com poderosas armas de guerra. Eu vejo também "tropas" de homens e mulheres posicionadas em diferentes lugares no mundo. Senhor, libere a Sua unção agora. Libere a porção dobrada de Seu Espírito e toca-nos no mais profundo de nosso ser.
+
+"Permita que Seus filhos e filhas recebam unção e graça para orarem e jejuarem e que, a unção que o Senhor me tem dado, seja comunicada a todos aqueles que estão lendo estas palavras e fazem comigo esta oração agora.
+
+"Senhor, eu posso ver o Seu exército marchando. Estamos marchando para tomar as cidades para Jesus. Estamos marchando para levar o nome do Senhor em todo o lugar, em todo o canto da terra: norte, sul, leste e oeste. O exército do Senhor está avançando e todo demônio se dobrará diante do nome de Nosso Senhor Jesus Cristo. Pai, nós nos comprometemos deste dia em diante em usar estas armas fielmente. Senhor, eu oro para que os pastores e líderes de Seu exército vejam com clareza as suas responsabilidades. Coloque em seus corações, amado Deus, a divina sabedoria que eles precisam para guiar a porção de Seu exército confiada a eles. Desde já Senhor, obrigado pela total vitória que temos em Ti."
+
+Nos próximos capítulos estaremos compartilhando os incríveis benefícios que recebemos quando obedecemos ao Senhor em nossa vida de oração e jejum.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 4;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 3 - As transformações e os benefícios do jejum$t$, 4,
+$conteudo$Quase todos os cristãos com os quais tenho conversado, tem tido questões ou alguma má concepção acerca do jejum. Acredito que poderíamos dizer que o jejum é um dos mais incompreendidos assuntos nas Escrituras Sagradas. Você perceberá isto quando começar a descobrir e desfrutar os inacreditáveis benefícios que alcançamos através do jejum à luz da Palavra de Deus. Existem 12 benefícios específicos no "jejum escolhido por Deus”.Leia no livro de Isaias:
+
+"Porventura não é este o jejum que escolhi? Que soltes as ligaduras da impiedade, que desfaças as ataduras do jugo? E que deixes livres os quebrantados, e despedaces todo o jugo? Porventura não é também que repartas teu pão com o faminto, e recolhas em casa os pobres desterrados? E, vendo o nu, o cubras, e não te escondas da tua carne?
+
+Então romperá a tua luz como a alva, e a tua cura apressadamente brotará, e a tua justiça irá adiante da tua face, e a glória do Senhor será a tua retaguarda.’
+
+Então clamarás, e o Senhor te responderá: gritarás, e ele dirá: Eis-me aqui: se tirares do meio de ti o jugo, o estender do dedo, e o falar vaidade.
+
+E se abrires a tua alma ao faminto, e fartares a alma aflita: então a tua luz nascerá nas trevas, e a tua escuridão será como o meio dia.
+
+E o Senhor te guiará continuamente, e fartará a tua alma em lugares secos, e fortificará teus ossos; e serás como um jardim regado, e como um manancial, cujas águas nunca faltam. E os que de ti procederem edificarão os lugares antigamente assolados; e levantarás os fundamentos de geração em geração: e chamar-te-ão reparador de brechas.
+
+(Is 58: 6-12)
+
+Isaías 58 é um dos melhores capítulos da Bíblia no que diz respeito a este assunto. Eu poderia meditar neste capítulo por horas; ele é maravilhoso. Existem pelo menos 12 benefícios específicos do "jejum que Deus escolheu" listados nessa passagem:
+
+1. Revelação
+
+2. Cura e integridade
+
+3. Justiça
+
+4. A presença da Shekinah de Deus
+
+5. Orações respondidas
+
+6. Direção da parte do Senhor
+
+7. Contentamento
+
+8. Refrigério
+
+9. Força
+
+10. Encorajamento
+
+11. Futuras gerações serão levantadas
+
+12. Restauração
+
+Como o jejum de fato funciona? Eu não conheço todas as respostas porque este é, sem dúvida, um dos maiores "mistérios" de Deus, mas creio que posso compartilhar o que tenho aprendido com o Senhor. De uma coisa podemos ter certeza: os demônios ficam muito desconfortáveis quando começamos a orar e a jejuar. As Escrituras Sagradas nos revelam que muitas doenças, moléstias, problemas mentais e comportamentos crônicos que afligem a Humanidade são instigados ou perpetuados por forças demoníacas. Estas forças também buscam obstacular o povo de Deus trazendo tormentas, procurando mantê-lo à parte da vida de Deus.
+
+Eu sempre recomendo às pessoas que estão buscando cura divina, jejuarem antes de virem para os nossos cultos de cura e libertação. Aqueles que têm aceito este conselho, freqüentemente, recebem a cura sobrenatural do Senhor rapidamente. Também costumo dizer às pessoas que a observação do jejum é importante pois demonstra a determinação do irmão ou da irmã de serem tocados pelo Senhor (Aquele que é a fonte de todo o poder). Demônios não podem ficar por perto por muito tempo quando uma pessoa jejua. Isto se deve ao fato de que o jejum diante do Senhor cria uma atmosfera completamente diferente, propiciando assim, o "fluir" mais fácil do Espírito Santo de Deus e o repelir de forças e espíritos malignos. É por esta razão que os demônios ficam incomodados ou desconfortáveis ao derredor de pessoas que possuem em suas vidas a prática do jejum.
+
+Qualquer pastor, ou ministro, que esteja engajado em algum tipo de ministério de cura e libertação deve fazer da prática do jejum uma parte integrante do seu estilo de vida. Ora, irmãos, o desenvolvimento espiritual pode ser comparado ao atleta que busca o exercitar os seus músculos em uma academia de ginástica. À medida que você jejua e busca a face do Senhor, Ele começará a implantar em você autoridade. Isto o conduzirá a uma profunda Intimidade com Ele e, sem dúvida, os demônios irão reconhecer e temerão.
+
+Eu me recordo de um telefonema que recebi em 1973 de dois pastores que me diziam: "Irmão Mahesh, nós estávamos orando pois um homem homossexual e de repente, um demônio começou a falar através dele! Estamos como medo, o que devemos fazer?” Então eu disse: "Bom, então expulsem o demônio dele!" Mas eles me responderam que estavam com medo. "Mas vocês são pastores!" – eu disse. O homem do outro lado da linha persistiu: "Por favor, venha aqui e nos ajude." Finalmente concordei em ir ajudar aqueles irmãos.
+
+Dirigi-me imediatamente para a casa onde se encontravam e, abrindo a porta da frente, os encontrei escondidos na dispensa! Então lhes perguntei: "O que vocês estão fazendo aí?" Eles se dirigiram para a outra parte da casa e disseram, com voz trêmula: "Ele está lá fora”.
+
+Eu tinha acabado de sair de um período de jejum, então entrei dentro do recinto onde aquele homem se encontrava. Ele havia sido homossexual por 18 anos e quando entrei o vi em pé numa posição de afronta como se esperando uma chance para intimidar mais alguém. Percebi claramente que o demônio estava manifesto em seu corpo. Era fácil ver isto, pois o seu semblante se transformara por completo em uma horrenda máscara diabólica. Logo que me viu falou com aquela voz demoníaca: "Oh, mais um homem. Vem aqui, eu gostaria de me relacionar com você." Depois de ouvir aquela vós maligna, chegou a minha vez de abrir a minha boca no poder do Espírito Santo:
+
+"Você quer se relacionar comigo? Pois eu vou lhe dizer o que as Escrituras dizem: "Se andarmos na luz, como na luz Ele está, temos comunhão uns com os outros, e o sangue de Jesus Cristo, seu filho nos purifica de todo pecado. "
+
+"Agora eu lhe pergunto, demônio, você pode dizer: 'O Sangue de Jesus tem poder? `(Aquela coisa apenas soltou um resmungo. Aquele tom de voz horripilante desapareceu imediatamente). Mais uma vez eu disse: "Demônio, diga: 'O Sangue de Jesus tem poder!' Depressa, agora!"
+
+As mãos daquele homem começaram a se contorcer e eu podia literalmente ouvir o "ranger" de seus ossos. Os seus tornozelos começaram a se contorcer de uma maneira estranha e aquele pobre homem caiu no chão, rolando de um lado para o outro. Então ordenei àquele espírito: "Pare com isto agora e repita: 'O Sangue de Jesus tem Poder.' Diga isto agora!" – Finalmente ele começou: O san..., o san..." aquele homem parecia regurgitar e o demônio, soltando um grito, o deixou.
+
+Mais de cinco anos depois retornei àquela cidade e, estando hospedado em um hotel, um homem bateu em minha porta. A sua fisionomia era bem familiar. Porém, a última vez que eu o tinha visto há cinco anos atrás, ele rolava pelo chão enquanto dois ministros escondidos apavorados acotovelavam-se dentro de uma pequena dispensa. Desta vez, no entanto, a sua voz soava branda e firme: "Irmão Chavda, eu gostaria de te apresentar alguém. Após apresentar aquela linda jovem, ele disse: "Nós estamos casados por cinco anos, e gostaria que você soubesse que quando você orou por mim naquele dia, eu fui totalmente liberto. Agora estou casado e os meus 'desejos' são normais. Glória a Deus! Ele é o meu libertador."
+
+Em uma outra ocasião estava ministrando em um culto dominical em uma cidade universitária. Eu tinha acabado de terminar mais um período de jejum e oração, e o culto estava simplesmente maravilhoso naquele enorme prédio da igreja. O altar era tão grande que facilmente poderia acomodar centenas de pessoas simultaneamente. Senti o desejo de abençoar a audiência, então chamei todos para subirem até onde eu estava. O Senhor começou a se mover e a manifestação do Espírito sobre aquelas pessoas foi grandiosa. No momento em que eu ministrava, o Espírito do Senhor me deu uma palavra e imediatamente a comuniquei àquela audiência: "O Senhor está me dizendo que existem 12 homossexuais e lésbicas aqui. Se você levantar a sua mão e se arrepender agora, o Senhor libertará a cada um de vocês."
+
+Doze mãos se levantaram instantaneamente. Oito daquelas pessoas eram lésbicas e no momento em que levantaram as mãos, a Impressão que tivemos foi que, de maneira sobrenatural, elas foram jogadas ao chão com o golpe de um martelo gigante. Eu tinha certeza em meu coração que o Senhor queria fazer algo mais naquelas vidas. Dirigi-me, portanto, para onde aquelas pessoas estavam caídas. Eu não sabia nada sobre lésbicas. Pensava somente que todas possuíam um corte de cabelo masculino, vestiam jeans e perturbavam todos ao redor. Uma mulher jovem em particular, confessou que ela era lésbica, porém, evitava demonstrar aquele estereótipo usual. Ela era uma linda garota de 21 anos de idade, loura e saudável. Quando olhei para ela, a sua tão gentil fisionomia se tornou terrivelmente sombria.
+
+Disse então àquela garota: "Você foi liberta de um demônio de morte. Você tentou cometer suicídio recentemente, não tentou?" Ela começou a chorar amargamente e dobrando as mangas de sua blusa, mostrou-me recente cicatriz nos punhos, quando duas semanas antes, havia tentado cometer suicídio.
+
+Pouco mais de um ano depois quando voltei àquela igreja, me alegrei muito em ver aquela linda jovem servindo no grupo de louvor. Ela correu para mim e com um grande sorriso mostrou-me uma fotografia e disse-me: "Gostaria que você soubesse que me casei a três semanas atrás e este é o meu esposo. Estamos juntos, servindo ao Senhor."
+
+Caro leitor, o meu desejo é que o Senhor lhe abra, os olhos espirituais para ver as pessoas que estão cativas ao seu redor. Elas estão arruinadas, machucadas e vivendo desesperadamente sob terríveis influências diabólicas. Os psicólogos ou os psiquiatras não podem ajudá-las. A Palavra de Deus nos diz, de maneira bem clara, que determinadas "castas" não serão expulsas com um simples comando em nome de Jesus elas não sairão exceto, através da oração e do jejum. Meu amigo, é isto que o Senhor está nos ordenando a fazer. Você está disposto a pagar o preço para trazer liberdade aos cativos? É seu desejo liberar palavras de libertação em sua igreja, em sua vizinhança ou cidade?
+
+Não podemos estar satisfeitos com o que temos alcançado no Senhor. Existem terríveis jugos escravizando vidas preciosas em nossas cidades. O meu desejo é ver a Igreja de Jesus Cristo se levantando com poder e autoridade. Estou farto de vê-los ferindo-se mutuamente devido à "divergência de pontos de vista”, enquanto existem tantas necessidades ao nosso redor precisando ser priorizadas. O nosso chamado é para trazer libertação aos cativos e O Senhor já nos tem dado todas as armas necessárias para, em Seu nome, jogar por terra toda e qualquer fortaleza.
+
+Todos aqueles que estão em busca de libertação do pecado ou algum tipo de debilidade física devem estar perseverantes diante do Senhor. Se, por exemplo, um pai quer ver seu filho curado de alguma moléstia ou liberto de alguma opressão maligna, será necessário que ele persevere naquilo que busca do Senhor. Se, de fato, se humilhar e perseverar diante do Senhor e jejuar por ele mesmo e por seu filho, o caminho da cura ou libertação se tornará mais fácil de ser experimentado ou ministrado.
+
+Por que jejuamos?
+
+Compilei abaixo uma lista de nove razões bíblicas para jejuarmos.É bom lembrar que esta lista não tem necessariamente um paralelo com a lista de 12 benefícios do jejum listado em Isaías 58. Muitos destes pontos vão se encaixar em áreas de nossa vida com Cristo, além disto responderão à maioria das questões, sobre as quais, tenho sido procurado nas últimas duas décadas.
+
+1. Jejuamos em obediência à Palavra de Deus.
+
+A prática do jejum está intimamente relacionada com a Palavra de Deus. Se lermos as Escrituras com o devido cuidado, perceberemos que ela foi um instrumento de vitória para líderes no Antigo e no Novo Testamento. Desta maneira, se o registro bíblico é digno de nossa confiança e um princípio a ser seguido, então podemos afirmar que "os vencedores jejuam e os derrotados não”.
+
+“Ainda assim, agora mesmo diz o Senhor: Voltai para mim de todo o vosso coração, com jejum, com choro e com pranto. (J12: 12)”.
+
+"Antes, como ministros de Deus, recomendamo-nos em tudo: na muita paciência, nas aflições, nas necessidades, nas angústias, nos açoites, nas prisões, nos tumultos, nos trabalhos, nas vigílias, nos jejuns, na pureza, no saber, na longanimidade, na benignidade, no Espírito Santo, no amor não fingido. (2 Cr 6:4-6)
+
+“Respondeu-lhes Jesus: Podem estar tristes os convidados para o casamento, enquanto o noivo está com eles? Dias, porém, virão em que o noivo lhes será tirado, e nesse dia jejuarão. (Mt 9:15)”.
+
+2. Nós jejuamos para nos humilharmos diante do Senhor e obtermos a Sua graça e poder.
+
+Como precisamos da graça de Deus! Você está consciente de que precisa da provisão e do poder de Deus para executar a obra que o Senhor colocou em seu coração? – Ora, todos somos carentes de Sua contínua provisão para possuirmos uma vida vitoriosa em nosso dia a dia. Seria então penoso demais jejuar pelo menos uma vez por semana com o objetivo de manter os "canais" de sua vida limpos? O nosso irmão Tiago deixou bem claro este ponto. Se você quiser poder e graça da parte de Deus você precisa se humilhar: "Humilhai-vos perante o Senhor e ele vos exaltará”.(Tg 4:10) O Espírito Santo é chamado de Espírito da graça. Se você almeja este glorioso Espírito da graça operante em sua vida, o caminho é simples, humilhe-se "debaixo de Sua poderosa mão”.(Estaremos tratando com mais profundidade este tema no capítulo 5).
+
+3. Nós jejuamos para obtermos vitória sobre tentações e ataques que nos impedem de estarmos nos movendo no poder de Deus.
+
+Se a unção do alto não está fluindo através de sua vida, isso é um bom indicativo que você precisa introduzir em sua vida o jejum e a oração. Chegado está o momento de limpar o "canal" para o mover livre do Espírito de Deus através de você. Mais uma vez voltemos para Aquele que tem o padrão de estatura de varão perfeito, o grande Autor de nossa fé, Jesus. De acordo com o Evangelho de Lucas capítulo 4, o Senhor saiu do deserto, da tentação no "Poder do Espírito Santo”.Se você deseja o mesmo, siga-Lhe os passos, faça o que Ele fez. O evangelho nos relata que Jesus não comeu nada por 40 dias sendo, por todo este tempo tentado pelo diabo; todavia, o ponto alto do ataque de satanás foi no momento em que o Senhor se encontrou faminto.
+
+4. Jejuamos para nos purificarmos do pecado (e nos tornarmos aptos para ajudar outros no caminho da consagração).
+
+De acordo com as Escrituras Sagradas, Jesus Cristo tirou todo o pecado do mundo na cruz do Calvário. Sim, isto é, sem duvida, uma realidade gloriosa. Contudo muitos de nós ainda vivemos "Cercado" ou "embaraçados" por pecados e parece que por mais que nos esforcemos e os evitemos, eles continuam nos assediando e trazendo frustrações. Esta tem sido a realidade da sua vida? - Na verdade, nosso Deus, sendo conhecedor de nossa natureza providenciou de antemão provisão para sermos, não somente vencedores sobre o pecado em nossas vidas, mas também aptos para nos posicionarmos na brecha da intercessão por outros. Se existe algum mal hábito ou pecado "crônico" em sua vida que ainda insiste em mantê-lo longe daquilo que o Senhor tem preparado para você, saiba que é hora de humilhar a sua alma no jejum e na oração, e o Senhor o purificará completamente. Uma vez purificado e andando no poder do Espírito, esteja de prontidão para o momento e que o Senhor o levantará em intercessão para a vida de outros. Um outro modelo desta prática, além de Jesus Cristo, foi o profeta Daniel:
+
+“Eu dirigi o meu rosto ao Senhor Deus, para o buscar com oração e rogos, com jejum, e saco e cinza
+
+E orei ao Senhor meu Deus, e confessei, e disse: Ah! Senhor! Deus grande e tremendo, que guardas o concerto e a misericórdia para com os que te amam e guardam os teus mandamentos; Pecamos, e cometemos iniqüidade, e procedemos impiamente, e fomos rebeldes, apartando-nos dos teus mandamentos e dos teus juízos. "
+
+(Dn 9:3-5)
+
+Podemos, sem dúvida, usar este modelo de oração para nossa congregação, por nossas crianças e até mesmo por nossa cidade e nação. Daniel está confessando que eles, a nação inteira havia saído dos caminhos do Senhor e, o motivo de estarem vivendo em tamanha derrota, foram os pecados e as transgressões cometidas pelo seu povo. Ora, Daniel foi um dos homens mais justos de sua geração! Ele foi aquele homem, que com ousadia e fé, tapou a boca dos leões e humildemente confessou: "Senhor, nós pecamos”. Por muitas vezes, tenho compartilhado este princípio com pastores que protestam dizendo: "Você não entende! Estamos bem. Estamos hoje em um novo contexto, estamos vivendo na dispensação da graça”.Eu os ouço e simplesmente digo: "Vocês é que não entendem, estamos bem, vivemos na dispensação da graça, mas nossas cidades, o nosso país, as nossas nações estão vivendo de migalhas! Precisamos tomar sobre nossos ombros este encargo e orar assim: 'Deus, temos pecado, temos nos tornado preguiçosos. Perdoa e restaura-nos.
+
+Como crentes e intercessores, temos como exemplo o Grande intercessor. Somos, portanto, chamados e expectados a tomar sobre nós o encargo da vida daqueles que estão se perdendo. Isto é tão somente uma inevitável parte do compromisso que temos ao “ tomar sobre nós a nossa cruz a cada dia." No decorrer da história existem registros de cidades ou nações inteiras que buscaram o arrependimento e jejuaram para purificação de pecado. Isto aconteceu nos dias de Jonas. Os ninivitas eram maus e violentos e estavam prestes a serem julgados e aniquilados por Deus; porém, eles encontraram o caminho do jejum (até os jumentos, camelos e cabritos foram colocados para jejuarem):
+
+“E os homens de Nínive creram em Deus; e proclamaram um jejum e vestiram-se de saco, desde o maior até o menor”.
+
+Porque esta palavra chegou ao rei de Nínive, e levantou-se do seu trono e tirou de si os seus vestidos, e cobriu-se de saco, e assentou-se sobre a cinza.
+
+E fez uma proclamação, que se divulgou em Nínive, por mandado do rei e dos seus grandes, dizendo: Nem homens, nem animais, nem bois, nem ovelhas provem coisa alguma, nem se lhes dê pasto, nem bebam água.
+
+Mas os homens e os animais estarão cobertos de sacos, e clamarão fortemente a Deus, e se converterão, cada um do seu mau caminho, e da violência que há nas suas mãos.
+
+Quem sabe se voltará Deus, e se arrependerá, e se apartará do,seu.Furor da sua ira, de sorte que não pereceremos?
+
+E Deus viu as obras deles, como se converteram do seu mau caminho: e Deus se arrependeu do mal que tinha dito lhes faria, e não o fez.
+
+(Jn 3:5-10)
+
+O jejum para a purificação pode ser, às vezes, um pouco confuso para se entender devido à sua natureza no processo de purificação de nossas vidas. O jejum tem a capacidade de "trazer à tona" de nosso ser toda a podridão do pecado e sujeira de maus hábitos que, diariamente, "borbulham" na superfície de nosso viver. Você rapidamente observará, especialmente em longos períodos de jejum, que se você tiver um mau temperamento encubado que só Deus (e a sua esposa) sabem, isto começará a emergir à superfície e você não terá problema em se expor (pois agora você está maleável). Por vez, isto lhe parecerá profundamente doloroso, mas seja paciente, não se desencoraje. O Senhor o limpará completamente.
+
+5. Nós jejuamos para nos quebrantarmos diante do Senhor e, ao mesmo tempo, nos fortalecermos Nele.
+
+O jejum é a arma providenciada por Deus contra a carne. Quando você jejua, você então faz uma escolha interior e demonstra externamente que você almeja o poder de Deus em seu viver diário.
+
+Muitos anos atrás, quando iniciava meu ministério, recebi um chamado de um casal, o qual amava muito e por quem orava constantemente. Naquele instante eu tinha pouquíssimo dinheiro disponível, mas meu coração foi profundamente tocado quando um deles me disse: "Irmão Mahesh, estamos passando por grande necessidade”.Eles estavam terminando a faculdade e estavam sendo obrigados a abandoná-la por falta de recurso financeiro, até mesmo, para necessidade básicas.
+
+Eles me disseram: "Mahesh, tudo que queremos é que você esteja em oração em nosso favor”.Eu, porém, os amava muito e disse: "Bom....." - Eu estava naquele instante prestes a dizer-lhes que enviaria todo o dinheiro de minha conta bancária. Eu, na verdade, ainda estava na Universidade e precisava muito daquele dinheiro que, com muitos esforços, havia economizado. Assim que aqueles irmãos compartilharamme aquela necessidade, eu disse para mim mesmo: "Eu vou lhes dar todo o dinheiro que tenho guardado para matrícula no próximo semestre”.Era a minha carne falando. Ora, não existe mal algum ofertar àqueles que estão em necessidade; todavia, aquele não era o momento para tal procedimento. O pedido dos irmãos era tão somente por oração. Eles buscavam o mover do Senhor e eu, simplesmente, queria dar-lhes algum dinheiro.
+
+De repente, Deus parecia falar comigo ao meu ouvido: "Mahesh, você vai ajudá-los ou vai deixar Eu agir?" Então eu disse: "O Senhor é Soberano." - E orei por eles.
+
+No dia seguinte os dois foram contemplados com bolsa de estudo integral. E o milagre da provisão não parou aí! Nos dois anos que se seguiram, Deus continuou a cuidar de suas necessidades de maneira sobrenatural! Em contraste a tamanha benção, "o desejo da carne" ou "o braço mortal de Mahesh" poderia ajudar os meus amigos talvez por três dias no máximo. Graças a Deus! Ele tem o melhor caminho. Considere o que Senhor diz em Sua Palavra:
+
+"De jejuar estão enfraquecidos os meus joelhos, e a minha carne emagrece.
+
+E ainda lhes sirvo de opróbrio; quando me contemplam, movem as cabeças.
+
+Ajuda-me, Senhor Deus meu: salva-me segundo a tua misericórdia. Para que saibam que nisto está a tua mão, e que tu, Senhor, o fizeste.
+
+Amaldiçoem eles, mas abençoa tu: levantem-se, mas fiquem confundidos; e alegre-se o teu servo.
+
+(Sl 109: 24-28)
+
+"E disse-me: A minha graça te basta, porque o meu poder se aperfeiçoa na fraqueza. De boa vontade pois me gloriarei nas minhas fraquezas, para que em mim habite o poder de Cristo. Pelo que sinto prazer nas fraquezas, nas injúrias, nas necessidades, nas perseguições, nas angústias por amor de Cristo. Porque quando estou fraco então sou forte.
+
+(2 Co 12: 9,10)
+
+6. Nós jejuamos para obter da parte do Senhor o suporte necessário para executar a Sua obra.
+
+Os líderes da igreja em Antioquia jejuaram e oraram antes de enviarem Barnabé e Saulo. Aqueles líderes fizeram a escolha certa, pois buscavam o pleno sucesso na jornada que seria empreendida por aqueles apóstolos. Barnabé e Saulo sempre seguiram os mesmos passos executados por eles em Antioquia. Todas as vezes que estabeleciam uma igreja em uma cidade, eles oravam e jejuavam antes de apontarem os presbíteros daquela cidade. A prática do jejum e oração foi um instrumento por excelência para conduzi-los nesta difícil escolha e assim, assegurar o sucesso da pregação do Evangelho e o crescimento da igreja na cidade. (Veja Atos 13:3,4; 14:23).
+
+7. Nós jejuamos em tempo de crise.
+
+O homem sempre recorreu a Deus em oração e jejum em tempos de crise. O livro de Ester registra o que, provavelmente, foi o tempo mais crítico da história do povo judeu. Embora o brutal massacre imposto aos judeus por Hitler exterminasse cerca de seis milhões de judeus na Segunda Guerra, milhares de judeus ainda viviam em outros países no mundo. No tempo de Ester, entretanto, os judeus ainda não tinham sido dispersos e Hamã estava, literalmente, na eminência de ter sucesso em seu objetivo macabro de destruir toda a raça judia. O rei medo-persa já tinha assinado o atestado de óbito daquela nação, quando Ester trouxe uma palavra aos judeus. Ela lhes pedia para estarem em um propósito de jejum antes dela arriscar a sua vida ao entrar na presença do rei e pedir misericórdia para o seu povo.
+
+“Então disse Ester que tomasse a dizer a Mardoqueu”:
+
+Vai, ajunta a todos os judeus que se acharem em Susã, e jejuai por mim e não comais nem bebais por três dias, nem de dia nem de noite, e eu e as minhas moças também assim jejuaremos; e assim irei ter com o rei ainda que não é segundo a lei; e, perecendo, pereço.”
+
+(Et 4:15,16)
+
+Em tempos de crise, o ideal é procurarmos estar em jejum, nos abstendo de toda e qualquer comida e bebida. Contudo, eu jamais te recomendaria fazer isto por mais de três dias, a menos que, você esteja gozando literalmente da glória de Deus e possua uma palavra específica Dele para tal. Ester pediu a seu povo que estivesse jejuando por três dias e, no final deste período, Deus transformou toda aquela situação caótica em que se encontrava o Seu povo, trazendo poderosa libertação.
+
+Novamente, no Segundo Livro das Crônicas 20, Judá estava para ser destruída pelos seus inimigos quando, o rei Josafá, ordenou ao seu povo um jejum. Como resultado, eles foram testemunhas de um dos mais dramáticos atos de libertação sobrenatural registrados na Bíblia.
+
+8. Nós jejuamos quando buscamos a direção de Deus.
+
+"Então apregoei ali um jejum junto ao rio Aava, para nos humilharmos diante da face de nosso Deus para lhe pedirmos caminho direito para nós, e para nossos filhos e para toda a nossa fazenda.
+
+Porque me envergonhei de pedir ao rei exército e cavaleiros para nos defenderem do inimigo no caminho, porquanto tínhamos falado ao rei, dizendo: a mão do nosso Deus é sobre todos os que, O buscam para o bem, mas a sua força e a sua ira sobre todos os que O deixam.”
+
+(Ed 8:21-23)
+
+Quando você precisa da direção de Deus ou se encontra confuso acerca de qual caminho tomar, a melhor coisa que você pode fazer é jejuar Especialmente em se tratando da área de relação interpessoal, em particular, irmãos que estão na fase de escolha sobre com quem se casar. O Senhor ensinou-me este princípio antes de me casar e eu jejuava por minha esposa antes mesmo de conhecê-la. Eu tinha a plena certeza que o Senhor não tinha me chamado para o celibato e, certamente Ele sabia quem era ela e onde estava. Assim, armado com este pensamento perseverava em meu jejum. Posteriormente Bonnie e eu comparamos as nossas anotações e descobrimos que no momento mais crítico de sua vida, após seus pais se divorciarem, ela entrou em profunda crise. E exatamente durante aquele período, sem ter a mínima noção do que acontecia, senti o desejo de orar por ela, ministrando-lhe suporte e libertação.
+
+9. Nós jejuamos para crescermos no entendimento espiritual e revelação divina.
+
+Como cristãos, precisamos muito mais do que direção. Precisamos também de revelação e entendimento de certas questões, situações e verdades bíblicas. A palavra nos diz: "Portanto, entra tu, e lê do rolo que escreveste da minha boca as palavras do Senhor aos ouvidos do povo, na casa do Senhor, no dia de jejum. Também as lerás aos ouvidos de todo o Judá, que vem de suas cidades”.(Jer 36:6)
+
+Às vezes a revelação da parte do Senhor não vem, necessariamente, no momento em que jejuamos, mas posteriormente. Isto aconteceu comigo, quando o Senhor revelou-me os maravilhosos princípios de cura durante uma cruzada no Haiti. Deus operou tremendos milagres naqueles encontros. Contudo, os sacerdotes locais de Vodu e feiticeiros ficaram muito perturbados com a nossas concentrações. Eles convocaram, através do rádio, todos os feiticeiros e bruxos para uma reunião com o objetivo de lançar sobre nós uma maldição! Eu disse: "Oh! Isto é maravilhoso! Vamos ver O que eles podem fazer, pois eu tenho certeza que a glória do Senhor está ao nosso redor e, absolutamente, nada pode nos tocar”. Durante uma daquelas reuniões, uma certa mulher que havia nascido cega foi trazida à frente por sua neta. Tivemos naquele país várias consecutivas de concentrações e, todas as noites, aquela senhora vinha à frente com a sua mão no ombro de sua netinha para receber oração e por várias vezes experimentou o impacto da unção de Deus, e cair pelo chão, embora eu mal a tocasse. Durante um destes momentos, sabendo que alguma coisa tinha acontecido àquela pobre mulher, me dirigi a ela dizendo: "Como você está, vovó? Olhe para mim!" Ela constrangida e piscando os seus olhinhos inativos, respondeu: "Eu não posso ver." Eu só pude lhe responder: "Certo, vem aqui por favor!" Orei por ela e nada aconteceu.
+
+A mesma coisa aconteceu em todas as concentrações nas noites seguintes. Ela sempre vinha à frente com sua neta. Era impactada pelo poder do Espírito Santo de tal maneira que, sempre caía pelo chão. Eu tinha certeza que aquilo que acontecia com ela era o genuíno poder do Espírito. Entretanto, a cada momento que a ajudava levantar-se do chão, fazendo a mesma pergunta, ela respondia: "Eu ainda não posso ver”.
+
+Confesso que comecei a me sentir um pouco embaraçado com aquela situação. Você deve imaginar como eu me sentia. Quando estamos conduzindo uma ministração de cura nós não esperamos, necessariamente, que a primeira pessoa a vir à frente seja um cego. Existe uma grande tentação para convidarmos aqueles que padecem com dor de cabeça ou alguma outra moléstia não tão exposta. Todavia o Senhor, em Sua soberania, não pensa assim.
+
+Já no quarto dia comecei a me preocupar com aquela vovó vindo à frente para receber oração. Eu então simplesmente pude orar: "Pai, obrigado porque ela não está esperando pela cura que eu posso realizar, mas pelas Suas maravilhas." Mais uma vez as mesmas coisas aconteceram; aliás, a mesma coisa aconteceu no quinto e no sexto dia. Ela vinha à frente, eu orava, ela caía pelo poder do Espírito, eu a ajudava a levantar, perguntava como ela estava e ela, brandamente, me respondia: "Ainda não posso ver”.Então eu lhe dizia: "O Senhor te abençoe!"
+
+No último dia daquela cruzada no Haiti, a minha vovó predileta mais uma vez veio à frente com a sua mão sobre o ombro de sua neta. Uma vez mais orei por ela, e novamente, um inacreditável poder de Deus sacudiu aquele frágil corpo e, absolutamente "nocauteada", caíra no chão. Cheguei perto dela dizendo: "Deus te abençoe."
+
+Uma vez mais fiz a mesma pergunta dos dias anteriores:
+
+"Como você se sente vovó?" E piscando os seus olhinhos negros, ela me respondeu com regozijo: "Eu posso te ver claramente!" Deus tinha recriado totalmente os seus olhos e dado a ela visão pela primeira vez em sua vida! Então exclamei: "Que maravilha! Aleluia! Só o Senhor é Deus!" No entanto, em meu íntimo eu disse: "Amém, eu sei que Senhor poderia fazer isto desde o primeiro dia."
+
+Muitos meses depois, durante um extensivo período de jejum e oração, eu estava dirigindo em uma avenida ao sul da Flórida, onde morava. Eu estava distraído quando, bem em frente dos meu olhos, se descortinou a cena daquele dia quando orei por aquela pobre vovó haitiana. Aquela visão era como se estivesse assistindo a um video-tape colorido daquele memorável dia. Durante muito tempo, fiquei muito impressionado sobre aqueles sete dias que estive orando por aquela mulher cega. Naquele momento quando o Senhor me abria os olhos para considerar aquele milagre, Ele deu-me entendimento daquilo que estava impedindo aquela mulher de ser curada desde o primeiro dia. O Senhor me mostrou que todas as vezes que ela vinha à frente para receber a oração, uma criatura que se parecia com um polvo, com os seus vários tentáculos, envolvia os olhos daquela mulher. Todas as vezes que orava por ela, a unção de Deus a tocava e a arrebatava de um daqueles horrendos tentáculos.
+
+Durante a primeira oração, um segundo tentáculo era sobrenaturalmente removido. Durante a segunda oração, o terceiro tentáculo e, assim por diante. Na última reunião aquela mulher linha vindo à frente apenas com o tentáculo que ainda insistia em fazê-la cega. Na verdade aquela criatura era um espírito de cegueira, um demônio que a tinha mantido amarrada e confinada num mundo de trevas. Quando orei por ela naquele último dia, o último tentáculo a abandonou e ela podia ver claramente.
+
+Naquele dia, o Senhor deixou bem claro em meu espírito que obstruções demoníacas podem nos impedir de várias maneiras. Toda vez que você ora sob a unção do Espírito Santo, sem dúvida alguma coisa acontece no mundo espiritual. Creia nisto! O Senhor sempre nos dirá: "Não se desencoraje. Persevere em oração até o último obstáculo cair por terra e a cura e a libertação acontecerem”.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 5;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 4 - Qual é a natureza de seu ministério?$t$, 5,
+$conteudo$Jamais esquecerei a vez em que estávamos ministrando no norte da Zâmbia, África. O Senhor usou aquela experiência para ensinar-me alguma coisa acerca de meu chamado e a natureza de meu ministério. Naquela oportunidade em que estivemos naquele país, o Senhor curou muitas pessoas em meio a uma multidão de 10.000 pessoas. Dentre todas as pessoas que foram curadas, me lembro de um homem coxo que freqüentou nossas reuniões com uma simples moleca improvisada em casa por mais de 55 anos. Os seus tornozelos eram contorcidos e suas pernas grotescamente tortas.
+
+Depois de receber a oração, as suas pernas imediatamente, se endireitaram e aquele homem começou a saltar de alegria e gozo. (Acredito que aquela cena foi bem similar ao que aconteceu em Atos 3:3-9, quando Pedro liberou uma palavra de cura para um homem que se assentava à porta formosa). Parecia-me que aquele velhinho não podia se conter de alegria e pulava o tempo todo. 'Também orei por um garoto de 16 anos que havia sido confinado a uma cadeira de rodas, vítima da poliomielite desde a idade de um; ano. A sua mãe o conduziu até a frente e o colocou na fila de oração, onde muitos também esperavam. Depois daquele menino receber a oração, ele escorregou da cadeira e foi para o chão imundo e ficou ali, enquanto orávamos por outras pessoas que também se encontravam na fila.
+
+De repente ouvi uma grande gritaria no meio daquela multidão e vários deficientes físicos começaram a pular. Não me contive e fui para o fundo do salão para tirar fotos daqueles milagres de cura. Temos que reconhecer que o nosso Deus é poderoso em sinais e maravilhas. Enquanto eu voltava para o púlpito, assisti aquele jovem paralítico repentinamente pular e começar a correr. Quando, finalmente, cheguei ao lugar onde se encontrava caído, ele passou por mim correndo em grande velocidade.
+
+Agarrada à cadeira de rodas, vazia, onde aquele garoto passara a maior parte de sua vida sem nenhuma esperança, a mãe chorava incontidamente e seus convulsivos soluços sacudiam todo o seu magro corpo. Quando aquela senhora me viu aproximando, imediatamente ela se ajoelhou no chão e enchendo as mãos de terra, jogava sobre si. O meu intérprete me relatou que ela dizia: "Obrigado, grande chefe, por vir á África e curar o meu querido filho”.Eu, cuidadosamente, a levantai do chão e disse: "Querida mamãe eu gostaria que você soubesse que sou apenas um pequeno servo do Chefe dos chefes. O Seu nome é Jesus e foi Ele quem curou o seu filhinho”.
+
+Enquanto conversava com aquela mulher ouvi um grande grito de lamento. Virando-me, deparei com uma pobre mulher desesperada vestindo-se apenas com um trapo imundo. (Em países como estes a pobreza é extrema e poucas pessoas têm condições de comprar roupas e calçados para si. Muitas usam apenas pedaços de panos para se cobrirem).
+
+Aquela miserável mulher me disse: "Senhor, eu não quero nada para mim, mas você poderia orar pela minha filha?" Então olhei ao redor e perguntei-lhe: Onde está a garota?" Então, levantando aquele farrapo de saia, ali estava, escondida atrás da mãe, uma pálida garotinha de três anos de idade. Ela vestia uma saia toda rasgada e uma blusa imunda e podia-se ver claramente grandes furúnculos que lhe brotavam por todo o seu corpo.
+
+"Mahesh, é assim que Eu me sinto..."
+
+Eu tinha certeza que aquela menininha estava sofrendo uma dor terrível. Para piorar todo aquele quadro de miséria, quando aquela mãe se curvou para mostrar-me o que havia de errado com sua filha, o seu xale caiu de seus ombros, e eu pude ver que aquele lado do corpo daquela mulher tinha sido, literalmente, comido por uma doença parecida com a lepra. Não somente a garotinha, mas também aquela preciosa mãe padecia de uma terrível doença. Contudo, o seu pedido de oração era somente para a sua filha.
+
+Abracei as duas ao mesmo tempo e orei ao Senhor com lodo o meu coração. Depois, aquela sofrida mulher falou-me com voz trêmula e com lágrimas correndo pelo o seu magro rosto, ela dizia: "Obrigado, senhor, por deixar o seu país e vir nos abençoar neste país tão pobre!"
+
+Eu, simplesmente, não pude conter as minhas lágrimas. Ainda hoje, não posso descrever a compaixão que senti, naquele momento, por aquelas pessoas. Ao deixar aquele recinto, senti o Espírito de Deus perguntar-me: "Você sentiu compaixão por esta mulher e aquela garotinha?" Respondi: "Sim Senhor!" Então o Senhor falou-me profundamente ao coração: "Mahesh, é assim que eu me sinto por todas as pessoas em todas as nações. Eles estão feridos, sem esperança e sem nenhum conhecimento da mensagem de meu filho Jesus Cristo. Eu quero que você os ajude. Compartilhe a mensagem da Vida!”.
+
+Onde está o exército?
+
+O "Texas Rangers" (grupo de homens que funcionavam como uma espécie de exército), que mantinha a lei e a ordem no tempo do velho "west", deixou-nos um legado inspirador. Certa vez, um xerife de uma pequena cidade do Texas, enviou um telegrama urgente para o "quartel" do Rangers dizendo: "Envie imediatamente um exército! A cidade se tornou um caos. Está instaurada a total baderna, a anarquia nos destruirá!"
+
+O xerife, então, recebeu de volta a sucinta resposta: "Encontre-me amanhã na estação às quatro horas."
+
+Na tarde do outro dia, aquele ansioso xerife e o desesperado prefeito esperavam impacientes, na plataforma, a aproximação do trem das quatro. Em meio àquela multidão que desembarcava eles observaram um único membro do "Texas Rangers" calmamente descer do trem com o seu rifle sobre o ombro. Entusiasmados, esperavam ver outros homens. Porém, para o desapontamento de ambos, o trem novamente partiu e nenhum outro soldado desembarcou. Correndo em direção àquele solitário soldado eles perguntaram ansiosamente: "Onde está o exército?"
+
+O soldado olhou dentro dos olhos deles e disse categoricamente: "Para cada baderna, um Ranger" Aquele pequeno homem sabia muito bem quem ele era, o que representava e a extensão de sua autoridade.
+
+A minha mensagem para você é simplesmente esta: "O Senhor tem chamado você como um 'Ranger' para colocar em ordem algum tumulto”.A sua missão é ter em seu coração o mesmo sentimento que Deus tem em relação ao mundo e realizar o ministério que o Senhor tem confiado a você. Ele já nos concedeu toda a autoridade necessária, a sua insígnia e toda arma necessária para a destruição do inimigo.
+
+A DESCRIÇÃO DA OBRA A SER REALIZADA
+
+Todos os três Evangelhos sinópticos (os Evangelhos de Mateus, Marcos e Lucas) registram o dia em que Jesus concedeu a seus discípulos autoridade, dando-lhes comando para expulsarem demônios e curar os enfermos.
+
+E então, se dirigiu a seus discípulos: a seara, na verdade é grande, mas os trabalhadores são poucos. Rogai, pois, ao Senhor da seara que mande trabalhadores para a sua seara. Tendo chamado os seus discípulos, deu-lhes Jesus autoridade sobre os espíritos imundos, para expelir e para curar toda sorte de doenças e enfermidades.
+
+(Mt 9:37-10:1)
+
+A descrição desta obra a ser realizada foi, na verdade, parcial por duas razões. Primeira, isto foi "apenas uma leve pincelada", uma palavra introdutória aos discípulos. Poderíamos também considerar esta palavra como um teste prévio ou uma amostra da nova realidade de vida que os discípulos viveriam após a obra de Jesus ser consumada na cruz e, posteriormente o batismo no Espírito Santo. Segunda, os discípulos enfrentariam um demônio, aparentemente insuperável, que atormentava aquele menino resistindo-lhes o comando (Mt 17:14- 21). Foi naquele dia que os discípulos aprenderam sobre o incrível poder da oração e do jejum.
+
+Por que eu, Senhor?
+
+Muitos cristãos fogem de suas responsabilidades para com os outros, porém, eles não percebem que estão simplesmente seguindo o exemplo de Caim, que deu a seguinte resposta à pergunta inquiridora do Senhor acerca de seu irmão: "Sou eu guardador de meu irmão?" A resposta do Senhor foi e ainda continua a ser: " Sim"
+
+O profeta Jeremias, expressamente frisou a eterna conseqüência de nossa responsabilidade em ajudar a resgatar outros: casa de Davi, assim diz o Senhor: Julgai pela manhã justamente e livrai o oprimido das mãos do opressor; para que não seja o meu furor como fogo e se acenda, sem que haja quem o apague, por causa da maldade das vossas ações. " (Jr 21:12)
+
+O nosso irmão Tiago também nos adverte no Novo Testamento: "Portanto, aquele que sabe que deve fazer o bem e não o faz nisso está pecando. " (Tg 4:17) Qual é este "bem" que Tiago está falando? Permita-me usar como ilustração um incidente que aconteceu na infância de minha esposa, Bonnie.
+
+Quando Bonnie tinha apenas sete anos de idade, ela e seus primos estavam brincando de "esconde - esconde" no celeiro de uma fazenda no Novo México. Bonnie escolheu, o que ela pensou ser, o esconderijo mais seguro, um lugar bem escuro onde havia vários sacos de cereais estocados. Vestida apenas com uma bermuda, camiseta e calçando sapatilhas, ela se abaixou silenciosamente entre as palhas, quase se encostando na parede.
+
+Naquele esconderijo, de um lugar iluminado por uma fresta de luz, Bonnie ouviu um barulho assustador do chocalho de uma cobra venenosa que já se preparava para lhe atacar. Apavorada, Bonnie deu um pulo e correu para a sede da fazenda em busca de seu pai. Quando eles chegaram no celeiro, ela percebeu que estava calçando apenas uma sapatilha.
+
+O pai de Bonnie entrou naquele velho celeiro com mais alguns companheiros e, alguns minutos mais tarde, lá estavam eles de volta carregando aquela imensa cobra venenosa. Travada em suas presas estava uma das sapatilhas deixada por Bonnie quando saiu correndo em busca de socorro. Creio que poderíamos usar este episódio para ilustrar o livramento que tivemos de satanás e do pecado através da morte e ressurreição de Jesus Cristo.
+
+Milhões de pessoas estão "inocentemente" se abaixando em lugares escuros e brincando o "jogo da vida”.Elas acreditam que agem de maneira correta e segura. A realidade é que existe uma cruel e agressiva serpente espreitando ao redor, insistindo em seu intento maligno de destruir toda a humanidade. Por nós mesmos estamos totalmente despreparados, desprotegidos e incapazes de contrapor o ataque desta terrível serpente. Mas Deus está chamando o mundo para 'correr para o Pai' e Suas Mãos (a Igreja) para matar a serpente. Jesus já fez tudo isto no Calvário, mas Ele está dependendo da Igreja para divulgar as Boas Novas e matar as cobras. Infelizmente muitos de nós, na Igreja, ainda levamos a vida como se a serpente fosse apenas um sonho ou um mito. Ora, irmãos, como filhos de Deus e conhecedores da Verdade, temos a comissão de Jesus e Seu poder para trazer libertação às pessoas. O que, estamos esperando?
+
+As últimas palavras que Jesus falou a Seus discípulos, enquanto estava nesta terra, nos oferece mais clareza sobre a natureza de Sua obra, a nós confiada:
+
+"Finalmente, apareceu Jesus aos onze, quando estavam à mesa, e censurou-lhes a incredulidade e dureza de coração, porque não deram crédito aos que o tinham visto já ressuscitado. E disse-lhes: "Ide por todo o mundo e pregai o evangelho a toda criatura. Quem crer e for batizado será salvo; quem, porém, não crê será condenado. Estes sinais hão de acompanhar aqueles que crêem: em meu nome, expelirão demônios, falarão novas línguas; pegarão em serpentes; e, se alguma cousa mortífera beberem, não lhes fará mal; se impuserem as mãos sobre os enfermos, eles ficarão curados. De fato, o Senhor Jesus, depois de lhes ter falado, foi recebido no céu, e assentou-se à destra de Deus. "
+
+(Mc 16:14-19)
+
+De acordo com o último versículo do Evangelho de Marcos, os discípulos se tornariam executores da Palavra proferida por Jesus a eles: "E eles, tendo partido, pregaram em toda parte, cooperando com eles o Senhor e confirmando a palavra por meio de sinais que se seguiam”.(Mc 16:20) Eu gostaria de lhe propor, caro leitor, algumas questões para você ponderar em seu coração: "Estas palavras são dignas de confiança para os nossos dias? Por quê? Na autoridade de quem realizamos todas as coisas? Quem na terra poderia, possivelmente, ter mais autoridade que nosso Senhor Jesus Cristo? Quem nesta terra poderia, com autoridade, afirmar que as palavras de Jesus não são para esta geração? O que havia no Evangelho do Senhor Jesus que o fazia declarar tais palavras com tal veemência e firmeza sabendo Ele da condição do homem caído e deste mundo maligno?" A única resposta é óbvia –As palavras de Jesus jamais passarão. O que Ele falou realizará. Cremos que o Evangelho do Senhor Jesus é o mesmo hoje e esperamos ver a cada dia, através da pregação, demônios derrotados, enfermidades serem curadas, libertação aos cativos e oprimidos. E por que não ressuscitar os mortos? As próprias palavras de Jesus são o nosso aval e garantia. Naturalmente estas obras só poderão ser realizadas na dependência exclusiva do Senhor, através de vidas consagradas à oração e ao jejum.
+
+Os apóstolos e os discípulos do primeiro século foram pessoas que oravam e jejuavam com muita freqüência. Por esta razão eles manifestaram e realizaram as mesmas obras vistas no ministério terreno de Jesus Cristo e este padrão de ministério ousado e sobrenatural continuou bem até o segundo século (bem depois da morte de Paulo e os discípulos). A efetividade do ministério declinou porque a intimidade do relacionamento entre o homem e Deus declinou-se à medida que a apatia, a heresia e formas político-religiosas vazias entraram para a Igreja.
+
+Já é tempo de tomarmos de volta todo o território que o inimigo roubou do povo de Deus. Ele almeja que Sua palavra habite em nós ricamente, que estejamos em íntima comunhão com o Seu Espírito e em obediência à Sua vontade. Quando reenvidicamos a nossa herança como filhos e começamos a buscar a Sua face em jejum e oração, todos os milagres dos Evangelhos e do livro de Atos virão bramindo para o diaa-dia da Igreja. Isto é tão simples quanto a oração de Jesus por nós:
+
+"Não rogo somente por estes, mas também por aqueles que vierem a crer em mim, por intermédio da sua palavra.
+
+Afim de que todos sejam um; e como és tu, ó pai, em mim e eu em ti, também sejam eles em nós; para que o mundo creia que tu me enviaste. Eu lhes tenho transmitido a glória que me tens dado, para que sejam um, como nós o somos,Eu neles, e tu em mim, afim de que sejam aperfeiçoados na unidade, para que o mundo conheça que tu me enviaste e o amaste, como também amaste a mim.
+
+Pai, a minha vontade é que onde Eu estou, estejam também comigo os que me deste, para que vejam a minha glória que me confiaste, porque me amaste antes da fundação do mundo. Pai justo, o mundo não te conheceu; eu, porém, te conheci, e também estes compreenderam que tu me enviaste.
+
+Eu lhes fiz conhecer o teu nome e ainda o farei conhecer, a fim de que o amor com que me amaste esteja neles, e eu neles esteja.
+
+(Jo 17: 20-26)
+
+A descrição da obra que Jesus deu a Seus discípulos há dois mil anos atrás ainda se aplica à Sua Igreja nos dias de hoje. Assim como os discípulos foram orientados, em Mateus 17:21, para orarem e jejuarem para serem vitoriosos diante de qualquer obstáculo em suas vidas, eu e você somos também comissionados a jejuarmos e orarmos nos dias de hoje. Assim como o Senhor confiou aos discípulos a responsabilidade da pregação do evangelho para arrependimento, de orar pelos enfermos e expulsar os demônios, as mesmas coisas também são esperadas de mim e de você! O que irei te dizer talvez possa lhe parecer estranho, mas é a genuína palavra de Deus: "A você foi dada também a autoridade de ressuscitar os mortos, embora isto deva ser realizado sob o estrito comando e direção de Deus." Acredito que a Igreja nesta geração começará a ver os mortos se levantarem como um sinal e maravilha em um nível nunca visto na história da Igreja. Todavia isto jamais acontecerá até que o povo de Deus descubra e pratique O PODER SECRETO DO JEJUM E DA ORAÇÃO.
+
+Você é um discípulo de Jesus Cristo? Deixe-me clarear este ponto, se existe alguma confusão: Se você é um crente em Cristo Jesus, então você é um discípulo! Qual é a natureza do ministério de um discípulo de Jesus Cristo? O Senhor disse:
+
+"Estes sinais hão de acompanhar aqueles que crêem: em meu nome, expelirão demônios; falarão novas línguas; pegarão em serpentes; e, se alguma cousa mortífera beberem, não lhes fará mal; se impuserem as mãos sobre enfermos, eles ficarão curados. "
+
+(Mc 16:17,18)
+
+As pessoas que Jesus comissionou e enviou dois a dois eram pessoas comuns como eu e você, mas o Senhor não estava importando com isto. As atribuições do ministério daqueles homens incluía a responsabilidade de curar os enfermos, ressuscitar os mortos e expulsar os demônios. O Senhor disse a eles: "... de graça recebeste, de graça dai. " (Mt 10: 8b)
+
+Infelizmente, a Igreja perdeu a visão da natureza da obra em favor de um cômodo comportamento. Ela prefere se esconder entre quatro paredes, se assentar em bancos confortáveis, limitando o poder de Deus. Ora, os propósitos, os planos de Deus não foram mudados. O Senhor também nos tem chamado para trazer libertação aos cativos, para sermos as testemunhas vivas de Seu poder libertador em nossos dias em qualquer lugar que formos. Nos custará um preço para carregar este nível de unção em nossas vidas para curar; isto nos demandará uma vida disciplinada de jejum e oração. Mas queridos, se não existir nenhum objetivo ou alvo em nosso viver, nunca seremos nada em Cristo. O apóstolo Paulo tomou Cristo como o seu alvo máximo:
+
+"Irmãos, quanto a mim, não julgo havê-lo alcançado; mas uma cousa faço: esquecendo-me das cousas que para trás ficam e avançando para as que diante de mim estão, prossigo para o alvo para o prêmio da soberana vocação de Deus em Cristo Jesus. Todos, pois, que somos perfeitos, tenhamos este sentimento; e, se, porventura pensais doutro modo, também isto Deus vos esclarecerá.
+
+(Fp 3:3-15)
+
+Quando estamos vivendo o estilo adequado de vida em Jesus, o Senhor estará sempre proporcionando formas de estarmos servindo aos outros. Isto acontecerá, por exemplo, na nossa rotina diária de ir para o trabalho, para o supermercado ou abastecer o nosso carro. Nestes momentos, o Senhor estará nos dando a chance de repartirmos com os outros as Boas Novas do Evangelho. Foi assim que aconteceu com os discípulos.
+
+APRENDA COM A HISTÓRIA
+
+A história é uma grande professora e, aquelas gerações que têm observado as suas lições foram mais sábias que aquelas que foram distraídas. O difícil período, que circundou a Segunda Guerra mundial e o holocausto judeu, possui muitos exemplos que demonstram a urgente necessidade dos filhos da Luz se posicionarem contra os filhos das trevas.
+
+Durante aqueles anos tenebrosos de guerra, alguns indivíduos se levantaram com coragem e visão tendo o viver como um "farol iluminado" que lançava luz contra a sinistra nuvem de morte que pairava sobre toda a Europa. Apesar de toda opressão e tirania vivida sob a carnificina do terceiro Reich de Hitler, alguns intrépidos, em meio a tanta escravidão, ousaram a exercitar a sua liberdade para escolher um viver adequado no Senhor e assim fazendo, foram fonte de provisão espiritual para muitos.
+
+Oskar Schindler foi um homem de negócios e um nazista que intentava construir um império social e financeiro para si mesmo em virtude da exploração daquela caótica ocasião de guerra. Schindler não teve sucesso em seus negócios antes ou depois da guerra, mas durante aquele terrível confronto ele se envolveu pessoalmente no resgate de mais de 1.200 judeus, cujas vidas e linhagem seriam extintas para sempre nos fornos ou câmaras de gás dos campos de extermínio nazista.
+
+De alguma maneira, este homem de negócio teve o seu coração tocado. O seu sistema de valores foi completamente transformado e, como resultado, começou a direcionar a sua fábrica de munição para um negócio voltado a resgatar vidas. Um por um, Oskar fez com que judeus refugiados e prisioneiros fossem transferidos para a sua fábrica de munição como "escravos" e, propositalmente, ordenava seus trabalhadores fabricarem munições com defeitos. Com o tempo, a situação econômica no país se tornou desesperadora. Schindler começou, então, vender seus bens pessoais e arriscar a sua própria vida na compra de vidas de mais judeus para livrá-los da morte nos campos de concentração. Finalmente, como as forças aliadas começaram a entrar nas fronteiras alemãs libertando a Europa, Schindler, ainda oficialmente considerado um membro do partido nazista, foi forçado a abandonar a Alemanha.
+
+Em um filme que relata a história verídica deste homem, uma cena mostra o seu último adeus às centenas de refugiados judeus que ele tinha pessoalmente resgatado das "garras" de Hitler. No momento em que contempla os rostos daqueles homens, Schindler percebeu quão poucos eles eram em relação à milhares que foram arrastados para a morte. Quando olhou para os poucos bens que ainda lhe restava, inclusive o carro que estava prestes o usar para a sua viagem, ele exclamou para si mesmo: "Mais dez vidas, mais dez vidas pelo menos poderiam ter sido salvas se eu tivesse vendido o resto de minhas coisas. Eu poderia ter feito muito, muito mais."
+
+No momento em que assisti esta dramática cena no filme "A lista de Schindler", o meu coração saltou dentro de mim. Oskar Schindler gastou toda a fortuna que tinha feito para comprar vidas que estavam na lista de morte de Hitler. As 1.200 pessoas salvas se multiplicaram para mais de 6.000; 6 milhões foram brutalmente esmagadas e destas, outras milhões foram privadas de nascer.
+
+Há uma voz profética clamando através das palavras de Oskar Schindler que diz, com a autoridade de Deus: "Sem Cristo a vida perecerá. O propósito principal para todos os crentes é resgatar aqueles que perecem sob a escravidão do pecado e caminham para a morte eterna. A comissão para todos os crentes é simplesmente salvar outros." Em outras palavras o único aspecto eterno de nossa existência nesta terra é o nosso investimento na Vida eterna de outros.
+
+Qual é a natureza do seu chamado? – Sem sombra de duvida é ser igual a Jesus em palavras e feitos. A melhor maneira, creio eu, de terminar este capítulo e preparar os nossos corações para o próximo é recordar e meditar a profecia que definiu o chamado de nosso Senhor Jesus e que também define o seu chamado nesta geração.
+
+"O Espírito do Senhor está sobre mim, pelo que me ungiu para evangelizar os pobres. Enviou-me para apregoar liberdade aos cativos, dar vista aos cegos, pôr em liberdade os oprimidos, e anunciar o ano aceitável do Senhor.
+
+(Lc 4:18,19)
+
+Você também é chamado e ungido pelo Espírito Santo para pregar as Boas Novas de esperança aos pobres. Como discípulo de Jesus, a você foi dada autoridade para, em Seu nome, abrir os olhos aos cegos e trazer libertação a todos os oprimidos de satanás. Hoje, talvez como nunca antes, você está ungido para proclamar "o ano aceitável do Senhor!"
+
+Agora a mais difícil pergunta: "Você está preparado para realizar as obras de Jesus como você foi comandado por Ele?" Se a resposta for sim, então você deve estar preparado para pagar o preço e dizer como Jesus disse a esta geração: "Hoje se cumpriu esta escritura que acabais de ouvir”. (Lc 4:21b)
+
+O primeiro passo para o sucesso e talvez o mais difícil é o caminho para a verdadeira humilhação.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 6;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 5 - Humildade: a posição de triunfo$t$, 6,
+$conteudo$Em 1986 durante um período de 40 dias de jejum, o Senhor falou-me que estava enviando um avivamento, a nível mundial e, conseqüentemente, uma grande colheita de vidas sem precedentes. Acredito que estamos entrando em um período que poderíamos chamar de pós-carismático ou "onda" de avivamento. Já estamos começando a ver as primeiras gotas desta chuva da unção e glória de Deus. A primeira impressão que o Senhor colocou em meu espírito sobre esta grande colheita foi a mais de 10 anos atrás.
+
+Muitos outros profetas e líderes cristãos, incluindo o irmão Paul Cain, têm tido também a mesma visão por mais de 10 anos. Acredito que hoje, como nos dias do profeta Elias, estamos presenciando o início de um grande derramamento do Espírito. O que estamos vendo, na verdade, é uma pequena nuvem no horizonte (não é maravilhoso?). Todavia, o que se segue a esta pequena nuvem é um grande mover e fluir de Deus nestes dias em escala nunca vista em nenhuma geração! Acredito que até mesmo o menor grupo de oração não poderá se conter dentro dos prédios das igrejas. Com certeza haverá congregações locais que serão obrigadas a realizar seus cultos dominicais em estádios esportivos. Existirá também tantos reavivamentos em nossas cidades que mesmo o mais secular dos programas de rádio ou televisão estarão reportando o mover de Deus em Sua igreja. Permita-me por um momento me deleitar em um sonho:
+
+`Quinze pessoas que nasceram cegas estão agora vendo,depois de participarem da reunião de culto pela manhã na igreja de Dallas que se reúne no estádio local. Vinte e cinco pessoas que têm levado suas vidas confinadas em cadeiras de rodas por motivo de várias enfermidades começaram a andar e até mesmo a pular diante de milhares de pessoas durante um culto de reavivamento em Mobile, Alabama, nesta tarde. Policiais estão discutindo a melhor maneira de dispor das centenas de cadeiras de rodas, muletas e dispositivos ortopédicos deixados para trás depois de todos os cultos acontecidos na cidade.'
+
+Eu almejo o dia em que os programas de rádio e televisão estarão cheios de noticiários acerca dos tremendos milagres realizados pelo Senhor Jesus antes de Sua vinda. No entanto, queridos, a Igreja só será capaz de operar na plenitude do Espírito Santo quando os seus membros viverem na plenitude de Deus em suas vidas. Como obter graça? – Nos humilhando. Provérbios 3:34 diz que Deus "...dá a sua graça aos humildes. "
+
+Jesus, o nosso maior modelo de ministério, discipulado e liderança, nos mostrou o caminho. Veja o que o Apóstolo Paulo disse aos filipenses:
+
+"Tende em vós o mesmo sentimento que houve também em Cristo Jesus, pois subsistindo em forma de Deus, não julgou como usurpação o ser igual a Deus; antes, a si mesmo se esvaziou, assumindo a forma de servo, tomando-se em semelhança de homem; e, reconhecido em figura humana, a si mesmo se humilhou, tornando-se obediente até a morte e morte de cruz. Pelo que também Deus o exaltou soberanamente e lhe deu o nome que está acima de todo nome.”
+
+(Fp 2:5-9)
+
+Existe muita confusão acerca destas palavras "humildade"e "humilhação." Elas carregam em si mesmas uma imagem de aparência e atitude exterior que, às vezes, nem sempre corresponde com a realidade interior. Em outras palavras, este genuíno aspecto Interior, pode ser confundido com aquela aparência exterior que camufla o orgulho e a autoconfiança. Portanto, algumas ações consideradas frutos de um coração humilde podem estar escondendo uma grande vaidade em nossa obra e ministério. Por isto precisamos tomar o caminho que a Bíblia nos propõe para a verdadeira humilhação diante de Deus.
+
+Sempre quando alguém me procura dizendo: "Irmão Mahesh, ore por mim para que eu me torne humilde diante de Deus e persevere em meu viver diário desta forma"; eu geralmente compartilho com eles acerca da vida de Davi e os Salmos. No contexto em que orava por aqueles que eram os seus inimigos, Davi escreveu: "... eu humilho a minha alma com jejum e oração... " (SI 35:13) A palavra hebraica traduzida para "minha alma" é nephesh, a qual pode ser literalmente traduzida como "o meu ser que respira. A maioria das versões bíblicas, traduz esta palavra como "alma” Em Salmos 69, um clássico salmo sobre o Messias, Davi escreveu profeticamente:
+
+“Não sejam envergonhados por minha causa os que esperam em ti, ó Senhor, Deus dos Exércitos; nem por minha causa sofram vexames os que te buscam, ó Deus de Israel. Pois tenho suportado afrontas por amor de ti e o rosto se me encobre de vexame. Tornei-me estranho a meus irmãos e desconhecido aos filhos de minha mãe. Pois o zelo da tua casa me consumiu, e as Injurias dos que te ultrajam caem sobre mim. Chorei, em jejum está a minha alma, e isso mesmo se me tornou em afrontas. (SI 69: 6-10)”.
+
+O caminho bíblico para nos humilharmos diante de Deus é através do jejum. Ora, precisamos disciplinar as nossas almas, e a maneira mais efetiva de fazê-lo é através do jejum. Quando nos humilhamos diante de Deus, recebemos mais de Sua graça e de Seu poder. O Apóstolo Pedro escreveu:
+
+"Rogo igualmente aos jovens: sede submissos aos que são mais velhos; outrossim, no trato de uns com os outros, cingi-vos todos de humildade, porque Deus resiste aos soberbos, contudo, aos humildes concede a sua graça. Humilhai-vos, portanto, sob a poderosa mão de Deus, para que Ele, em tempo oportuno, vos exalte. "
+
+(1 Pe 5:5,6)
+
+Se formos capazes de viver nesta atmosfera de genuína humilhação, Deus, a Seu tempo, nos exaltará. O problema nos Estados Unidos e em vários países ocidentais é que nosso estilo de vida diária, sempre voltado para a cultura do prazer, produz as pessoas mais impacientes do mundo. Nós temos sido, através das décadas, cuidadosamente ensinados pelo "marketing" a esperar a gratificação instantânea.
+
+Você não acredita no que digo? Então, com um cronômetro, sente-se diante de sua televisão por apenas uma noite. Você rapidamente descobrirá que, em quase todas as situações que se desenrolam nos programas televisivos, o personagem principal é capaz de resolver seus problemas em um passe de mágica (e quase todos os problemas surgem porque eles não podem alcançar o que querem da maneira e na rapidez que desejam). Muitas das propagandas que são "despejadas" em nossas casas todos os dias têm como objetivo, convencer a nós e a nossos filhos da necessidade de "sermos donos de nossos próprios narizes" e das vantagens de sermos sempre o "numero um". Suponho que eles acreditam que se formos expostos à uma mentira por um tempo suficiente, ela se tornará a pura verdade. A nossa vida não pode funcionar desta maneira. Deus, em Sua palavra, nos diz que se nos humilharmos,Ele nos exaltará.
+
+ELE ESCOLHEU ESTE PEQUENO ÓRFÃO INDIANO
+
+Considere as promessas Dele novamente. Ele disse que nos exaltaria. Esta promessa é tremenda e sai da boca daquele que nunca mente ou falha em cumprir as Suas promessas. Como eu me humilho diante da inexplicável graça e misericórdia concedidas a mim! Ele escolheu aquele pequeno órfão indiano, oriundo de um remoto lugar, e o conduziu a vários anos de jejum e oração. Posteriormente, o levantou para conduzir várias cruzadas de evangelismo com curas, sinais e prodígios em 86 países. Ele o usou até mesmo (não sei por qual razão, Ele o sabe) para ministrar milagres em Jerusalém, apenas a alguns metros de algumas ruas onde Jesus andou! - Quem sou eu? Por que eu e minha esposa Bonnie temos sido tão abençoados com o privilégio de ver Deus realizar tantos milagres em nosso ministério? Com certeza não é por nossa própria causa – Toda a glória seja dada somente a Ele. A única coisa que posso dizer é: "Senhor, a Sua misericórdia para com este pequeno indiano órfão é maravilhosa. Obrigado Senhor!"
+
+Você pode escolher viver uma vida de contínua humilhação diante de Deus. Ore ao Senhor constantemente: "Senhor, o meu desejo é me humilhar diante da Sua presença!" A coisa mais maravilhosa que acontece quando nos humilhamos debaixo de Sua potente mão é que, "ao Seu tempo", Ele nos exalta e nos unge para realizar a Sua obra. Não fiquemos ansiosos por coisa alguma! Apenas humilhemo-nos, reconhecendo que não somos nada diante Dele.
+
+Uma das mais interessantes passagens sobre humilhação, jejum e oração está no Segundo livro das Crônicas:
+
+"Se o meu povo, que se chama pelo meu nome, se humilhar, e orar, e me buscar, e se converter dos seus maus caminhos, então, eu ouvirei dos céus, perdoarei os seus pecados e sararei a sua terra."
+
+(2 Cr 7:14)
+
+Quando a Bíblia fala de "se humilhar", ela não está falando de uma atitude exterior, como por exemplo andar maltrapilho e dizer: "Ó, eu sou muito humilde." A palavra está se referindo à maneira bíblica de se humilhar através do jejum descrito por Davi em Salmos.
+
+Deus deseja que nos humilhemos individualmente e corporativamente; Ele também quer que oremos e busquemos a Sua face e nos arrependamos de nossos maus caminhos. Se realizarmos estas coisas, a Sua promessa é que Ele nos ouvirá, perdoará nossos pecados e sarará a nossa terra.
+
+EMBAIXADORES DA LIBERTAÇÃO
+
+Parte da comissão que o Senhor nos deu como embaixadores do Evangelho da reconciliação, é graça e unção de expulsar demônios em nome de Jesus. Como embaixadores do Rei, seja onde for que estejamos, esta responsabilidade estará conosco. A palavra de Deus diz: "O mau mensageiro se precipita no mal, mas o embaixador fiel é saúde. " (Pv 13:17) Sinto que o Corpo de Cristo está se movendo para um novo nível de autoridade corporativa pura expulsar demônios de indivíduos, de vizinhanças, casas e até mesmo de comunidades inteiras. Não podemos ignorar, os espíritos malignos são uma realidade e o objetivo deles é atormentar a humanidade. A nossa comissão, por outro lado, é tomar a nossa cruz diariamente e seguir a Jesus. Aleluia! Ele veio para quebrar todo e qualquer jugo.
+
+Muitas formas de opressões demoníacas e influencias malignas não suportarão a palavra de comando liberada por um homem ou uma mulher cheia do Espírito. Todavia, conforme as palavras de nosso Senhor, existem castas que não serão expelidas até que você combine a oração com o jejum e esteja se movendo no Poder do Espírito.
+
+Esta extrema resistência à autoridade espiritual é comumente vista em casos crônicos de alcoolismo, vício em drogas, homossexualidade, magia negra, movimento com ocultismo, espírito de suicídio, depressão e rebelião. Eu tenho visto, freqüentemente, estes tipos de fortalezas malignas associadas com maldição de miséria. Quando um indivíduo ou família está submetido a algum tipo de influência demoníaca, ela é também, geralmente, açoitada com graves problemas financeiros. Tais problemas financeiros geralmente são ocasionados com acidentes de carros, desemprego, assaltos ou qualquer outro tipo de calamidade.
+
+MUITOS CRISTÃOS SENTEM-SE QUASE DESAMPARADOS E INDEFESOS
+
+Uma outra área que sempre oferece resistência às orações normais dos cristãos é a área concernente às enfermidades. Algumas doenças, tais como câncer, AIDS e a febre hemorrágica, Ébola (e quase todas as formas de doença mental) carregam em si mesmas um peso de temor e invencibilidade que quase todos cristãos sentem-se desamparados no esforço de vencê-las através da oração. Entendo muito bem os seus sentimentos e frustrações. No entanto, vemos através das Escrituras Sagradas que estas doenças, por mais mortais que sejam, devem se dobrar diante da autoridade do Rei dos reis.
+
+Eu me recordo de um caso, há vários anos atrás, em uma cidade chamada Milwaukee, quando um senhor de origem espana trouxe-me a sua criança que sofria um ataque epiléptico a cada dois ou três minutos (Era um caso bem parecido com o daquele menino lunático relatado nos evangelhos). Quando me deparei com aquele menino pela primeira vez durante a reunião, a minha impressão era que ele tentava nos perturbar, mas na verdade, estava sofrendo ataques seqüenciais. Quando aquele pai trouxe o seu filho à frente para receber a oração, percebi que estava tratando com uma das situações impossíveis, que só o Senhor com Sua infinita graça poderia resolver.
+
+Quando orei por aquele garoto, a minha dependência estava, mais do que nunca, totalmente no Senhor. Eu tinha passado vários dias de jejum e oração, e quando repreendi aquele demônio na autoridade do nome de Jesus, um mau cheiro insuportável encheu todo o ambiente daquele salão! Quando aquele espírito maligno deixou aquele pobre garoto, todos sentiram o terrível odor de enxofre e ovos podres. Mas glória a Deus! O liberto. Posteriormente, chegou ao nosso conhecimento que aquele menino, desde o dia de seu nascimento, sofria constantes ataques epilépticos. Não sei como ele conseguira manter a sua integridade física e como o seu cérebro não fora totalmente danificado pelos consecutivos e violentos ataques. Apesar disso, podemos ver depois de sua total libertação, como Deus o havia protegido até o dia que aquele demônio, finalmente, foi banido de sua vida.
+
+EM MEIO A TANTA FRAQUEZA, DEUS RESSUSCITOU UM MORTO
+
+Deus explodiu a Sua unção para cruzadas de massa em minha vida em 1985, exatamente em um dos momentos mais trevosos e difíceis de minha vida familiar. Quando estava grávida de nosso filho, Aaron, Bonnie teve complicações que colocaram tanto ela como a criança em risco de vida. Ela ficou confinada na cama por três longos meses até Aaron nascer prematuramente.
+
+Tudo que poderia acontecer de errado, aconteceu. Dia após dia, nós batalhamos pela pequena vida que se encontrava no útero fragilizado de Bonnie. Em meio àquela intensa ansiedade e angustia, o Senhor nos trouxe uma palavra inusitada: "Sorria, dêem gargalhadas”.O que nos pareceu totalmente inapropriado naquele momento se tornou simplesmente o que o médico nos ordenou a fazer (Deus sabe lá porque). Um amigo então nos emprestou algumas fitas do comediante Bill Cosby, e começamos a ouvir as suas piadas extravagantes todos os dias e ríamos até sentirmos dores. Deus estava certo. Àquelas horas passadas em meio a risadas nos fizeram sentir como se estivéssemos tomando fôlego após estarmos submergidos em água por um longo tempo. Bom, o final e a moral desta história é que o nosso Deus é fiel. Aaron nasceu incrivelmente com 25 semanas e pesando apenas 1 kilo e meio. Com complicações pós-parto, foi imediatamente submetido a tratamentos intensivos e melindrosas cirurgias. Hoje, pela graça de Deus, é um jovem saudável e forte.
+
+Logo após o nascimento de Aaron, em meio a toda aquela luta entre a vida e a morte devido a doenças e complicações de seu nascimento, fiz uma viagem para Zâmbia e Zaire (África) para ministrar cruzadas de curas e treinamento de liderança com o irmão Derek Prince e uma equipe apostólica. Primeiramente, estivemos juntos no noroeste da Zâmbia com a finalidade de ministrar treinamento para cerca de 2.300 jovens pastores e evangelistas. De repente, o Espírito de Deus agiu tão poderosamente na vida do irmão Derek, que ele começou a chorar. Ele falava sobre o trabalho apostólico e a importância de disciplinar as pessoas na Palavra, e, para terminar a sua palestra, adicionou: "Eu ensinei tudo que eu sei ao irmão Mahesh, mas Deus o ensinará um pouco mais e os frutos de sua vida serão dez vezes mais abundantes do que em minha vida."
+
+Ouvindo aquelas palavras, me derramei em lágrimas e disse para mim mesmo: "Como será isto? De maneira nenhuma posso ser comparado à sabedoria, unção e maravilhosa habilidade em ensinar que Derek Prince possui”.
+
+Duas semanas e meia mais tarde, eu me encontrava sozinho no Zaire (O irmão Derek tinha ido para o Zimbábue) para ministrar nas cruzadas de cura e libertação. Na primeira noite daquela cruzada, Deus trouxe 100.000 pessoas e já no final da semana cerca de 360.000 pessoas estavam freqüentando as reuniões. Algum tempo depois o irmão Derek disse-me que o maior número em uma reunião que teve em Zimbábue foi a décima parte, ou seja 36.000 pessoas, então o Senhor falou em meu coração: "Você está vendo? Eu posso todas as coisas."
+
+Durante aquela mesma semana em uma daquelas reuniões no Zaire, anteriormente conhecida como Congo Belga, o Senhor me deu uma palavra de revelação um tanto quanto perturbadora e específica. Naquelá noite estava com o meu coração bem sobrecarregado de preocupações com Bonnie e o meu filhinho Aaron que lutava pela vida "a meio mundo' distante de mim. Em meio aos meus pensamentos, a palavra do Senhor veio poderosa e clara como um sino que toca: "Existe um homem aqui cujo filho morreu esta manhã. Chameo. Eu vou ressuscitá-lo."
+
+Fiz exatamente o que o Senhor havia ordenado e anunciei àquela grande multidão à minha frente que Deus havia dito que tinha um homem naquele lugar, cujo filho havia falecido naquela manhã. Um burbúrio, que se tornou um grande rugido, estremeceu aquele lugar. Convidei aquele homem para vir à frente. Jamais esquecerei a visão daquele homem correndo em minha direção. Apenas existia uma certeza em meu coração: Somente o poder de Deus podia restaurar a vida e o fôlego ao filho daquele homem.
+
+Eu conto a história completa deste milagre em meu livro, 0nly love can make a miracle. Para o momento relatarei o seguinte: Katshinyi tinha morrido às quatro horas daquela manhã de malária. Por volta de meio dia, Deus já o tinha milagrosamente ressuscitado! Uma cópia da certidão de óbito de Katshinyi foi reproduzida em minha autobiografia. Toda a glória deste milagre é somente para o Senhor. Em minha fraqueza, o Senhor revelou-me o Seu poder. Eu atribuo, definitivamente, estas maravilhas em meu ministério à disciplina que o Senhor tem me ensinado sobre o jejum e oração. Em todos estes anos percebo que o Senhor tem lançado fundamento em minha vida e me purificado no sentido de fazer-me mais sensível à sua Palavra, e assim, tornar-me um cooperador mais efetivo com a Sua obra.
+
+A DIFERENÇA ENTRE VITÓRIA E TRIUNFO
+
+Quando estamos harmonizados com o coração de Deus, o próprio Senhor nos alertará e nos preparará antes que o inimigo nos venha atacar. Leia cuidadosamente nas Escrituras o triunfo do rei Josafá e de Judá contra os seus inimigos:
+
+"Então Josafá pôs a buscar ao Senhor; e apregoou jejum em todo o Judá.
+
+Judá se congregou para pedir socorro ao Senhor; também de todas as cidades de Judá veio gente para buscar ao Senhor.
+
+Pôs-se Josafá em pé, na congregação de Judá de Jerusalém, na casa do Senhor, diante do pátio novo,
+
+E disse: Ah! Senhor Deus de nossos pais, porventura não és tu Deus nos céus? Não és tu que dominas sobre todos os reinos dos povos? Na tua mão está a força e o poder, e não há quem te possa resistir.
+
+Porventura, ó nosso Deus, não lançaste fora os moradores desta terra de diante do teu povo Israel, e não a deste para sempre à posteridade de Abraão teu amigo?
+
+Agora, pois, eis que os filhos de Amon e de Moabe, e os do monte Seir, cujas terras não permitiste a Israel invadir, quando vinha da terra do Egito, mas deles se desviaram e não os destruíram.
+
+Eis que nos dão o pago, vindo para lançar-nos fora da tua possessão que nos deste em herança.
+
+Ah! Nosso Deus, acaso não executarás tu o teu julgamento contra eles? Porque em nós não há força para resistirmos a essa grande multidão que vem contra nós, e não sabemos o que fazer; porém os nossos olhos estão postos em ti.
+
+Todo o Judá estava em pé diante do Senhor, como também as suas crianças, as suas mulheres, e os seus filhos.
+
+Então veio o Espírito do Senhor no meio da congregação, sobre Jaasiel, filho de Zacarias, filho de Benaia, filho de Jeiel, filho de matanias, levita, dos filhos de Asafe, e disse: dai ouvidos todo o Judá, e vós, moradores de Jerusalém, e tu, ó rei Josafá, ao que vos diz o Senhor: Não temais, nem vos assusteis por causa desta grande multidão, pois a peleja não é vossa, mas de Deus.
+
+Neste encontro não tereis que pelejar; tomais posição, ficai parados, e vede o salvamento que o Senhor vos dará, ó Judá e Jerusalém. Não temais nem vos assusteis; amanhã saí-lhes ao encontro, porque o Senhor é convosco.
+
+Então Josafá se prostrou com o rosto em terra; e todo o Judá e os moradores de Jerusalém também se prostraram perante o Senhor, e o adoraram.
+
+Dispuseram os levitas, dos filhos dos coatitas e dos coreítas, para louvarem ao Senhor Deus de Israel, em voz alta sobremaneira.
+
+Pela manhã cedo se levantaram e saíram ao deserto de Tecoa; ao saírem eles, pôs-se Josafá em pé, e disse: Ouvi-me, ó Judá, e vós, moradores de Jerusalém! Crede no Senhor vosso Deus, e estareis seguros; crede nos seus profetas, e prosperarás. Aconselhou-se com o povo, e ordenou cantores para o Senhor, que vestidos de ornamentos sagrados, e marchando à frente do exercito, louvassem ao Senhor, dizendo: Rendei graças ao Senhor, porque a sua misericórdia dura para sempre. Tendo eles começado a cantar e a dar louvores, pôs o Senhor emboscadas contra os filhos de Amom e de Moabe, e os do monte Seir que vieram contra Judá, e foram desbaratados. Porque os filhos de Amon e de Moabe se levantaram contra os moradores do monte Seir, para os destruir e exterminar; e, tendo eles dado cabo dos moradores de Seir, ajudaram uns aos outros a destruir-se.
+
+Tendo Judá chegado ao alto que olha para o deserto, procurou ver a multidão, e eis que eram corpos mortos, que jaziam em terra, sem nenhum sobrevivente.
+
+Vieram Josafá e o seu povo para saquear os despojos, e acharam entre os cadáveres riquezas em abundância e objetos preciosos; tomaram para si mais do que podiam levar, e três dias saquearam o despojo, porque era muito.
+
+(2 Cr 20:3-7, 10-15,17-25)
+
+POSICIONEM-SE
+
+A palavra do profeta à Judá e à Igreja em nossos dias é a mesma: "Posicionem-se. " Existe um lugar além da vitória chamado triunfo. A vitória fala de vencer os seus inimigos. Mas o triunfo vai além de mera vitória. Quando você triunfa, você sai da batalha com muito mais que você tinha antes! Ó, queridos! Deus quer nos dar muito mais.
+
+Para sermos vitoriosos e triunfantes temos, primeiramente, que aprender a nos posicionarmos em tempo de aflições e crises. Infelizmente tenho observado um triste fato. Muitas pessoas que passam por situações dolorosas encontram mais simpatia no mundo do que no Corpo de Cristo. Acredito que isto se deve ao fato de muitos de nós termos sidos treinados para agir como negociantes (do tipo que sempre está à procura de uma boa "barganha") ou como tubarões (que sempre atacam os outros quando estão feridos, sangrando e se debatendo nas águas da adversidade). Os membros do Corpo de Cristo parecem mais determinados a atacarem e cortarem seus membros feridos do que a caminharem lado a lado, suportando, curando e corrigindo.
+
+O Senhor não tolera este tipo de atitude em Sua Noiva. Fomos chamados para estar suportando uns aos outros em amor, pois estamos unidos em um só corpo: Cristo. Se um é afetado, todos são afetados juntamente. Desta maneira, não podemos nos vangloriar de nada, mas somente contemplar a face do Senhor continuamente e depender Dele.
+
+O LUGAR SECRETO DO TRIUNFO
+
+Qual foi a primeira coisa que o rei Josafá fez quando o seu povo sucumbiu em seus problemas e derrotas? – Ele convocou um jejum para a nação inteira e todos estavam prostrados diante do Senhor orando: "Ó, Senhor, queremos nos humilhar diante de Sua presença. " Ora, irmãos, quando assumimos uma posição de humilhação, estamos abrindo a porta para Deus tomar o Seu lugar em nossas vidas. Certa vez, quando participava de um período de jejum com mais alguns irmãos, alguém me procurou perguntando: "Para que você está jejuando?" Confesso que fiquei um pouco irritado com a forma que aquela pergunta me foi dirigida. Tal pergunta demonstrava que aquela pessoa só via o jejum como uma forma de "troca" com Deus, ou um "toma lá, me dá cá." Esta não deve ser a nossa atitude.
+
+Quando dispusermos a nos humilharmos diante de Deus, o nosso único desejo deve ser buscar a Sua face e não meramente as Suas mãos em busca de dádivas. "Nós Te desejamos; acima de tudo, Te desejamos. Queremos ver a Sua glória e a Sua presença." Que esta seja a nossa oração sincera.
+
+Moisés conheceu o segredo da benção. Quando o Senhor lhe ordenou para que seguisse a sua caminhada com o povo no deserto ele foi sábio quando orou ao Senhor: "Se a tua presença não vai comigo, não nos faças subir deste lugar. " (Êx 33:15)(3)
+
+Creio que o Senhor estava esperando por esta oração de Moisés! O Senhor está esperando você pedi-Lo para se envolver com a sua vida e com o seu futuro. A maneira correta de fazermos isto, repito, é nos humilharmos debaixo da mão poderosa do Senhor. Assim, o Senhor nos colocará não somente em posição de vitória mas também de triunfo, como nos assegura o versículo 12, em 2 Crônicas 20.
+
+ESDRAS FEZ PETIÇÃO A DEUS E JEJUOU
+
+O profeta Esdras enfrentou uma situação agonizante que colocava em risco um grande número de famílias. Artaxerxes, o rei da Pérsia, havia lhe dado ouro, prata e outras mercadorias para a restauração do templo de Jerusalém. Esdras fora comissionado para liderar um grupo de família de levitas e muitos outros judeus no caminho que voltavam para Jerusalém. Aquele rico tesouro em ouro e prata oferecido pelo Rei seria transportado através de um território muito perigoso e sem o cuidado de nenhum exército ou escolta. A cada passo, ele se distanciavam cada vez mais de Babilônia (onde estavam protegidos) e, gradativamente, mergulhavam em um território desguarnecido e sem lei. Todos os habitantes encontrados durante aquela longa jornada de retorno, haviam sido abertamente hostis a eles no passado. Contudo, o sacerdote Esdras tomou uma atitude que foi de importância crucial antes de começar a perigosa viagem de Babilônia para Jerusalém.
+
+“Então apregoei ali um jejum junto ao rio Aava, para nos humilharmos perante o nosso Deus, para lhe perdirmos jornada feliz para nós, para nossos filhos e para tudo o que era nosso”.
+
+Porque tive vergonha de pedir ao rei, exército e cavaleiros para nos defenderem do inimigo no caminho, porquanto já lhe havíamos dito: A boa mão do nosso Deus é sobre todos os que o buscam, para o bem deles; mas a sua força e a sua ira contra todos os que o abandonam.
+
+(Ed 8:21,22)
+
+Esdras, pela fé, disse ao rei Artaxerxes que a mão do Senhor estaria protegendo-os. Todavia, não somente falou, mas também fez algo muito importante: convocou o povo para o jejum e oração. A exemplo deste homem de Deus, não podemos apenas falar, mas precisamos nos lançar diante Dele em humilhação, jejum, intercessão e submissão à Sua vontade. Como Igreja do Senhor Jesus fomos chamados para fazer isto. Precisamos nos tornar oração e intercessão viva diante do Senhor e assim seremos ousados como Esdras o foi, e diremos: "A mão do Senhor será sobre nós."
+
+"Nós, pois, jejuamos, e pedimos isto ao nosso Deus, e ele nos atendeu. "
+
+(Ed 8:23)
+
+SIGA O CAMINHO DO ARREPENDIMENTO E DO TRIUNFO
+
+Todos nós temos hábitos e padrões de pensamentos que precisam ser tratados. Todos possuímos fraquezas e pecados que tendem a nos derrotar e fazer com que situações difíceis se tornem ainda piores.
+
+Muitos de nós lutamos contra a depressão; outros, constantemente, são fragilizados com seus temperamentos difíceis. Quase todo pai com quem tenho conversado, admite que muitas vezes tem ficado nervoso e tem até cometido a injustiça com seus filhos. Depois se corroem em remorso.
+
+Precisamos declarar, como o rei Josafá em 2 Crônicas, que somos incapazes e carentes de Sua Graça. Este tipo de oração nos leva à purificação. Precisamos também orar constantemente: "Senhor, sondame, lança a Sua luz nas trevas da minha vida para que, a todo o momento eu possa desfrutar de íntima comunhão Contigo”.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 7;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 6 - Duas causas de acidentes no ministério$t$, 7,
+$conteudo$Minha amada esposa, Bonnie, numa palavra de saudação em uma conferência, começou dizendo que não tinha nenhuma palavra específica a dizer. Todavia, em seu pronunciamento, acabou dizendo palavras relevantes relacionadas à razão, porque muitos ministros de Deus têm caído em ostracismo espiritual e têm estado sobrecarregados com muitos problemas. Com isto, se esquecem de quem é o Senhor e de como devem realizar a Sua obra. Estas foram as suas palavras:
+
+"Eu espero que você esteja como eu: faminto do Deus vivo. Ultimamente tenho percebido que existem três grupos de pessoas distintas. O primeiro grupo consiste daquelas que vivem inteiramente absorvidas no stress e na correria de nosso tempo. O segundo é formado por aquelas que vivem como meras espectadoras neste mundo e o tempo todo dizem: 'ó, meu Deus, que vamos fazer?'
+
+“Espero que você esteja incluído no terceiro grupo de pessoas as quais estão sempre contemplando o Senhor e dizendo: ‘Senhor, eu quero conhecer o Seu coração e estar no centro da Sua vontade!’ – Irmãos eu quero encorajá-los, pois, estamos vivendo um momento crucial na historia do povo de Deus. O Senhor há de derramar muito de Seu óleo fresco em nossas vidas nestes dias”.
+
+“Uma coisa mais quero dizer-lhes: Vocês precisam estar famintos de Deus, portanto, clame-O dizendo: ‘Senhor eu tenho fome de Sua presença...’ - e Ele te tocará profundamente. Você verá que quanto mais Ele lhe tocar, mais faminto você estará Dele”; e quanto mais Sua presença encher a sua vida, mais sede você terá Dele. Quanto mais Ele inundá-lo com o Seu Espírito, mais você perceberá como é carente da Sua unção gloriosa... Deus é tremendo e infinitamente rico!
+
+"Gostaria de encorajá-los também em uma outra questão. Devido à esta cultura perniciosa que nos rodeia, temos nos tornado muito preguiçosos em dois aspectos fundamentais na vida cristã: no reunir com o povo de Deus e no ouvir e praticar a Palavra. Permita-me exortá-los a serem como o cego Bartimeu que deixou para trás a sua capa e seguiu Jesus. Por vezes, existe uma capa de apatia e arrogância que nos envolve e é expressada com desculpas tais como: 'Senhor eu estou bem. Eu não preciso ir à igreja toda semana! Uma vez por mês é suficiente porque existem excelentes programas evangelísticos na televisão...'
+
+"Irmãos, o que realmente precisamos é nos lançarmos diante da presença do Deus vivo, pois em Sua presença há descanso e refrigério. Nunca se canse de se reunir com a igreja e ouvir Sua Palavra – Esteja faminto. À medida que você começar a freqüentar as reuniões da igreja, a ter comunhão com o povo de Deus, mais desejo você terá de permanecer nos átrios do Senhor.
+
+Procure desfrutar da presença do Senhor e, como o cego Bartimeu, deixe para trás toda capa, aquilo que o esconde e o faz permanecer sentado nas trevas, cego e mendigando. Clame em voz alta: "Filho de Davi, tem misericórdia de mim!"
+
+Neste capítulo, gostaria de focar a nossa atenção para duas causas de "acidentes" no ministério (naturalmente existem mais que duas, mas estaremos concentrando a nossa atenção nestas duas em particular). Na verdade estes problemas não são novidades para ninguém, mas estão sempre presentes em nosso meio e sendo a causa de muitas derrotas e dissabores na história da Igreja. Acredito que muitos destes "acidentes" que, freqüentemente, vemos no ministério são causados por pessoas que receberam a plenitude do Espírito e funcionam no ministério fora do poder do Espírito. Em outras palavras, o apenas estar cheio do Espírito não é suficiente. Precisamos nos mover Nele, estar nos permitindo sermos tratados e aperfeiçoados por Ele antes de estarmos ministrando a outros. Se você estiver "despreparado" nas coisas de Deus, você poderá correr riscos em seu ministério. O Senhor Jesus tratou este problema, imediatamente após curar aquele garoto epiléptico, cuja possessão maligna desafiava a unção delegada de Seus discípulos:
+
+"E quando chegaram à multidão, aproximou-se-lhe um homem, pondose de joelhos diante dele, e dizendo:
+
+Senhor tem misericórdia de meu filho, que é lunático e sofre muito; pois muitas vezes cai no fogo e muitas vezes na água; E trouxe-o aos teus discípulos; e, não puderam curá-lo.
+
+E Jesus, respondendo, disse: ó geração incrédula e perversa! Ate quando estarei eu convosco, e até quando vos sofrerei? Trazei-mo aqui.
+
+E repreendeu Jesus o demônio, que saiu dele, e desde aquela hora o menino sarou.
+
+Então os discípulos, aproximando-se de Jesus em particular, disseram: Por que não pudemos nós expulsá-lo?
+
+E Jesus lhes disse: Por causa da vossa pouca fé; porque em verdade vos digo que, se tiverdes fé como um grão de mostarda, direis a este monte: Passa daqui para acolá – e há de passar; e nada vos será impossível.
+
+Mas esta casta de demônios não se expulsa senão pela oração e pelo jejum. "
+
+(Mt 17:14-21)
+
+Já mencionamos anteriormente que Jesus havia comissionado aqueles homens. O Senhor já havia lhes dado autoridade para curar os enfermos, expelir os demônios e até mesmo ressuscitar os mortos. Todavia, nesta passagem das Escrituras Sagradas, estes mesmos discípulos são confrontados por uma sólida "muralha maligna" que, simplesmente, não se movia mediante a nenhuma ordem dada por eles. Tal poderio maligno, portanto, impedia os discípulos de trazerem libertação àquela família. Lendo este episódio, uma pergunta poderia surgir: - 'A autoridade que Jesus havia lhes delegado ainda estava com eles?" – Ora, claro que sim. O Senhor havia dado a eles a autoridade legal para expulsar demônios. Contudo, devido ao arranjo soberano de Deus para tratar com suas vidas, eles tiveram que enfrentar um tipo de força demoníaca que não se rendia ao nível de unção existente em suas vidas. Como resultado desta derrota pública a que foram expostos no confronto com aquele demônio, eles tiveram grande reprovação em suas vidas. Acredito que muitos deles devem ter entrado em crise consigo mesmos e podemos imaginar quais foram os questionamentos de seus corações: "Será que fomos desqualificados é para o ministério que o Senhor nos confiou? Será que seremos dispensados?" Ora, uma vez expelido aquele demônio, o Senhor amoroso os chamou em um lugar privado e apontou-lhes duas questões problemáticas em suas vidas:
+
+1. Eles falharam por falta de fé.
+
+2. Eles falharam porque não sabiam que existiam certas obstruções, desafios ou algum tipo de possessão demoníaca e doença que não estavam dispostos a se renderem a qualquer nível de unção.
+
+A solução para ambas as questões se encontrava no final do comentário feito por Jesus acerca daquela situação com o espírito de epilepsia que afligia aquele menino. Este comentário do Senhor vem logo após Seu ensino clássico sobre a "semente de mostarda”.Pela natureza de Sua Palavra, podemos aplicar este ensinamento de fé em casos como estes de expulsão demoníaca. Imediatamente, a esta palavra ainda, Ele declara enfaticamente:
+
+“Mas esta casta de demônios não se expulsa senão pela oração e pelo o jejum”.
+
+(Mt 17:21)
+
+Irmãos, estejam certos de uma coisa: a menos que sejamos capazes de combinar a nossa oração com o jejum, certas vitórias nunca serão alcançadas em nossas vidas ou na vida daqueles que amamos. Um fato não podemos negar: temos ouvido falar muito acerca de oração nestes últimos anos e as estantes das livrarias evangélicas ao redor do mundo estão abarrotadas de livros sobre este tema. Porém, infelizmente, existe muito pouca proclamação ou divulgação sobre este precioso assunto do jejum. Em outras palavras, muito poucas pessoas o têm praticado e gerado frutos em suas vidas através dele.
+
+O jejum é uma verdade escondida que foi ignorada ou mal compreendida pelo Corpo de Cristo no último século. Pela Sua graça, todavia, temos descoberto que o jejum é uma das maiores armas que Deus legou ao Seu exército do fim. Ele quer ver, através de Seu exército, gerações e nações inteiras conhecendo a Sua Salvação. Ele quer ver as nossas igrejas locais imersas em genuíno reavivamento. Ele almeja ver as nossas cidades desfrutando a redenção de uma forma maravilhosa. Ele quer liberar Seu poder sobrenatural para curar e libertar os perdidos em um fogo de avivamento, não somente as cidades, mas também a nações inteiras.
+
+A INCREDULIDADE DA IGREJA
+
+Um dos principais problemas da Igreja nestes dias é o pecado de incredulidade. Dúvidas e incredulidade são o oposto de fé. A Palavra de Deus nos adverte que "... sem fé é impossível agradar a Deus”.Muitas congregações na América do Norte adotaram uma "forma piedosa de viver" mas desconheceram a efetividade do poder de tal estilo de vida. Muitos aspectos do tão conhecido "movimento de fé," acontecido há alguns anos atrás neste país, foram muito bons e saudáveis para a nossa anêmica Igreja mas, em contrapartida, muitos excessos e motivações erradas foram identificados. A verdade é que precisamos possuir a realidade íntima de uma fé genuína e não uma forma exterior porque, afinal de contas, somos chamados para ser um povo de fé.
+
+Precisamos ter a nossa fé mesclada com a nossa obra; tudo neste mundo e no porvir é medido pelos frutos que somos capazes de gerar. O que temos feito para cumprir a nossa jornada em seguir a Jesus e realizar as Suas obras? Onde temos errado e onde temos acertado em nossas vidas e ministérios? Qual é o bom fruto que temos gerado? Que tipo de água tem jorrado de nossas fontes?
+
+Sem dúvida, temos tido como Igreja, uma boa medida de progresso, embora estejamos longe daquela dimensão, para a qual, o Senhor nos tem chamado. Ao analisarmos o progresso da Igreja em nossos dias veremos que muito do progresso alcançado na propagação do evangelho procede do trabalho nos séculos anteriores ao nosso. Através de ministérios de homens como Martin Lutero, os irmãos moravianos, John Wesley, George Whitefield, D.L. Moody e outros que tiveram, na prática do jejum e da oração, a chave para a riqueza e abundância em suas vidas e ministérios. Acredito que, nestes dias, Deus está contemplando o que acontece quando esperamos apenas "pela fidelidade de alguns" em realizar a Sua obra. O desejo do Senhor é ver a Sua Igreja se levantar como um todo, um Corpo completo em seu resplendor e glória; em outras palavras, o Seu desejo é ter para sempre a Sua noiva imaculada, sem ruga e sem mancha.
+
+A triste realidade é que a Igreja tem sobrevivido sem o poder de um viver pleno de vitória e liberdade, embora, tenhamos à nossa disposição o nome e a autoridade do filho de Deus. - Não é isto muito estranho? Sofremos dos mesmos problemas que neutralizaram os primeiros discípulos de Jesus!
+
+O que me alegra muito o coração é saber que Jesus é o mesmo é que a situação caótica em que atravessamos nestes dias não é problema para Ele. Ora, é tremendo saber que Ele tem o tempo em Suas mãos e é conhecedor do amanhã, e que Ele deu à Igreja uma promessa concernente ao último grande sinal de Sua vinda no Evangelho de Mateus:
+
+“E este evangelho do Reino será pregado em todo o mundo, em testemunho a todas as gentes, e então virá o fim”.
+
+(Mt 24:14)
+
+Este versículo contém um comando profético, um perfeito modelo do cumprimento de uma promessa. Somos comandados, portanto, a proclamar "o Evangelho do Reino”.O Senhor não nos deu um comando de múltipla escolha. Ele nos ungiu para proclamar o Seu evangelho e tão somente o Seu evangelho; que isto esteja bem claro em nossos corações. Precisamos estar cônscios que as boas novas que hoje anunciamos são as mesmas proclamadas pelos apóstolos, os quais foram capazes de entregar as suas próprias vidas. Aleluia! Este é o mesmo Evangelho que Filipe e Estevão pregaram.
+
+DEUS NOS VIU EM CRISTO
+
+É bom sempre lembrarmos que, nosso modelo primordial na proclamação da Palavra é o próprio Jesus de Nazaré. Existe portanto alguém mais que poderíamos nomear além Dele? Esta é apenas uma pergunta de retórica que, naturalmente você não precisa responder. Se você realmente acredita que Jesus é Senhor, Salvador e o único Filho de Deus, então você está convencido que a sua vida deve ser inteiramente conformada Nele e em ninguém mais. Se você ousar fazer isto, o Pai, em Sua fidelidade, cumprirá outra promessa que temos em Jesus:
+
+“Na verdade, na verdade vos digo que aquele que crê em mim também fará as obras que eu faço, e as fará maiores do que estas; porque eu vou para meu Pai”.
+
+(Jo 14:1)
+
+Este Evangelho que foi proclamado por Jesus e por Seus discípulos, foi sempre acompanhado de grandes sinais e maravilhas. Estes sinais começaram a acontecer em meu ministério depois que comecei a focalizar em minha vida, o padrão de Cristo e a combinar o jejum e a oração. Devido às grandes nuvens humanistas que envolvem as nações, especialmente do ocidente, hoje, mais do que nunca, esta prática se faz necessária. Nós, a Igreja do Senhor, somos chamados e ungidos para romper estas nuvens e proclamar o genuíno evangelho de nosso Senhor Jesus Cristo para todas as nações em meio a grandes sinais e maravilhas na confirmação de Sua Palavra.
+
+VISÃO PROFÉTICA DO EVANGELHO NA CHINA
+
+Há vários anos atrás, o Senhor disse-me: "Eu estou te preparando para enviá-lo à China”.Comecei, então, a sentir uma firme convicção de que Ele começaria a derrubar a "cortina de cegueira" que envolve a China nesta geração. Em questão de alguns anos, o Senhor deu-me a oportunidade de conduzir múltiplas cruzadas na república da China, Taiwan. Tivemos em nossas reuniões, algumas das maiores multidões da história daquele país. Posteriormente, fomos informados que, muitos dos tremendos milagres realizados durante aquelas cruzadas nunca foram vistos no país.
+
+Aquelas cruzadas foram, especialmente, muito difíceis de conduzir devido à grande oposição espiritual que enfrentamos. Provavelmente, tal oposição maligna se deva ao fato de aquela ser uma das primeiras cruzada realizada naquele país. Tínhamos certeza que a batalha que enfrentávamos era contra demônios e potestades que tinham sido adorados de gerações em gerações naquela cultura milenar. O que fazer quando tamanha força das trevas nos oprimia e parecia nos dizer: "Nós possuímos este território! Quem são vocês?" Bom, a única coisa a fazer era proclamar o Evangelho do Reino com poder e autoridade.
+
+Por muitas vezes senti como se estivesse envolvido em um intenso combate corpo a corpo, tamanha era a angústia de meu coração. Não obstante, o Senhor nos deu uma grande colheita. Centenas e centenas de chineses vieram à frente mediante aos apelos feitos em cada noite para se arrependerem de seus pecados e serem salvos. Mesmo alcançando todo este sucesso no ministério, o Senhor disse-me: "Você ainda não viu nada”.Pense sobre isto, irmão: O que acontece quando você injeta o poder de transformação de vida deste evangelho em uma nação de 1,2 bilhões de pessoas ainda não evangelizadas?
+
+Existe hoje na China comunista, uma próspera igreja subterrânea de cerca de um milhão de membros que funciona nas casas. Mas descobri, quando estive lá, que o número de irmãos desta igreja é muito inferior em comparação com a gigantesca população que o país possui. Bom, o que tem feito o comunismo? Este movimento tem tido sucesso em realizar somente uma coisa: criar um imenso vácuo espiritual. Apesar disso, todo sofrimento provocado por este regime tem redundado em benção e fluir da poderosa vida de Cristo naquele país. Portanto fizemos nossas, as palavras de José: "Vós bem intentastes mal contra mim, porém Deus o tornou em bem, para fazer como se vê neste dia, para conservar em vida a um povo grande”. (Gn 50:20)
+
+A Igreja é chamada a preencher, com a proclamação do evangelho, todo e qualquer vácuo criado pelo totalitarismo governamental ou pelas filosofias mundanas.
+
+Não existe nenhuma possibilidade de você ou eu cumprir o nosso divino chamamento sem contarmos com o poder de Deus. Quando estamos ministrando em um lugar onde toda a atmosfera espiritual está impregnada com poderes demoníacos, não podemos simplesmente chegar diante das pessoas e perguntarmos: "Vocês já conhecem as quatro leis espirituais?" Eu realmente aprecio a instrumentalidade das quatro leis espirituais e sem dúvida elas funcionam em algumas situações. Todavia, no trabalho de "arrombar" as portas do inferno você precisa do poder de Deus demonstrado em sinais e maravilhas que seguem a sua pregação da Palavra de Deus. Este tem sido o método preferido de Deus de evangelismo desde o dia de Pentecostes a dois mil anos atrás e a ênfase evangelística nos maiores reavivamentos, renovações e despertamentos espirituais por toda a história da Igreja.
+
+Agora tenho que dizer-lhes algo bem específico da parte do Espírito Santo de Deus: O Senhor está preparando você para participar ativamente nesta grande colheita dos últimos dias! Sim, o Senhor te tem preparado diligentemente. Os membros de sua igreja local são também chamados para se envolverem ativamente no grande reavivamento e proclamação do Evangelho que está para acontecer nestes dias. A escolha é sua para dizer "sim" ou "não" para Ele.
+
+Quando a cortina do comunismo finalmente cair e as fronteiras da China estiverem abertas para a proclamação do Evangelho, o nosso próximo passo será, imediatamente, treinar um milhão de pastores para cuidarem das centenas de novos irmãos que nascerão na grande quantidade de igrejas implantadas por todo o país. Agora você entende por que Deus tem sido muito claro em colocar juntos os ministérios apostólicos em escala global? O Senhor tem pressa na Sua obra, e um dos Seus objetivos é ver cada um dos Seus filhos, com efetividade, exercendo os ministérios a eles confiados. Ele quer que você se posicione em seu chamado, mas saiba que tudo isto demanda um preço.
+
+Uma outra maneira na qual os evangelistas do primeiro século diferenciam em muito dos "modernos" é que eles nunca atuavam sozinhos. Nestes dias, Deus está criando a mesma atmosfera de relacionamentos entre ministérios que, sem dúvida, foi uma das "chaves" da Igreja primitiva para difundir o evangelho por todo o mundo conhecido daquela época em uma geração. Eu creio que, pela graça de Deus, posso fazer certas coisas bem. Ele tem me confiado o tipo de ministério para "arrombar" as portas do inferno" em algumas cidades e nações através de sinais e maravilhas; mas quem sou eu? Apenas um servo que Deus levantou, ungiu e ordenou para cruzadas em massa. A minha tarefa é alcançar os perdidos e plantar igrejas; porém o Senhor não me incumbiu de pastorear estas igrejas ou discipular as centenas de milhares de novos convertidos. Isto traz à tona a próxima questão, pela qual, o Espírito Santo está levantando crentes ao redor do globo: "Qual é o seu encargo? Você está disposto a pagar o preço? Você tomará os cuidados necessários para evitar acidentes no ministério?"
+
+Eu realmente louvo a Deus por trazer multidões de mais de 300.000 pessoas por noite e milhares de novos convertidos a entregarem as suas vidas para Jesus em reuniões na África. No entanto, o Senhor falou em meu coração que tais reuniões representavam muito pouco em relação ao que Ele estava para fazer na índia e China! Acredito que teremos, provavelmente, 100.000 convertidos em cada concentração que faremos nestes países. Tudo isto é muito maravilhoso, mas saibam que Deus não está satisfeito em apenas trazer muitas ovelhas em nossas reuniões. Nosso Deus Pai, nosso Salvador e grande Pastor está interessado em tê-los para a eternidade. É nossa responsabilidade, diante de Deus, plantá-los nas igrejas para serem instruídos na Palavra, e, adequadamente crescerem em Cristo.
+
+DE VOLTA À ESTACA ZERO
+
+Permita-me retornar ao sublime tema do Senhor neste livro. Uma das coisas que Deus está fazendo em nossa preparação para o grande avivamento neste tempo do fim é transformar homens e mulheres dispostos a pagarem o preço em ter uma vida de jejum e oração. Precisamos começar a usar esta arma da grande colheita, se, de fato, queremos a vitória de Cristo em nossas vidas e familiares, igrejas e até mesmo em nossa nação! Jesus disse:
+
+"Mas esta casta de demônios (opressão maligna, obstáculos e controle diabólico) não se expulsa senão por meio de oração e jejum”.
+
+(Mt 17:21) (Parênteses acrescentados pelo autor)
+
+É provável que em algum ponto em sua vida e ministério, você tenha se sentido desfalecido, desanimado ou até mesmo ameaçado diante de terríveis obstáculos. Seja qual for o motivo de tal situação: ataque maligno, falta de perdão ou pecado, tal problema estará sempre "borbulhando" em sua vida. Você não será capaz de se mover, a menos que realize a combinação da oração e do jejum..Eu tenho aprendido que, quando fazemos isto em momentos ferrenhos de ataques de nosso inimigo, é como se jogássemos uma "bomba nuclear" em seu arsenal espiritual. Imagine que você esteja usando granadas de oração para destruir maciças montanhas de incredulidade, obstáculos ou obstruções demoníacas em sua vida e ministério. Ao combinar as suas orações com o jejum, você lançará uma bomba de hidrogênio na montanha que está bloqueando o ministério que o Senhor lhe tem concedido. Eu não estou falando de uma ligeira mudança que esta combinação realiza. Pelo contrário, o jejum auxiliará na intensidade e efetividade de suas orações. É por isto que precisamos conhecer o poder secreto do jejum e da oração tão enfatizado pelo Senhor nestes dias e uma crucial ferramenta na proclamação do Evangelho às nações.
+
+Da mesma forma que enfrentamos as terríveis lutas de vida ou morte para trazer salvação à República da China ou África, muitas igrejas na América do Norte têm se aparelhado em um combate, ombro a ombro, pela nossa nação. Irmãos, temos que entender que não estamos mais no tempo de nos assentarmos e assistirmos passivos o mover de Deus passar por nós. Em figura, a Igreja de Deus é a "Ester espiritual" que nasceu e foi trazida à maturidade "para um tempo como este"('). A Sua soberana Palavra para nós, o Seu povo, é esta: "O Reavivameto do tempo do fim está próximo. Esqueça as coisas passadas e ganhe a visão de seu chamado no Senhor”.
+
+Você é chamado para ser parte deste reavivameto, e a maneira mais efetiva para participar é através do jejum e da oração. Comece já a interceder pelos perdidos hoje. Esteja com o propósito de estar jejuando uma vez por semana, intercedendo por sua nação e, em suas orações, diga ao Pai: "Senhor envia-nos o Seu avivamento." A minha expectativa é ver pelo menos um milhão de crentes em um mesmo objetivo em jejum e oração intermitente diante do Rei dos reis. O que aconteceria se cada um de nós nos comprometêssemos a orar e jejuar pelo menos um dia por mês por nossas nações, igrejas e famílias?
+
+O desejo do Senhor é que sejamos liberados no poder do Espírito. Todavia, isto somente acontecerá quando estivermos, continuamente, dizendo "sim" ao mover do Espírito de Deus. O Senhor quer tratar conosco, e o Seu tratamento começa bem no íntimo de nosso ser. Glória a Deus! É através deste processo que Ele remove dúvidas, incredulidade de nossos corações e trás purificação através do fluir de seu Espírito vivificante que nos convence e nos cura. Podemos estar, certos que na Sua presença há gozo e paz e que o caminho mais seguro para a pureza e santidade diante Dele é encontrado na combinação constante da oração e do jejum.
+
+Em 1986, Bonnie recebeu uma profecia do Senhor. Ela tomou o cuidado de transcrevê-la em um papel e, para o meu encorajamento, levou para os presbíteros da igreja em que estávamos servindo na Flórida. Por aquele tempo me encontrava ministrando e me dedicando a um período de jejum e oração em Washinton D.C. e, exatamente neste período, Bonnie recebeu aquela palavra do Senhor. O que mais nos fascinou em tudo isto foi que, enquanto o Senhor liberava uma palavra para minha esposa, Ele também se manifestou a mim de maneira gloriosa dando-me também uma profecia sobre a nossa igreja local.
+
+Em meu retorno para casa, comparei as anotações e descobrimos que o Senhor nos tinha dado a mesma palavra! Ele nos disse a ambos que queria que a nossa igreja local observasse um jejum de 21 dias. Eu, porém, recebi uma palavra adicional que nos instruía a estarmos juntos, como Corpo, das 5 às 7 horas manhã durante todos estes dias. Ele me disse ainda: "Se vocês não fizerem isto, a minha presença sairá do vosso meio e vocês nem darão conta disto”.
+
+Eu já testemunhei muitas situações nas quais, a presença do Senhor tinha deixado uma congregação e, embora a vida do Senhor não mais se fazia presente, o povo ainda insistia em sua obra pessoal. Confesso que, como congregação, estávamos prestes a isto. Todos os presbíteros examinaram, cuidadosamente, as anotações da palavra recebida por Bonnie e concordaram que aquela palavra profética era verdadeira e, posteriormente foi confirmado com a palavra que eu também havia recebido do Senhor. Subseqüentemente, convocamos toda a igreja para observar 21 dias de jejum") e expressamente solicitei a todos para nos encontrarmos pelas manhãs, para oração em conjunto. Logo no início daquele jejum coletivo, tanto eu, quanto o irmão Derek Prince (que também fazia parte daquele presbitério) tínhamos compromisso para ministrar fora de nossa cidade. Embora não estivéssemos presentes, a igreja tinha a direção de começar o jejum na Segunda-feira seguinte. No primeiro dia, um total de cinco pessoas, dos seiscentos membros de nossa congregação, apareceu para o período matutino de oração. No dia seguinte, apenas dois. Um destes dois que estiveram presentes no segundo dia era um homem com um carisma profético bem acentuado – Ele sempre viajava comigo quando ministrava na África. Este homem começou a chorar naquela manhã quando o Espírito de Deus veio sobre a sua vida e, em meio a lágrimas ele entregou a seguinte palavra à Igreja na reunião da Quarta-feira: "O Senhor em nossa oração matutina me disse: 'Eu estou aqui, onde está o meu povo?”
+
+Naquela mesma noite voei de volta, mas não soube o que tinha acontecido durante aqueles três dias. Depois que este homem falou à Igreja, o Espírito do Senhor começou a incomodar as pessoas, iniciando pelas crianças. Percebi que algo excepcional acontecia quando a minha filha Sarah, de apenas quatro anos, veio ao meu quarto às 4 horas da manhã e sacudiu-me o ombro dizendo: "Papai, acorda. Está na hora de irmos para a igreja." Posteriormente descobrimos que muitos pais na igreja foram acordados por seus filhos.
+
+Bonnie relatou-me que no dia anterior à minha chegada ela fora despertada com um grande barulho na porta às quatro horas da manhã. Ela acordou e, ao atender a porta, não encontrou ninguém. Pegou, então, as crianças e foi para o prédio da igreja e ao abrir a porta, a glória do Senhor era tão forte que ali mesmo ela caiu ao chão! Após a maioria dos irmãos da igreja serem despertados pelos seus próprios filhos, 150 pessoas estiveram na reunião de oração pela manhã e no dia seguinte o número aumentou para 200. Começamos, gradativamente, a nos submergir no espírito de avivamento e como era maravilhoso ver os irmãos se quebrantando diante de Deus! Muitos começaram a se arrepender de pecados. Homens tidos como exemplo de santidade começaram a chorar incontrolavelmente e a se arrepender de seus compulsivos envolvimentos com o vício de pornografia.
+
+Uma das excepcionais características desta visitação era um sentimento forte da presença do Senhor pairando em nossas vidas. Tudo que podíamos fazer era chorar em um tipo de "santo terror" diante de Sua presença tão poderosa naquele lugar. Naquelas reuniões eu não queria nem mesmo levantar a minha cabeça por causa de tão forte sensação da Sua presença que nos constrangia. Estávamos desfrutando um genuíno avivamento e isto aconteceu no início do ano de 1986! Derek Prince compartilhou que em seus 40 anos de ministério, até então, ele nunca havia experimentado um nível tão tangível da unção de Deus.
+
+Se esta experiência em nossa igreja local foi tão forte, então, por que este mover não foi ouvido pelas igrejas por todo o mundo, como se ouviu muito acerca da grande visitação do Senhor em Toronto, Ontário e Pensacola, Flórida em 1990? A resposta é simples: Não soubemos ser mordomos e cultivar a poderosa presença do Senhor em nossas vidas no dia a dia. O Espírito Santo não perguntou: "Como posso vir até vocês?" Ele, tão somente, em sua soberania, escolheu se revelar como Espírito de arrependimento a seu povo. Infelizmente, não entendemos que arrependimento é uma palavra de benção. A única razão que nos faz capazes de arrepender genuinamente diante de Deus é, tão somente, a ação do Espírito Santo que nos dá a sua graça para fazê-lo.
+
+Semana após semana, o Espírito de Deus se movia poderosamente em nós e, através de Sua tremenda glória que nos envolvia, Ele conduzia a cada um de Seu povo a se prostrar em arrependimento. Enquanto isso, não compreendendo o mover de Deus, começaram a se sentir desconfortáveis com tudo aquilo. Eles eram (e ainda são) irmãos maravilhosos e verdadeiramente amam o Senhor. Porém, começaram a sentir desconforto com a maneira que o Espírito se movia e, inadvertidamente, decidiram que já era hora de "mudar o mover”.O problema era que o Espírito de Deus não queria mudar. Eles disseram: "A Igreja já se arrependeu o suficiente, vamos agora louvar e exaltar o Senhor em cânticos de adoração”.Em outras palavras: deixamos de estar sob a direção do Espírito, quando o desejo do Senhor era realizar uma profunda obra de arrependimento em nossas vidas ou talvez, quem sabe, na nação inteira.
+
+Sempre tendemos a pensar que Deus deveria estar satisfeito com o nosso arrependimento e obediência em uma área particular, quando o Seu alvo não é este. Às vezes Ele está satisfeito conosco em nosso arrependimento "no dia 2" e Ele quer trabalhar arrependimento em nossas famílias, igrejas, cidades ou nações "do dia 3 até o dia 21." Então nos tornamos impacientes. Começamos a desejar uma "festa de celebração" quando não existe ainda nada para se celebrar! Deixamos o lugar da graça de Deus e nos movemos para o "prazer de nossa alma”.Como abandonamos a direção do Senhor, lentamente o poderoso mover de Sua presença e unção começou a se desvanecer.
+
+Todos nós que testemunhamos aquele excepcional e glorioso mover fomos profundamente afetados por ele durante todos os anos que se seguiram. Ainda posso me lembrar como a presença do Senhor era poderosa em nossas reuniões. Hoje estamos bem conscientes que precisamos não somente aprender como "trazer a glória de Deus" mas também aprender "cultivá-la" com honra, respeito e obediência a Ele somente.
+
+Em testemunho sobre o seu encontro com Jesus Cristo, João Batista disse: "Eu vi o Espírito descer do céu como pomba e permanecer sobre Ele”.(Jo 1:33) Durante o movimento carismático, aprendemos como honrar Deus e ver Seu Espírito descer sobre nós de uma forma intensa de tempo em tempo, mas não aprendemos como viver, de tal maneira, que Sua presença permaneça em nós.
+
+Eu acredito que um estilo de vida disciplinado, voltado para o jejum e oração (individual e corporativo) é um elemento essencial na vida de um povo que deseja habitar na presença do Deus vivo. Carecemos aprender esta lição porque acredite-me, o toque de Deus em sua vida não pode ser comparado com nada nesta terra! A chave, portanto, para superar as duas causas de acidentes no ministério é a intimidade com Ele que nasce de uma vida de pessoal consagração ao jejum e oração.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 8;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 7 - Flechas de dor, flechas de triunfo$t$, 8,
+$conteudo$Existe um preço que envolve o chamado e a unção de Deus em nossas vidas. Quando, finalmente, reconhecemos que nossas vidas não mais nos pertencem e que fomos comprados por um bom preço, tudo muda. Começamos a sentir em nosso espírito a urgência de Deus em nos usar como servos hábeis em sua seara.
+
+Este sentimento de urgência foi muito forte em meu espírito quando ministrava a centenas de milhares de pessoas na África central. Nesta região, um em cada quatro adultos foram infectados pelo vírus HIV (Aids) além de um número incontável de crianças! Em algumas cidades, mais de sete, entre dez grávidas, eram soro-positivo com grande possibilidade de transmitir esta fatal doença aos seus filhos durante a gestação, no nascimento ou na amamentação. Muitas daquelas pessoas estavam morrendo e o Espírito Santo de Deus impressionou-me muito sobre a urgência de proclamar as Boas Novas antes do final de suas vidas.
+
+Quando a compaixão de Deus pelos perdidos arde em nossos corações, como Seus servos, muitas vezes temos que tomar algumas decisões difíceis. Tais momentos têm ocorrido a muitos servos de Deus durante toda a história; comigo também aconteceu quando estive conduzindo cinco cruzadas em Taiwan, República da China.
+
+Ministrando neste país, fomos comunicados por líderes locais que a média de conversões nas igrejas do país era cerca de dois por ano e, quando isto ocorria existia muita celebração. Em nossas cruzadas naquele país, entretanto, vimos centenas de pessoas se entregando ao Senhor toda noite! Embora a batalha espiritual naquele lugar fosse uma das mais intensas que já testemunhei em minha vida, não obstante, tivemos uma grande colheita e o Senhor nos proporcionou grandes sinais e prodígios.
+
+Exatamente em meio a todas as demonstrações do poder de Deus e grande vitória a nós conferida, recebi um telefonema devastador. Meu irmão mais velho estava seriamente doente. Ele nunca havia se casado e, desde a morte de meu pai, literalmente sacrificou a sua vida e carreira no sentido de cuidar de minha mãe e criar os irmãos mais novos.
+
+Eu havia orado muito por meu irmão há dois anos e meio atrás quando ele ficou bem doente pela primeira vez e Deus, miraculosamente, o curou e o susteve. Desta vez ele estava prestes a morrer em Londres, Inglaterra, e tudo o que podia fazer era comunicar-me por telefone. O desejo do meu coração naquele momento era abraçá-lo fortemente, beijá-lo e dizer-lhe o quanto o amava. Senti uma grande necessidade de agradecer-lhe por sua fidelidade em cuidar de mim. Porém, eu estava totalmente comprometido. A cruzada que conduzia já tinha sido anunciada por um ano e meio. Centenas de pessoas estavam voando de Singapura e Hong-Kong. Centenas de chineses já estavam sendo salvos – Pessoas que nunca ouviram o Evangelho com poder. Então recebi a notícia que meu irmão tinha morrido.
+
+O que fazer?
+
+Na tradição da cultura de meu país de origem, quando um membro da família morre, todos os homens devem comparecer ao funeral, especialmente os mais velhos (que agora era o meu caso). Liguei para minha mãe em Londres e ela me disse com sua voz sofrida: "Querido, você sabe, eu nunca te pedi nada em minha vida, mas desta vez, por favor, atenda ao meu pedido e vem estar com o seu irmão”.
+
+Eu era esperado em Londres para o funeral e para isto eu teria que cancelar no mínimo cinco noites: duas noites para fazer a viagem de Taiwan para Londres, um noite para ficar em Londres e duas noites para retornar para Taiwan. Centenas de vidas já estavam sendo salvas em cada uma das noite que ministrávamos a Palavra. Minha mãe estava me pedindo para estar com os familiares e honrar o homem que sacrificou toda a sua vida por mim. Ora, este era um pedido legítimo e muito relevante. O que fazer? Se atendesse a esta necessidade familiar, centenas de vidas talvez se perderiam para sempre. Veja como o Senhor nos conduz no momento quando temos que fazer difíceis escolhas que desafiam alguns dos maiores tesouros e prioridades de nosso viver!
+
+Eu tive que ligar para minha mãe novamente e dizer-lhe: "Mãe, eu te amo. Mas eu não posso estar com você agora. Eu tenho que responder ao chamado do Senhor”.Permaneci, portanto, na China e não fui no funeral de meu precioso irmão. Não posso descrever em palavras como me machucou ligar para minha mãe e dizer-lhe que ela estaria privada de minha presença. Apesar de todo o sofrimento de meu coração, a glória do Senhor foi sem medida naquela noite. Centenas de chineses se renderam ao Senhor em cada noite. Tenho certeza que um dia encontrarei com cada um deles no céu, mas tenho que confessar que tive que fazer uma dura escolha naquela noite.
+
+O Senhor nos conduzirá, a cada dia, através de jornadas que serão áridas às vezes. Estes momentos nos forçará a tomar decisões e fazer escolhas difíceis acerca da questão: "Quem você ama mais?" A indescritível dor que senti quando fiz aquela escolha ainda permaneceu no meu íntimo por muito tempo. Profundamente amo e respeito minha mãe e, definitivamente, não existem palavras que possam expressar o amor, a gratidão, e o respeito que tinha por meu irmão. Entretanto, o meu amor pelo Senhor é incomparavelmente maior.
+
+BASTA APENAS UMA PALAVRA DO SENHOR
+
+A dor daquela crucial decisão me inquietou muito até um dia, quando o Senhor manifestou-se a mim liberando-me uma gloriosa palavra de cura. Em momento de aflição, saibam que tudo o que precisamos é uma palavra da boca do Senhor para nos restaurar de toda lágrima e dor em nosso coração. Ele disse-me: "Mahesh, você estava realizando a minha obra. Como você não podia ir, eu fui em seu lugar”.Ora, como o Senhor fora em meu lugar, eu creio, pela fé, que Ele tomou o meu irmão, que já era salvo, pela mão e o levou pessoalmente à presença do Pai.
+
+As Escrituras Sagradas relatam que somos soldados e guerreiros no Exército de Deus. Como um soldado sob o comando soberano de Deus, é provável que muitas vezes você se confronte com valores inerentes à sua vida pessoal com os planos que Deus para sua vida. Se você colocar diante do Senhor tudo aquilo que é de grande valor em seu viver, com o firme propósito de obedecê-Lo, Deus o honrará em tudo.
+
+Como o Senhor dos senhores, e Rei dos reis descrito por João no livro de Apocalipse, Jesus é o mesmo ontem, hoje e o será para sempre. Ele está disposto a fazer vingança por Seu povo Israel e por Sua Igreja com a espada de Sua boca e nos conduzir à plena vitória. Precisamos, contudo, de dois requisitos necessários para a vitória em qualquer batalha:
+
+1. Precisamos nos despojar de todo pecado e impurezas de nossas vidas através do sangue de Jesus.
+
+2. Precisamos estar dispostos a obedecer todo comando e seguir toda estratégia que o Senhor nos dá, tomando sempre cuidado para não desviarmos ou hesitarmos na realização da obra por causa de temor.
+
+Se você se detém, mesmo que seja por um instante, nos livros de história, revistas, jornais ou em qualquer forma de mídia, você será capaz de listar um grande número de problemas presentes nesta geração. Eu tenho certeza que sua lista incluirá: doenças infectocontagiosas, fortalezas satânicas, pragas, violência, humanismo, drogas e toda sorte de doutrinas do tão sedutor movimento de nova era que, com toda a sua carga de perversão, tem arrastado milhares de jovens com os seus tentáculos. Todas estas coisas tem uma origem comum.
+
+A resposta para toda esta influência perversa de satanás é tão somente encontrada em Cristo e em Sua Igreja. Não importa o número de principados e potestades que estejam dominando uma cidade ou até mesmo um país, o nosso Deus tem a resposta. Esta resposta foi revelada pelo Senhor Jesus em Sua oração sacerdotal, encontrada no Evangelho de João.
+
+O Pai enviou Jesus em missão para redimir a humanidade e, da mesma forma Ele também nos enviou, nos incumbindo da mesma tarefa. O Seu chamado é o nosso chamado. Ele, por sua vez, já consumiu tudo na cruz do Calvário. Nós, porém, estamos encarregados de proclamar as Boas Novas ao mundo. Agora, uma pergunta: Estamos nós dispostos a observarmos as bases de jejum de Deus descrito no livro do profeta Isaías?
+
+"O Espírito do Senhor Jeová está sobre mim; porque o Senhor me ungiu, para pregar boas novas aos mansos: enviou-me a restaurar os contritos de coração, a proclamar liberdade aos cativos, e a abertura de prisão aos presos;
+
+A apregoar o ano aceitável do Senhor e o dia da vingança do nosso Deus; a consolar todos os tristes;
+
+A ordenar acerca dos tristes de Sião que lhes dê ornamento em vez de cinza, óleo de gozo em vez de tristeza, vestido de louvor em vez de espírito angustiado; a fim de que se chamem árvores de justiça, plantação do Senhor para que ele seja glorificado.
+
+E edificarão os lugares antigamente assolados e restaurarão os de antes destruídos e renovarão as cidades assoladas, destruídas de geração em geração.
+
+E haverá estrangeiros, que apascentarão os vossos rebanhos: e estranhos serão os vossos lavradores e os vossos vinhateiros. Mas vós sereis chamados sacerdotes do Senhor, e vos chamarão ministros de nosso Deus: comereis a abundância das nações, e na sua glória vos gloriareis.
+
+(Is 61:1-6)
+
+REEDIFICADORES DE RUÍNAS
+
+Este nível de chamado divino demanda-nos uma mudança sobrenatural de valores, direção e foco de vida. Se os valores de uma pessoa são ainda segundo a carne, é porque ela ainda não foi tocada pela glória de Deus. João, o homem que Deus usou para nos trazer gloriosas revelações, teve uma experiência sobrenatural que mudou a sua vida completamente. As coisas que ele viu em sua visão celestial, há cerca de dois mil anos, ainda causam profundo impacto em nosso viver hoje.
+
+Certamente, algo de muito profundo acontece quando alguém tem um encontro real com o Deus vivo. Eu costumo chamar isto de "entrega gloriosa". Moisés viu a glória de Deus como ninguém; João, Paulo e tantos outros, não puderam mais reter as suas vidas, mas pelo contrário, se entregaram inteiramente nos braços do Pai. Todos estes trouxeram através de suas vidas a glória, o governo e o poder de Deus do céu para a terra. Ora irmãos, uma vez conhecendo o sabor do céu, nada mais na terra será capaz de satisfazer a sua fome e sede de Deus.
+
+Eu acredito que, de uma maneira geral, é mais fácil se achegar a Cristo e experimentar a Sua Glória do que crescer em conhecimento Dele nas igrejas. Freqüentemente pessoas que têm vivido por anos no seio da igreja, começam a ver a glória de Deus como algo normal e corriqueiro. Muitos respondem ao mover sobrenatural de Deus nas reuniões da igreja como algo casual: "Ó, eu já sei muito sobre isto... ouvi sobre isto durante toda a minha vida." Eu digo a eles: "Não, vocês não sabem; o conhecimento de vocês é apenas de 'ouvir falar.' Vocês, na verdade, não O conhecem e não experimentaram o gosto de Sua maravilhosa glória."
+
+Este é, sem dúvida, um grande problema. Eu era hindu, quando Deus se manifestou a mim em uma visão celestial. Ele sacudiu a minha alma, minha mente e transportou-me em um segundo de total trevas para a completa luz. O brilho e o resplendor de Sua Presença excedia em muito dez mil raios solares. No outro dia quando acordei, estava completamente fanático pelo Senhor.
+
+Logo que cheguei nos Estados Unidos comecei a estudar na faculdade (Fundamental Bible College), me tornando também membro de uma igreja fundamentalista. Todas as pessoas, com as quais tinha relacionamento, simplesmente não entendiam porque eu era tão fanático por Jesus. Elas me diziam: "Calma, rapaz, as coisas não são bem assim”.Elas foram pacientes comigo porque sabiam que eu era apenas "um pequeno pagão" que havia alcançado a salvação em Cristo Jesus. Com o tempo, comecei a me sentir como se estivesse morrendo por dentro. Apatia, dúvidas e descrença começaram a drenar a vida de Cristo em mim. Sentia-me vivendo à parte. Aquele lugar e o espírito de religião negavam-me o poder do Espírito Santo de Deus.
+
+À princípio, devido à minha imaturidade, me senti muito envergonhado com aquilo que estava se passando em meu coração. Mas posteriormente descobri que não ganhava muito no convívio e na fé dos chamados cristãos históricos. Eu, sinceramente, tenho profundo respeito a uma herança espiritual que realmente transmitiram ao longo dos anos, a experiência pessoal de uma vida genuinamente cristã. Todavia, não podemos negar que a maioria das heranças cristãs são apenas ritos religiosos que parecem determinados a negar o poder de Cristo e Sua glória. Sendo assim, isto não se trata mais de uma herança, mas de uma doença que precisa urgentemente ser exterminada. O Apóstolo Paulo, pelo Espírito Santo, nos exorta em Efésios que o exército do fim não pode ser composto de pessoas descuidadas:
+
+"No demais, irmãos meus, fortalecei-vos no Senhor e na força do seu poder.
+
+Revesti-vos de toda a armadura de Deus, para que possais estar firmes contra as astutas ciladas do diabo.
+
+Porque não temos que lutar contra a carne e o sangue, mas sim contra os principados, contra as potestades, contra os príncipes das trevas deste século, contra as hostes espirituais da maldade, nos lugares celestiais.
+
+Portanto tomais toda a armadura de Deus, para que possais resistir no dia mau e, havendo feito tudo ficar firmes.
+
+Estais, pois firmes, tendo cingido os vossos lombos com a verdade, e vestida à couraça da justiça,
+
+E calçados os pés, na preparação do Evangelho da paz; Tomando, sobretudo o escudo da fé, com o qual podereis apagar todos os dardos inflamados do maligno.
+
+Tomai também o capacete da salvação, e a espada do Espírito, que é a Palavra de Deus.
+
+Orando em todo o tempo com toda a oração e súplica no Espírito e vigiando nisto com toda a perseverança e súplica por todos os santos.
+
+(Ef 6:10-18)
+
+Se você almeja conhecer a Deus e ver a Sua glória, saiba que isto implicará em um preço. Como Paulo, você terá que jogar por terra todo o seu conhecimento natural e se tornar como uma criança diante Dele. Você também será obrigado a assinar o seu próprio atestado de óbito para o mundo e tomar sobre si a cruz da obediência e, diariamente submeter a sua vida, a sua agenda e suas prioridades a Ele. Então, uma vez despojando-se dos trapos de imundícia da justiça própria e religiosidade vazia, Deus lhe concedera a Sua justiça e "novas credenciais" voltadas inteiramente para Seus planos.
+
+Durante um período de 18 anos o Senhor, pela Sua graça e misericórdia, comicionou-me a observar vários períodos regulares de 40 dias de jejum. Fui, por muitas vezes, tocado pela glória de Deus e naqueles momentos, em minha consciência eu não queria mais viver. Eu, na verdade, anelava pela morte e assim estar com Ele nesta intimidade para sempre. Em um único momento, a Sua glória transformou meus valores e percepção da vida. Sim, eu tenho fé para acreditar em Deus por me conceder um Mercedes novo ou qualquer outro bem, todavia, prefiro focar a minha fé e energias em ver 100.000 pessoas se renderem a Jesus em uma única noite.
+
+As bênçãos materiais e as provisões são coisas muito boas, porém, o meu coração foi transformado pela Sua glória. A minha alma simplesmente deseja estar em Sua presença e realizar os desejos de Seu coração. Quando somos tocados pela glória de Deus, as coisas da terra são instantaneamente ofuscadas e perdem o total valor. Quanto mais perto nos achegamos Dele, mais percebemos a nossa insignificância e quanto o mundo se torna nada. Paulo diz: “Mas todos nós, com cara descoberta, refletindo como um espelho a glória do Senhor, somos transformados de glória em glória na mesma imagem, como pelo Espírito do Senhor. " Todavia, se não vivemos em Espírito, não somos capazes de ver as coisas misteriosas de Deus e muito menos experimentar a Sua glória. No entanto, se estivermos dispostos a pagar o preço de buscar a Sua face em jejum e oração, estaremos assim, aptos a experimentar uma profunda transformação de vida e literalmente viveremos "arraigados" Nele e fortificados na força de Seu poder. Esta é a única maneira de lutarmos "o bom combate da fé".
+
+NÃO RETROCEDER EM MOMENTOS DE CONFLITOS
+
+"E Eliseu estava doente de sua doença de que morreu: e Jeoás, rei de Israel, desceu a ele, e chorou sobre o seu rosto, e disse: meu pai, meu pai, carros de Israel, e seus cavaleiros! E Eliseu lhe disse: toma um arco e flechas. E tomou um arco e flechas.
+
+Então disse ao rei de Israel: Pões a tua mão sobre o arco. E pôs, sobre ele a sua mão, e Eliseu pôs as suas mãos sobre as mãos do rei.
+
+E disse: Abre a janela para o oriente. E abri -a. Então disse Eliseu: Atira. E atirou; e disse: A flecha do livramento do Senhor é a flecha do livramento contra os siros; porque ferirás os siros em Afeque, até os consumir.
+
+E disse mais: Toma as flechas. E tomou-as. Então disse ao rei de Israel: Fere a terra. E feriu a três vezes e cessou.
+
+Então o homem de Deus se indignou muito contra ele, e disse: cinco ou seis vezes a deverias ter ferido: então feririas os siros até os consumir: porém agora só três vezes ferirás os siros.
+
+(2 Reis 13:14-19)
+
+Se você quiser saber como alcançar vitória no reino espiritual, aprenda a lição de Jeoás e nunca desanime até que a vitória seja totalmente sua em Cristo Jesus. Nosso Deus nos deu poderosas flechas como armas necessárias em nossa vitória. Para isto precisamos ferir a terra quantas vezes forem necessárias.
+
+OITO FLECHAS PARA A VITÓRIA EM DEUS
+
+1. Seja cheio do Espírito Santo (At 1:8).
+
+2. Procure a direção de Deus em sua batalha espiritual (2 Sm 5:19).
+
+3. Calcule os custos e comprometa-se para a vitória (Lc l4:31-33).
+
+4. Esteja sóbrio. Geralmente em meio a momentâneas derrotas ou sucessos, temos a tendência de baixar a guarda ou virar as costas à luta (Ef 6:13).
+
+5. Focalize sempre a vitória. Não permita de maneira alguma o desencorajamento, ou distrações dissiparem o seu compromisso com a vitória em Cristo Jesus (1Co15:58).
+
+6. Não permita que obstáculos imprevistos forcem-no a regredir (Lc 9:62).
+
+7. Dai graças. Uma vez tendo a vitória nas mãos, dê a Ele toda a honra e glória (1 Co 15:57).
+
+8. Esteja vigilante (1Pe.5:8).
+
+Estas oito "flechas" são instrumentos que nos asseguram o poder e certeza para a nossa vitória em Cristo Jesus. Nós que fazemos parte do reino de Deus precisamos estar bem conscientes que o diabo, "nosso adversário, anda em derredor, bramando como leão, buscando a quem possa tragar. Os nossos objetivos de vida, portanto, devem sempre permanecer claros e sem nenhum compromisso com este mundo. Assim, a nossa fé e as insondáveis riquezas do Senhor estarão sempre à disposição para nos suprir e fortalecer.
+
+Eu me recordo os tenebrosos anos da Segunda Guerra mundial, quando grandes exércitos se confederaram no avassalador conflito que colocou os hemisférios ocidental e oriental da Europa em disputa pelo domínio global. Em meio a este terrível conflito, assistimos a ascensão da liderança de grandes homens. Alguns foram a própria encarnação do maligno e possuíam o propósito diabólico de aniquilar todo e qualquer judeu da face da terra e se impor sobre toda as nações. Outros homens, com propósitos nobres, viviam naquela mesma época dentro da direção divina. A responsabilidade deles, dentro daquela geração, demandava-lhes dedicação de corpo, alma e espírito no sentido de resistir o domínio satânico de Hitler. Da mesma forma, como discípulos de Cristo, o nosso viver nesta geração nos requer total atenção e obediência aos propósitos de Deus.
+
+Durante todo aquele conflito, a tenacidade e a devoção do general americano George Patton inspirou e facilitou a vitória dos aliados contra o 3° Reich de Adolf Hitler. Este general era tido como implacável, em se tratando de alcançar seus objetivos. Quando o momento crucial de encarar o inimigo chegou, Patton fez o possível para se posicionar com seus homens na brecha, embora deficiências em sua linha de frente os impediam de acompanhar o rápido avanço do exército blindado dos inimigos.
+
+General Patton foi responsável para trazer uma palavra de encorajamento às tropas antes do ferrenho combate que se aproximava. Aqueles homens bem sabiam que estavam sendo chamados para o supremo sacrifício de, até mesmo, perderem as suas vidas em troca da libertação de milhares de outros. Este é um parafraseado do discurso do general Patton àqueles homens:
+
+"Homens, um dia quando o seu neto subir em seu colo, olhar dentro de seus olhos e lhe perguntar: "Vovô, o que você fez na Segunda Guerra mundial?" Você não terá que corar de vergonha e dizer que estava tremendo de medo em casa, mas será capaz de dizer com toda ousadia: "Querido, eu estava bem no meio da batalha quando as pessoas de todas as nações do mundo estavam descansando em casa. "
+
+Em nossos dias, Deus está preparando Sua igreja e levantando Suas "águias" para a hora decisiva de guerra. Ele está posicionando Suas tropas diante das legiões do inferno. O grande derramar do Espírito, profetizado no Velho Testamento, está prestes acontecer e inundar toda a terra. Este grande mover do Senhor, nestes últimos dias, transbordará a terra com a Sua Glória e a purificará de todo o mal.
+
+O grande exército de Deus está sendo preparado. Ele derrubará toda fortaleza sobrenatural que satanás, através dela, tem mantido toda a criação de Deus no cativeiro do pecado e de doenças por todo o mundo.
+
+Finalmente precisamos estar bem atentos à advertência da Palavra de Deus no que tange à nossa confiança em tempos de conflitos, dificuldades e decisões importantes:
+
+“Portanto, não lanceis fora a vossa confiança, que tem uma grande recompensa. Pois ainda em pouco tempo àquele que há de vir virá, e não tardará. Mas o meu justo viverá da fé. E se ele recuar, a minha alma não tem prazer nele. Nós, porém, não somos daqueles que retrocedem para a perdição, mas daqueles que crêem para a conservação da alma”.
+
+(Hb 10:35-39)
+
+A vida de fé e obediência a Cristo nos trará flechas de dores e flechas de vitória. Assim é a vida de um verdadeiro soldado de Cristo. Todavia, as recompensas nesta vida e na vindoura são muito além da medida. Prostre-se diante Dele e suplique por graça suficiente para o dia de hoje. Você e eu não estamos, de forma alguma, sozinhos em nossa caminhada de fé. Em momento de aflições saibam que muitos já caminharam à nossa frente e suas vidas brilham como exemplos da fidelidade e do poder de Deus em todas as situações.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 9;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 8 - Os pioneiros da oração e do jejum$t$, 9,
+$conteudo$Para a irritação de uns e para a alegria de outros, a disciplina divina da oração e jejum é revelada pelo Espírito por toda as Escrituras Sagradas. Podemos vê-la também evidenciadas ao longo de toda a história da Igreja. Ora, onde existe oração e jejum, existe vitória no meio de dificuldades, milagres invadindo o impossível e permanente intervenção sobrenatural na vida da Igreja. Em outras palavras, o desejo de Deus é manifestar a Sua Glória e poder sempre que seu povo, em qualquer lugar, se posicione para buscar a Sua face em jejum e oração.
+
+Ester: A jovem judia que tornou-se esposa do rei Artaxerxes convocou todo o povo judeu, que se encontrava sob domínio persa, para se juntar à ela em um solene jejum. Ela se absteve de toda comida e bebida por três dias pois, a vida e a própria existência de seu povo corria grande perigo (veja Ester 4:16).
+
+Ana: Uma viúva de cerca de 84 anos de idade que viveu literalmente no templo, devotou todo o seu viver à prática do jejum e da oração diante de Deus. Mesmo vivendo naqueles dias tenebrosos, aquela doce senhora foi reconhecida e honrada como profetisa. Reconhecimentos como estes são para pessoas cujas vidas estão permeadas da disciplina da oração e do jejum. Simeão, da mesma forma que Ana, também amou o Senhor e andou em justiça, terminando a sua carreira profetizando sobre o pequenino Jesus.
+
+Tanto Ana, como Simeão, viveram no tempo e na direção de Deus para as suas vidas e seus passos foram, literalmente, estabelecidos pelo Senhor. Para Ana, os mais de oitenta anos caminhando com o Senhor culminou no glorioso momento em que ela contemplou a face do Deus encarnado e, imediatamente, começou a proclamar a verdade sobre o Filho de Deus. Como poderia aquela mulher andar em direção a pessoas totalmente estranhas e de repente ter a compreensão que estava diante da encarnação do Deus vivo? A palavra nos relata em Lucas 2:37 que ela "...não se afastava do templo, servindo a Deus em jejuns e orações, de noite e de dia. " Muitos de nós, em nosso dia a dia, nos envolvemos tanto com a coisas desta vida que a realidade de Cristo em nosso viver se torna ofuscada. Como precisamos ver Jesus a cada momento! Ana, claramente, viu Jesus porque ela orava e jejuava constantemente diante do Senhor.
+
+Cornélio: Ele era um centurião romano e o seu coração era reto diante do Senhor. Embora ele não fosse judeu, ele orava constantemente ao Senhor e o seu viver ganhou boa reputação entre os judeus. Ele teve uma visita de um anjo e fora orientado a contatar com o apóstolo Pedro. Quando Pedro encontrou Cornélio, este oficial gentil lhe disse:
+
+“Respondeu Cornélio: há quatro dias estava eu em jejum até esta hora, orando em minha casa à hora nona. De repente diante de mim se apresentou um homem com vestes resplandecentes, e disse: Cornélio, a tua oração foi ouvida, e as tuas esmolas estão em memória diante de Deus”.
+
+(At 10:30-31)
+
+Certamente não foi por acidente que Cornélio, o primeiro gentio convertido a Cristo, fosse um cidadão romano. Neste contexto Deus demonstrou o Seu propósito de estender a Sua graça salvadora para as nações, tribos, raças, incluindo a nação envolvida diretamente com a crucificação de Seu Filho.
+
+Foi este homem que buscava Deus em jejum e oração; o primeiro gentio alcançado pelo amor Deus. A sua sede do Deus vivo fez com que ele e sua família se tornassem os primeiros gentios a entrarem no Reino de Deus. A moral desta história é: Se você deseja a unção de Deus, ore e jejue.
+
+O apóstolo Paulo: Ele e outros 276 passageiros gentios que viajavam a bordo de um navio de Alexandria estiveram, de acordo com Atos 27, jejuando por 14 dias. Quando Julius, o centurião romano responsável em conduzir Paulo a Roma, foi persuadido a navegar em direção contrária àquela aconselhada pelo apóstolo, o navio foi totalmente destruído por uma terrível tormenta no mar. Somente a palavra específica do Espírito Santo a Paulo trouxe salvação para todas aquelas vidas. Está claro, pelo contexto bíblico, que foi a oração e o jejum de Paulo que trouxeram tamanha salvação para todos naquele navio.
+
+Daniel: O seu jejum solitário e orações intercessórias diante de Deus salvaram toda a sua nação, impedindo assim, os principados demoníacos frustrarem os planos de Deus para com o Seu povo.
+
+Esdras: Este profeta esteve em jejum diante de Deus no momento em que fora confrontado com o impossível.
+
+Jesus: Claro, antes de iniciar o Seu ministério no poder do Espírito Santo e se entregar por toda a humanidade, jejuou por 40 dias e superou o inimigo e suas terríveis tentações.
+
+Davi: Ele jejuou várias vezes em sua vida. Observamos, pelos registros sagrados, como Deus transformou sua vida, tirando-o da total obscuridade como pastor de ovelhas nos campos de seu pai para o trono de Israel e Judá. Além disso, tornou-se um homem segundo o coração de Deus.
+
+A prática do jejum é encontrada por toda a Bíblia. A palavra de Deus sempre parece demonstrar através de sua exposição deste assunto, como o homem natural precisa do poder, da provisão de Deus em sua vida para vencer as impossibilidades, os inimigos e os ataques.
+
+Historicamente falando, todo reavivameto começou quando as pessoas se dispuseram a buscar o Senhor em jejum e oração. O primeiro grande movimento missionário no mundo começou no primeiro século, mais especificamente em Atos 13. Qual foi o contexto para esta explosão gloriosa do Reino de Deus?
+
+"Servindo eles ao Senhor, e jejuando, disse o Espírito Santo: Apartai-me a Barnabé e a Saulo para a obra a que os tenho chamado.
+
+(At 13:2)
+
+Policarpo: Em 110 d.c. encorajou os crentes a orar e jejuar para serem vencedores nas tentações. Tertuliano, também defendeu o jejum em 210 d.c. como uma arma de vitória importantíssima para a Igreja. Martin Lutero, o grande reformador, também jejuou. Em seu labor sobre os antigos manuscritos das Escrituras para traduzi-los para a língua alemã, ele combinou a sua obra de tradução com a oração e muito jejum. Não é de se surpreender que a versão de Lutero das Escrituras em alemão seja uma das mais inspiradoras que existem.
+
+Charles Finney: Ele escreveu em sua biografia que, freqüentemente, separava dias somente para jejum e oração. Ele relata que toda vez que percebia as "baterias" de seu espírito "descarregando" ou que a unção do Espírito Santo se desvanecia, imediatamente partia para alguns dias de jejum e, sempre no término destes períodos, tinha as suas baterias recarregadas.
+
+Um jornal da época publicou que Finney estava em uma cidade realizando uma de suas cruzadas. As pessoas que tão somente cruzavam as fronteiras da cidade começavam a chorar por causa de um espírito de arrependimento que caía sobre elas. A presença de Deus era tão forte na vida deste homem que as pessoas ao vê-lo eram constrangidas a se entregarem ao Senhor.
+
+Jonathan Edwards: Quando ele pregava o seu famoso sermão, "Pecadores nas mãos de um Deus irado", as pessoas na audiência diziam que o sentimento delas era como se o chão abrisse debaixo de seus pés e revelassem as profundezas do inferno. A unção daquele homem levava-os a um clamor a Deus por perdão e misericórdia. Edward combinava as suas pregações às orações e jejuns.
+
+John Wesley: Ele acreditava firmemente na disciplina do jejum. Ele, pessoalmente, jejuava todas Quartas e Sextas-feiras. Ele tinha tanta convicção que o jejum deveria ser uma prática obrigatória no estilo de vida de cada ministro, que sempre falava da necessidade dele a todos aspirantes ao ministério. Este homem se tornou tão poderoso em suas pregações, que se tornou a primeira voz do grande despertamento e reavivameto que aconteceu na Inglaterra e nos Estados Unidos. Alguns historiadores são contundentes em afirmar que o derramamento de sangue e sofrimento da Revolução Francesa, que varreu a Europa, poderia também facilmente ter chegado à Inglaterra. No entanto, a sua pregação impediu. Wesley atribuiu o poder e os frutos de seu ministério à disciplina do jejum diante do Senhor.
+
+Charles Haddon Spurgeon: O grande pregador e mestre, sempre foi encorajado e revigorado pelo jejum. Rees Howells, um grande intercessor, regularmente também combinava jejum e a oração no exercitar de seu ministério.
+
+Sadhu Sundar Singhs: Ele foi um sick (religião proeminente na índia), e devoto hindu que se converteu depois de ter recebido uma visão clara do Senhor Jesus Cristo. Ele dedicou a sua vida na propagação do Evangelho e se tornou "o apóstolo Paulo" da índia e do Tibet. Certa vez, como Jesus no deserto, ele tentou estar em um propósito de 40 dias completos de jejum e oração. Embora incapaz de completar o seu intento completamente por motivo de saúde, ele disse que tal experiência fortaleceu seu espírito, permitindo-lhe superar muitas dúvidas, cólera e impaciência em sua vida.
+
+Bom, o jejum tem sido uma prática comum entre os líderes mais proeminentes da história da Igreja e, em nossos dias, é algo que o Senhor firmemente requer de cada um de nós. É bom frisarmos que não jejuamos para obter alguma coisa, mas para revigorar o nosso espírito diante de nosso Deus sobrenatural. O jejum desobstrui o "canal" que nos conecta com a unção de Deus, pois este tem a tendência de se corromper através do curso normal de nossa vida neste mundo decadente. Por isso, a melhor maneira de purificar o nosso "sistema espiritual" da corrosão do mundo e do pecado é praticar o jejum e a oração. Quando os médicos precisam controlar uma determinada infecção bacteriana de um paciente eles sempre aplicam, de uma só vez, dois tipos de antibióticos combinados para inibir a proliferação da doença. O tratamento de Deus para germes que assaltam os nossos corpos é a oração combinada com o jejum.
+
+Permita-me que eu lhe dê uma outra breve lista dos "benefícios" do jejum antes de fazermos menção de seu lado prático.
+
+Quando você jejua:
+
+1. Você está se humilhando debaixo da poderosa mão de Deus.
+
+2. Você será capaz de ver as prioridades da vida de uma maneira mais clara. O Reino de Deus se tornará o primeiro objetivo de sua vida e você terá maior percepção sobre os seus valores. Como Maria, você será capaz de escolher "a melhor parte" e por de lado aquilo que não é bom (veja Lucas 10:42).
+
+3. Você encontrará equilíbrio na área de sua vida que, geralmente, está desequilibrada.
+
+4. Egoísmo, ambição e orgulho começaram a ser banidos de sua vida. Você começará a valorizar e realmente apreciar as coisas que Deus tem lhe concedido. Você dirá: "Ó, que dia maravilhoso! É bom estar vivo!" - ao invés de murmurar: "Eu serei feliz somente quando alcançar isto ou aquilo." A prática do jejum e da oração colocará em seu coração uma forte apreciação por sua família e um coração agradecido por coisa básicas tais como a sua comida, a sua casa e a sua boa saúde.
+
+5. Você se tornará mais sensível ao Espírito de Deus. As coisas espirituais se tornarão mais claras e efetivas em seu viver.
+
+6. Aquelas áreas de sua vida de fraqueza e susceptibilidade serão expostas e o Senhor tratará com cada uma delas. Eu me lembro de uma vez quando estava no décimo quinto dia de um dos meus períodos de jejum, eu dirigia em Ft. Lauderdade, Flórida. Bom, eu estava em alta velocidade, quando um motorista que pensava que eu não estava rápido o suficiente, rudemente colocou a mão pela janela e me fez um gesto obsceno. Naquele instante, alguma coisa subiu dentro de mim e comecei a dizer palavras que eu nunca havia dito! Eu fiquei tão envergonhando que logo clamei ao Senhor: "Ó Senhor, eu pensei que eu era um homem de Deus! Perdoe-me, não era o meu desejo dizer estas palavras”.Naquele mesmo instante o Senhor falou profundamente em meu espírito: "Eu te purifico." Quando jejuamos, descobrimos aquelas "podridões" e amarguras que estão incrustados dentro de nós, serão trazidas para a superfície de nosso ser. Sem dúvida é uma grande oportunidade para nos livrar de todo veneno de nossa carne e de nossa alma.
+
+7. Você terá mais domínio próprio.
+
+O Senhor quer nos livrar de toda ignorância acerca do jejum Legalismo e uma certa ignorância das Escrituras Sagradas têm privado o princípio bíblico do jejum e oração da maioria dos cristãos. O Senhor quer de uma vez por todas dissipar todo mistério e lançar a Sua luz neste maravilhoso e simples instrumento de vitória que nos foi confiado. A maioria dos problemas que as pessoas têm com jejum, está relacionado com a questão de legalismo e idéias rígidas acerca daquilo que o jejum é e daquilo que o jejum não é. Muitas pessoas acreditam piamente que, se elas não jejuarem 40 dias como Jesus, "não são espirituais”.Se este é o caso, existem muito poucos que poderiam ser chamados de "espirituais." A verdade é que nem todos serão convocados pelo Senhor para jejuarem durante 40 dias e ninguém deverá se sentir culpado por isto.
+
+Quando se fala em jejum, alguns só pensam no "jejum total”.Em suas mentes, a única maneira de jejuar é abster-se de todo e qualquer líquido ou comida. Na realidade, este tipo de jejum é a forma mais rara de jejum, mesmo na Bíblia! Em se tratando da questão do jejum ou de qualquer assunto na Bíblia, a promessa do Senhor é tremendamente confortante: "E conhecereis a verdade e a verdade vos libertará. " (Jo 8:32) Segue-se nos próximos parágrafos algumas das mais comuns questões que tenho observado acerca do jejum.
+
+Qual é o tempo suficiente?
+
+Eu recomendo o jejum pelo menos uma vez por semana se você poder. Procure fazê-lo e, se preciso for, tome apenas água. No caso de dificuldade (por exemplo, caso você trabalhe em um escritório ou em algum ambiente lhe vem que demandar um gasto maior de energia) beba suco de fruta ou de vegetais. Comece depois do jantar à noite e procure estar em jejum até o jantar do próximo dia. Seria também interessante iniciar o seu propósito após o jantar, no dia seguinte jejue o dia todo e apenas coma alguma coisa no segundo dia pela manhã. Faça do jejum uma parte regular de sua vida e permita que o Senhor venha tratar com aquelas áreas de sua alma que o bloqueia a viver uma vida plena no Senhor.
+
+Por que eu me sinto tão mal uma vez que o jejum é tão bom? Quase todo mundo experimenta um certo desconforto dos efeitos colaterais no início do jejum. É provável que você sinta dor de cabeça ou um pouco de náusea no princípio. A razão é que existe um acúmulo de toxinas em seu corpo que deverá ser eliminado (isto, na verdade, é um fato científico). Até mesmo autoridades seculares da saúde afirmam que um dia de jejum por semana é excelente para o corpo humano.
+
+O jejum poderá curar alguma coisa?
+
+O jejum em si mesmo não traz cura. Ele, na verdade, lhe proporcionará vitória no mundo espiritual. Contudo, você terá que se arrepender de todos os seus pecados antes de se posicionar diante de Deus em jejum e oração. Se alguém que está cometendo adultério jejuar e clamar ao Senhor: "Ó Senhor, liberta-me!"; mas ainda continua vivendo na prática do adultério, certamente este homem não alcançará vitória alguma. O jejum não é uma cura de Deus para os males, mas uma poderosa arma de guerra.
+
+NUNCA JEJUE PARA IMPRESSIONAR OS OUTROS
+
+Como mencionei anteriormente, o Senhor me conduziu através de 29 períodos de 40 dias de jejum dentro do período de 18 anos. Por todos estes anos, o Senhor não me permitiu ensinar sobre este assunto ou até mesmo falar sobre o meu estilo pessoal de vida. As únicas pessoas que sabiam acerca dos jejuns eram a minha esposa e alguns amigos bem íntimos. No décimo oitavo ano, o Senhor me disse: "Agora você pode compartilhar acerca destes jejuns com outros”.Não obstante, o objetivo pelo qual o Senhor me dera esta ordem, era levantar e equipar um exército de vencedores que jejuam e oram, nestes dias do fim. Nunca fui autorizado pelo Senhor a usar as minhas experiências de jejum para me vangloriar dizendo: "Veja, como sou espiritual! Eu fiz isto e aquilo!" Portanto se você quer obedecer ao Senhor e começar a incorporar o jejum regularmente em sua vida, faça isto o mais secretamente possível.
+
+E se eu quebrar o meu jejum em momentos de fraquezas?
+
+A fraqueza faz parte da disciplina do jejum. Aliás, este é o exato lugar onde queremos colocar o nosso corpo e alma no momento em que estamos jejuando. Esta fraqueza, entretanto, pode dificultar por vezes a nossa vida no trabalho e em casa. Em meus primeiros 19 períodos de jejum de quarenta dias apenas consumi água. Posteriormente, pastoreando e trabalhando muito no ministério, ficava profundamente fraco durante toda a semana. Por isto, no décimo sexto ou décimo sétimo dia, eu bebia um copo de suco de cenoura. Seis ou sete dias depois fazia o mesmo para elevar o meu nível de resistência (quarenta dias de jejum é extremamente rigoroso devendo a realização do mesmo ser feita apenas mediante uma palavra específica do Senhor).
+
+Quando realizei o meu primeiro período de 40 dias consecutivos de jejum e oração em 1974, eu era um pastor solteirão vivendo em um apartamento em Levelland, Texas. Eu sempre gostei muito de batata chips, embora não façam muito bem para a minha saúde. No início daquele período de jejum cometi o erro de comprar uma grande quantidade das minhas batatinhas prediletas. Toda manhã, no início de meu jejum, eu era tentado a dar uma voltinha pela cozinha, como que "arrastado" por aquelas batatas chips que pareciam me dizer: "Olá, Mahesh, como você se sente nesta manhã? Nós estamos bem aqui esperando por você."
+
+Com muita dificuldade resistia e voltava para a sala. Mas o apelo daquelas deliciosas batatas estavam ali a cada novo dia, e o desejo de devorá-las aumentava cada vez mais. Aquele desejo parecia muito além das minhas forças. Em meio às tentações "repreendi" aquelas batatas, "amarrei", liberei uma palavra de autoridade sobre elas; mas nada do problema cessar. No décimo oitavo dia, finalmente, eu me rendi! Corri para a cozinha, peguei um daqueles grandes pacotes de batata chips e devorei uma por uma. Depois, bem embaraçado, clamei ao Senhor: "Senhor, perdoe a minha fraqueza!" Então terminei o meu propósito de quarenta dias.
+
+Uma vez, compartilhando esta história, uma senhora me perguntou: "Você então começou tudo de novo?" – Eu respondi: "Você está brincando? Eu apenas estou compartilhando isto porque quero que vocês se lembrem de como o Senhor é misericordioso para com as nossas fraquezas!"
+
+DIFERENTES TIPOS DE JEJUM
+
+A maioria das pessoas ficam impressionadas ao descobrirem quantos diferentes tipos e variações de jejum existem na Bíblia. Este entendimento pode remover muitos dos mistérios e frustrações que muitos sentem sobre a questão do jejum:
+
+1. O jejum completo refere-se à total abstinência de comida ou bebida. O período máximo para este tipo de jejum é de três dias e três noites. Se você tentar ir além de três dias sem água (é lógico, a menos que o Senhor o esteja direcionando para isto), você poderá estar correndo sério risco de saúde. Este tipo de jejum, realizado por Esdras e Ester é a expressão da urgência da presença imediata de Deus. Foi neste estado de desespero e urgência que Ester usou o jejum para trazer salvação para a sua nação.
+
+2. O jejum normal realizado por Jesus Cristo no deserto envolveu total abstinência de comida, mas provavelmente regular quantidade de água. Geralmente, em meus propósitos de jejum eu também uso este tempo para limpar o meu organismo, e assim consumo muita água filtrada. Esta é a melhor maneira de eliminar toda e qualquer toxina de seu corpo. Se você adicionar suco de limão em água filtrada, o efeito da limpeza do organismo ainda será melhor. Se você estiver jejuando por mais de três dias e perceber que necessita de alguma energia extra, adicione um pouco de mel na água. Se preferir, você também poderá tomar chá à base de ervas, todavia evite qualquer bebida rica em cafeína.
+
+3. O jejum de Daniel, ou jejum parcial é o que recomendo se você nunca jejuou antes. Daniel agradou e honrou o Senhor quando observou este tipo de jejum. Ele não comeu "manjares agradáveis" mas somente vegetais e água. O Senhor será tão honrado por este jejum quanto pelo completo. Este jejum é o ideal para indivíduos com certos tipos de condições físicas tais como diabete, hiperglicemia e anemia. Ele é também muito prático para pessoas que querem jejuar, mas cujos trabalhos lhes consumam grandes quantidade de energia física ou mental.
+
+4. O jejum em grupo, ou jejum corporativo é o tipo de jejum que desviou a ira de Deus sobre a cidade de Nínive nos dias de Jonas. Foi este também o tipo de jejum convocado por Esdras e também por Ester. O rei Josafá convocou Judá para um jejum (2 Cr 20). O profeta Joel, por sua vez, também convocou todo Israel para estarem jejuando. De todos os jejuns do Antigo Testamento, o mais conhecido é o de Daniel. Ele descreve um de seus jejuns no capítulo 10:2-3 de seu livro: "Naqueles dias, eu, Daniel, estive triste por três semanas completas. Manjar desejável não comi, nem carne nem vinho entraram na minha boca, nem me ungi com ungüento, até que se cumpriram as três semanas”.
+
+(Dn 10:2-3)
+
+Em 1 Reis 17, você verá que Elias fez um jejum parcial de bolos feitos de farinha e azeite. João Batista era especialmente criativo em seu jejum parcial. Ele, de acordo com Mateus 3:4, comia apenas mel e gafanhoto.
+
+COISAS QUE DEVEMOS EVITAR QUANDO JEJUAMOS
+
+Quando você somando suco de frutas, evite aqueles que são ácidos, tais como laranja e abacaxi porque podem trazer muito desconforto e danos para o organismo. O suco de maçã é muito bom, mas tenha cuidado em não saturar o seu organismo com açúcar, até mesmo em se tratando do açúcar natural de frutos. Recomendamos que todos os sucos sejam diluídos em água. Se você está realmente em um jejum acredite, o seu corpo apreciará qualquer pequena quantidade de nutrição.
+
+Procure eliminar carnes e sobremesas. Haverá vezes que tudo o que você desejará comer será frutos e vegetais. Existem jejuns que demandam um acordo com marido e mulher no sentido de se absterem de relação sexual por determinado período. Seria também muito saudável evitarmos assistir televisão. Procure gastar o maior tempo possível em oração e leitura da Palavra.
+
+Podemos orar por mais de um propósito?
+
+No caso de você ter muitas necessidades em sua família ou igreja, será necessário que ore e jejue por estes problemas como um todo. Seria interessante fazer uma lista de todas as questões e necessidades e oferecê-las diante do Senhor em oração.
+
+Uma outra pergunta que, geralmente, tenho ouvido é: "Como você gasta o tempo durante o período de jejum?" O momento em que nos dispomos a jejuar, precisamos compreender que não apenas jejuamos, mas nos tornamos um sacrifício vivo diante de Deus. Saiba que o ideal durante tal período glorioso de separação é procurarmos adorar, orar e ler a Palavra. Procure, se possível, realizar seus jejuns em momentos que você não tenha que se preocupar com mais nada, mas somente estar diante da presença do Senhor.
+
+Quando somos conduzidos a estar em propósito de jejum, é necessário que estejamos sensíveis não somente para levar diante do Senhor as nossas necessidades, mas também para compreender aqueles encargos de oração que o Senhor coloca em nossos corações. O Senhor pode, por exemplo, colocar no coração de pastores o encargo de estarem jejuando por um despertamento na igreja ou por um mover especial para o evangelismo. Eu nunca esquecerei o dia em que o Senhor gerou em meu coração um sentimento muito especial para estar jejuando. Meu pai, como já relatei anteriormente, morreu quando eu estava apenas com cinco anos de idade e isto causou um grande vazio em meu coração por toda a minha vida. O Senhor me disse: "Eu quero me revelar a você como Pai”.– E durante todo aqueles quarenta dias de jejum a ênfase que o Senhor colocou em meu coração foi acerca da paternidade de Deus. Tal revelação trouxe-me grande paz, conforto e um sentimento delicioso de preenchimento interior.
+
+RESPEITE O SEU CORPO DURANTE O JEJUM
+
+Haverá vezes em que você sentirá profundamente cansado durante o jejum. Nestes momentos é de suma importância que você saiba respeitar o seu organismo. Meu corpo tem levado o evangelho a remotas regiões da África e tem levado centenas de milhares ao conhecimento de Jesus porque ele é saudável. Se eu tivesse abusado de meu corpo durante alguns de meus jejuns, certamente eu não seria capaz de ir a lugares tão difíceis. Quando feito com sabedoria e cuidado, o jejum é na verdade uma benção para o nosso corpo porque ele permite que seu sistema digestivo descanse e tenha a chance de expelir resíduos e toxinas de seu organismo.
+
+Como você deve respeitar o seu corpo durante o jejum? Se você se sentir fisicamente cansado depois de algum tempo de jejum, procure sempre se assentar e descansar um pouco. Se você estiver naquele pique de estar correndo o dia todo e ainda tem o desejo sincero de estar no propósito do jejum e oração, saiba que o Senhor te dará graça para isto. Todavia, se você se sentir demasiadamente fraco e impossibilitado de continuar o jejum, então é hora de respeitar o seu corpo e saber a hora de dar uma pausa no jejum até um tempo oportuno.
+
+Quando temos uma atitude correta em relação aos nossos corpos, eles se tornarão preciosos servos para nós e para o Senhor. Jim Goll, um bem conhecido mestre na área de intercessão e ministério profético, tem ministrado lado a lado comigo em outras nações, e uma vez ele me viu orando e impondo as mãos em mais de 2.500 pessoas em uma noite. Naquela ocasião, as dores em meus pés foram tão intensas, que me vi obrigado a tirar os meus sapatos e calçar alguma coisa mais leve.
+
+Naquela noite o Senhor nos concedeu maravilhosos milagres e me lembro que Jim virou para mim e disse: "Isto é maravilhoso! De onde você consegue tanto poder?" Respondi-lhe: "Do Senhor. Mas parte do poder veio de todos aqueles anos de jejum e oração. Meu corpo é um servo."Sim, uma das coisas mais importantes que devemos fazer durante um período de jejum e oração é dizer ao nosso corpo "quem é que manda." Quando o seu corpo grita: "Eu estou com fome!" -Você tem o dever de dizer firmemente: "Cale-se e continue." Todavia, não seja cruel com o seu corpo. Respeite-o, e uma vez domado, ele será de grande serventia no propósito eterno de Deus.
+
+A VERDADE QUE FAZ A DIFERENÇA
+
+Eu gostaria de mencionar alguma coisa de grande valia quando você estiver em um propósito de jejum e oração tendo em vista algum evento específico ou milagre da parte de Deus. Durante uma grande conferência para quatro mil pastores na Nigéria, em um dado momento eu lhes afirmei: "Eu lhes darei uma palavra que libertará e será um grande diferencial no ministério de cada um de vocês." Eles ficaram assombrados, pensando que palavra poderia ser esta. Então lhes disse pausadamente: "Vocês não são Deus." Eu sei que isto soa simples e bem óbvio mas se você for cuidadoso em lembrar disto, certamente você não tentará tomar sobre si as responsabilidades que são de Deus. Existem certas coisas que eu não entendo. Como por exemplo, porque nem todos ficam curados quando oramos por eles em nome de Jesus. Como eu gostaria de ter respostas para tal questionamento, porém tenho encontrado paz na verdade revelada em Deuteronômio 29:29: "As cousas encobertas pertencem ao Senhor nosso Deus; porém as reveladas nos pertencem a nós e a nossos filhos para sempre, para que cumpramos todas as palavras desta lei. "
+
+COMECE LENTAMENTE E VÁ AUMENTANDO O SEU RITMO
+
+Derek Prince foi um dos meus primeiros mestres e ele ensinou-me grandes princípios durante nossas viagens ministeriais. Certa vez ele compartilhou-me que, até aquele presente momento, o jejum mais longo que ele empreendera em sua vida havia sido de quatorze dias consecutivos. Eu, de maneira alguma, jamais compararia o seu jejum com os quarenta dias empreendidos por mim. Derek Prince é um dos mais ungidos ministros do mundo e possui uma vida disciplinada de jejum e oração. Ele e sua esposa sempre jejuaram toda Quarta-feira, ou seja, eles determinavam 52 dias de jejum todo ano. Na verdade estou compartilhando isto com vocês para mostrar que a disciplina de jejum é bem flexível e deve ser focada em uma intimidade profunda com Deus e não em alguma performance exterior.
+
+Deus concederá a você graça para responder o Seu chamado para uma vida disciplinada de jejum e oração, porém seja moderado. Não comece imediatamente com um jejum de vinte e um ou quarenta dias. Inicie com apenas um dia. Na celebração do "dia da Expiação" as crianças de Israel dedicavam um dia de jejum ao Senhor. Já compartilhamos anteriormente os três dias de jejum da rainha Ester e Esdras. Daniel dedicou um período de três e outro de vinte e um dias de jejum parcial (veja Daniel 10:2-3). Os períodos de jejum mais longos foram de Jesus, Elias e Moisés que empreenderam quarentas dias completos.
+
+Se você está planejando introduzir em sua vida esta prática gloriosa do jejum, mas possui questões médicas, tais como: diabete, medicamento por prescrição médica, gravidez, ou amamentação gostaria de lhe sugerir consultar, primeiramente, o seu médico. De uma maneira geral, poderíamos afirmar que quase todas as pessoas têm condições de estarem sem alimento durante um dia uma vez que estejam bebendo água ou suco natural. Talvez você queira se comprometer a limitar a sua alimentação a simplesmente uma salada durante o dia ou comer apenas lentilhas e vegetais. Existe um grande valor em cada um destes tipos de jejum porque, de uma maneira ou de outra, você está procurando colocar o Senhor e o Seu Reino em primeiro lugar e suas necessidades físicas em segundo.
+
+O que você pode esperar durante o jejum?
+
+Bom, já discutimos anteriormente os sintomas que a maioria das pessoas experimentam durante os três primeiros dias de jejum – dor de cabeça, náusea, tontura e até mesmo inrregessimento do pescoço. No entanto, as boas novas é que quando você ultrapassar a barreira dos três dias, você começará a se sentir muito bem! No momento em que estiver no quarto dia, entrará em um estado de repouso e perceberá que a necessidade de comer alguma coisa não está mais tão presente.
+
+É indispensável a leitura da Palavra durante o período de jejum pois, com certeza, os ataques de satanás serão implacáveis nestes tempos e a batalha espiritual pode se intensificar muitíssimo. O inimigo de nossas almas odeia quando entramos em um propósito de jejum e oração, mas o nosso consolo é que a vitória é certa. Satanás, por muitas vezes, empreende os seus ataques em nossas mentes em forma de depressão, que nos leva a sensação de profundo peso e opressão durante os jejuns. Procure não se perturbar, mas somente persevere em oração e apenas resista aos ataques de satanás. Muitos questionam o porque de tais ataques tão intensos! Ora, você deverá esperar por eles, porque no jejum a sua posição é de ataque e de "franco atirador" contra o império das trevas. E uma vez atacado ele tentará retribuir, mas não se preocupe, tão somente "sujeitai-vos pois a Deus, resisti ao diabo e ele fugirá de vós."
+
+TERMINE O JEJUM COM SABEDORIA
+
+Exercite a sabedoria no momento de terminar o seu jejum. Esta é especialmente importante se você estiver terminando um jejum de sete dias ou mais. Uma vez mais, eu te exorto a tratar o seu corpo com respeito. Eu freqüentemente ouço pessoas conversando durante jejuns em grupo o seguinte: "Eu quero comer o maior bife do mundo ou eu quero devorar uma deliciosa feijoada." Se você fizer isto, você estará ferindo seu corpo. Quando você estiver terminando um longo jejum, faça-o gradativamente. A "verdadeira arte" de jejuar com sabedoria é saber como começá-lo e como terminá-lo. Temos recomendado aqui o uso de saladas, sucos e algum tipo de iogurte, mas ninguém melhor do que você para descobrir o melhor alimento a ser usado durante ou no término de um jejum.
+
+A seguir estaremos examinando o inacreditável poder do jejum que chamamos de jejum corporativo e do papel por ele desempenhado no grande avivamento do Senhor neste tempo do fim.
+
+Observação: Existe um precedente bíblico para quarenta dias de jejum e oração sem comida e água. Contudo, é necessário observar que estes jejuns foram conduzidos literalmente por uma direção específica de Deus. Tais jejuns poderiam ser fatais sob qualquer outra circunstância.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 10;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 9 - Oração corporativa e o avivamento do tempo do fim$t$, 10,
+$conteudo$Todos os severos acontecimentos que temos visto nos últimos cinco anos por todo o globo, tais como guerras, desentendimentos internacionais, calamidades e outros, têm nos dado uma percepção profética daquilo que já está acontecendo e o que está para acontecer no mundo espiritual. Não podemos também esquecer que o grande aumento de catástrofes naturais também nos traz compreensão espiritual destes últimos dias. Talvez tais catástrofes fazem parte da expressão da terra nas dores "trabalho de parto" para que Cristo seja plenamente gerado na Igreja de hoje.
+
+Os olhos do Senhor estão sobre todos aqueles que têm se portado varonilmente e o Seu desejo é que estes continuem a exercitar a fé fielmente em meio a todas as tempestades destes tempos finais. Nos últimos tempos, intercessores, ou seja, todos aqueles que têm obedecido ao chamado para uma vida de oração eficaz, têm determinado a si mesmos não retrocederem diante dos ataques de satanás. Este grupo de guerreiros de oração está constantemente enfrentando tremenda oposição, todavia ele trabalha no resgate de tudo aquilo que o Senhor nos tem dado mas que tem estado sob a posse do inimigo. Como muitos recrutas se alistam na aeronáutica ou marinha tão somente com o intuito de "viajar e ver o mundo," talvez muitos de nós temos abraçado o Evangelho para conseguir um "ticket" que nos leve para fora do inferno. Se assim for, certamente temos em nossa caminhada com o Senhor, ignorado a visão pela qual fomos alistados no exército de Deus.
+
+O meditar sobre o Corpo de Cristo me faz recordar um filme americano lançado há alguns anos atrás, chamado 'Private Benjamim". A personagem principal deste filme era uma mulher que pensava que iria viajar em um "Cruzeiro" pelo Caribe, mas na verdade ela acabou viajando para um rústico acampamento no meio do mato. Infelizmente, esta "mentalidade de Cruzeiro" também descreve muito bem a atividade e o pensamento do movimento carismático durante os anos 80 e início da década de 90; mas saibam que os tempos têm mudado.
+
+Um grande avivamento está por chegar na terra; uma fome muito grande pelo Senhor está começando a varrer todas as nações do mundo. Nestes dias o Senhor está liberando uma nova palavra profética acerca de um princípio antigo de Sua Palavra. Este princípio antigo é "orar!" E o novo mover de Deus nestes dias é "oração corporativa!"
+
+O Senhor tem aberto os nossos olhos para compreendermos a simples verdade de que a oração é o lugar em que tudo começa e termina no mundo espiritual. É na oração onde tudo é consumado. A oração é o verdadeiro "código genético" da Igreja, mas infelizmente temos recebido muitos "genes mutantes" que têm levado o Corpo de Cristo, que é a Igreja, à "degeneração espiritual". Estejam bem conscientes desta verdade irmãos: "Nada do propósito a ser realizado pelo Senhor em nossas vidas acontecerá sem uma vida disciplinada de oração."
+
+Conheço pessoas que dizem que foram chamadas pelo Senhor a pregar o Evangelho, a impor as mãos sobre os enfermos, a ensinar ou a evangelizar e rapidamente adicionam enfaticamente: "Mas eu não fui chamado para o ministério de intercessão." A verdade em tudo isto é que não deveríamos estar ministrando a outros se não estamos gastando tempo diante de Deus em comunhão e intercessão.
+
+A profetiza Ana, uma mulher viúva desde de sua juventude, vivia constantemente no templo ministrando ao Senhor em jejum e oração. A sua intercessão foi a chave para levá-la ao conhecimento revelado do Messias. A grande tragédia de sua vida a fez se tornar íntima ao Senhor em oração. Você O conhece? – Podemos ter os dons do Espírito, realizar milagres, expulsar demônios e ainda assim ouvir Jesus dizer no final dos tempos: “nunca vos conheci, apartais-vos de mim, vós que praticais a iniqüidade. (Mt 7:23)”.
+
+O PODER DA SINFONIA HARMONIOSA DA ORAÇÃO
+
+"Também vos digo que, se dois de vós concordarem na terra (se harmonizarem, fizerem uma sinfonia juntos) acerca de qualquer coisa que pedirem, ser-lhes-á concedida por meu Pai que está nos céus. "
+
+(Mt 18:19) (Parênteses acrescentados pelo autor)
+
+Jesus disse que se dois de vós "se harmonizarem" com o mesmo objetivo, "ser-lhes-á concedido por meu Pai " Deus está chamando a Igreja hoje para a oração corporativa, em outras palavras, para estar orando junto, estar em harmonia, com um mesmo propósito. O Senhor nos conhecerá porque nós O temos conhecido no lugar de oração (veja Mt 25:23). O altar de oração de Deus está à nossa disposição a qualquer momento. Ele nos concedeu uma ferramenta espiritual poderosíssima para o ministério de oração: orar em línguas. À medida que avançarmos neste mover da oração corporativa, o Espírito Santo nos dará mais e mais graça para estarmos orando em línguas e isto nos conduzirá a uma tremenda riqueza espiritual em nossas vidas e certamente seremos um instrumento nas mãos de Deus para Ele mudar o destino de muitas pessoas ao nosso redor.
+
+"VIGÍLIAS" TÊM SIDO PARTE DE TODO GRANDE REAVIVAMENTO
+
+Desde que começamos as nossas vigílias de oração em Charlotte, Carolina do Norte, em 1995, o Espírito Santo de Deus tem se movido poderosamente em nossas orações no sentido de transformar todas as vidas que desde então têm se comprometido com as nossas vigílias. A prática de vigília de oração foi parte na vida ministerial de todos ministros em todos os reavivamentos da história da Igreja.
+
+“Mr. Hall, Kitchen, Ingram, Whitfield, Hutchins e meu irmão Charles estavam presentes com mais 60 outros irmãos em uma vigília de oração. Como perseverávamos em oração, às 3 horas da manhã, o poder de Deus veio sobre as nossas vidas de tal forma que muitos gritavam por causa da transbordante alegria e muitos outros simplesmente caíam pelo chão. Logo após nos recobrarmos um pouco de tamanho espanto e glória de sua majestade, começamos a declarar em grande voz: ‘ Te adoramos Senhor, ó Deus! Verdadeiramente reconhecemos que tu és o Senhor!”.
+
+(Trecho de um texto publicado por John Wesley em um Jornal, em 1739)
+
+Joel, o povo de Israel, Wesley, os irmãos moravianos, e muitos outros foram exemplos da prática de vigílias de oração. Eles lavraram o solo e plantaram as sementes da oração corporativa. Deus, desde então, têm regado as sementes e levantado nestes dias do fim novos atalaias para estarem atentos na colheita de uma nova safra que surgirá através da oração efetiva. O Espírito de Deus está se movendo, levando a Igreja do Senhor para estar orando de maneira corporativa, unânimes, no mesmo objetivo como um só homem.
+
+O inimigo detesta oração, particularmente aquela realizada pela Igreja como um todo porque ele sabe que o Senhor prometeu a Sua presença onde estiverem dois ou três reunidos. A principal estratégia de satanás é dividir e subjugar. Jesus disse "que todo reino dividido contra si mesmo ficará deserto, e a casa dividida.contra si mesma cairá." (Lc 11:17b) O amor de Jesus, por sua vez, está sempre disponível para curar os nossos corações e mel em nossas necessidades, todavia o Seu propósito eterno vai muito além destas coisas.
+
+O Seu desejo é que estejamos envolvidos em uma comunidade corporativa, harmonizando-nos mutuamente em um estilo de vida caracterizado pela oração e comunhão. Porém, o nosso chamamento para este viver nos demandará algum grau de sacrifício e acredito piamente que todos aqueles que não responderem a este chamado de maneira positiva perderão muito para as suas vidas no presente e no porvir. Em Lucas, capítulo 18, a persistente viúva demonstra o poder da perseverança, insistência e oração com um foco e objetivo específico:
+
+"Jesus contou-lhes uma parábola sobre o dever de orar sempre, sem jamais esmorecer
+
+Havia numa cidade certo juiz que não temia Deus nem respeitava o homem.
+
+Havia também naquela mesma cidade certa viúva, que ia ter com ele, dizendo: faze-me justiça contra o meu adversário.
+
+Por algum tempo não quis atendê-la. Mas depois disse consigo: Ainda que não temo a Deus, nem respeito os homens,
+
+Todavia, como esta viúva me molesta, hei de fazer-lhe justiça, para que enfim não volte, e me importune muito.
+
+Disse o Senhor: Ouvi o que diz o injusto juiz.
+
+Não fará Deus justiça aos seus escolhidos, que clamam a ele dia e de noite, ainda que os faça esperar?
+
+Digo-vos que depressa lhes fará justiça. Quando vier o Filho do homem, achará fé na terra?"
+
+PERSEVERANÇA NA ORAÇÃO E O FAVOR DE DEUS
+
+Aquela insistente viúva desta parábola veio ao injusto juiz pleitear a sua causa dia após dia até que, enfim, ele concedeu-lhe a sua petição. Ora, aquela pobre senhora procurou um juiz injusto, e como será o pleito daquela que busca o Justo Juiz? Quão abundante Ele fará àqueles que perseverantemente O procurarem em oração.
+
+Jesus fez uma interessante pergunta relativa à perseverança em oração: "Quando vier,o Filho do homem, achará fé na terra?" Em outras palavras, Jesus está dizendo que a nossa fé é expressa pela nossa vida de oração.
+
+Em Isaías 59, encontramos o povo de Deus espiritualmente necessitado como descrito pelo profeta:
+
+“Pelo que a justiça está longe de nós, e a retidão não nos alcança. Esperamos pela luz e só há trevas; pelo resplendor, mas andamos em escuridão”.
+
+Apalpamos as paredes como cego; como os que não têm olhos, andamos apalpando. Tropeçamos ao meio-dia como nas trevas, e nos lugares escuros somos como mortos.
+
+(Is 59: 9,10)
+
+O Senhor estava descontente porque o Seu povo não via mais nada a não ser trevas. O Profeta ainda diz em Isaías 59:16: "Ele viu que não havia ninguém, e maravilhou-se de que não houvesse intercessor; pelo que o seu próprio braço lhe trouxe a salvação, e a sua própria justiça o susteve”.O Senhor estava abismado por não encontrar ninguém que buscasse a Sua face ou intercedesse pelo Seu povo. Três versos depois, nós lemos: "Então temerão o nome do Senhor desde o poente, e a sua glória desde o nascente do sol. Pois ele virá como uma corrente impetuosa, que o sopro do Senhor impele. " (Is 59:19)
+
+Acredito que o Senhor, em Sua soberania, viu a Igreja em todas as nações, tateando nas trevas, procurando a luz. Ele por Sua vez, decidiu se mover e realizar as coisas com as Suas poderosas mãos. Não é difícil vermos como o Espírito do Senhor está se levantando com poder em Sua Igreja nestes dias contra todos os intentos de satanás. Em Apocalipse 12:15 vemos esta figura de oposição contra a Igreja.
+
+Deus está em busca da "grande muralha de oração"
+
+O Senhor está dizendo: "Esqueça o seu ministério e o seu dom. Esqueça finanças; esqueça ter que se casar; é tempo de seguir-Me." (Veja Mt 6:33). Responda portanto o chamado de Deus e abra espaço em sua vida para a realidade da oração corporativa. Assim como a única estrutura que pode ser vista pelos satélites são as grandes muralhas da China, a única obra realizada por homens que Deus deseja ver quando olha para a terra é a grande muralha de oração que se estende por toda a terra. É chegado o momento dos atalaias do Senhor tomarem os seus lugares sobre este muro!
+
+Nunca houve nenhum reavivamento que não fosse precedido pelo levantamento de um grande número de intercessores que se posicionassem eficazmente diante do Deus vivo. Tais intercessores simplesmente rejeitavam a idéia de deixarem o testemunho do Senhor cair por terra, não importava qual fosse o sacrifício, eles estariam na brecha se posicionando no Senhor em favor de Seu povo.
+
+A palavra do Senhor no Novo Testamento para os discípulos foi: "Ficai na cidade, até que do alto sejais revestidos de poder " Esdras, o profeta, registrou uma oração histórica para os judeus no exílio em que esperavam pelo reavivamento e a oportunidade de reparar os muros e reconstruir as ruínas de seus destinos:
+
+"Agora, por breve momento, se nos manifestou a graça da parte do Senhor, nosso Deus para nos deixar alguns que escapem, para dar-nos estabilidade no seu Santo lugar, para nos alumiar os olhos, ó nosso Deus, e para nos dar um pouco de alívio em nossa servidão.
+
+Embora sejamos servos, não nos desamparou o nosso Deus na nossa servidão. Antes estendeu sobre nós a sua misericórdia perante os reis da Pérsia, para nos reviver, para levantar a casa do nosso Deus, para restaurar as suas ruínas e para nos dar um muro em Judá e em Jerusalém.”
+
+(Ed 9:8,9)
+
+Precisamos procurar a unidade!
+
+O Profeta Amós fez a seguinte pergunta: "Andarão dois juntos, se não estiverem de acordo?" (Am 3:3) Deus está conclamando a Sua Igreja para estar em plena harmonia com Ele em oração, a estar junto em um mesmo lugar de concordância com os seus propósitos. A Igreja, de uma maneira geral, tem inundado o povo com uma série de programas e ensinamentos para promover a unidade, mas tudo isto tem tragicamente dado em nada. Porque? – As pessoas têm recebido ensinos ou programações de unidade de maneira inadequada? Ora, a unidade na verdade não pode ser realizada por homem algum, mas tal mover sobrenatural só pode ser realizado pelo Espírito Santo de Deus nos corações e o único objetivo deste mover soberano é focalizar Cristo. Como já observamos anteriormente neste capítulo, Jesus nos revelou a chave para a oração efetiva no Evangelho de Mateus:
+
+"Também vos digo que, se dois de vós concordarem na terra acerca de qualquer coisa que pedirem, ser-lhes-á concedida por meu Pai, que está nos céus.
+
+(Mt 18:19)
+
+A palavra do Senhor sobre a oração corporativa, ou em conjunto, não tem nada a ver com programas, agendas, ou pensamento de homens. Mas o seu objetivo primordial é levar a Sua Igreja a estar envolvida e submetida à direção de Seu Espírito. O mover é Dele, o realizar é tão somente Dele. A nossa tarefa é somente nos reunirmos e nos harmonizarmos em oração e adoração na presença gloriosa do Senhor, oferecendo as nossas vidas como sacrifícios vivos. Ora, uma vez nos disponibilizando a estar na brecha por outros, obedecer as Suas instruções e esperar, com certeza trará Sua obra sobrenatural da unidade, que será realizada.
+
+Toda oração guiada pelo Espírito Santo tocará o coração de Deus. Se de fato, a palavra de Deus é digna de toda confiança, precisamos estar certos de que o Espírito realmente intercede por nós porque "não sabemos orar como convém. " (Rm 8:2(x) O Senhor está abrindo o nosso entendimento para a eficácia da oração em conjunto, portanto, se faz necessário que comecemos, a praticá-la na vida da Igreja. Se o fizermos, saibam que um reavivamento varrerá a terra de tal maneira como nunca aconteceu.
+
+A casa do Senhor é casa de oração. O Seu "endereço" é a oração (veja Mt 21:13; Is 56:7). Se você deseja estar com Ele, então você deverá encontrar-se com Ele em Sua casa. Jesus, em Seus dias aqui na terra, andou em meio a uma expressão vazia de religião, onde as pessoas faziam de tudo, menos orar. Eles compravam, vendiam, conversavam e até mesmo fizeram do templo uma extensão da rua e comercializavam as suas mercadorias ali. Quando o Senhor viu aquilo, a Sua proclamação foi: "A minha casa será chamada casa de oração!" Portanto, se queremos estar onde Deus está, precisamos estar no lugar da oração em conjunto, como Igreja.
+
+Jesus foi, antes de tudo, um homem de oração. Toda e qualquer reação ou resposta realizada por Ele em relação ao povo ou alguma situação que se desenrolava ao seu redor foi exclusivamente na direção recebida do Pai em oração! Ele, certa vez disse: "Em verdade, em verdade vos digo que o Filho por si mesmo não pode fazer coisa alguma; ele só pode fazer o que vê o Pai fazendo, porque tudo o que o Pai faz, o Filho o faz igualmente. " (Jo 5:19) A vitória de Jesus na cruz foi primeiramente vencida no lugar de oração no Getsêmane (Enquanto os discípulos dormiam).
+
+No outono de 1994, O Espírito Santo começou a realizar algo maravilhoso em nossa Igreja e creio que o mesmo Ele tem realizado por todo o Corpo de Cristo na face da terra. Tal realização foi a oração corporativa, oração em conjunto com toda a Igreja que, geralmente é realizada em vigílias por toda uma noite. Embora tal mover seja recente, as suas raízes são bem antigas e originadas do coração de Deus que disse: "A minha casa será chamada casa de oração para todas as nações”.(Is 56:7b) Talvez você se encontre no mesmo lugar que aquela mulher de Cantares, que disse: "Eu dormia, mas o meu coração velava. Ouvi! A voz do meu amado, que está batendo: abre-me, minha irmã, amada minha, minha imaculada. A minha cabeça está cheia de orvalho, os meus cabelos das gotas da noite. Já despi a minha túnica; como a tornarei a vestir? Já lavei os meus pés; como os tornarei a sujar? O meu amado meteu a sua mão pela fresta da porta, e as minhas entranhas estremeceram por amor dele. " (Ct 4:2-4) De repente, alguém bate em sua porta e lá está o Senhor esperando você abri-la.
+
+TROQUE A SUA INDEPENDÊNCIA POR INTERDEPENDÊNCIA
+
+Já é tempo de substituirmos a nossa independência pela a interdependência. A independência tende a tornar as pessoas extremamente vulneráveis à decepção, particularmente em se tratando das coisas espirituais. Depender mutuamente um do outro é de importância fundamental para que o nosso ministério flua livremente na casa do Senhor.
+
+O Segundo livro das Crônicas no capítulo 20, nos relata que o rei Josafá não estava satisfeito em estar meramente orando individualmente. Ele sabia do risco e tinha plena consciência do grande perigo em estar sozinho no lugar de oração. Ele, portanto, não somente se dispôs a buscar a face do Senhor, como também proclamou jejum e oração para toda a nação. Como resultado da obediência corporativa de Judá, o Senhor respondeu com a Sua intervenção sobrenatural.
+
+O Senhor espera alcançar as nações através da sua Igreja e isto só será possível através da oração corporativa de Seu povo. Portanto, se como igreja, estamos dispostos a cumprir o destino do Senhor dado às nações precisamos estar dispostos a abrirmos mão de nossa visão individual e começar a agir como um só Corpo na busca de um único objetivo, aquele que sempre esteve no coração de Deus: trazer salvação a todo homem.
+
+Nos dias de Salomão foi a oração corporativa que moveu,a mão de Deus contra os inimigos de Israel. A prescrição de Deus para a libertação do povo nos dias de Joel também foi conseqüência da oração em conjunto, tanto do grande quanto do pequeno. De acordo com o profeta, as palavras do Senhor foram estas: "Santificai um jejum, convocai uma assembléia solene, congregai os anciões e todos os moradores desta terra para a casa do Senhor vosso Deus, e clamai ao Senhor. "( Jl 1:14) Quando o povo de Deus se humilhar diante Dele em oração, Ele dirá: "...Eu ouvirei dos céus, e perdoarei os seus pecados e sararei a sua terra. " (2 Cr 7:14b)
+
+A HARMONIA NA ORAÇÃO SIGNIFICA PODER
+
+Quando você se reúne com irmãos e irmãs para gastar tempo em consistente, concentrada, e harmoniosa oração no Espírito, as coisas certamente mudarão. O Senhor transformará as suas perspectivas, o seu grau de resistência às tribulações, sua paciência e muitas outras áreas de sua vida. A oração corporativa, em conjunto ou como muitos também chamam oração de concordância, é uma ferramenta que traz disciplina de oração para a vida, para a parte local do Corpo de Cristo. Pedro foi liberado de sua prisão devido à soberania de Deus e às orações que estavam sendo feitas a seu favor! (Veja Atos 12:1-12). Foi também depois de um extensivo período de oração harmoniosa que o Espírito Santo caiu sobre aqueles que estavam reunidos no cenáculo no dia de Pentecostes (Veja Atos 2:1-4).
+
+A oração corporativa, misteriosa e sobrenaturalmente, jogara por terra todo muro que divide o Corpo de Cristo sobre a face da terra e transcenderá as linhas denominacionais. Como cristãos, eu e você precisamos estar no campo de batalha, apresentando-nos a Deus como um grupo comprometido de guerreiros de oração dispostos a banir toda atuação diabólica e levantar com poder o testemunho de Jesus sobre toda a terra. Queridos, é tempo de nos posicionarmos!
+
+Você sabia que Deus libera uma autoridade especial sobre nós quando vários irmãos se reúnem conjuntamente em Seu nome para jejuar e orar? E esta autoridade tem poder para deslocar montanhas! Com esta arma que nos foi dada, podemos quebrar toda e qualquer fortaleza diabólica em nossas vidas, famílias, igrejas e até mesmo cidades e nações! É isto o que acontece quando escolhemos concentrar as nossas energias de oração em um mesmo foco como se fosse um filete "de raio laser".
+
+Permita-me fazer uma pergunta conceitual. Somente para ajudálo a entender o poder da oração e do jejum corporativo. Se um filete de "raio laser" é poderoso, por exemplo, para perfurar uma placa de aço dentro de um determinado tempo, qual seria o poder de fogo de 21, 50 ou 100 filetes de raio laser concentrados em um único foco? Esta figura dá uma idéia mais clara do poder de Deus a nós conferido quando estamos em um mesmo propósito de jejum e oração. Ora, o Senhor nos deu literalmente a comissão e o poder para derrubar fortalezas, desbancar o império das trevas e quebrar toda maldição sobre as nossas famílias em Seu poderoso nome.
+
+MUDE A HISTÓRIA ATRAVÉS DO JEJUM E DA ORAÇÃO CORPORATIVA
+
+Lembre-se que Jesus está nos enviando, a mim e a você, ao mundo assim como o Pai O enviou – a única exceção é que Ele nos envia em conjunto. Deus, soberanamente realizou um maravilhoso milagre, há quase dois mil anos atrás na cidade de Jerusalém quando Ele começou a derramar de Seu Espírito sobre toda carne. Naquele momento, a Igreja nasceu e um exército ungido cheio do Espírito Santo foi levantado sobre o mundo e contra o Império das trevas. Agora, como nunca antes, é tempo de nos levantarmos no poder de Deus de cidade em cidade, de país em país para proclamarmos o Evangelho de nosso Senhor Jesus Cristo. Uma coisa acontecerá mediante à nossa obediência: seremos agentes ativos na transformação do destino das pessoas seja qual for o lugar que estejamos! Tenho total confiança no cânon da revelação das Escrituras. Todavia, acredito também que, se andarmos no poder do poderoso nome de Jesus, teremos a oportunidade, pela graça de Deus de escrever o "Segundo livro dos Atos dos Apóstolos" em nossos dias.
+
+Deus quer conceder a sua visão para uma colheita global a cada um de nós, e assim seremos capazes de olhar além, para onde os "campos estão brancos para a seara. " Já é tempo de compreendermos que eu e você recebemos as Boas Novas de Jesus para termos muito mais que salvação em Seu nome.
+
+Nós temos a responsabilidade em Cristo de mudar a história e transformar o destino de nossas igrejas, nossas cidades e as nações. Esta é a visão de Jesus e a comissão do Pai para cada um de nós.
+
+A única maneira que, presumidamente, podemos mudar a história é orar e jejuar para Deus revelar a Sua glória para as nações. Precisamos permitir que a palavra de Deus fale em nosso íntimo e nos venha direcionar nas orações e intercessões. Quando Derek Prince e eu estivemos no Paquistão em missão apostólica, há alguns anos atrás, nós literalmente vimos Deus realizar muitos milagres. Após pregar em uma noite, decidi fazer uma visita aos arredores da cidade na manhã seguinte. Nesta minha oportuna caminhada pela cidade, encontrei uma mulher que havia nascido cega. Os seus olhos eram completamente deformados e sem vida. Por alguma razão fui levado a tirar uma fotografia dela com a minha câmera fotográfica.
+
+Aquela mulher realmente tocou o meu coração e na reunião daquela noite, em minha oração, eu disse ao Senhor: "Pai, aqui estamos nós neste país escuro, que possui um dos povos mais pobres do mundo. Onde estará agora aquela mulher cega? Quem toma conta dela?" No final daquela reunião, eu estava proclamando o nome de Jesus, e no final da mensagem eu orei silenciosamente: "Espírito Santo, mostre a cada uma destas pessoas que Jesus Cristo é o filho de Deus e que somente Ele é o Senhor dos senhores."
+
+De repente ouvi um barulho no lado de trás da plataforma onde eu me encontrava. Quando olhei para saber o motivo da perturbação, eu não podia acreditar no que os meus olhos viam. Era aquela mesma mulher cega da fotografia. Aquela senhora de aproximadamente 60 anos de idade que havia nascido completamente cega estava agora pulando em cima do palco de tanta alegria. Ela exclamava em alta voz àquela multidão: "Como vocês sabem, eu fui cega por toda a minha vida, mas enquanto este homem estava orando, eu vi um clarão de luz e agora eu posso ver!"
+
+PRIMEIRO VOCÊ PRECISA AMARRAR O HOMEM FORTE
+
+Estou compartilhando esta história para mostrar-lhes a importante chave deste sucesso. A vitória em meu ministério começou quando Senhor implantou em meu coração a verdade sobre o jejum e a oração. Antes de estar realizando cruzada em países tais como Paquistão, Zambia, Zaire e Haiti, o Senhor me levou a jejuar muito, orar, enfim, entrar em agressiva guerra espiritual. Antes mesmo de entrar na região central da África para ministrar ao povo do Zaire ou Zambia eu já tinha batalhado espiritualmente contra a força que atua em magia negra nestes países. O segredo da vitória, portanto, é primeiro amarrar o homem forte, só então saqueamos a sua casa! (Veja Lc 11:21-22)
+
+Eu te asseguro que se sua família, ministério ou igreja está sendo atormentada por poderes das traves ou obstáculos invisíveis, você terá vitória sobre tudo isto se tão somente lançar mão da arma especial que Deus, como já disse antes, nos deixou. O Senhor deseja que estejamos desfrutando de uma nova e gloriosa unção e ela só virá através da oração e do jejum.
+
+Não existe outro caminho, pelo qual, possamos ter vitória e a oração é algo que todos nós fomos comissionados para realizar de maneira efetiva, seja individual ou corporativamente. Precisamos rogar ao Senhor da seara que nos conceda graça para evangelizarmos e trazermos mediante o nosso ministrar, excepcionais sinais e maravilhas para confirmar a pregação de Sua poderosa Palavra.
+
+A VISÃO DO ÍNDIO AMERICANO
+
+Durante os longos 18 anos quando o Senhor me levou a estar observando vários períodos de quarenta dias de jejum e oração, houve vários momentos em que a atmosfera celestial me envolvia e a revelação do Senhor vinha doce e poderosa em meu espírito.
+
+Nos últimos sete dias de um de meus períodos de quarenta dias de jejum, eu me encontrava realmente cansado. O meu dia estava todo tomado com compromissos inadiáveis e ainda havia uma reunião de culto à noite sob a minha responsabilidade. No final da tarde tentei descansar um pouco antes da reunião. E deitado ali mesmo no sofá, eu não me encontrava dormindo e nem completamente acordado, mas literalmente eu vi a figura de um forte índio americano naquela sala. A sua visão para mim era tão clara que ainda posso descrever a sua pele, os seus longos cabelos negros e suas vestes. Então ele me perguntou: “Onde está a água?”.
+
+Estou com muita sede."
+
+Então ouvi uma outra voz lhe respondendo: "A água está aí." Naquele momento, ele começou a correr de um lado para o outro. De repente ele começou a vir em minha direção e a sua aparência era de completa exaustão, parecia que ele tinha viajado um longo caminho através de regiões desérticas e lutado ferozmente contra cactos porque a sua saudável pele estava toda perfurada por espinhos. Até aquele presente momento ele não tinha ainda encontrado nenhuma água e ele estava literalmente morrendo de sede. Eu ouvi a voz do Senhor me dizendo: "Dê a ele água." Então entendi que o Senhor queria que eu desse da Água da Vida para aquele pobre índio. Por aquele momento eu me encontrava maravilhado porque aquele homem e os eventos que ocorreram naquela sala em minha visão eram muito reais para mim.
+
+Quando fui para a reunião de culto naquela noite, mesmo durante o período de louvor e adoração, ainda sentia como se estivesse tendo aquela visão. Compartilhei com os irmãos, descrevendo aquele índio em detalhes: os seus lisos e negros cabelos, a exata forma de seu nariz, a sua mão segurando uma flecha e a terrível sede que ele tinha. Quando terminei de descrever o que tinha visto disse aos irmãos: "O desejo de Deus é que demos Água Viva para toda tribo e nação por todo o mundo."
+
+Naquele instante um silêncio santo pairou sobre toda a congregação porque exatamente naquele instante um jovem índio entrou naquele recinto e a sua aparência era a mesma que eu havia descrito alguns minutos antes. Ele entrou na congregação, mas não se assentou, tão simplesmente andou até o centro do auditório e depois em direção ao altar e disse em alta voz: "Eu preciso de Jesus." Aquele índio entregou a sua vida ao Senhor ali mesmo, apenas alguns instantes depois que eu havia compartilhado a visão que o Senhor havia me dado.
+
+Posteriormente, fiquei sabendo o resto da história daquele homem. Ele era de uma tribo indígena que vivia em uma reserva no Missouri, fazia artesanatos indígenas e fornecia o seu produto para vários estabelecimentos comerciais. Ele havia separado de sua esposa e estava vivendo uma vida de devassidão, mas no fundo de sua alma clamava ao Senhor por respostas em sua vida. Passando em viagem pela nossa cidade em busca de bons negócios na região, quando passava pelo nosso prédio ele viu uma luz dourada brilhando ao seu redor. Aquele prédio não possuía uma torre ou algum sinal particular indicando que ali era uma igreja, não obstante ele viu uma luz incandescente que envolvia aquela antiga construção. Dando então meia volta entrou para onde estávamos reunidos. Quando ele nos ouviu adorando o Senhor, ele percebeu que se tratava de uma igreja, então ele decidiu entrar. Logo após ser sido salvo pelo Senhor, ele se apressou a voar de volta para encontrar a sua esposa e algum tempo depois tive o privilégio de batizar a ambos nas águas, então foram m batizados pelo Espírito Santo e Deus gloriosamente restaurou o seu casamento. Aquele precioso índio realmente recebeu da Água da Vida.
+
+A REALIDADE DA REVELAÇÃO É VERDADE EM QUALQUER NÍVEL
+
+A revelação vem quando oramos, jejuamos; e quando a Palavra do Senhor é falada em nosso coração a sua revelação se torna realidade para nós em todas as formas e níveis de nosso ser. Tal revelação do Senhor será verdade no mundo natural, no mundo espiritual e até na história. Por exemplo, existem muitas palavras proféticas sobre Israel que também são verdade para a Igreja ou no mínimo são fontes de bênçãos para o Israel espiritual que somos nós, pois a Palavra de Deus é acima de tudo realidade. Portanto, em qualquer nível em que vemos a Sua Palavra a verdade vai estar lá.
+
+Deus falou profundamente ao meu coração através deste milagre acontecido na vida daquele índio com as seguintes palavras: "Eu quero derramar o meu Espírito. Eu quero dar Água Viva a toda alma sedenta. Existem milhares e milhares de pessoas sedentas pela verdadeira Vida. Vá lá fora e ganhe as tribos perdidas. Vá a todos os povos, toda tribo e todo grupo étnico. Eu quero dar-lhes de beber pois a Igreja tem que dar água para os que estão morrendo de sede."
+
+Se você examinar as Escrituras Sagradas, você encontrará nelas a verdade pura e simples. A Sua palavra ou a Sua cura para nossas vidas está à nossa disposição a qualquer momento. Ele prometeu curar as nossas almas, corpos, casamentos, igrejas, cidades e nações. Se você buscar a Sua face, a Sua palavra de cura virá e realizará a obra para a qual ela foi enviada.
+
+O Senhor, pela sua Palavra prometeu que quando O buscássemos em oração e jejum, e orássemos pela chuva de Suas bênçãos, Ele nos responderia. "Senhor, não queremos que o nosso país perca a Sua chuva preciosa. Nós precisamos desesperadamente dela." Se não clamarmos ao Senhor pela Sua chuva serôdia, então a nossa nação será mais e mais sucumbida com coisas destrutivas. Hoje, na verdade, a nossa nação está ardendo em luxúrias e injustiças mas o desejo do Senhor é derramar a Sua chuva de justiça, santidade e glória. Portanto, o Seu povo pisa clamá-Lo.
+
+"Ele viu que não havia ninguém, e maravilhou-se de que não houvesse intercessor; pelo que o seu próprio braço lhe trouxe a salvação, e a sua própria justiça o susteve.
+
+(Is 59:16)
+
+Eu acredito que o Senhor tem preparado um derramamento de Seu Espírito sobre a Sua Igreja a nível global nestes últimos dias. E tempo de nos convertermos a Ele de todo coração em jejum e oração para a Sua visitação e glória.
+
+Colheita global requer oração corporativa em magnitude global Assim como Jesus ora e intercede por nós dia e noite sem cessar, deveríamos nós também ter sempre em nossos corações o encargo de intercedermos pelos perdidos e pelos trabalhadores da seara. Esta última colheita será global em sua magnitude. Portanto se requer a oração de toda a Igreja corporativamente na mesma dimensão. Se um fazendeiro deseja colher apenas meio alqueire de trigo, ele somente precisa se planejar para tal. Portanto se o seu desejo é colher 100.000 alqueires em um dia o seu planejamento terá que ser outro.
+
+Deus está conclamando a Sua Igreja em todo o mundo para a oração e jejum corporativo como nunca antes e o motivo disto é que Ele está preparando uma eminente colheita monumental em proporções globais! Portanto irmãos, já é tempo de respondermos de maneira positiva ao Seu chamado para o jejum e oração como um único povo unidos ao nosso único Salvador, em uma só fé e um só Espírito.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+
+  select id into v_aula_id from public.aulas where curso_id = v_curso_id and ordem = 11;
+  if v_aula_id is null then
+    insert into public.aulas (curso_id, titulo, ordem, conteudo)
+    values (v_curso_id, $t$Capítulo 10 - Como liberar a unção apostólica$t$, 11,
+$conteudo$Eu gosto muito de ler o livro de Atos porque este livro é o "jornal" que reporta a primeira vez que o Senhor derramou poderosamente o Seu Espírito sobre toda a carne, liberando o ministério apostólico sobre a terra. A Igreja em nossos dias ainda vive sobre o impacto deste primeiro mover do Espírito e agora o Senhor esta prestes a realizar um novo derramamento glorioso de sua unção. Acredito piamente que nós nascemos para este tempo.
+
+Estamos vivendo nos últimos dias e os propósitos finais de Deus para o homem estão para terminar. Portanto, precisamos estar nos preparando urgentemente para tudo aquilo que está por vir. A glória de Deus em nós pode ser comparada ao precioso ouro em pó contido em talhas de pedras. Estas talhas precisam ser quebradas para que tal preciosidade divina seja facilmente liberada em santidade e glória para o exterior destes recipientes e tocar o mundo.
+
+O que mais poderia, além deste quebrantar de nossas vidas, fazer com que o fogo do Espírito em nosso viver queime toda podridão ao nosso redor deixando somente a pureza do ouro? O que poderia quebrar tais corações petrificados para que o "Espírito de Deus em nós" possa fluir livremente de nossas vidas para este mundo pobre e aflito? O Senhor quer nos levar ao quebrantamento para que possamos, como Sua Igreja, transformar grandes quantidades de ouro bruto em preciosíssimas barras de ouro em forma de ardor apostólico para um apostolado efetivo. O padrão do Novo Testamento para liberação da unção apostólica é encontrado no livro de Atos:
+
+"Na igreja de Antioquia havia alguns profetas e mestres, a Saber: Barnabé e Simeão, chamado Níger, Lúcio de Cirene, Manaém, que fora criado com Herodes, o tetrarca e Saulo. Servindo eles ao Senhor, e jejuando, disse-lhes o Espírito Santo. Apartai-me a Barnabé e a Saulo para a obra a que os tenho chamado.
+
+Então, depois de jejuarem e orarem, puseram sobre eles as mãos, e os despediram.
+
+Assim estes, enviados pelo Espírito Santo, desceram a Selêucia, e dali navegaram para Chipre.
+
+(At 13: 1-4)
+
+Qual era o contexto no qual o ministério apostólico foi liberado no primeiro século? Pelo registro Sagrado está claro que isto aconteceu em um contexto de fervoroso momento de oração e jejum da Igreja. É justamente nesta atmosfera que o Espírito Santo fala de maneira bem clara e definida. Este mover apostólico do primeiro século aconteceu simplesmente em obediência a uma direção específica do Espírito Santo para os líderes da Igreja em Antioquia e assim "depois de jejuarem e orarem, puseram sobre eles as mãos e os despediram. " O que isto significa em nossos dias?
+
+O nosso Deus e os dons que Ele nos concede são sobrenaturais Por séculos, a Igreja tem caminhado desajeitadamente e "usado apenas metade da velocidade" pois usa apenas três dos cincos ministérios originalmente designados por Deus para equipar os santos. Os ministérios apostólico e profético foram, em geral, rejeitados ou tidos como funcionais somente nos tempos dos primeiros apóstolos. Enquanto isto os ministérios de evangelismo, pastor e mestre de alguma maneira escaparam do "sepultamento" acontecido com os dois primeiros. Ora, resultado de tal mutilação é previsível. É, sem dúvida desnecessário tentar prever o que aconteceria se alguém, que possui um veículo de seis cilindros, decidisse que seu carro teria melhor performance em sua velocidade se dois ou três deles fossem desligados.
+
+Para piorar ainda mais as coisas, quase todos os nove dons listados pelo o apóstolo Paulo em 1 Coríntios, capítulo 12 foram também tidos como dispensáveis e considerados como já cessadas as suas funções assim como os apóstolos e os profetas o foram. Apesar da irrelevante sabedoria humana dizer o contrário, Deus nunca cometeu nenhum erro ou desconsiderou nada de Sua eterna Palavra. O que Ele disse na Carta aos Efésios, capítulo 4, em 1 Coríntios, capítulo 12 e em Romanos, capítulo 12 foi por uma razão específica. Deus em si mesmo é sobrenatural. Não importa quão desconfortáveis homens e mulheres se sintam, Deus e a Sua Palavra serão sempre imutáveis.
+
+Documentos históricos comprovam que virtualmente todos os reavivamentos ou despertamentos acontecidos no mundo foram liderados por líderes ungidos cujos ministérios foram acompanhados por sinais e maravilhas sobrenaturais, assim como de uma extensiva percepção e funcionamento dos dons do Espírito. O grande reavivamento tão esperado em nossos dias não acontecerá de maneira diferente. Precisamos urgente da autoridade apostólica e das habilidades de liderança designadas por Deus durante esta grande "colheita" que está para acontecer neste últimos dias.
+
+Por esta razão, Deus está conclamando a Sua Igreja neste tempo do fim para estar vivendo e funcionando na plenitude dos cinco ministérios de governo estabelecidos em Efésios, capítulo 4. Queridos, precisamos estar correndo a carreira que nos foi ta pelo Senhor com "todos os cilindros" se almejamos que a glória de Deus verdadeira cubra toda a terra. Não podemos mais estar satisfeitos em simplesmente caminharmos mancando sem o fundamento apostólico ou sem a percepção ou visão do ministério profético na Igreja. Carecemos do pleno funcionamento de cada dom do Espírito legado por Deus à sua Igreja para mantê-la forte, saudável e santa. A única maneira que isso pode acontecer é a Igreja se posicionar de maneira persistente e corporativa no lugar da oração e do jejum. Esta atitude criará uma atmosfera propícia para a glória de Deus queimar e purificar as nossas vidas e definitivamente liberar a unção apostólica da Igreja para o mundo.
+
+Neste reavivamento, sinais e maravilhas destruirão instantaneamente décadas, e até mesmo séculos de ação diabólica, liberando assim centenas de milhares para receber a Cristo como Senhor em uma única noite! Esta obra de tamanha magnitude só poderá acontecer através do poder do Espírito Santo. Louvamos ao Senhor pela unção já a nós conferida, todavia o chamado de Deus para cada um de nós, Seus filhos, é para mergulharmos mais profundamente Nele e desfrutarmos de Suas riquezas através do jejum e da oração. Se O obedecermos, Ele poderá confiar-nos o mesmo poder do Espírito Santo liberado a Seu filho Jesus Cristo, depois de Seus longos 40 dias de jejum e oração.
+
+O PODER DE DEUS E A ÁRVORE DO BRUXOS
+
+Eu me recordo certa vez, quando conduzia uma campanha de evangelismo em massa na cidade de Kananga, Zaire, em uma área infestada de forças demoníacas proveniente de magia negra, tão praticada naquela região. Esta cruzada conduzida pelo nosso ministério foi a primeira realizada naquele país e as coisas estavam, até um dado momento, correndo muito bem, apesar dos agressiva oposição das obras de bruxaria que tinha dominado aquela área por muitos e muitos anos. Logo já no início os bruxos daquela localidade publicaram nos meios de comunicação local um pronunciamento de maldição sobre nós. Infelizmente alguns de nossa equipe temeram muito a atitude daqueles filhos de satanás. Comunicaramme pelo pessoal daquele lugar sombrio, que aqueles feiticeiros tinham poder para simplesmente dizerem a alguém: "Você morrerá em sete dias." e realmente a pessoa caía enferma ou algo acontecia a ela, e aquela palavra maligna se cumpria.
+
+Nossas reuniões despertaram tanta ira naqueles bruxos que eles foram capazes de fazer uma convocação a todos os bruxos da redondeza para um encontro a fim de decidirem o que fariam no sentido de impedir a proclamação do Evangelho do Reino naquele lugar. Aqueles bruxos, então, se reuniram debaixo de uma frondosa árvore usada pelos feiticeiros de muitas gerações. Eles acreditavam que o poder espiritual do maligno era emanado das galhas daquela frondosa árvore e ali foi realizado todo tipo de cerimônia diabólica, inclusive comer carne humana, no intuito de impedir o mover de Deus.
+
+Na última noite da cruzada, aqueles feiticeiros mais uma vez se ajuntaram sob aquela gigantesca "árvore mágica" com o propósito de estar praticando os seus rituais macabros para bloquear a ação de Deus naquele lugar através de nossas vidas. Aqueles homens e mulheres estavam totalmente entregues e embebidos nas densas trevas de satanás e furiosamente amaldiçoavam os cristãos, comiam carne humana e discutiam ardentemente planos determinar de uma vez por todas com a nossa cruzada (Graças ao nosso bom Deus, nada que eles intentaram contra nós funcionou).
+
+No final da minha mensagem naquela última noite, o Senhor me ordenou a liberar uma palavra de quebra de todo o jugo de magia negra que imperava sobre toda aquela região e libertar todo aquele povo das cadeias que os prendiam. Enquanto aqueles pobres feiticeiros se envenenavam debaixo daquela imensa "árvore encantada", eu declarava diante de milhares de pessoas que te se aglomeravam em nossa reunião: "Satanás, eu te amarro, em nome de Jesus! Eu quebro, no nome do Senhor, toda sorte de maldição neste lugar!"
+
+Naquele momento, de acordo com informações de diversas testemunhas oculares, naquela área onde os bruxos estavam reunidos foram vistos grandes relâmpagos e raios que caíam incendiando tudo ao redor e aquele fogo expandiu em um raio de cerca de 10 ou 12 quilômetros. Aquele fogo consumidor deixou aquela grande árvore fumegante. O tronco não se dividiu como normalmente acontece quando atingido por um raio. Mas o fogo começou do topo para baixo queimando o tronco durante três dias completos até toda a sua destruição ser totalmente consumada. Ainda existe lá naquela localidade os sinais daquele incêndio como uma advertência muda do poder do nome de Jesus que está acima de todo principado e potestade!
+
+Posteriormente ficamos sabendo mais detalhes, sobre este episódio da árvore incendiada, da própria boca de alguns daqueles homens que se reuniram ao redor dela. Eles relataram que quando aquele incêndio sobrenatural começou, alguns dos bruxos ficaram cegos, outros foram queimados e alguns outros tiveram uma experiência de arrependimento quando depararam com o poder infinito de Deus. Muitas daquelas pessoas nos procuraram nos relatando esta mesma história e nos indagando o que deveriam fazer para serem salvos. Quando tive a oportunidade de visitar as cinzas daquela que outrora fora uma grande árvore, aqueles restos, lembreime do confronto do profeta Elias com os profetas de Baal em 1 Reis, capítulo
+
+18. O meu espírito regozijou dentro de mim e eu clamei em alta vós como Eliseu quando o manto da unção caiu perto dele: "Onde está agora o Deus de Elias?" (2 Rs 2:14)
+
+Eliseu se encontrava sedento. Ele estava faminto para ver a manifestação do poder do Deus vivo passar para a sua geração no momento em que Elias foi levado ao céu. Esta transição de poder está registrado em 2 Reis e foi uma sombra da unção conferida aos apóstolos por Jesus descrito em Mateus 28:18-20:
+
+"Chegando-se Jesus, falou-lhes, dizendo: é me dado todo o poder no céu e na terra.
+
+Portanto, ide e fazei discípulos de todos os povos, batizando-os em nome do Pai e do Filho e do Espírito Santo,
+
+Ensinando-os a guardar todas as coisas que eu vos tenho mandado. E certamente estou convosco todos os dias, até à consumação do século.
+
+(Mt 28:18-20)
+
+Por séculos a Igreja tem vivido ou com os seus olhos fixos no céu, com as malas prontas esperando Jesus voltar, ou esperando que Jesus faça do céu o que Ele tão veemente comissionou-nos a realizar aqui na terra através de Seu Espírito que habita em nós. A dimensão da obra de Deus em nossos dias nos demanda uma posição que nos arrancará da paralisia espiritual e nos levará a tomar o manto da unção e poder a nós conferidos por Jesus e começar a obedecer os Seus comandos.
+
+Ele nos tem chamado para jejuar, orar e obedecer.
+
+O Senhor nos tem convocado para a prática do jejum e da oração e para obedecer a Sua Palavra. Uma vez subjugando o nosso viver nesta prática Ele poderá liberar a unção apostólica em nossas vidas, em nossas igrejas e em nossos ministérios neste mundo. Possuindo a unção do alto o nosso ministério não será baseado em meros discursos mornos ou apáticos, não será tomado por nenhum temor, dúvida ou descrença. Pelo contrário, será profético, apostólico e capacitado a manusear a "espada de dois gumes" afiada que nos é concedida somente pelo Espírito Santo de Deus. Seremos confrontados e, talvez nem nos daremos conta disto, assim como aconteceu comigo nesta experiência quando fui conduzido a orar simplesmente e liberar um comando através do qual Deus literalmente destruiu o arsenal de satanás naquela cidade no Zaire! Ora, tudo que o Senhor deseja de nós é que estejamos disponíveis em suas mãos e tenhamos pleno entendimento que Ele está conduzindo a sua Igreja para o deserto nestes dias! O Seu desejo é que aprendamos a importante lição de orar e jejuar de maneira efetiva para que possamos fazer diferença em nosso viver no poder do espírito em nossa geração.
+
+Como alguém disse, a oração é a cápsula que contém todos os dons de Deus concedidos a nós e, com todo respeito à palavra do Senhor, então podemos inferir que o jejum é a mola propulsora que levanta as nossas orações muito acima dos limites da terra e céus. O jejum fornece ao nosso espírito o vigor necessário que nos "catapulta" para um viver além da "gravidade" da carne. Você pode estar certo de que satanás teme esta santa combinação como ninguém mais neste mundo. Saiba que toda vez que o povo de Deus ousa deixar de lado as suas diferenças e concepções pessoais o tempo suficiente para buscar a face do Senhor em jejum e oração como um só homem, com um só objetivo, em um só acordo, terríveis coisas estarão acontecendo no império das trevas. Enquanto isto sinais e maravilhas serão realizados pelo Senhor no meio de Seu povo.
+
+Algo que me impressiona profundamente é que apenas poucos cristãos compreendem, ao ler as Escrituras, que Jesus deu aos Seus discípulos um treinamento específico para o jejum. Ele lhes ensinou:
+
+“Quando jejuardes, não vos mostreis contristados como os hipócritas, porque desfiguram o rosto para parecer aos homens que jejuam. Em verdade vos digo que já receberam a sua recompensa”.
+
+Tu, porém, quando jejuares, unge a cabeça, e lava o rosto, Para não pareceres aos homens que jejuas, mas a teu Pai, que está em secreto; e teu Pai, que vê em secreto, te recompensará. (Mt 6:16:18)
+
+Nesta passagem, o Senhor Jesus focou os motivos corretos do jejum e através de Seu discurso Ele simplesmente disse: "Quando jejuardes... " Mais uma vez observe que Jesus não disse "se você decidir jejuar..." ou "se você sentir de jejuar um dia..." Não. Ele falou do jejum com a mesma finalidade e objetivo quando falou da oração. Ele disse: "Quando orardes" e não "se você orar." Por quê? Porque Jesus esperava que Seus discípulos tivessem o mesmo entusiasmo tanto na oração quanto no jejum.
+
+A ABUNDÂNCIA DE CHUVA ESTÁ CHEGANDO
+
+A prática do jejum nos move do domínio natural deste mundo para o viver e governo sobrenatural do Reino de Deus. Este é o único lugar onde você pode obter revelação, autoridade e poder do Espírito Santo. Eu vejo a Igreja envenenada com o brilho do século vinte e virtualmente na mesma posição que o profeta Elias esteve quando orou por chuva no monte Carmelo depois de ter profetizado ao perverso Rei Acabe que a chuva estava chegando depois de três anos de total aridez e sequidão. A princípio não existia nenhuma nuvem no céu, mas ele perseverou em oração.
+
+Depois de um longo período de total aridez e sequidão na Igreja nós também, no nome do Senhor, profetizamos que as chuvas estão vindo, e como Elias nos encontramos em um lugar elevado clamando com nossas faces entre nossos joelhos. Este na verdade é o melhor lugar onde podemos estar! Veja a história de Elias:
+
+"E disse Elias a Acabe: sobe, come e bebe, pois há ruído de abundante chuva.
+
+Subiu Acabe a comer e a beber, mas Elias subiu ao cume do Carmelo e, inclinando-se por terra, meteu o rosto entre os joelhos.
+
+Disse ao seu moço: sobe, e olha para a banda do mar E ele subiu, olhou e disse: não há nada. Então disse Elias: Volta lá sete vezes.
+
+À sétima vez, disse: levanta-se do mar uma nuvem do tamanho da mão de um homem. Então disse Elias: sobe, e dize a Acabe: Aparelha o teu carro, e desce, para que a chuva não te apanhe. Em pouco tempo os céus se enegreceram de nuvens e vento, e caiu uma grande chuva. Acabe subindo ao carro foi para JezreeL"
+
+(1 Rs 18:41-45)
+
+Estamos vivendo hoje o final da aridez em nossa terra. A Igreja está começando a ouvir o som da abundância de chuva! Já temos ouvido as primeiras gotas de chuva da glória do Senhor cair em alguns lugares como Argentina, Brasil, Toronto, Pensacola e Flórida - e estas gotas são apenas o início.
+
+A evidência é muito clara – Milhões têm se prostrado com suas faces entre seus joelhos em fervorosa intercessão e jejum. Servos de Deus têm relatado de Toronto, Pensacola, Houston, Baltimore, Buenos Aires, Londres, Austrália e em muitos outros lugares que já existe uma "nuvem do tamanho de uma mão de homem levantando-se do mar!" Embora a princípio não se via nada, em meados ao ano de 1990 tivemos o primeiro vislumbre de uma pequena nuvem do tamanho da mão de um homem que se levantava do mar. Aquela visão foi tudo o que precisávamos para nos motivarmos no Senhor porque somos um povo sedento do poder de Deus! Agora estamos ousadamente profetizando para esta geração: "Preparem-se para um grande derramar que elevará os seus pés de onde eles estão firmados e transformará a fisionomia da terra! O Rio de Deus está nos invadindo com toda a força de suas correntezas. Prepare-se para ver a terra coberta com a glória de Deus."
+
+Acredito que infelizmente temos realizado muitas coisas segundo a capacidade do.-próprio homem, portanto, precisamos tirar as nossas mãos fora do mover poderoso de Deus. Este será o Seu reavivamento e Sua grande "colheita". Desta vez não terá lugar para a carne ou para a glória de homens. O vento do Espírito está começando a soprar, o céu já está escurecendo e pesada chuva está chegando. Este é o grande poder de Deus que estará vindo sobre esta geração.
+
+PRECISAMOS SER PERSEVERANTES EM ORAÇÃO
+
+Nós já estamos vendo manifestações da glória de Deus em um grau que nunca vimos anteriormente. Este é, sem dúvida, tini novo mover da glória de Deus que será mais glorioso que o derramamento de Pentecostes no início da Igreja ou a chuva serôdia que caiu sobre a Igreja na década de quarenta. Será maior que o aviva mento que varreu a América do Norte em meados dos anos sessenta. O que o Senhor tem preparado para estes últimos dias não pode ser comparado com nada provado pelo Seu povo em toda a história da Igreja. Você e eu somos mordomos de toda riqueza que o Senhor dispensará nesta geração, porém para que o Senhor realize o Seu propósito precisamos estar engajados no desafio da oração.
+
+Se assim o fizermos estaremos brevemente imergidos na unção gloriosa que nos levará às profundidades do Senhor.
+
+Pelo jejum e pela oração corporativa podemos ser mais que vencedores sobre qualquer situação, obstrução e até mesmo montanha que se posicione no caminho da jornada que o Senhor nos tem proposto. Ora, precisamos estar convictos que a vitória no Senhor só poderá ser encontrada quando estivermos vivendo no domínio do Espírito e esta é a razão pela qual satanás não perde uma oportunidade para nos desviar do viver adequado da oração e do jejum.
+
+Acredito que Deus almeja que a Igreja entre para esta vida de jejum e de oração agora, porque Ele sabe que isto é necessário se vamos entrar na plenitude do nosso manto apostólico,nosso ministério apostólico e unção apostólica para milagres sinais e maravilhas. Agora uma pergunta: "Estamos nós dispostos a pagarmos o preço do jejum e da oração?"
+
+Você está preparado para pagar o preço de trazer liberdade aos cativos?
+
+O reavivamento e a "colheita" global nunca acontecerão a menos que estejamos pessoalmente envolvidos com o propósito eterno de Deus através da obediência à oração e ao jejum. O terreno dos corações dos homens precisam ser preparados para receber a semente salvadora da palavra de Jesus. Isto apenas pode ser realizado previamente através da "prática" do amor e de joelhos, diante do Pai das luzes. À medida que entramos em combate, e de joelhos, Deus, por Sua vez, libera o Seu poder para a libertação dos cativos de satanás.
+
+Mais uma vez, gostaria de reinterar que o grande reavivamento e conseqüentemente a "colheita" de muitas vidas para
+
+Jesus não serão realizados de acordo com os caprichos da mente carnal do homem. Este grande mover da mão do Senhor nestes dias será de acordo com a Sua própria palavra revelada. Paulo falou categoricamente aos Coríntios:
+
+"A minha palavra e a minha pregação, não consistiram em palavras persuasivas de sabedoria humana, mas em demonstração do Espírito e de poder,
+
+Para que a vossa fé não se apoiasse na sabedoria dos homens, mas no poder de Deus.”
+
+(1 Co 2:4-5)
+
+Quando temos uma vida produtiva de jejum e oração o Senhor nos dá a Sua graça para que no abrir da nossa boca o mistério do Reino seja conhecido diante dos indoutos. Ele nos dará sabedoria para estarmos diante de governadores, prefeitos, líderes de comunidade e toda sorte de pessoas para que a nossa pregação seja feita "em tempo e fora de tempo”.
+
+ESTE É O PODER DE DEUS
+
+Em 1995, eu e minha esposa, Bonnie, alugamos um avião monomotor e voamos para o interior da África, pari uma cidade chamada Kikwet, no Zaire (Este era um local cheio de mistérios e cenário da mortal epidemia chamada Ébola hemorrágica). Na primeira noite pregamos para uma multidão de cerca de 40.000 pessoas, sendo que a grande maioria nunca havia ouvido o Evangelho de poder. Logo que o poder de Deus caiu sobre aquele lugar, uma criança aleijada de 10 anos de idade que vivia imobilizada por toda a sua vida, começou a andar instantaneamente! Então pelo Espírito de Deus comuniquei àquela multidão: "Existe um tumor gigantesco no estômago de alguém mas já está desaparecendo pelo poder de Deus." O procurador geral da província de Bandundu (incluía Kikwet) se encontrava no meio daquela multidão e havia sido diagnosticado um imenso câncer em sua área intestinal. Imediatamente aquele homem subiu para onde nos encontrávamos e disse em voz alta para todos ouvirem: "Eu sou esta pessoa." - e continuou: "Eu quero servir o Senhor Jesus para todo o sempre!" –Este é o poder de Deus e este é o modo que o Senhor deseja usar pessoas simples como nós para confrontar o inimigo e trazer os perdidos para Jesus.
+
+Deus deseja nos conceder sinais, maravilhas e milagres hoje com o propósito de confirmar a proclamação das Boas Novas e glorificar o Seu grande nome. Quando a resposta ao Seu comando de "ide" é positiva, os Seus sinais e maravilhas certamente nos seguem porque estamos agindo dentro do campo da fé. Porém, para que isto comece acontecer em nosso viver, precisamos estar genuinamente comprometidos em tocar e abençoar os necessitados ao nosso redor como Jesus o fez. Os milagres a nós concedidos não são simplesmente para serem considerados como atrativos para as pessoas ou como motivos para nos orgulharmos. Definitivamente não. Estes são poderosos sinais de Seu poder e Seu amor para com o homem e cabe a nós tão somente sermos fiéis mordomos de tanta riqueza e glória.
+
+Recordo-me certa vez, quando estivemos conduzindo uma campanha no meio da selva africana onde milhares de pessoas se reuniram. Aquele lugar era tão remoto que simplesmente não havia casas e nem sequer tendas para proteger o povo do sol ou da chuva. Aquilo foi realmente uma concentração ao ar livre. Incluídos entre aquelas milhares de pessoas que se reuniram alí para ouvir o Evangelho, estavam centenas de crianças e bebezinhos.
+
+LIBERANDO UM COMANDO PARA AS DENSAS NUVENS
+
+Eu me preparava para pregar àquele povo quando uma grande concentração de nuvens escuras e sinistras se aglomeraram naquela área diretamente sobre as nossas cabeças. Elas não estavam dispersas uniformemente sob o firmamento, mas bem concentradas sobre aquela área que nos encontrávamos e tínhamos a impressão que elas tinham sido movidas para aquela posição por alguma força invisível. Sem sombra de dúvida seria muito desastroso um temporal despencar exatamente naquele momento e nas circunstâncias em que nos encontrávamos. Simplesmente não existia lugar para nos escondermos e os relâmpagos e raios poderiam piorar mais ainda a situação, talvez até com possíveis fatalidades. Eu clamava ao Senhor em meu coração sobre aquela terrível situação em que nos encontrávamos quando, de repente um dos líderes locais, a plenos pulmões, anunciou à multidão: "E agora, o Pastor Mahesh Chavda fará uma oração ao Senhor e ordenará estas negras nuvens de temporal para se afastarem daqui." - E dizendo estas palavras olhou para mim.
+
+Naquele momento eu "engoli seco" e me dirigi onde aquele irmão estava e o meu clamor ao Senhor continuava, mas agora desesperado: "Senhor, eu não sei como fui chegar aqui neste lugar ermo e não sei o que fazer agora... O Senhor é o único que pode responder esta oração. Tenha misericórdia e ouça a oração do teu servo agora." Depois de ter orado silenciosamente, aquela grande platéia ouviu e assistiu-me em poucas palavras pedir ao Senhor que dispersasse aquelas negras nuvens. Em questão de minutos as nuvens começaram a se desvanecer e já era possível Continuar a pregação do Evangelho sem sequer uma gota de chuva para incomodar. Este sinal que o Senhor nos trouxe naquele dia foi um poderoso testemunho do poder de Deus parti;aqueles, africanos, e muitos se renderem ao Senhor Jesus naquele dia porque a manifestação de Seu poder a eles foi muito significativa.
+
+Quanto maior o mover Deus, maior será a oposição de satanás. Todavia, se estivermos pagando o preço, em obediência, do jejum e da oração, o Senhor transformará os ataques ou as obras de maldição do inimigo em uma grandiosa bênção. Em muitos casos, enquanto esperamos a vinda desta grande "colheita" de vidas, estas transformações podem literalmente se tornarem sinais e maravilhas em si mesmas trazendo convicção aos não salvos, da glória de Deus.
+
+Enquanto ministrávamos no Zaire, em uma cidade chamada Mbuji Mayi, local de grande concentração de magia negra, vimos milhares de pessoas terem a experiência do novo nascimento. Os bruxos e os feiticeiros daquela localidade ficaram extremamente indignados porque não estavam mais sendo pagos para lançarem maldições sobre as pessoas. Por outro lado, as pessoas que eles tinham amaldiçoado tinham sido salvas pelo Senhor e as maldições que estavam sobre elas não tinha mais nenhum efeito. Em outras palavras, o Evangelho das Boas Novas de nosso Senhor Jesus Cristo estava levando o grande negócio daqueles bruxos à plena falência!
+
+Conseqüentemente, os feiticeiros entraram em acordo para enviarem o líder deles em nossa reunião e assim pessoalmente nos amaldiçoar. Em um dado momento de nossa reunião quando orando por várias pessoas que estavam em uma grande fila, aquele chefe dos bruxos fingiu estar doente e assim se misturou com centenas de pessoas que esperavam por oração. Os pastores locais conheciam muito bem quem era ele, mas eles estavam com tanto medo do poder de suas maldições que acabaram permanecendo em silêncio acerca da identidade daquele homem.
+
+Aquele bruxo era um homem alto e forte e usava em seu pescoço um grande colar de ossos humanos. Quando me aproximei dele, ele começou a emitir estranhos ruídos e a vocalização daqueles sons estavam além da compreensão humana. Aquilo parecia a combinação dos sons emitidos por 14 ou 15 animais. Eu me arrepiei todo ao ouvir aquele barulho medonho, então ouvi um grande urro e vi os seus olhos se entortarem inteiramente. Naquele momento me foi dado pelo Senhor o claro discernimento com o que eu estava tratando e eu disse para mim mesmo: "Este homem realmente precisa de muita ajuda."
+
+Aquele bruxo estava "agarrado no chão"
+
+No momento que pronuncie-lhe uma palavra de libertação, parecia que milhares de voltes de eletricidade impactava o corpo daquele homem. Ele foi arremessado a uma distância de aproximadamente 4 metros e violentamente caiu com o rosto em terra, e toda vez que tentava se levantar ele se afligia percebendo que não era capaz de mover um centímetro sequer e isto o fazia urrar ainda mais alto. Ele estava colado no chão e era como que se um anjo tivesse sido comissionado para se assentar em cima dele.
+
+Eu disse: "Bem, Senhor, Tu sabes todas as coisas; tome pleno controle desta situação."
+
+Algum tempo depois aquele pobre homem estava dando o seu testemunho aos pastores locais. Ele explicou que ele não foi capaz de se levantar do chão até que confessasse cosia a sua boca que Jesus Cristo é o Senhor. Quando olhou para mim, ele arregalou os seus olhos, e apontando o dedo para mim, disse: "Eu conheço espíritos, mas o Espírito que está sobre este homem é imensamente maior do que todos que já vi em toda a minha vida!" Aquele ex-bruxo estava tão somente vendo o poder sobrenatural do Espírito de Deus em ação.
+
+Nesta grande "colheita" que está para acontecer, Deus também usará novas e excepcionais formas de se mover – Até mesmo à distância, usando forma não muito convencionais ao nosso entendimento (ora, afinal de contas Ele é Deus e pode fazer o que Ele bem entende e da forma que quiser). Uma vez, conduzindo cruzadas em Costa Rica, os nossos cultos eram transmitidos "ao vivo" pelo rádio por todo o país. No terceiro dia, uma mulher que tinha ouvido nossas ministrações pelo rádio veio à nossa reunião com o desejo de compartilhar conosco o seu testemunho. Ela nos contou esta tremenda história de poder de cura realizado pelo Senhor em sua vida.
+
+"Eu estava ouvindo a sua pregação pelo rádio a três dias atrás. Há muito tempo que padecia com um tumor do tamanho de uma laranja que me acometia a garganta. No momento em que ouvi a sua voz pregando a palavra de Deus, o tumor dentro de minha garganta começou a vibrar. E a medida que continuava ouvindo a palavra de Deus aquelas vibrações aumentavam mais e mais violentamente. De repente ele estourou dentro de minha garganta e saiu pela minha boca."
+
+Quando aquela mulher voltou ao seu médico, ele teve o cuidado de tirar-lhe 18 chapas de raios-X de sua garganta por um período de 36 horas e não foi capaz de encontrar um único sinal daquele tumor maligno que estava ali antes da intervenção de Deus! Este testemunho é muito significante para mim, pois eu não estava lá para estender as minhas mãos sobre ela, todavia o Espírito Santo honrou a pregação da palavra de Deus e a fé daquela mulher.
+
+Muito freqüentemente, Deus estará trabalhando através de nós em um momento em que não estaremos sentindo exatamente nada, apenas para nos provar que Ele é o Senhor que faz a obra não eu e nem você. Em reavivamentos, a carne não é capaz de roubar a glória de Deus querendo fazer coisas que somente Deus pode realizar. Me lembro uma outra vez quando pastoreava em uma igreja no Texas; uma família viajou milhares de quilômetros do Novo México para receber oração.
+
+SENTIMENTOS NÃO TÊM NADA A VER COM FÉ
+
+Esta família possuía cinco crianças pequenas, sendo que duas delas ainda eram bebês. A necessidade delas era especialmente aguda porque o corpo da mãe delas estava quase todo consumido por um terrível câncer. Quando impus a minha mão sobre aquela mulher, eu não senti nenhuma unção. Naquele momento, eu não tinha fé para a sua cura, porém esta foi a minha oração ao Senhor: "Ó Senhor, olhe para estes pequeninos. Tenha misericórdia desta família."
+
+Esta mulher, exatamente no dia seguinte tinha exames marcados em um hospital numa cidade vizinha. Os testes revelaram que em seu corpo não havia nem sequer um traço de câncer! Todo o mal que lhe afetava a saúde havia desaparecido. O Senhor me deu graça para tocar-lhe o coração, neste caso, clamando por Sua imensa misericórdia da mesma forma que aconteceu com o cego Bartimeu no Novo Testamento. O poder de Deus não tem nada a ver com aquilo que sentimos ou com as circunstâncias vigentes. Como soldados do Senhor, somos comissionados para "instar a tempo e fora de tempo. " Mais uma vez repito; devido a magnitude da "colheita" que estará diante de nós, precisamos aprender como ministrar "em Seu descanso," ao invés de fazê-lo com o nosso próprio esforço ou com recursos pessoais.
+
+Uma característica interessante deste reavivamento que está por vir é a forma que Deus estará usando jovens e crianças na grande "colheita". Eu, pessoalmente, acredito que o Senhor os usará de uma maneira muito especial e até mesmo estranha para alguns. Eu estava ministrando em Houston uma vez, quando orei por um grupo de setenta crianças que havia vindo à frente para serem cheias pelo Espírito Santo. A unção de Deus veio poderosamente sobre as suas vidas e eles começaram a cair no Espírito, falar em língua estranha e a chorar.
+
+Entre aquelas crianças estava um garoto mexicano de 5 anos que começou a clamar ao Senhor em línguas estranhas enquanto lágrimas corriam pelo seu rosto. Ele permaneceu naquele estado por cerca de vinte minutos quando de repente um homem explodiu em altos soluços naquele imenso auditório. Aquele Senhor mexicano, que era o pai daquela criança então veio à frente e ficou ao lado de seu filho. No momento que aquele Pai se rendeu ao Senhor Jesus e foi completamente cheio do Espírito, eu compreendi que aquele garotinho tinha estado orando em línguas durante aqueles instantes para a salvação de seu pai.
+
+JOVENS GUERREIROS ESTÃO SE LEVANTANDO
+
+Nós, literalmente, veremos cumprida nestes dias aquela profecia do Antigo testamento que diz: "Vossos filhos e vossas filhas profetizarão!" Eu estou absolutamente convencido que Deus usará um exército de jovens guerreiros para estarem combatendo e carregando a monumental "colheita" que está para acontecer. Já existem em muitas nações da América do Sul, no Reino Unido, Canadá e Estados Unidos o engajamento de um vasto exército de crianças e adolescentes começando a se despertar do sono. Talvez ainda não sejamos capazes de vê-los, mas tenham certeza: eles estão vindo. Aqueles de nós que somos mais velhos precisamos estar preparados para recebê-los, enconrajá-los e sabiamente instruí-los nas coisas do Senhor. Acima de tudo, precisamos estar bem cônscios de não obstruí-los ou proibi-los de responder ao chamamento do Senhor.
+
+Finalmente, este reavivamento e grande "colheita" não reconhecerá fronteiras, barreiras ou preferências. Deus, pelo Seu poder, tocará os pobres, os rejeitados, os esquecido e os humilhados deste mundo. Precisamos ter o mesmo coração de nosso Mestre ou seremos deixados para trás, frustrados.
+
+Enquanto ministrava no Zaire, África, o Senhor me colocou em meio a uma miraculosa visitação de Deus em multidões de 200.000 pessoas por noite. Nós estávamos tão sobrecarregados devido ao imenso número de pessoas que vinham à frente toda noite para receberem oração, que decidimos designar um dia, no qual, não faríamos nada, mas somente imporíamos nossas mãos nos criticamente doentes ou naqueles que estavam à morte,
+
+Naquele dia específico para orações fui para a arena esperando ver 1.000 pessoas recebendo oração, mas fiquei impressionado com a multidão de 25.000 pessoas que se aglomerava naquele lugar. Bom, eu tinha dado a minha palavra que estaria orando por cada um deles, então respirei fundo e comecei aquela que seria uma longa jornada. Algumas daquelas pessoas tinham sido, literalmente, trazidas para a arena em carrinho de mão e muitas daquelas pessoas tinham odor de dar náuseas por não terem as excreções ou fluidos de seus corpos limpos a vários dias.
+
+"Eu estou feliz por estar aqui"
+
+Naquele clima tropical, a sujeira acrescida da doença, se toma cem vezes pior. Para se ter uma idéia existiam muitos leprosos no meio daquela multidão, sem contar várias pessoas com terríveis feridas abertas pelos seus corpos. Centenas de pessoas que já se encontravam morrendo na fase final da AIDS vieram também à frente para receberem oração. Não importava quão maligna Fosse a doença que destruía seus corpos, eu tinha uma palavra de cura da parte do Senhor e esta é a mesma palavra que ele tem dado a você. Naquele dia, proclamei a eles o amor de Deus, impus-lhes as minhas mãos e orei a oração da fé para a cura e salvação.
+
+Quando fiz isto, senti o glorioso conforto do Espírito Santo no coração. Ele então falou-me profundamente: "Estou feliz por estar aqui." - e para o meu gozo Ele curou muitas daquelas desesperadas pessoas!
+
+Esta é a hora quando o poder de Deus será visto na Igreja de nosso Senhor Jesus Cristo como nunca. Temos recebido uma soberana comissão para trazer libertação para as nossas cidades e nações do jugo de satanás. Todavia, tudo isto dependerá da nossa disposição para sermos guiados pelo Espírito e pagarmos o preço do jejum e da oração, e então recebermos o poder de Deus.
+
+Assim como a demanda para a invasão de um país é dramaticamente diferente do necessário para uma pequena localidade como uma cidade, assim também a demanda para um uma reavivamento e "colheita" a nível global será diferente para as mais diversas cidades e localidades do mundo. O Seu chamado é para uma total mobilização de Sua Igreja. O Seu desejo é ver o pleno funcionamento de Seu Corpo, é nos dar poderosos sinais e maravilhas capazes de explodirem toda fortaleza do inimigo e remover os obstáculos que ainda bloqueiam o caminho para as cidades e nações. Porém, antes de tudo isto, o povo de Deus precisa viver a prática do jejum e da oração – Então, assim, o Senhor liberará.com abundância, a unção apostólica através de um inundar de Sua gloria que trará uma grande "colheita" de vidas, nunca vista neste mundo.
+
+Você está preparado para este grande desafio? Você deseja mais Dele em sua vida? Então já é tempo de descobrir O PODER SECRETO DO JEJUM E DA ORAÇÃO.$conteudo$)
+    returning id into v_aula_id;
+  end if;
+end;
+$migration$;
