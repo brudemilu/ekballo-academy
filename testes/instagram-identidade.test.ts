@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { systemAssistente } from "@/lib/assistente";
 import { systemCarrosselDaIdeia } from "@/lib/carrossel-ideia";
 import { systemAnaliseReferencia } from "@/lib/conteudo-perfil";
+import { coresDaLogo } from "@/lib/cores-da-logo";
 import { systemCortes } from "@/lib/cortes";
 import { systemCarrosselPadrao } from "@/lib/instagram";
 import {
@@ -9,10 +10,12 @@ import {
   identidadeDaConta,
   identidadeDoEndereco,
   identidadeNoEndereco,
+  lerPaleta,
   logoPermitida,
   MARCA_PADRAO,
   marcaDaArte,
   ministerioParaIA,
+  paletaDoEndereco,
   seloDoEndereco,
 } from "@/lib/instagram-identidade";
 import { ogUrlDoSlide } from "@/lib/instagram-imagens";
@@ -197,6 +200,71 @@ describe("qual versão da logo vai em cada arte", () => {
     expect(fundoClaro("checklist", "claro")).toBe(true);
     expect(fundoClaro("checklist", "escuro")).toBe(false);
     expect(fundoClaro("citacao", "claro")).toBe(true);
+  });
+});
+
+describe("as cores da conta", () => {
+  const iwe = { destaque: "#E73C3E", fundo: "#161D4E", texto: "#FFFFFF" };
+
+  it("vão no endereço da arte e voltam iguais", () => {
+    const url = new URL(ogUrlDoSlide("https://x", slide, { paleta: iwe }));
+    expect(paletaDoEndereco(url.searchParams)).toEqual(iwe);
+  });
+
+  it("conta sem cores próprias não muda o endereço: vale o tema do post", () => {
+    const url = new URL(ogUrlDoSlide("https://x", slide, { marca: "IMW" }));
+    expect(url.searchParams.has("pd")).toBe(false);
+    expect(paletaDoEndereco(url.searchParams)).toBeNull();
+  });
+
+  it("paleta pela metade ou com cor inválida é ignorada inteira", () => {
+    expect(lerPaleta({ destaque: "#E73C3E", fundo: "#161D4E", texto: "" })).toBeNull();
+    expect(
+      lerPaleta({ destaque: "vermelho", fundo: "#161D4E", texto: "#FFFFFF" }),
+    ).toBeNull();
+    expect(
+      lerPaleta({ destaque: "#E73C3E;x", fundo: "#161D4E", texto: "#FFFFFF" }),
+    ).toBeNull();
+    expect(
+      paletaDoEndereco(new URLSearchParams({ pd: "E73C3E", pf: "161D4E" })),
+    ).toBeNull();
+  });
+
+  it("a conta cadastrada com as três cores leva a paleta na identidade", () => {
+    expect(
+      identidadeDaConta({
+        assinatura: "",
+        usuario: "iwe2regiao",
+        cor_destaque: "#e73c3e",
+        cor_fundo: "#161d4e",
+        cor_texto: "#ffffff",
+      }).paleta,
+    ).toEqual(iwe);
+  });
+});
+
+describe("tirar as cores da logo", () => {
+  // Uma logo de mentira: muito azul-marinho, um tanto de vermelho, borda transparente.
+  const ponto = (r: number, g: number, b: number, a = 255) => [r, g, b, a];
+  const logo = [
+    ...Array.from({ length: 60 }, () => ponto(22, 29, 78)),
+    ...Array.from({ length: 30 }, () => ponto(231, 60, 62)),
+    ...Array.from({ length: 40 }, () => ponto(255, 255, 255, 0)),
+    ...Array.from({ length: 5 }, () => ponto(120, 40, 70, 90)),
+  ].flat();
+
+  it("a escura que mais aparece vira o fundo; a viva, o destaque; o texto é branco", () => {
+    expect(coresDaLogo(logo)).toEqual({
+      destaque: "#E73C3E",
+      fundo: "#161D4E",
+      texto: "#FFFFFF",
+    });
+  });
+
+  it("logo de uma cor só não rende paleta: as cores ficam para escolher à mão", () => {
+    const soEscura = Array.from({ length: 50 }, () => ponto(10, 10, 10)).flat();
+    expect(coresDaLogo(soEscura)).toBeNull();
+    expect(coresDaLogo([])).toBeNull();
   });
 });
 

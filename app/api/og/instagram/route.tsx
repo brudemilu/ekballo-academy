@@ -4,6 +4,7 @@ import { obterFundo } from "@/lib/fundo-cache";
 import { renderSlideEditorial } from "@/lib/instagram-editorial-render";
 import {
   identidadeDoEndereco,
+  paletaDoEndereco,
   seloDoEndereco,
   storagePublico,
 } from "@/lib/instagram-identidade";
@@ -81,7 +82,9 @@ export async function GET(req: NextRequest) {
   const tema = TEMAS[temaKey] || TEMAS[TEMA_PADRAO];
   // `cor` explícito sobrescreve o tema; senão usa a cor do tema.
   const corParam = url.searchParams.get("cor");
-  const cor = corParam ? sanitizeCor(corParam) : tema.cor;
+  // As cores da conta (issue #264) mandam sobre o tema escolhido no post.
+  const paleta = paletaDoEndereco(url.searchParams);
+  const cor = paleta ? paleta.destaque : corParam ? sanitizeCor(corParam) : tema.cor;
   const top = url.searchParams.get("top")?.trim() || undefined;
   const ref = url.searchParams.get("ref")?.trim() || undefined;
   // A assinatura da conta (issue #264): sem os parâmetros, é a da conta principal.
@@ -141,6 +144,7 @@ export async function GET(req: NextRequest) {
           top,
           ref,
           marca,
+          paleta: paleta ?? undefined,
           largura: TAMANHO_W,
           altura,
         }),
@@ -251,6 +255,7 @@ export async function GET(req: NextRequest) {
           top,
           ref,
           marca,
+          paleta: paleta ?? undefined,
           arroba,
           largura: TAMANHO_W,
           altura,
@@ -287,7 +292,8 @@ export async function GET(req: NextRequest) {
 
   const paperSrc = `${selfOrigin}/fundos/${PAPEL_FILE}`;
   const grungeSrc = `${selfOrigin}/texturas/${GRUNGE_FILE}`;
-  const brushSrc = `${selfOrigin}/texturas/${tema.brush || BRUSH_FILE}`; // pincelada do tema
+  // Com as cores da conta, a pincelada é a do tema mais próximo do vermelho.
+  const brushSrc = `${selfOrigin}/texturas/${(paleta ? TEMAS.vinho.brush : tema.brush) || BRUSH_FILE}`;
   const splatterSrc = `${selfOrigin}/texturas/${SPLATTER_FILE}`;
   const paperSpecksSrc = `${selfOrigin}/texturas/${PAPER_SPECKS_FILE}`;
   const fogSrc = `${selfOrigin}/texturas/${FOG_FILE}`;
@@ -307,6 +313,7 @@ export async function GET(req: NextRequest) {
     top,
     ref,
     marca,
+    paleta: paleta ?? undefined,
     tom,
     altura,
   });

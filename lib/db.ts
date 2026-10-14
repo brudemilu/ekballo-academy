@@ -2311,7 +2311,7 @@ export async function listContasInstagram(): Promise<ContaCadastrada[]> {
     agendaSR()
       .from("instagram_contas")
       .select(
-        "id, nome, usuario, ig_user_id, assinatura, logo_url, logo_clara_url, logo_legenda, principal",
+        "id, nome, usuario, ig_user_id, assinatura, logo_url, logo_clara_url, logo_legenda, cor_destaque, cor_fundo, cor_texto, principal",
       )
       .order("principal", { ascending: false })
       .order("criado_em", { ascending: true }),
@@ -2326,6 +2326,9 @@ export async function listContasInstagram(): Promise<ContaCadastrada[]> {
     logo_url: (c.logo_url as string) || "",
     logo_clara_url: (c.logo_clara_url as string) || "",
     logo_legenda: (c.logo_legenda as string) || "",
+    cor_destaque: (c.cor_destaque as string) || "",
+    cor_fundo: (c.cor_fundo as string) || "",
+    cor_texto: (c.cor_texto as string) || "",
     principal: Boolean(c.principal),
     conectada:
       (tokens.has(c.id as string) && Boolean(c.ig_user_id)) ||
@@ -2346,7 +2349,9 @@ export async function getIdentidadeInstagram(contaId?: string): Promise<Identida
   }
   const { data, error } = await agendaSR()
     .from("instagram_contas")
-    .select("assinatura, usuario, logo_url, logo_clara_url, logo_legenda")
+    .select(
+      "assinatura, usuario, logo_url, logo_clara_url, logo_legenda, cor_destaque, cor_fundo, cor_texto",
+    )
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -2357,6 +2362,9 @@ export async function getIdentidadeInstagram(contaId?: string): Promise<Identida
         logo_url: data.logo_url as string,
         logo_clara_url: data.logo_clara_url as string,
         logo_legenda: data.logo_legenda as string,
+        cor_destaque: data.cor_destaque as string,
+        cor_fundo: data.cor_fundo as string,
+        cor_texto: data.cor_texto as string,
       })
     : {};
 }
@@ -2395,6 +2403,9 @@ export async function criarContaInstagram(input: {
       logo_url: "",
       logo_clara_url: "",
       logo_legenda: "",
+      cor_destaque: "",
+      cor_fundo: "",
+      cor_texto: "",
       principal: false,
       conectada: false,
       expira_em: null,
@@ -2416,6 +2427,9 @@ type PatchDaConta = {
   logo_url?: string;
   logo_clara_url?: string;
   logo_legenda?: string;
+  cor_destaque?: string;
+  cor_fundo?: string;
+  cor_texto?: string;
 };
 
 export async function atualizarContaInstagram(
@@ -2428,6 +2442,9 @@ export async function atualizarContaInstagram(
   if (patch.logo_url !== undefined) campos.logo_url = patch.logo_url;
   if (patch.logo_clara_url !== undefined) campos.logo_clara_url = patch.logo_clara_url;
   if (patch.logo_legenda !== undefined) campos.logo_legenda = patch.logo_legenda;
+  if (patch.cor_destaque !== undefined) campos.cor_destaque = patch.cor_destaque;
+  if (patch.cor_fundo !== undefined) campos.cor_fundo = patch.cor_fundo;
+  if (patch.cor_texto !== undefined) campos.cor_texto = patch.cor_texto;
   if (!Object.keys(campos).length) return;
   if (isMockMode()) {
     const c = listMockContas().find((x) => x.id === id);

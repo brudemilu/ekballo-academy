@@ -306,6 +306,8 @@ test.describe("Instagram do ministério (admin)", () => {
       .click();
     // A conta de demonstração tem logo: a arte leva a logo no lugar da assinatura escrita.
     await expect(page.locator('img[src*="semmarca=1"]').first()).toBeVisible();
+    // …e nas cores dela (o vermelho da logo como destaque).
+    await expect(page.locator('img[src*="pd=E73C3E"]').first()).toBeVisible();
     await expect(page.locator('img[src*="logo=%2Fmarcas%2F"]').first()).toBeVisible();
 
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
