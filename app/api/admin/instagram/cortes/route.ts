@@ -8,6 +8,7 @@ import {
   getCorteConteudo,
   getCurrentSession,
 } from "@/lib/db";
+import { comConta, contaAtualId } from "@/lib/instagram-conta-atual";
 import { apiConfigurada, extractVideoId } from "@/lib/youtube";
 
 export const runtime = "nodejs";
@@ -106,7 +107,9 @@ export async function POST(req: NextRequest) {
     const corte = await criarCorteConteudo(videoId);
     // Segue trabalhando depois de responder: a análise leva um ou dois minutos
     // e a tela acompanha pelo GET. `processarCorte` nunca lança.
-    void processarCorte(corte.id, videoId);
+    // A conta vai fixada: depois da resposta já não há cookie para dizê-la.
+    const conta = await contaAtualId();
+    void comConta(conta, () => processarCorte(corte.id, videoId));
     return NextResponse.json({ ok: true, corte });
   } catch (e) {
     return recusa(e instanceof Error ? e.message : "Falha ao começar a análise.", 500);

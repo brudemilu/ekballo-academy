@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useIdentidadeInstagram } from "@/components/IdentidadeInstagram";
 import { VISUAIS } from "@/lib/carrossel-ideia";
+import { type Identidade, identidadeNoEndereco } from "@/lib/instagram-identidade";
 import { MODELOS, type ModeloSlide } from "@/lib/instagram-modelos";
 import { TEMA_PADRAO, TEMAS, type TemaKey } from "@/lib/instagram-render";
 
@@ -72,6 +74,7 @@ function ogSrc(
   tema: TemaKey,
   tom: Tom,
   modelo: ModeloSlide = "foto",
+  identidade?: Identidade,
 ): string {
   const p = new URLSearchParams({
     verso: s.texto,
@@ -87,6 +90,7 @@ function ogSrc(
   if (s.img) p.set("img", s.img);
   if (s.top.trim()) p.set("top", s.top.trim());
   if (s.ref.trim()) p.set("ref", s.ref.trim());
+  identidadeNoEndereco(p, identidade);
   return `/api/og/instagram?${p.toString()}`;
 }
 
@@ -112,7 +116,8 @@ function SlidePreview({
 }) {
   const W = size;
   const H = Math.round(size * 1.25); // retrato 4:5
-  const alvo = ogSrc(slide, tema, tom, modelo);
+  const identidade = useIdentidadeInstagram();
+  const alvo = ogSrc(slide, tema, tom, modelo, identidade);
   const [src, setSrc] = useState(alvo);
   const [carregando, setCarregando] = useState(true);
   useEffect(() => {
@@ -175,6 +180,7 @@ export function GeradorInstagram({
   roteiroInicial?: RoteiroInicial;
 } = {}) {
   const router = useRouter();
+  const identidade = useIdentidadeInstagram();
   const [tipo, setTipo] = useState<Tipo>("carrossel");
   const [conteudo, setConteudo] = useState("");
   const [montando, setMontando] = useState(false);
@@ -364,7 +370,7 @@ export function GeradorInstagram({
 
   function baixarUm(s: Slide, idx: number) {
     const a = document.createElement("a");
-    a.href = `${ogSrc(s, tema, tom, modelo)}&dl=1`;
+    a.href = `${ogSrc(s, tema, tom, modelo, identidade)}&dl=1`;
     a.download = `slide-${idx + 1}.png`;
     document.body.appendChild(a);
     a.click();
@@ -384,7 +390,9 @@ export function GeradorInstagram({
     try {
       const files: File[] = [];
       for (let idx = 0; idx < slides.length; idx++) {
-        const r = await fetch(`${ogSrc(slides[idx], tema, tom, modelo)}&dl=1`);
+        const r = await fetch(
+          `${ogSrc(slides[idx], tema, tom, modelo, identidade)}&dl=1`,
+        );
         if (!r.ok) throw new Error("falha");
         const b = await r.blob();
         files.push(new File([b], `slide-${idx + 1}.png`, { type: "image/png" }));
@@ -787,7 +795,13 @@ export function GeradorInstagram({
                 >
                   {/* biome-ignore lint/performance/noImgElement: a prévia é um PNG gerado na hora pela rota OG; next/image não otimiza rota OG */}
                   <img
-                    src={ogSrc({ ...slides[0], fonte: v.fonte }, v.tema, v.tom, modelo)}
+                    src={ogSrc(
+                      { ...slides[0], fonte: v.fonte },
+                      v.tema,
+                      v.tom,
+                      modelo,
+                      identidade,
+                    )}
                     alt=""
                     loading="lazy"
                     className="aspect-[4/5] w-full rounded-lg bg-mesa-100 object-cover"

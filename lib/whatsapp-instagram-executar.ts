@@ -26,6 +26,8 @@ import {
   ultimoVisualUsado,
 } from "@/lib/db";
 import { gerarCarrosselIA } from "@/lib/instagram";
+import { comArroba } from "@/lib/instagram-colaboradores";
+import { instagramConectado } from "@/lib/instagram-credenciais";
 import { ehStory, ogUrlDoSlide, type SlidePub } from "@/lib/instagram-imagens";
 import {
   instrucaoDoModelo,
@@ -33,7 +35,6 @@ import {
   sortearDiferente,
   TEMAS_AUTOMATICOS,
 } from "@/lib/instagram-modelos";
-import { instagramConfigurado } from "@/lib/instagram-publish";
 import { lerJSONdaIA } from "@/lib/json-ia";
 import { chamarLLMLendo } from "@/lib/llm";
 import { podeVetar, quandoPorExtenso } from "@/lib/piloto";
@@ -276,7 +277,7 @@ async function publicar(numero: string, quando: string, agora: Date): Promise<vo
     );
     return;
   }
-  if (!instagramConfigurado()) {
+  if (!(await instagramConectado())) {
     await dizer(
       numero,
       "O Instagram não está conectado no servidor, então não consigo publicar. O rascunho continua guardado no site.",
@@ -366,6 +367,32 @@ async function ajustar(numero: string, pedido: string): Promise<void> {
     novo,
     post.legenda ?? "",
     `_Mudei ${resultado.mudou.join(", ")}; o resto ficou como estava._${faltou}`,
+  );
+}
+
+/** Guarda os perfis convidados no post que está na tela; o convite sai na publicação. */
+async function colaborar(numero: string, perfis: string[]): Promise<void> {
+  const pendente = await getPendenteWhatsApp();
+  const post = pendente?.carrossel_id
+    ? await getCarrosselInstagram(pendente.carrossel_id)
+    : null;
+  if (!post || post.status === "publicado") {
+    await dizer(
+      numero,
+      "Não há post esperando para eu pôr a colaboração. Mande *post* + a ideia, e depois *colaborar com @perfil*.",
+    );
+    return;
+  }
+  if (perfis.length && ehStory((post.slides ?? []) as { formato?: string }[])) {
+    await dizer(numero, "Story não aceita colaboração no Instagram; só post e Reel.");
+    return;
+  }
+  await atualizarConteudoCarrosselInstagram(post.id, { colaboradores: perfis }, true);
+  await dizer(
+    numero,
+    perfis.length
+      ? `🤝 Colaboração marcada com ${comArroba(perfis)}. O convite vai junto quando o post for publicado, e ele só aparece no perfil convidado depois que a pessoa aceitar.`
+      : "Colaboração retirada. O post sai só no seu perfil.",
   );
 }
 
@@ -516,6 +543,9 @@ export async function executarComandoInstagram(
         return;
       case "ajustar":
         await ajustar(numero, comando.pedido);
+        return;
+      case "colaborar":
+        await colaborar(numero, comando.perfis);
         return;
       case "cancelar":
         if (comando.alvo === "rascunho") await cancelarRascunho(numero, comando.motivo);

@@ -6,6 +6,10 @@
 
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { cache } from "react";
+import { contaAtualId } from "@/lib/instagram-conta-atual";
+import { CONTA_PRINCIPAL_ID, type ContaCadastrada } from "@/lib/instagram-contas";
+import { principalPeloAmbiente, situacaoDosTokens } from "@/lib/instagram-credenciais";
+import { type Identidade, identidadeDaConta } from "@/lib/instagram-identidade";
 import { createClient } from "@/lib/supabase/server";
 import { visaoAlunoAtiva } from "@/lib/visao";
 
@@ -48,6 +52,7 @@ import type { CorteSalvo } from "@/lib/cortes";
 import {
   addMockCarrossel,
   addMockCompromisso,
+  addMockConta,
   addMockCorte,
   addMockExecucao,
   addMockIdeia,
@@ -60,10 +65,12 @@ import {
   getMockPendenteWhatsApp,
   getMockPerfilConteudo,
   getMockPiloto,
+  getMockStatusWhatsAppAtivo,
   type IdeiaConteudoMock,
   isMockMode,
   listMockCarrosseis,
   listMockCompromissos,
+  listMockContas,
   listMockCortes,
   listMockExecucoes,
   listMockIdeias,
@@ -101,6 +108,7 @@ import {
   setMockPendenteWhatsApp,
   setMockPerfilConteudo,
   setMockPiloto,
+  setMockStatusWhatsAppAtivo,
   updateMockCompromisso,
 } from "@/lib/mock-data";
 import { PERMISSOES, type Permissao } from "@/lib/permissoes";
@@ -2257,6 +2265,200 @@ export async function getAlunoProgressoNoCurso(
 }
 
 // =============================================================
+// Contas de Instagram (issue #264)
+// =============================================================
+// Cada registro do copiloto pertence a uma conta. As funções abaixo desta
+// seção perguntam a `contaAtualId()` qual é a da vez (lib/instagram-conta-atual.ts)
+// em vez de receber a conta por parâmetro.
+
+// Modo mock: os dados de teste ficam numa lista só; este mapa lembra de que
+// conta é cada item (sem carimbo = conta principal, como os que já existiam).
+const CONTA_DO_MOCK = new WeakMap<object, string>();
+function carimbarMock<T extends object>(item: T, conta: string): T {
+  CONTA_DO_MOCK.set(item, conta);
+  return item;
+}
+function mockDaConta<T extends object>(lista: T[], conta: string): T[] {
+  return lista.filter((x) => (CONTA_DO_MOCK.get(x) ?? CONTA_PRINCIPAL_ID) === conta);
+}
+// O que é "uma linha por conta" (perfil, piloto, respostas): a conta principal
+// usa o valor de teste que já existia; as outras começam do zero aqui.
+const MOCK_POR_CONTA = new Map<string, unknown>();
+function mockUnico<T>(conta: string, chave: string, daPrincipal: () => T, vazio: T): T {
+  if (conta === CONTA_PRINCIPAL_ID) return daPrincipal();
+  const guardado = MOCK_POR_CONTA.get(`${conta}:${chave}`);
+  return guardado === undefined ? vazio : (guardado as T);
+}
+function gravarMockUnico<T>(
+  conta: string,
+  chave: string,
+  valor: T,
+  naPrincipal: (v: T) => void,
+): void {
+  if (conta === CONTA_PRINCIPAL_ID) naPrincipal(valor);
+  else MOCK_POR_CONTA.set(`${conta}:${chave}`, valor);
+}
+
+/**
+ * As contas cadastradas, a principal primeiro. Usa o cliente de serviço — os
+ * crons também listam, e a situação do token só ele enxerga: chame apenas de
+ * código que já conferiu o acesso (sessão de admin ou segredo do cron). O
+ * token em si nunca sai daqui; só se a conta está conectada e quando vence.
+ */
+export async function listContasInstagram(): Promise<ContaCadastrada[]> {
+  if (isMockMode()) return listMockContas();
+  const [{ data, error }, tokens] = await Promise.all([
+    agendaSR()
+      .from("instagram_contas")
+      .select(
+        "id, nome, usuario, ig_user_id, assinatura, logo_url, logo_clara_url, logo_legenda, cor_destaque, cor_fundo, cor_texto, principal",
+      )
+      .order("principal", { ascending: false })
+      .order("criado_em", { ascending: true }),
+    situacaoDosTokens(),
+  ]);
+  if (error) throw new Error(error.message);
+  return (data || []).map((c) => ({
+    id: c.id as string,
+    nome: c.nome as string,
+    usuario: c.usuario as string,
+    assinatura: c.assinatura as string,
+    logo_url: (c.logo_url as string) || "",
+    logo_clara_url: (c.logo_clara_url as string) || "",
+    logo_legenda: (c.logo_legenda as string) || "",
+    cor_destaque: (c.cor_destaque as string) || "",
+    cor_fundo: (c.cor_fundo as string) || "",
+    cor_texto: (c.cor_texto as string) || "",
+    principal: Boolean(c.principal),
+    conectada:
+      (tokens.has(c.id as string) && Boolean(c.ig_user_id)) ||
+      (Boolean(c.principal) && principalPeloAmbiente()),
+    expira_em: tokens.get(c.id as string) ?? null,
+  }));
+}
+
+/**
+ * A assinatura e o @ de uma conta — a da vez quando `contaId` não vem. É o que
+ * as artes dela levam. Cliente de serviço, como `listContasInstagram`.
+ */
+export async function getIdentidadeInstagram(contaId?: string): Promise<Identidade> {
+  const id = contaId ?? (await contaAtualId());
+  if (isMockMode()) {
+    const c = listMockContas().find((x) => x.id === id);
+    return c ? identidadeDaConta(c) : {};
+  }
+  const { data, error } = await agendaSR()
+    .from("instagram_contas")
+    .select(
+      "assinatura, usuario, logo_url, logo_clara_url, logo_legenda, cor_destaque, cor_fundo, cor_texto",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data
+    ? identidadeDaConta({
+        assinatura: data.assinatura as string,
+        usuario: data.usuario as string,
+        logo_url: data.logo_url as string,
+        logo_clara_url: data.logo_clara_url as string,
+        logo_legenda: data.logo_legenda as string,
+        cor_destaque: data.cor_destaque as string,
+        cor_fundo: data.cor_fundo as string,
+        cor_texto: data.cor_texto as string,
+      })
+    : {};
+}
+
+/**
+ * Como os textos da IA chamam o ministério da conta da vez. Vazio na conta
+ * principal: ela mantém o texto de sempre (lib/instagram-identidade.ts).
+ */
+export async function getMinisterioInstagram(): Promise<string> {
+  const id = await contaAtualId();
+  if (id === CONTA_PRINCIPAL_ID) return "";
+  if (isMockMode()) {
+    const c = listMockContas().find((x) => x.id === id);
+    return c ? c.assinatura || c.nome : "";
+  }
+  const { data, error } = await agendaSR()
+    .from("instagram_contas")
+    .select("nome, assinatura")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? (data.assinatura as string) || (data.nome as string) : "";
+}
+
+export async function criarContaInstagram(input: {
+  nome: string;
+  assinatura: string;
+}): Promise<{ id: string }> {
+  if (isMockMode()) {
+    const id = crypto.randomUUID();
+    addMockConta({
+      id,
+      nome: input.nome,
+      usuario: "",
+      assinatura: input.assinatura,
+      logo_url: "",
+      logo_clara_url: "",
+      logo_legenda: "",
+      cor_destaque: "",
+      cor_fundo: "",
+      cor_texto: "",
+      principal: false,
+      conectada: false,
+      expira_em: null,
+    });
+    return { id };
+  }
+  const { data, error } = await agendaSR()
+    .from("instagram_contas")
+    .insert({ nome: input.nome, assinatura: input.assinatura })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return { id: data.id as string };
+}
+
+type PatchDaConta = {
+  nome?: string;
+  assinatura?: string;
+  logo_url?: string;
+  logo_clara_url?: string;
+  logo_legenda?: string;
+  cor_destaque?: string;
+  cor_fundo?: string;
+  cor_texto?: string;
+};
+
+export async function atualizarContaInstagram(
+  id: string,
+  patch: PatchDaConta,
+): Promise<void> {
+  const campos: PatchDaConta = {};
+  if (patch.nome !== undefined) campos.nome = patch.nome;
+  if (patch.assinatura !== undefined) campos.assinatura = patch.assinatura;
+  if (patch.logo_url !== undefined) campos.logo_url = patch.logo_url;
+  if (patch.logo_clara_url !== undefined) campos.logo_clara_url = patch.logo_clara_url;
+  if (patch.logo_legenda !== undefined) campos.logo_legenda = patch.logo_legenda;
+  if (patch.cor_destaque !== undefined) campos.cor_destaque = patch.cor_destaque;
+  if (patch.cor_fundo !== undefined) campos.cor_fundo = patch.cor_fundo;
+  if (patch.cor_texto !== undefined) campos.cor_texto = patch.cor_texto;
+  if (!Object.keys(campos).length) return;
+  if (isMockMode()) {
+    const c = listMockContas().find((x) => x.id === id);
+    if (c) Object.assign(c, campos);
+    return;
+  }
+  const { error } = await agendaSR()
+    .from("instagram_contas")
+    .update({ ...campos, atualizado_em: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
 // Carrosséis de Instagram (rascunhos)
 // =============================================================
 export type CarrosselInstagramInput = {
@@ -2278,25 +2480,32 @@ export async function salvarCarrosselInstagram(
   const agendado = Boolean(input.agendadoPara);
   const status = agendado ? "agendado" : "rascunho";
   const tipo = input.tipo === "reel" ? "reel" : "carrossel";
+  const conta = await contaAtualId();
   if (isMockMode()) {
     const id = crypto.randomUUID();
-    addMockCarrossel({
-      id,
-      conteudo: input.conteudo,
-      slides: input.slides,
-      legenda: input.legenda,
-      status,
-      agendado_para: input.agendadoPara || undefined,
-      tipo,
-      video_url: input.videoUrl || undefined,
-      criado_em: new Date().toISOString(),
-    });
+    addMockCarrossel(
+      carimbarMock(
+        {
+          id,
+          conteudo: input.conteudo,
+          slides: input.slides,
+          legenda: input.legenda,
+          status,
+          agendado_para: input.agendadoPara || undefined,
+          tipo,
+          video_url: input.videoUrl || undefined,
+          criado_em: new Date().toISOString(),
+        },
+        conta,
+      ),
+    );
     return { id };
   }
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("instagram_carrosseis")
     .insert({
+      conta_id: conta,
       conteudo: input.conteudo,
       slides: input.slides,
       legenda: input.legenda,
@@ -2312,13 +2521,15 @@ export async function salvarCarrosselInstagram(
 }
 
 export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[]> {
-  if (isMockMode()) return listMockCarrosseis();
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockDaConta(listMockCarrosseis(), conta);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("instagram_carrosseis")
     .select(
-      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url",
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso",
     )
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: false })
     .limit(50);
   if (error) throw new Error(error.message);
@@ -2343,11 +2554,13 @@ const COLUNAS_IDEIA =
   "id, titulo, nota, formato, data_planejada, carrossel_id, roteiro_id, criado_em";
 
 export async function listIdeiasConteudo(): Promise<IdeiaConteudo[]> {
-  if (isMockMode()) return listMockIdeias();
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockDaConta(listMockIdeias(), conta);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_ideias")
     .select(COLUNAS_IDEIA)
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: false })
     .limit(300);
   if (error) throw new Error(error.message);
@@ -2368,19 +2581,20 @@ export async function criarIdeiaConteudo(
     carrossel_id: vinculo?.carrossel_id ?? null,
     roteiro_id: vinculo?.roteiro_id ?? null,
   };
+  const conta = await contaAtualId();
   if (isMockMode()) {
     const ideia: IdeiaConteudo = {
       id: crypto.randomUUID(),
       ...linha,
       criado_em: new Date().toISOString(),
     };
-    addMockIdeia(ideia);
+    addMockIdeia(carimbarMock(ideia, conta));
     return ideia;
   }
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_ideias")
-    .insert(linha)
+    .insert({ ...linha, conta_id: conta })
     .select(COLUNAS_IDEIA)
     .single();
   if (error) throw new Error(error.message);
@@ -2429,11 +2643,16 @@ export async function vincularIdeiaAoPost(
 }
 
 export async function getIdeiaConteudo(id: string): Promise<IdeiaConteudo | null> {
-  if (isMockMode()) return listMockIdeias().find((x) => x.id === id) ?? null;
+  // A ideia de outra conta não abre no estúdio desta: viraria post no perfil errado.
+  const conta = await contaAtualId();
+  if (isMockMode()) {
+    return mockDaConta(listMockIdeias(), conta).find((x) => x.id === id) ?? null;
+  }
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_ideias")
     .select(COLUNAS_IDEIA)
+    .eq("conta_id", conta)
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -2458,12 +2677,15 @@ const COLUNAS_PERFIL =
 const COLUNAS_REFERENCIA = "id, nome, link, exemplos, dna, analisado_em";
 
 export async function getPerfilConteudo(servico = false): Promise<PerfilConteudo> {
-  if (isMockMode()) return getMockPerfilConteudo();
+  const conta = await contaAtualId();
+  if (isMockMode()) {
+    return mockUnico(conta, "perfil", getMockPerfilConteudo, PERFIL_VAZIO);
+  }
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_perfil")
     .select(COLUNAS_PERFIL)
-    .eq("id", 1)
+    .eq("conta_id", conta)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? ({ ...PERFIL_VAZIO, ...data } as PerfilConteudo) : PERFIL_VAZIO;
@@ -2474,14 +2696,16 @@ export async function salvarPerfilConteudo(
   patch: Partial<PerfilConteudo>,
   servico = false,
 ): Promise<void> {
+  const conta = await contaAtualId();
   if (isMockMode()) {
-    setMockPerfilConteudo({ ...getMockPerfilConteudo(), ...patch });
+    const atual = mockUnico(conta, "perfil", getMockPerfilConteudo, PERFIL_VAZIO);
+    gravarMockUnico(conta, "perfil", { ...atual, ...patch }, setMockPerfilConteudo);
     return;
   }
   const supabase = await banco(servico);
   const { error } = await supabase
     .from("conteudo_perfil")
-    .upsert({ id: 1, ...patch, atualizado_em: new Date().toISOString() });
+    .upsert({ conta_id: conta, ...patch, atualizado_em: new Date().toISOString() });
   if (error) throw new Error(error.message);
 }
 
@@ -2503,11 +2727,13 @@ export async function aprenderPreferencia(
 }
 
 export async function listReferenciasConteudo(): Promise<ReferenciaConteudo[]> {
-  if (isMockMode()) return listMockReferencias();
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockDaConta(listMockReferencias(), conta);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_referencias")
     .select(COLUNAS_REFERENCIA)
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: true });
   if (error) throw new Error(error.message);
   return (data || []) as ReferenciaConteudo[];
@@ -2536,6 +2762,7 @@ export async function criarReferenciaConteudo(
     link: input.link ?? "",
     exemplos: input.exemplos ?? "",
   };
+  const conta = await contaAtualId();
   if (isMockMode()) {
     const ref: ReferenciaConteudo = {
       id: crypto.randomUUID(),
@@ -2543,13 +2770,13 @@ export async function criarReferenciaConteudo(
       dna: null,
       analisado_em: null,
     };
-    addMockReferencia(ref);
+    addMockReferencia(carimbarMock(ref, conta));
     return ref;
   }
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_referencias")
-    .insert(linha)
+    .insert({ ...linha, conta_id: conta })
     .select(COLUNAS_REFERENCIA)
     .single();
   if (error) throw new Error(error.message);
@@ -2590,11 +2817,13 @@ export async function deletarReferenciaConteudo(id: string): Promise<void> {
 const COLUNAS_ROTEIRO = "id, titulo, duracao, fonte, roteiro, criado_em";
 
 export async function listRoteirosConteudo(): Promise<RoteiroSalvo[]> {
-  if (isMockMode()) return listMockRoteiros();
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockDaConta(listMockRoteiros(), conta);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_roteiros")
     .select(COLUNAS_ROTEIRO)
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: false })
     .limit(100);
   if (error) throw new Error(error.message);
@@ -2611,19 +2840,20 @@ export async function salvarRoteiroConteudo(
     fonte: input.fonte,
     roteiro: input.roteiro,
   };
+  const conta = await contaAtualId();
   if (isMockMode()) {
     const salvo: RoteiroSalvo = {
       id: crypto.randomUUID(),
       ...linha,
       criado_em: new Date().toISOString(),
     };
-    addMockRoteiro(salvo);
+    addMockRoteiro(carimbarMock(salvo, conta));
     return salvo;
   }
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_roteiros")
-    .insert(linha)
+    .insert({ ...linha, conta_id: conta })
     .select(COLUNAS_ROTEIRO)
     .single();
   if (error) throw new Error(error.message);
@@ -2669,11 +2899,13 @@ const COLUNAS_CORTE_LISTA =
 
 /** Lista sem a transcrição (pesada); `getCorteConteudo` traz tudo. */
 export async function listCortesConteudo(servico = false): Promise<CorteSalvo[]> {
-  if (isMockMode()) return listMockCortes();
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockDaConta(listMockCortes(), conta);
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_cortes")
     .select(COLUNAS_CORTE_LISTA)
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: false })
     .limit(30);
   if (error) throw new Error(error.message);
@@ -2696,6 +2928,7 @@ export async function getCorteConteudo(
 }
 
 export async function criarCorteConteudo(videoId: string): Promise<CorteSalvo> {
+  const conta = await contaAtualId();
   if (isMockMode()) {
     const corte: CorteSalvo = {
       id: crypto.randomUUID(),
@@ -2709,13 +2942,13 @@ export async function criarCorteConteudo(videoId: string): Promise<CorteSalvo> {
       momentos: [],
       criado_em: new Date().toISOString(),
     };
-    addMockCorte(corte);
+    addMockCorte(carimbarMock(corte, conta));
     return corte;
   }
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_cortes")
-    .insert({ video_id: videoId, etapa: "Na fila…" })
+    .insert({ video_id: videoId, etapa: "Na fila…", conta_id: conta })
     .select(`${COLUNAS_CORTE_LISTA}, transcricao`)
     .single();
   if (error) throw new Error(error.message);
@@ -2762,12 +2995,13 @@ const COLUNAS_PILOTO =
 const COLUNAS_EXECUCAO = "id, status, fonte, pecas, erro, aviso_enviado, criado_em";
 
 export async function getPilotoConfig(servico = false): Promise<PilotoConfig> {
-  if (isMockMode()) return getMockPiloto();
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockUnico(conta, "piloto", getMockPiloto, PILOTO_PADRAO);
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_piloto")
     .select(COLUNAS_PILOTO)
-    .eq("id", 1)
+    .eq("conta_id", conta)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? ({ ...PILOTO_PADRAO, ...data } as PilotoConfig) : PILOTO_PADRAO;
@@ -2777,23 +3011,27 @@ export async function salvarPilotoConfig(
   patch: Partial<PilotoConfig>,
   servico = false,
 ): Promise<void> {
+  const conta = await contaAtualId();
   if (isMockMode()) {
-    setMockPiloto({ ...getMockPiloto(), ...patch });
+    const atual = mockUnico(conta, "piloto", getMockPiloto, PILOTO_PADRAO);
+    gravarMockUnico(conta, "piloto", { ...atual, ...patch }, setMockPiloto);
     return;
   }
   const supabase = await banco(servico);
   const { error } = await supabase
     .from("conteudo_piloto")
-    .upsert({ id: 1, ...patch, atualizado_em: new Date().toISOString() });
+    .upsert({ conta_id: conta, ...patch, atualizado_em: new Date().toISOString() });
   if (error) throw new Error(error.message);
 }
 
 export async function listExecucoesPiloto(servico = false): Promise<ExecucaoPiloto[]> {
-  if (isMockMode()) return listMockExecucoes();
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockDaConta(listMockExecucoes(), conta);
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_piloto_execucoes")
     .select(COLUNAS_EXECUCAO)
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: false })
     .limit(12);
   if (error) throw new Error(error.message);
@@ -2802,6 +3040,7 @@ export async function listExecucoesPiloto(servico = false): Promise<ExecucaoPilo
 
 /** Abre uma execução. Sempre pelo cliente de serviço: quem dispara é o cron ou o trabalho em segundo plano. */
 export async function criarExecucaoPiloto(): Promise<ExecucaoPiloto> {
+  const conta = await contaAtualId();
   if (isMockMode()) {
     const e: ExecucaoPiloto = {
       id: crypto.randomUUID(),
@@ -2812,12 +3051,12 @@ export async function criarExecucaoPiloto(): Promise<ExecucaoPiloto> {
       aviso_enviado: false,
       criado_em: new Date().toISOString(),
     };
-    addMockExecucao(e);
+    addMockExecucao(carimbarMock(e, conta));
     return e;
   }
   const { data, error } = await agendaSR()
     .from("conteudo_piloto_execucoes")
-    .insert({})
+    .insert({ conta_id: conta })
     .select(COLUNAS_EXECUCAO)
     .single();
   if (error) throw new Error(error.message);
@@ -2878,12 +3117,14 @@ export async function setPendenteWhatsApp(p: PendenteWhatsApp): Promise<void> {
 /** O modelo e a cor do post mais recente — para o próximo não sair igual. */
 export async function ultimoVisualUsado(): Promise<{ modelo: string; tema: string }> {
   const vazio = { modelo: "", tema: "" };
+  const conta = await contaAtualId();
   const posts = isMockMode()
-    ? listMockCarrosseis()
+    ? mockDaConta(listMockCarrosseis(), conta)
     : ((
         await agendaSR()
           .from("instagram_carrosseis")
           .select("slides")
+          .eq("conta_id", conta)
           .order("criado_em", { ascending: false })
           .limit(1)
       ).data ?? []);
@@ -2901,7 +3142,7 @@ export async function getCarrosselInstagram(
   const { data, error } = await agendaSR()
     .from("instagram_carrosseis")
     .select(
-      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url",
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso",
     )
     .eq("id", id)
     .maybeSingle();
@@ -2981,6 +3222,8 @@ export type AtualizarCarrosselInput = {
   slides?: CarrosselInstagramMock["slides"];
   legenda?: string;
   videoUrl?: string;
+  /** Perfis convidados a colaborar (já normalizados). */
+  colaboradores?: string[];
 };
 export async function atualizarConteudoCarrosselInstagram(
   id: string,
@@ -2994,6 +3237,7 @@ export async function atualizarConteudoCarrosselInstagram(
       if (patch.slides !== undefined) c.slides = patch.slides;
       if (patch.legenda !== undefined) c.legenda = patch.legenda;
       if (patch.videoUrl !== undefined) c.video_url = patch.videoUrl;
+      if (patch.colaboradores !== undefined) c.colaboradores = patch.colaboradores;
     }
     return;
   }
@@ -3002,6 +3246,7 @@ export async function atualizarConteudoCarrosselInstagram(
   if (patch.slides !== undefined) fields.slides = patch.slides;
   if (patch.legenda !== undefined) fields.legenda = patch.legenda;
   if (patch.videoUrl !== undefined) fields.video_url = patch.videoUrl;
+  if (patch.colaboradores !== undefined) fields.colaboradores = patch.colaboradores;
   if (!Object.keys(fields).length) return;
   const supabase = await banco(servico);
   const { error } = await supabase
@@ -3020,10 +3265,40 @@ const COLUNAS_COMENTARIO_RESPONDIDO =
   "comentario_id, regra_id, media_id, usuario, texto, palavra, publico_ok, privado_ok, erro, criado_em";
 
 export async function getComentariosAtivo(servico = false): Promise<boolean> {
-  if (isMockMode()) return getMockComentariosAtivo();
+  const conta = await contaAtualId();
+  if (isMockMode())
+    return mockUnico(conta, "comentarios", getMockComentariosAtivo, false);
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_comentarios_config")
+    .select("ativo")
+    .eq("conta_id", conta)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.ativo);
+}
+
+export async function salvarComentariosAtivo(ativo: boolean): Promise<void> {
+  const conta = await contaAtualId();
+  if (isMockMode()) {
+    gravarMockUnico(conta, "comentarios", ativo, setMockComentariosAtivo);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("conteudo_comentarios_config")
+    .upsert({ conta_id: conta, ativo, atualizado_em: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Instagram → Status do WhatsApp (issue #258)
+// =============================================================
+export async function getStatusWhatsAppAtivo(): Promise<boolean> {
+  if (isMockMode()) return getMockStatusWhatsAppAtivo();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("whatsapp_status_config")
     .select("ativo")
     .eq("id", 1)
     .maybeSingle();
@@ -3031,32 +3306,43 @@ export async function getComentariosAtivo(servico = false): Promise<boolean> {
   return Boolean(data?.ativo);
 }
 
-export async function salvarComentariosAtivo(ativo: boolean): Promise<void> {
+/**
+ * Liga ou desliga. Ao LIGAR, a linha de corte vira agora: o que foi publicado
+ * enquanto estava desligado não vai para o Status de uma vez só.
+ */
+export async function salvarStatusWhatsAppAtivo(ativo: boolean): Promise<void> {
   if (isMockMode()) {
-    setMockComentariosAtivo(ativo);
+    setMockStatusWhatsAppAtivo(ativo);
     return;
   }
+  const agora = new Date().toISOString();
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("conteudo_comentarios_config")
-    .upsert({ id: 1, ativo, atualizado_em: new Date().toISOString() });
+  const { error } = await supabase.from("whatsapp_status_config").upsert({
+    id: 1,
+    ativo,
+    atualizado_em: agora,
+    ...(ativo ? { ativado_em: agora } : {}),
+  });
   if (error) throw new Error(error.message);
 }
 
 export async function listRegrasComentario(
   servico = false,
 ): Promise<RegraComentario[]> {
-  if (isMockMode()) return [...listMockRegrasComentario()];
+  const conta = await contaAtualId();
+  if (isMockMode()) return mockDaConta(listMockRegrasComentario(), conta);
   const supabase = await banco(servico);
   const { data, error } = await supabase
     .from("conteudo_comentarios_regras")
     .select(COLUNAS_REGRA_COMENTARIO)
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: true });
   if (error) throw new Error(error.message);
   return (data || []) as RegraComentario[];
 }
 
 export async function criarRegraComentario(v: RegraValidada): Promise<RegraComentario> {
+  const conta = await contaAtualId();
   if (isMockMode()) {
     const r: RegraComentario = {
       id: crypto.randomUUID(),
@@ -3064,13 +3350,13 @@ export async function criarRegraComentario(v: RegraValidada): Promise<RegraComen
       ativo: true,
       criado_em: new Date().toISOString(),
     };
-    addMockRegraComentario(r);
+    addMockRegraComentario(carimbarMock(r, conta));
     return r;
   }
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_comentarios_regras")
-    .insert(v)
+    .insert({ ...v, conta_id: conta })
     .select(COLUNAS_REGRA_COMENTARIO)
     .single();
   if (error) throw new Error(error.message);
@@ -3095,10 +3381,12 @@ export async function listComentariosRespondidos(
   limite = 20,
 ): Promise<ComentarioRespondido[]> {
   if (isMockMode()) return [];
+  const conta = await contaAtualId();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conteudo_comentarios_respondidos")
     .select(COLUNAS_COMENTARIO_RESPONDIDO)
+    .eq("conta_id", conta)
     .order("criado_em", { ascending: false })
     .limit(limite);
   if (error) throw new Error(error.message);
@@ -3128,7 +3416,10 @@ export async function reservarComentario(
   >,
 ): Promise<boolean> {
   if (isMockMode()) return true;
-  const { error } = await agendaSR().from("conteudo_comentarios_respondidos").insert(r);
+  const conta = await contaAtualId();
+  const { error } = await agendaSR()
+    .from("conteudo_comentarios_respondidos")
+    .insert({ ...r, conta_id: conta });
   if (!error) return true;
   if (error.code === "23505") return false; // já reservado
   throw new Error(error.message);

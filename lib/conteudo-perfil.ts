@@ -12,6 +12,7 @@
  * não entram, mesmo que a forma dela inspire.
  */
 
+import { ministerioParaIA } from "@/lib/instagram-identidade";
 import { lerJSONdaIA } from "@/lib/json-ia";
 
 export const MAX_REFERENCIAS = 5;
@@ -292,7 +293,9 @@ export function podeAnalisar(exemplos: string): boolean {
 // Pedidos à IA
 // ---------------------------------------------------------------------------
 
-export const SYSTEM_ANALISE_REFERENCIA = `Você analisa criadores de conteúdo para um ministério cristão de discipulado (Ekballo).
+/** `ministerio`: nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+export function systemAnaliseReferencia(ministerio = ""): string {
+  return `Você analisa criadores de conteúdo para ${ministerioParaIA(ministerio)}.
 Recebe exemplos de posts de UM criador que o pastor admira (legendas, transcrições de vídeo, roteiros).
 Sua tarefa é descrever a FORMA como esse criador comunica, para o ministério aprender com ela — não copiar.
 
@@ -305,6 +308,7 @@ REGRAS
 
 Responda SOMENTE com JSON válido neste formato:
 {"resumo":"uma frase","ganchos":["3 a 5 padrões de abertura"],"estrutura":["as batidas de um post típico, em ordem"],"tom":"...","ritmo":"...","chamada":"como costuma encerrar","aproveitar":["2 a 4 itens"],"nao_copiar":["2 a 4 itens"]}`;
+}
 
 export function usuarioAnaliseReferencia(
   ref: Pick<ReferenciaConteudo, "nome" | "exemplos">,

@@ -4,8 +4,10 @@ import { AdminShell } from "@/components/AdminShell";
 import { AssistenteConteudo } from "@/components/AssistenteConteudo";
 import { CalendarioConteudo } from "@/components/CalendarioConteudo";
 import { ComentariosAuto } from "@/components/ComentariosAuto";
+import { ContasInstagram } from "@/components/ContasInstagram";
 import { CortesConteudo } from "@/components/CortesConteudo";
 import { CrescimentoInstagram } from "@/components/CrescimentoInstagram";
+import { IdentidadeInstagram } from "@/components/IdentidadeInstagram";
 import { ImagensConteudo } from "@/components/ImagensConteudo";
 import { InstagramStudio } from "@/components/InstagramStudio";
 import { ListaCarrosseisInstagram } from "@/components/ListaCarrosseisInstagram";
@@ -14,6 +16,8 @@ import { PainelInstagram } from "@/components/PainelInstagram";
 import { PerfilConteudoForm } from "@/components/PerfilConteudoForm";
 import { PilotoConteudo } from "@/components/PilotoConteudo";
 import { RoteirosConteudo } from "@/components/RoteirosConteudo";
+import { SeletorContaInstagram } from "@/components/SeletorContaInstagram";
+import { StatusWhatsAppToggle } from "@/components/StatusWhatsAppToggle";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
 import { travado } from "@/lib/cortes";
@@ -31,6 +35,7 @@ import {
   getPilotoConfig,
   listCarrosseisInstagram,
   listComentariosRespondidos,
+  listContasInstagram,
   listCortesConteudo,
   listCursosPublicados,
   listExecucoesPiloto,
@@ -39,8 +44,10 @@ import {
   listRegrasComentario,
   listRoteirosConteudo,
 } from "@/lib/db";
+import { comConta, contaDoCookie } from "@/lib/instagram-conta-atual";
+import { contaEmUso, ehIdDeConta, rotuloDaConta } from "@/lib/instagram-contas";
+import { identidadeDaConta } from "@/lib/instagram-identidade";
 import { analisarPerfil } from "@/lib/instagram-insights";
-import { instagramConfigurado } from "@/lib/instagram-publish";
 import { diasSugeridos } from "@/lib/pacote";
 import {
   acoesDoDia,
@@ -72,6 +79,7 @@ const ABAS = [
   { v: "piloto", label: "🤖 Piloto" },
   { v: "respostas", label: "↩️ Respostas" },
   { v: "perfil", label: "🧭 Perfil" },
+  { v: "contas", label: "🔗 Contas" },
 ] as const;
 type Aba = (typeof ABAS)[number]["v"];
 
@@ -83,6 +91,7 @@ export default async function AdminInstagramPage({
     ideia?: string;
     semana?: string;
     roteiro?: string;
+    conta?: string;
   }>;
 }) {
   const session = await getCurrentSession();
@@ -94,7 +103,29 @@ export default async function AdminInstagramPage({
     ideia: ideiaId,
     semana,
     roteiro: roteiroId,
+    conta: contaParam,
   } = await searchParams;
+
+  // A conta desta página: a do endereço (link do aviso do piloto), senão a
+  // escolhida no seletor, senão a principal. Tudo o que a página lê abaixo é
+  // dela — `comConta` fixa isso para as funções de dados.
+  const contas = await listContasInstagram().catch(() => []);
+  const contaAtiva = contaEmUso(
+    contas,
+    ehIdDeConta(contaParam) ? contaParam : await contaDoCookie(),
+  );
+  if (!contaAtiva) {
+    // Só acontece com a migration 370 ainda por aplicar.
+    return (
+      <AdminShell current="instagram" session={session}>
+        <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+          O cadastro de contas do Instagram ainda não existe neste banco. Avise o
+          desenvolvedor.
+        </p>
+      </AdminShell>
+    );
+  }
+
   // Abrir uma ideia no estúdio implica a aba Criar.
   const aba: Aba = ideiaId
     ? "criar"
@@ -125,30 +156,34 @@ export default async function AdminInstagramPage({
     comentariosAtivo,
     regrasComentario,
     comentariosRespondidos,
-  ] = await Promise.all([
-    usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
-    usaIdeias ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
-    ideiaId ? getIdeiaConteudo(ideiaId).catch(() => null) : Promise.resolve(null),
-    usaPerfil
-      ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
-      : Promise.resolve(PERFIL_VAZIO),
-    usaReferencias ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
-    usaFontes ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
-    aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
-    noPainel ? carregarDadosPainel() : Promise.resolve(null),
-    aba === "cortes" ? listCortesConteudo().catch(() => []) : Promise.resolve([]),
-    aba === "piloto"
-      ? getPilotoConfig().catch(() => PILOTO_PADRAO)
-      : Promise.resolve(PILOTO_PADRAO),
-    aba === "piloto" ? listExecucoesPiloto().catch(() => []) : Promise.resolve([]),
-    aba === "respostas"
-      ? getComentariosAtivo().catch(() => false)
-      : Promise.resolve(false),
-    aba === "respostas" ? listRegrasComentario().catch(() => []) : Promise.resolve([]),
-    aba === "respostas"
-      ? listComentariosRespondidos().catch(() => [])
-      : Promise.resolve([]),
-  ]);
+  ] = await comConta(contaAtiva.id, () =>
+    Promise.all([
+      usaPosts ? listCarrosseisInstagram().catch(() => []) : Promise.resolve([]),
+      usaIdeias ? listIdeiasConteudo().catch(() => []) : Promise.resolve([]),
+      ideiaId ? getIdeiaConteudo(ideiaId).catch(() => null) : Promise.resolve(null),
+      usaPerfil
+        ? getPerfilConteudo().catch(() => PERFIL_VAZIO)
+        : Promise.resolve(PERFIL_VAZIO),
+      usaReferencias ? listReferenciasConteudo().catch(() => []) : Promise.resolve([]),
+      usaFontes ? listCursosPublicados().catch(() => []) : Promise.resolve([]),
+      aba === "roteiros" ? listRoteirosConteudo().catch(() => []) : Promise.resolve([]),
+      noPainel ? carregarDadosPainel() : Promise.resolve(null),
+      aba === "cortes" ? listCortesConteudo().catch(() => []) : Promise.resolve([]),
+      aba === "piloto"
+        ? getPilotoConfig().catch(() => PILOTO_PADRAO)
+        : Promise.resolve(PILOTO_PADRAO),
+      aba === "piloto" ? listExecucoesPiloto().catch(() => []) : Promise.resolve([]),
+      aba === "respostas"
+        ? getComentariosAtivo().catch(() => false)
+        : Promise.resolve(false),
+      aba === "respostas"
+        ? listRegrasComentario().catch(() => [])
+        : Promise.resolve([]),
+      aba === "respostas"
+        ? listComentariosRespondidos().catch(() => [])
+        : Promise.resolve([]),
+    ]),
+  );
 
   const hoje = diaSP(new Date());
   const cursosOpcoes = cursos
@@ -184,6 +219,8 @@ export default async function AdminInstagramPage({
       "Escolha uma palavra e o que responder. Quem comentar essa palavra num post recebe a mensagem direta com o link, sem você precisar acompanhar os comentários.",
     perfil:
       "Conte ao copiloto quem é o ministério, como você fala e em quem se inspira. É daqui que os roteiros e os posts tiram o jeito de escrever.",
+    contas:
+      "Os perfis do Instagram que este painel opera. Cada conta tem o seu calendário, os seus posts, o seu perfil de conteúdo e o seu piloto, e um post sempre sai pela conta em que foi criado.",
   };
 
   const configurado = Boolean(
@@ -197,12 +234,14 @@ export default async function AdminInstagramPage({
           Conteúdo → Instagram
         </p>
         <h1 className="font-serif text-4xl font-semibold text-mesa-800">
-          Instagram do ministério
+          Instagram · {rotuloDaConta(contaAtiva)}
         </h1>
         <p className="mt-3 max-w-2xl text-justify leading-relaxed text-mesa-600 hyphens-auto">
           {INTRO[aba]}
         </p>
       </div>
+
+      <SeletorContaInstagram contas={contas} atualId={contaAtiva.id} />
 
       <nav
         className="mb-8 flex flex-wrap gap-2 border-b border-mesa-200 pb-3"
@@ -224,126 +263,154 @@ export default async function AdminInstagramPage({
         ))}
       </nav>
 
-      {aba === "painel" && dadosPainel ? (
-        <PainelInstagram
-          conectado={dadosPainel.conectado}
-          erro={dadosPainel.erro}
-          conta={dadosPainel.conta}
-          acoes={acoesDoDia({
-            hoje,
-            posts: dadosPainel.posts,
-            salvos: carrosseis.map((c) => ({ id: c.id, status: c.status })),
-            ideias,
-            perfil: progressoDoPerfil(perfil, referencias),
-          })}
-          indicadores={indicadores(dadosPainel.posts, hoje)}
-          semanas={constancia(dadosPainel.posts, hoje)}
-          destaques={destaques(dadosPainel.posts, hoje)}
-          melhorMomento={resumoPerfil.melhorHorario}
-          formatoTop={resumoPerfil.formatoTop}
-          totalPosts={postsDoPeriodo.length}
-          crescimento={
-            <CrescimentoInstagram
-              resumo={resumoDoCrescimento(
-                dadosPainel.posts,
-                hoje,
-                dadosPainel.conta?.seguidores ?? null,
-              )}
-              seguidoresNovos30={dadosPainel.conta?.seguidoresNovos30 ?? null}
-              visitasPerfil30={dadosPainel.conta?.visitasPerfil30 ?? null}
-              alcance30={dadosPainel.conta?.alcance30 ?? null}
-              formatos={porFormato(dadosPainel.posts, hoje)}
-              achados={diagnostico(
-                dadosPainel.posts,
-                hoje,
-                dadosPainel.conta?.seguidores ?? null,
-              )}
-              melhores={postsQueMaisCresceram(dadosPainel.posts, hoje)}
-            />
-          }
-        />
-      ) : aba === "roteiros" ? (
-        <RoteirosConteudo
-          cursos={cursosOpcoes}
-          referencias={referenciasAnalisadas}
-          roteirosIniciais={roteiros}
-          hoje={hoje}
-          abrirId={roteiroId}
-        />
-      ) : aba === "imagens" ? (
-        <ImagensConteudo />
-      ) : aba === "cortes" ? (
-        <CortesConteudo
-          // Análise que ficou "processando" depois de um reinício do servidor aparece como falha.
-          cortesIniciais={cortes.map((c) =>
-            travado(c)
-              ? { ...c, status: "erro" as const, erro: "A análise foi interrompida." }
-              : c,
-          )}
-          configurado={youtubeConfigurado() && Boolean(process.env.GROQ_API_KEY)}
-        />
-      ) : aba === "assistente" ? (
-        <AssistenteConteudo />
-      ) : aba === "piloto" ? (
-        <PilotoConteudo
-          configInicial={piloto}
-          execucoesIniciais={execucoes}
-          cursos={cursosOpcoes}
-        />
-      ) : aba === "respostas" ? (
-        <ComentariosAuto
-          ativoInicial={comentariosAtivo}
-          regrasIniciais={regrasComentario}
-          historico={comentariosRespondidos}
-          conectado={instagramConfigurado()}
-        />
-      ) : aba === "perfil" ? (
-        <PerfilConteudoForm perfilInicial={perfil} referenciasIniciais={referencias} />
-      ) : aba === "calendario" ? (
-        <>
-          <PacoteSemana
-            cursos={cursosOpcoes}
-            referencias={referenciasAnalisadas}
-            hoje={hoje}
-            diasIniciais={diasSugeridos(hoje)}
-          />
-          <CalendarioConteudo
-            // Montar um pacote cria ideias no servidor: a chave refaz o calendário com elas.
-            key={`${ideias.length}:${carrosseis.length}:${semana ?? ""}`}
-            ideiasIniciais={ideias}
-            posts={carrosseis.map((c) => ({
-              id: c.id,
-              status: c.status,
-              tipo: c.tipo,
-              legenda: c.legenda,
-              agendado_para: c.agendado_para ?? null,
-              publicado_em: c.publicado_em ?? null,
-            }))}
-            hoje={hoje}
-            semanaInicial={
-              semana && /^\d{4}-\d{2}-\d{2}$/.test(semana) ? semana : undefined
+      {!contaAtiva.conectada && aba !== "contas" && (
+        <p className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+          Esta conta ainda não está conectada ao Instagram. Dá para planejar e montar os
+          posts, mas nada é publicado até colar o token dela na aba{" "}
+          <Link href="/admin/instagram?aba=contas" className="font-semibold underline">
+            Contas
+          </Link>
+          .
+        </p>
+      )}
+
+      {/* A chave refaz as telas ao trocar de conta: elas guardam em memória o
+          que receberam, e sem isso mostrariam os dados da conta anterior. */}
+      <IdentidadeInstagram
+        key={contaAtiva.id}
+        identidade={identidadeDaConta(contaAtiva)}
+      >
+        {aba === "painel" && dadosPainel ? (
+          <PainelInstagram
+            conectado={dadosPainel.conectado}
+            erro={dadosPainel.erro}
+            conta={dadosPainel.conta}
+            acoes={acoesDoDia({
+              hoje,
+              posts: dadosPainel.posts,
+              salvos: carrosseis.map((c) => ({ id: c.id, status: c.status })),
+              ideias,
+              perfil: progressoDoPerfil(perfil, referencias),
+            })}
+            indicadores={indicadores(dadosPainel.posts, hoje)}
+            semanas={constancia(dadosPainel.posts, hoje)}
+            destaques={destaques(dadosPainel.posts, hoje)}
+            melhorMomento={resumoPerfil.melhorHorario}
+            formatoTop={resumoPerfil.formatoTop}
+            totalPosts={postsDoPeriodo.length}
+            crescimento={
+              <CrescimentoInstagram
+                resumo={resumoDoCrescimento(
+                  dadosPainel.posts,
+                  hoje,
+                  dadosPainel.conta?.seguidores ?? null,
+                )}
+                seguidoresNovos30={dadosPainel.conta?.seguidoresNovos30 ?? null}
+                visitasPerfil30={dadosPainel.conta?.visitasPerfil30 ?? null}
+                alcance30={dadosPainel.conta?.alcance30 ?? null}
+                formatos={porFormato(dadosPainel.posts, hoje)}
+                achados={diagnostico(
+                  dadosPainel.posts,
+                  hoje,
+                  dadosPainel.conta?.seguidores ?? null,
+                )}
+                melhores={postsQueMaisCresceram(dadosPainel.posts, hoje)}
+              />
             }
           />
-        </>
-      ) : (
-        <>
-          {!configurado && (
-            <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-              ⚠️ A geração por IA ainda não está configurada (faltam credenciais
-              Cloudflare). Avise o desenvolvedor.
+        ) : aba === "roteiros" ? (
+          <RoteirosConteudo
+            cursos={cursosOpcoes}
+            referencias={referenciasAnalisadas}
+            roteirosIniciais={roteiros}
+            hoje={hoje}
+            abrirId={roteiroId}
+          />
+        ) : aba === "imagens" ? (
+          <ImagensConteudo />
+        ) : aba === "cortes" ? (
+          <CortesConteudo
+            // Análise que ficou "processando" depois de um reinício do servidor aparece como falha.
+            cortesIniciais={cortes.map((c) =>
+              travado(c)
+                ? { ...c, status: "erro" as const, erro: "A análise foi interrompida." }
+                : c,
+            )}
+            configurado={youtubeConfigurado() && Boolean(process.env.GROQ_API_KEY)}
+          />
+        ) : aba === "assistente" ? (
+          <AssistenteConteudo />
+        ) : aba === "piloto" ? (
+          <PilotoConteudo
+            configInicial={piloto}
+            execucoesIniciais={execucoes}
+            cursos={cursosOpcoes}
+          />
+        ) : aba === "respostas" ? (
+          <ComentariosAuto
+            ativoInicial={comentariosAtivo}
+            regrasIniciais={regrasComentario}
+            historico={comentariosRespondidos}
+            conectado={contaAtiva.conectada}
+          />
+        ) : aba === "perfil" ? (
+          <PerfilConteudoForm
+            perfilInicial={perfil}
+            referenciasIniciais={referencias}
+          />
+        ) : aba === "contas" ? (
+          <ContasInstagram
+            contasIniciais={contas}
+            emUsoId={contaAtiva.id}
+            hoje={new Date().toISOString()}
+          />
+        ) : aba === "calendario" ? (
+          <>
+            <PacoteSemana
+              cursos={cursosOpcoes}
+              referencias={referenciasAnalisadas}
+              hoje={hoje}
+              diasIniciais={diasSugeridos(hoje)}
+            />
+            <CalendarioConteudo
+              // Montar um pacote cria ideias no servidor: a chave refaz o calendário com elas.
+              key={`${ideias.length}:${carrosseis.length}:${semana ?? ""}`}
+              ideiasIniciais={ideias}
+              posts={carrosseis.map((c) => ({
+                id: c.id,
+                status: c.status,
+                tipo: c.tipo,
+                legenda: c.legenda,
+                agendado_para: c.agendado_para ?? null,
+                publicado_em: c.publicado_em ?? null,
+              }))}
+              hoje={hoje}
+              semanaInicial={
+                semana && /^\d{4}-\d{2}-\d{2}$/.test(semana) ? semana : undefined
+              }
+            />
+          </>
+        ) : (
+          <>
+            {!configurado && (
+              <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+                ⚠️ A geração por IA ainda não está configurada (faltam credenciais
+                Cloudflare). Avise o desenvolvedor.
+              </div>
+            )}
+
+            <InstagramStudio ideia={ideia} />
+
+            <div id="posts" className="mt-12 scroll-mt-6">
+              <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
+                Agendados e rascunhos
+              </h2>
+              <StatusWhatsAppToggle />
+              <ListaCarrosseisInstagram itens={carrosseis} />
             </div>
-          )}
-
-          <InstagramStudio ideia={ideia} />
-
-          <div id="posts" className="mt-12 scroll-mt-6">
-            <h2 className="mb-4 font-serif text-2xl font-semibold text-mesa-800">
-              Agendados e rascunhos
-            </h2>
-            <ListaCarrosseisInstagram itens={carrosseis} />
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </IdentidadeInstagram>
     </AdminShell>
   );
 }

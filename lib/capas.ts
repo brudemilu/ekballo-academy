@@ -296,4 +296,6 @@ export const CAPA_LIVRO: Record<string, string> = {
   "o-passo-a-passo-de-jesus": "/capas/o-passo-a-passo-de-jesus.jpg",
   "o-pequeno-peregrino": "/capas/o-pequeno-peregrino.jpg",
   "ocupado-demais-para-deixar-de-orar": "/capas/ocupado-demais-para-deixar-de-orar.jpg",
+  "o-poder-secreto-do-jejum-e-da-oracao":
+    "/capas/o-poder-secreto-do-jejum-e-da-oracao.jpg",
 };

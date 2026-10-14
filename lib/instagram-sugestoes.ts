@@ -40,8 +40,9 @@ export type SugestaoPost = {
   porque: string;
 };
 
-function systemPrompt(n: number): string {
-  return `Você é o estrategista de conteúdo do Instagram de um ministério cristão chamado Ekballo.
+function systemPrompt(n: number, ministerio: string): string {
+  const nome = ministerio.trim() || "Ekballo";
+  return `Você é o estrategista de conteúdo do Instagram de um ministério cristão chamado ${nome}.
 Sua função é SUGERIR ${n} ideias de postagem (carrossel) a partir da análise do perfil do usuário.
 
 DOIS OBJETIVOS, NESTA ORDEM:
@@ -54,7 +55,7 @@ PILARES DE CONTEÚDO — distribua as ${n} sugestões entre estes pilares (VARIE
   - "reflexao": mensagem de encorajamento, fé, esperança e bênção (o coração do perfil).
   - "versiculo": um versículo forte como peça central, com uma aplicação curta pra vida.
 
-VOZ (padrão Ekballo): pessoal, calorosa, VIVA — "forte e ao mesmo tempo limpa". PT-BR. Cristã, bíblica e fiel. Use as legendas de melhor desempenho (no contexto) como referência de TOM e TEMA.
+VOZ (padrão ${nome}): pessoal, calorosa, VIVA — "forte e ao mesmo tempo limpa". PT-BR. Cristã, bíblica e fiel. Use as legendas de melhor desempenho (no contexto) como referência de TOM e TEMA.
 
 QUANTOS SLIDES — você DECIDE o tamanho pela mensagem, com intenção; NÃO force número nem encha de slides:
   - Se a ideia se resolve numa ÚNICA frase/imagem de impacto (um versículo curto, uma frase que não precisa de desdobramento), use 1 slide (imagem única). NÃO transforme em carrossel só por transformar.
@@ -177,9 +178,15 @@ function normalizarRoteiro(raw: unknown): SlideIA[] {
 export async function gerarSugestoes(
   resumo: PerfilResumo,
   n = 3,
+  /** Nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+  ministerio = "",
 ): Promise<SugestaoPost[]> {
   // Groq (sem teto) → Cloudflare (reserva). Mesmo modelo Llama 3.3 70B.
-  const texto = await chamarLLM(systemPrompt(n), contextoPerfil(resumo), 2800);
+  const texto = await chamarLLM(
+    systemPrompt(n, ministerio),
+    contextoPerfil(resumo),
+    2800,
+  );
   const parsed = extrairJSON(texto) as { sugestoes?: unknown[] };
   const lista = Array.isArray(parsed.sugestoes) ? parsed.sugestoes : [];
 

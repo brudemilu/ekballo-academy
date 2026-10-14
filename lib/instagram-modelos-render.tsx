@@ -9,6 +9,7 @@
  * Lembrete do Satori: todo <div> com mais de um filho precisa de display
  * flex, e `inset` não é desenhado — por isso top/left/right/bottom por extenso.
  */
+import { marcaDaArte, type Paleta } from "@/lib/instagram-identidade";
 import {
   itensDoChecklist,
   type ModeloDeTexto,
@@ -35,18 +36,35 @@ export type ModeloRenderPayload = {
   top?: string;
   /** Referência / autoria. */
   ref?: string;
+  /** Assinatura da conta, usada onde `top` não vem. */
+  marca?: string;
+  /** As cores da conta; sem elas, o azul e o creme de sempre. */
+  paleta?: Paleta;
   largura: number;
   altura: number;
 };
 
 type Cores = { fundo: string; texto: string; suave: string; cor: string };
 
+/** O escuro e o claro da arte: os da conta, quando ela tem paleta própria. */
+function tons(p: ModeloRenderPayload): { navy: string; creme: string; papel: string } {
+  return p.paleta
+    ? { navy: p.paleta.fundo, creme: p.paleta.texto, papel: p.paleta.texto }
+    : { navy: NAVY, creme: CREME, papel: PAPEL };
+}
+
 function coresDo(p: ModeloRenderPayload): Cores {
   const escuro = p.tom !== "claro";
+  const t = tons(p);
   return {
-    fundo: escuro ? NAVY : PAPEL,
-    texto: escuro ? CREME : NAVY,
-    suave: escuro ? "rgba(251,245,230,0.62)" : "rgba(20,32,58,0.6)",
+    fundo: escuro ? t.navy : t.papel,
+    texto: escuro ? t.creme : t.navy,
+    // O texto de apoio é o próprio texto, mais apagado.
+    suave: p.paleta
+      ? `${escuro ? t.creme : t.navy}A6`
+      : escuro
+        ? "rgba(251,245,230,0.62)"
+        : "rgba(20,32,58,0.6)",
     cor: p.cor,
   };
 }
@@ -61,7 +79,8 @@ function Assinatura({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
           height: 6,
           marginRight: 18,
           borderRadius: 3,
-          backgroundColor: c.cor,
+          // Sem assinatura (conta com logo), o traço que a anuncia some junto.
+          backgroundColor: p.top || marcaDaArte(p.marca) ? c.cor : "transparent",
         }}
       />
       <div
@@ -73,7 +92,7 @@ function Assinatura({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
           color: c.suave,
         }}
       >
-        {(p.top || "Ekballo Academy").toUpperCase()}
+        {(p.top || marcaDaArte(p.marca)).toUpperCase()}
       </div>
     </div>
   );
@@ -259,8 +278,8 @@ function Checklist({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
                 width: Math.round(caixa * 0.28),
                 height: Math.round(caixa * 0.52),
                 marginTop: -Math.round(caixa * 0.1),
-                borderRight: `7px solid ${CREME}`,
-                borderBottom: `7px solid ${CREME}`,
+                borderRight: `7px solid ${tons(p).creme}`,
+                borderBottom: `7px solid ${tons(p).creme}`,
                 transform: "rotate(45deg)",
               }}
             />
@@ -296,7 +315,7 @@ function Cartao({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
     ],
     72,
   );
-  const nome = p.top || "Ekballo Academy";
+  const nome = p.top || marcaDaArte(p.marca);
   return (
     <div
       style={{
@@ -309,7 +328,14 @@ function Cartao({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
         boxShadow: "0 24px 60px rgba(0,0,0,0.28)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 44 }}>
+      {/* O cabeçalho do cartão é a assinatura: sem ela (conta com logo), sai inteiro. */}
+      <div
+        style={{
+          display: nome || p.ref ? "flex" : "none",
+          alignItems: "center",
+          marginBottom: 44,
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -322,14 +348,19 @@ function Cartao({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
             backgroundColor: c.cor,
             fontFamily: "Texto",
             fontSize: 50,
-            color: CREME,
+            color: tons(p).creme,
           }}
         >
           {nome.trim().charAt(0).toUpperCase()}
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div
-            style={{ display: "flex", fontFamily: "Texto", fontSize: 40, color: NAVY }}
+            style={{
+              display: "flex",
+              fontFamily: "Texto",
+              fontSize: 40,
+              color: tons(p).navy,
+            }}
           >
             {nome}
           </div>
@@ -347,7 +378,12 @@ function Cartao({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
           ) : null}
         </div>
       </div>
-      <Corrido palavras={palavras} tamanho={tamanho} cor={NAVY} corDestaque={c.cor} />
+      <Corrido
+        palavras={palavras}
+        tamanho={tamanho}
+        cor={tons(p).navy}
+        corDestaque={c.cor}
+      />
     </div>
   );
 }
@@ -384,7 +420,7 @@ function Manchete({ p, c }: { p: ModeloRenderPayload; c: Cores }) {
               marginBottom: Math.round(tamanho * 0.1),
               padding: w.destaque ? `0 ${Math.round(tamanho * 0.09)}px` : 0,
               backgroundColor: w.destaque ? c.cor : "transparent",
-              color: w.destaque ? CREME : c.texto,
+              color: w.destaque ? tons(p).creme : c.texto,
             }}
           >
             {w.t}
@@ -444,7 +480,7 @@ export function renderSlideModelo(p: ModeloRenderPayload) {
         c={c}
         texto={
           p.modelo === "cartao"
-            ? "EKBALLO ACADEMY"
+            ? marcaDaArte(p.marca).toUpperCase()
             : p.modelo !== "citacao" && p.ref
               ? p.ref.toUpperCase()
               : " "

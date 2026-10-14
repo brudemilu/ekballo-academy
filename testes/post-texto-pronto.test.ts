@@ -190,6 +190,20 @@ describe("interpretarAjuste (sem IA)", () => {
     expect(interpretarAjuste("muda o modelo")).toEqual({ outroModelo: true });
   });
 
+  it("modelo pedido pelo nome", () => {
+    expect(interpretarAjuste("modelo muro")).toEqual({ modelo: "muro" });
+    expect(interpretarAjuste("muda o modelo para caderno")).toMatchObject({
+      modelo: "caderno",
+    });
+    expect(interpretarAjuste("no modelo Quadrinho")).toEqual({ modelo: "quadrinho" });
+    // nome que não existe não vira modelo
+    expect(interpretarAjuste("modelo bonito")).toBeNull();
+    expect(pareceAjuste("modelo muro")).toBe(true);
+    expect(aplicarAjuste(slide("Ele é fiel."), { modelo: "muro" }).slide.modelo).toBe(
+      "muro",
+    );
+  });
+
   it("pedido que precisa de interpretação fica para a IA", () => {
     expect(interpretarAjuste("corrige, faltou o livro no final")).toBeNull();
   });

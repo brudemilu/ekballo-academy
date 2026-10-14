@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/db";
-import { publicarStory, instagramConfigurado } from "@/lib/instagram-publish";
+import { CONTA_PRINCIPAL_ID } from "@/lib/instagram-contas";
+import { credenciaisInstagram } from "@/lib/instagram-credenciais";
+import { publicarStory } from "@/lib/instagram-publish";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -14,7 +16,10 @@ export async function POST(req: NextRequest) {
   if (!session?.profile?.is_admin) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
-  if (!instagramConfigurado()) {
+  // Quem chama é a tela do devocional, fora do painel: o story é sempre da
+  // conta principal, seja qual for a conta escolhida no painel (issue #264).
+  const cred = await credenciaisInstagram(CONTA_PRINCIPAL_ID);
+  if (!cred) {
     return NextResponse.json({ error: "Instagram não conectado." }, { status: 503 });
   }
 
@@ -31,15 +36,18 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
-  if (!imageUrl) return NextResponse.json({ error: "Falta a imagem do story." }, { status: 400 });
+  if (!imageUrl)
+    return NextResponse.json({ error: "Falta a imagem do story." }, { status: 400 });
   if (imageUrl.includes("localhost")) {
-    return NextResponse.json({ error: "Só funciona no site publicado." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Só funciona no site publicado." },
+      { status: 400 },
+    );
   }
 
   try {
     const { id } = await publicarStory({
-      igUserId: process.env.IG_USER_ID!,
-      token: process.env.META_ACCESS_TOKEN!,
+      ...cred,
       imageUrl,
     });
     return NextResponse.json({ ok: true, id });
