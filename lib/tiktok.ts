@@ -20,7 +20,6 @@ import { chamadaDaLegenda, type MidiaIG } from "@/lib/status-whatsapp";
 
 export type ModoTikTok = "rascunho" | "direto";
 
-
 export function ehModoTikTok(v: unknown): v is ModoTikTok {
   return v === "rascunho" || v === "direto";
 }
