@@ -20,7 +20,6 @@ import { chamadaDaLegenda, type MidiaIG } from "@/lib/status-whatsapp";
 
 export type ModoTikTok = "rascunho" | "direto";
 
-export const MODOS_TIKTOK: ModoTikTok[] = ["rascunho", "direto"];
 
 export function ehModoTikTok(v: unknown): v is ModoTikTok {
   return v === "rascunho" || v === "direto";
@@ -173,11 +172,6 @@ export function situacaoDoStatus(status: string | undefined): SituacaoTikTok {
     default:
       return "processando";
   }
-}
-
-/** Situações que ainda precisam ser consultadas nas próximas rodadas. */
-export function precisaAcompanhar(s: string): boolean {
-  return s === "processando";
 }
 
 /** Renova o token se ele vence em menos de 10 minutos. */
