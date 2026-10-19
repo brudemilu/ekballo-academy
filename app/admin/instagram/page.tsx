@@ -18,6 +18,7 @@ import { PilotoConteudo } from "@/components/PilotoConteudo";
 import { RoteirosConteudo } from "@/components/RoteirosConteudo";
 import { SeletorContaInstagram } from "@/components/SeletorContaInstagram";
 import { StatusWhatsAppToggle } from "@/components/StatusWhatsAppToggle";
+import { TikTokPainel } from "@/components/TikTokPainel";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { PERFIL_VAZIO, progressoDoPerfil } from "@/lib/conteudo-perfil";
 import { travado } from "@/lib/cortes";
@@ -406,6 +407,7 @@ export default async function AdminInstagramPage({
                 Agendados e rascunhos
               </h2>
               <StatusWhatsAppToggle />
+              <TikTokPainel />
               <ListaCarrosseisInstagram itens={carrosseis} />
             </div>
           </>

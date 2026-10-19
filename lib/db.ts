@@ -66,6 +66,7 @@ import {
   getMockPerfilConteudo,
   getMockPiloto,
   getMockStatusWhatsAppAtivo,
+  getMockTikTok,
   type IdeiaConteudoMock,
   isMockMode,
   listMockCarrosseis,
@@ -109,11 +110,13 @@ import {
   setMockPerfilConteudo,
   setMockPiloto,
   setMockStatusWhatsAppAtivo,
+  setMockTikTok,
   updateMockCompromisso,
 } from "@/lib/mock-data";
 import { PERMISSOES, type Permissao } from "@/lib/permissoes";
 import { type ExecucaoPiloto, PILOTO_PADRAO, type PilotoConfig } from "@/lib/piloto";
 import type { Roteiro, RoteiroSalvo } from "@/lib/roteiro";
+import { ehModoTikTok, type ModoTikTok, type SituacaoTikTok } from "@/lib/tiktok";
 import type {
   Alternativa,
   Atividade,
@@ -3323,6 +3326,88 @@ export async function salvarStatusWhatsAppAtivo(ativo: boolean): Promise<void> {
     atualizado_em: agora,
     ...(ativo ? { ativado_em: agora } : {}),
   });
+  if (error) throw new Error(error.message);
+}
+
+// =============================================================
+// Instagram → TikTok (issue #273). Só a conta principal: o TikTok é o do
+// pastor, como o Status do WhatsApp. O token mora em lib/tiktok-credenciais.
+// =============================================================
+export type TikTokConfig = { ativo: boolean; modo: ModoTikTok };
+
+export type TikTokEnvio = {
+  ig_media_id: string;
+  permalink: string | null;
+  chamada: string | null;
+  modo: ModoTikTok;
+  situacao: SituacaoTikTok;
+  privacidade: string | null;
+  erro: string | null;
+  criado_em: string;
+};
+
+export async function getTikTokConfig(): Promise<TikTokConfig> {
+  if (isMockMode()) return getMockTikTok();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("tiktok_config")
+    .select("ativo, modo")
+    .eq("conta_id", CONTA_PRINCIPAL_ID)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return {
+    ativo: Boolean(data?.ativo),
+    modo: ehModoTikTok(data?.modo) ? data.modo : "rascunho",
+  };
+}
+
+/**
+ * Liga/desliga e troca o modo. Ao LIGAR, a linha de corte vira agora: os
+ * Reels publicados enquanto estava desligado não vão todos de uma vez.
+ */
+export async function salvarTikTokConfig(dados: Partial<TikTokConfig>): Promise<void> {
+  if (isMockMode()) {
+    setMockTikTok(dados);
+    return;
+  }
+  const agora = new Date().toISOString();
+  const supabase = await createClient();
+  const atual = await getTikTokConfig();
+  const ligando = dados.ativo === true && !atual.ativo;
+  const { error } = await supabase.from("tiktok_config").upsert({
+    conta_id: CONTA_PRINCIPAL_ID,
+    ativo: dados.ativo ?? atual.ativo,
+    modo: dados.modo ?? atual.modo,
+    atualizado_em: agora,
+    ...(ligando ? { ativado_em: agora } : {}),
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function listTikTokEnvios(): Promise<TikTokEnvio[]> {
+  if (isMockMode()) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("tiktok_envios")
+    .select(
+      "ig_media_id, permalink, chamada, modo, situacao, privacidade, erro, criado_em",
+    )
+    .eq("conta_id", CONTA_PRINCIPAL_ID)
+    .order("criado_em", { ascending: false })
+    .limit(10);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as TikTokEnvio[];
+}
+
+/** "Tentar de novo": apaga o registro do envio que falhou; a próxima rodada manda. */
+export async function repetirTikTokEnvio(igMediaId: string): Promise<void> {
+  if (isMockMode()) return;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tiktok_envios")
+    .delete()
+    .eq("ig_media_id", igMediaId)
+    .eq("situacao", "erro");
   if (error) throw new Error(error.message);
 }
 

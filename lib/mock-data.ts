@@ -877,6 +877,17 @@ export function getMockStatusWhatsAppAtivo(): boolean {
 export function setMockStatusWhatsAppAtivo(ativo: boolean) {
   MOCK_STATUS_WHATSAPP.ativo = ativo;
 }
+// ---- Instagram → TikTok (mock mutável) ----
+const MOCK_TIKTOK: { ativo: boolean; modo: "rascunho" | "direto" } = {
+  ativo: false,
+  modo: "rascunho",
+};
+export function getMockTikTok() {
+  return { ...MOCK_TIKTOK };
+}
+export function setMockTikTok(dados: Partial<typeof MOCK_TIKTOK>) {
+  Object.assign(MOCK_TIKTOK, dados);
+}
 const MOCK_REGRAS_COMENTARIO: RegraComentario[] = [];
 export function listMockRegrasComentario(): RegraComentario[] {
   return MOCK_REGRAS_COMENTARIO;
