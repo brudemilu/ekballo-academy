@@ -116,7 +116,12 @@ import {
 import { PERMISSOES, type Permissao } from "@/lib/permissoes";
 import { type ExecucaoPiloto, PILOTO_PADRAO, type PilotoConfig } from "@/lib/piloto";
 import type { Roteiro, RoteiroSalvo } from "@/lib/roteiro";
-import { ehModoTikTok, type ModoTikTok, type SituacaoTikTok } from "@/lib/tiktok";
+import {
+  type AutorizacaoTikTok,
+  ehModoTikTok,
+  type ModoTikTok,
+  type SituacaoTikTok,
+} from "@/lib/tiktok";
 import type {
   Alternativa,
   Atividade,
@@ -2530,7 +2535,7 @@ export async function listCarrosseisInstagram(): Promise<CarrosselInstagramMock[
   const { data, error } = await supabase
     .from("instagram_carrosseis")
     .select(
-      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso",
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso, tiktok",
     )
     .eq("conta_id", conta)
     .order("criado_em", { ascending: false })
@@ -3145,7 +3150,7 @@ export async function getCarrosselInstagram(
   const { data, error } = await agendaSR()
     .from("instagram_carrosseis")
     .select(
-      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso",
+      "id, conteudo, slides, legenda, status, agendado_para, publicado_em, criado_em, tipo, video_url, colaboradores, aviso, tiktok",
     )
     .eq("id", id)
     .maybeSingle();
@@ -3397,6 +3402,24 @@ export async function listTikTokEnvios(): Promise<TikTokEnvio[]> {
     .limit(10);
   if (error) throw new Error(error.message);
   return (data ?? []) as TikTokEnvio[];
+}
+
+/**
+ * Grava (ou tira, com null) a autorização de publicação direta no TikTok de
+ * um post (issue #275). Só vale para o post da conta aberta no painel.
+ */
+export async function salvarAutorizacaoTikTok(
+  id: string,
+  autorizacao: AutorizacaoTikTok | null,
+): Promise<void> {
+  if (isMockMode()) return;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("instagram_carrosseis")
+    .update({ tiktok: autorizacao })
+    .eq("id", id)
+    .eq("conta_id", await contaAtualId());
+  if (error) throw new Error(error.message);
 }
 
 /** "Tentar de novo": apaga o registro do envio que falhou; a próxima rodada manda. */

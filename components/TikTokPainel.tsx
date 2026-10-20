@@ -176,37 +176,19 @@ export function TikTokPainel() {
             </button>
           </div>
 
-          <fieldset className="space-y-1 text-xs text-mesa-700">
-            <legend className="mb-1 font-semibold">Como enviar</legend>
-            <label className="flex items-start gap-2">
-              <input
-                type="radio"
-                name="modo-tiktok"
-                checked={estado.modo === "rascunho"}
-                onChange={() => enviar("POST", { modo: "rascunho" })}
-                disabled={ocupado}
-              />
-              <span>
-                <strong>Para os rascunhos</strong> — chega uma notificação no TikTok,
-                você escolhe uma música em alta e publica. A legenda chega no seu
-                WhatsApp para colar.
-              </span>
-            </label>
-            <label className="flex items-start gap-2">
-              <input
-                type="radio"
-                name="modo-tiktok"
-                checked={estado.modo === "direto"}
-                onChange={() => enviar("POST", { modo: "direto" })}
-                disabled={ocupado}
-              />
-              <span>
-                <strong>Publicar direto</strong> — sai sozinho, com a legenda. Enquanto
-                o TikTok não aprovar o aplicativo, ele só aceita como &quot;somente
-                eu&quot;.
-              </span>
-            </label>
-          </fieldset>
+          <div className="space-y-1 text-xs text-mesa-600">
+            <p>
+              <strong>Reel autorizado</strong> (botão "Publicar também no TikTok" em
+              cada Reel agendado): vai direto para o seu perfil do TikTok com as
+              escolhas que você fez. Enquanto o TikTok não aprovar o aplicativo, ele só
+              aceita como &quot;só eu&quot;.
+            </p>
+            <p>
+              <strong>Reel sem autorização</strong> (inclusive o que você posta direto
+              no app do Instagram): vai para os rascunhos do TikTok, e a legenda chega
+              no seu WhatsApp.
+            </p>
+          </div>
 
           {estado.envios.length > 0 && (
             <ul className="divide-y divide-mesa-100 rounded-lg border border-mesa-100 text-xs">

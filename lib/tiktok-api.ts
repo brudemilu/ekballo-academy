@@ -7,7 +7,14 @@
  * Storage é nosso, e não precisamos disso.
  */
 import { siteBase } from "@/lib/site-url";
-import { escolherPrivacidade, type ModoTikTok, planoDeEnvio } from "@/lib/tiktok";
+import {
+  type AutorizacaoTikTok,
+  type CriadorTikTok,
+  escolherPrivacidade,
+  type ModoTikTok,
+  planoDeEnvio,
+  postInfo,
+} from "@/lib/tiktok";
 
 const API = "https://open.tiktokapis.com/v2";
 
@@ -148,6 +155,31 @@ export async function lerUsuario(
 }
 
 /**
+ * Os dados da conta na hora de publicar: nome, opções de privacidade, o que
+ * está bloqueado e a duração máxima. O TikTok exige ler isto a cada post.
+ */
+export async function lerCriador(token: string): Promise<CriadorTikTok> {
+  const d = await chamar<{
+    creator_nickname?: string;
+    creator_username?: string;
+    privacy_level_options?: string[];
+    comment_disabled?: boolean;
+    duet_disabled?: boolean;
+    stitch_disabled?: boolean;
+    max_video_post_duration_sec?: number;
+  }>("/post/publish/creator_info/query/", token);
+  return {
+    nome: d.creator_nickname || "",
+    usuario: d.creator_username || "",
+    privacidades: d.privacy_level_options ?? [],
+    comentarioBloqueado: Boolean(d.comment_disabled),
+    duetoBloqueado: Boolean(d.duet_disabled),
+    costuraBloqueada: Boolean(d.stitch_disabled),
+    duracaoMaximaSeg: d.max_video_post_duration_sec ?? 0,
+  };
+}
+
+/**
  * Manda o vídeo ao TikTok. No modo `rascunho`, cai na caixa de entrada do
  * app; no `direto`, publica com a legenda (pública se o TikTok deixar).
  * Devolve o publish_id, que é consultado depois em `consultarEnvio`.
@@ -157,6 +189,8 @@ export async function enviarVideo(p: {
   modo: ModoTikTok;
   video: Uint8Array;
   legenda: string;
+  /** Escolhas feitas no painel para este vídeo (publicação direta). */
+  autorizacao?: AutorizacaoTikTok | null;
 }): Promise<{ publishId: string; privacidade: string | null }> {
   const plano = planoDeEnvio(p.video.byteLength);
   const source_info = {
@@ -167,7 +201,14 @@ export async function enviarVideo(p: {
   };
   let privacidade: string | null = null;
   let init: { publish_id?: string; upload_url?: string };
-  if (p.modo === "direto") {
+  if (p.autorizacao) {
+    // Publicação direta com o que a pessoa escolheu no painel para ESTE vídeo.
+    privacidade = p.autorizacao.privacidade;
+    init = await chamar("/post/publish/video/init/", p.token, {
+      post_info: postInfo(p.autorizacao),
+      source_info,
+    });
+  } else if (p.modo === "direto") {
     const criador = await chamar<{ privacy_level_options?: string[] }>(
       "/post/publish/creator_info/query/",
       p.token,

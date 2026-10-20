@@ -610,6 +610,8 @@ export type CarrosselInstagramMock = {
   colaboradores?: string[];
   /** O post saiu, mas algo ficou de fora (ex.: convite recusado pela API). */
   aviso?: string | null;
+  /** Autorização de publicação direta no TikTok (issue #275). */
+  tiktok?: unknown;
 };
 const MOCK_CARROSSEIS: CarrosselInstagramMock[] = [];
 export function addMockCarrossel(c: CarrosselInstagramMock) {

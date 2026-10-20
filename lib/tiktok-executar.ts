@@ -11,13 +11,14 @@ import { credenciaisInstagram } from "@/lib/instagram-credenciais";
 import type { MidiaIG } from "@/lib/status-whatsapp";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
+  type AutorizacaoTikTok,
   avisoDoRascunho,
-  ehModoTikTok,
   escolherParaTikTok,
-  type ModoTikTok,
+  lerAutorizacao,
   situacaoDoStatus,
+  validarAutorizacao,
 } from "@/lib/tiktok";
-import { consultarEnvio, enviarVideo } from "@/lib/tiktok-api";
+import { consultarEnvio, enviarVideo, lerCriador } from "@/lib/tiktok-api";
 import { tokenTikTok } from "@/lib/tiktok-credenciais";
 import { enviarTextoWhatsApp } from "@/lib/whatsapp-enviar";
 
@@ -76,14 +77,18 @@ async function telefoneDoDono(): Promise<string | null> {
  * O arquivo original de cada Reel que saiu pelo sistema, achado pela legenda
  * (o Instagram não devolve nada nosso). Sem achar, vale o arquivo do Instagram.
  */
-async function arquivosOriginais(
+async function dadosDoSistema(
   midias: MidiaIG[],
   desde: Date,
-): Promise<Map<string, string>> {
+): Promise<{
+  originais: Map<string, string>;
+  autorizacoes: Map<string, AutorizacaoTikTok>;
+}> {
   const mapa = new Map<string, string>();
+  const autorizacoes = new Map<string, AutorizacaoTikTok>();
   const { data } = await createServiceClient()
     .from("instagram_carrosseis")
-    .select("legenda, video_url")
+    .select("legenda, video_url, tiktok")
     .eq("conta_id", CONTA_PRINCIPAL_ID)
     .eq("tipo", "reel")
     .eq("status", "publicado")
@@ -91,13 +96,16 @@ async function arquivosOriginais(
     .gte("publicado_em", new Date(desde.getTime() - 86_400_000).toISOString())
     .limit(30);
   const porLegenda = new Map(
-    (data ?? []).map((r) => [String(r.legenda || "").trim(), r.video_url as string]),
+    (data ?? []).map((r) => [String(r.legenda || "").trim(), r]),
   );
   for (const m of midias) {
-    const url = porLegenda.get(String(m.caption || "").trim());
-    if (url) mapa.set(m.id, url);
+    const r = porLegenda.get(String(m.caption || "").trim());
+    if (!r) continue;
+    if (r.video_url) mapa.set(m.id, r.video_url as string);
+    const a = lerAutorizacao(r.tiktok);
+    if (a) autorizacoes.set(m.id, a);
   }
-  return mapa;
+  return { originais: mapa, autorizacoes };
 }
 
 export async function repetirNoTikTok(): Promise<ResultadoTikTok> {
@@ -112,12 +120,11 @@ export async function repetirNoTikTok(): Promise<ResultadoTikTok> {
   const sb = createServiceClient();
   const { data: config } = await sb
     .from("tiktok_config")
-    .select("ativo, modo, ativado_em")
+    .select("ativo, ativado_em")
     .eq("conta_id", CONTA_PRINCIPAL_ID)
     .maybeSingle();
   if (!config?.ativo) return r;
   r.ligado = true;
-  const modo: ModoTikTok = ehModoTikTok(config.modo) ? config.modo : "rascunho";
 
   const token = await tokenTikTok(CONTA_PRINCIPAL_ID).catch((e) => {
     r.avisos.push(`token do TikTok: ${e instanceof Error ? e.message : e}`);
@@ -180,10 +187,12 @@ export async function repetirNoTikTok(): Promise<ResultadoTikTok> {
     midias,
     jaEnviados: new Set((feitos ?? []).map((f) => f.ig_media_id as string)),
     desde,
-    originais: await arquivosOriginais(midias, desde),
+    ...(await dadosDoSistema(midias, desde)),
   });
 
   for (const item of itens) {
+    // Autorizado no painel = publicação direta; sem autorização = rascunho.
+    const modo = item.autorizacao ? "direto" : "rascunho";
     // Registra ANTES de enviar: a chave primária garante que duas rodadas ao
     // mesmo tempo não mandem o mesmo Reel. Quem não conseguiu inserir, não envia.
     const { error: jaExiste } = await sb.from("tiktok_envios").insert({
@@ -196,8 +205,19 @@ export async function repetirNoTikTok(): Promise<ResultadoTikTok> {
     });
     if (jaExiste) continue;
     try {
+      if (item.autorizacao) {
+        // O TikTok exige conferir a conta de novo na hora de publicar.
+        const problemas = validarAutorizacao(item.autorizacao, await lerCriador(token));
+        if (problemas.length) throw new Error(problemas.join(" "));
+      }
       const video = await baixarVideo(item.videoUrl);
-      const env = await enviarVideo({ token, modo, video, legenda: item.legenda });
+      const env = await enviarVideo({
+        token,
+        modo,
+        video,
+        legenda: item.autorizacao?.legenda || item.legenda,
+        autorizacao: item.autorizacao,
+      });
       await sb
         .from("tiktok_envios")
         .update({
