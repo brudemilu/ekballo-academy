@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { EditorPostInstagram, type EdSlide } from "@/components/EditorPostInstagram";
+import { TikTokAutorizacao } from "@/components/TikTokAutorizacao";
 
 type Item = {
   id: string;
@@ -15,6 +16,7 @@ type Item = {
   video_url?: string;
   colaboradores?: string[] | null;
   aviso?: string | null;
+  tiktok?: unknown;
 };
 
 function badge(it: Item) {
@@ -291,6 +293,15 @@ export function ListaCarrosseisInstagram({ itens }: { itens: Item[] }) {
                   {salvandoColab === it.id ? "…" : "Salvar"}
                 </button>
               </div>
+            )}
+            {/* TikTok: autorização por vídeo para a publicação direta (issue #275) */}
+            {it.tipo === "reel" && it.status !== "publicado" && (
+              <TikTokAutorizacao
+                postId={it.id}
+                legenda={it.legenda}
+                videoUrl={it.video_url}
+                inicial={it.tiktok}
+              />
             )}
             {/* Reagendar */}
             <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-mesa-100 pt-3">

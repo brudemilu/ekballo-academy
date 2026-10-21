@@ -85,6 +85,8 @@ export type ItemTikTok = {
   legenda: string;
   /** Endereço do arquivo de vídeo para mandar ao TikTok. */
   videoUrl: string;
+  /** Autorização dada no painel para este Reel (publicação direta). */
+  autorizacao?: AutorizacaoTikTok | null;
 };
 
 /**
@@ -99,6 +101,7 @@ export function escolherParaTikTok(entrada: {
   jaEnviados: Set<string>;
   desde: Date;
   originais?: Map<string, string>;
+  autorizacoes?: Map<string, AutorizacaoTikTok>;
   max?: number;
 }): ItemTikTok[] {
   const itens: (ItemTikTok & { quando: number })[] = [];
@@ -114,6 +117,7 @@ export function escolherParaTikTok(entrada: {
       permalink: m.permalink ?? null,
       legenda: legendaParaTikTok(m.caption),
       videoUrl,
+      autorizacao: entrada.autorizacoes?.get(m.id) ?? null,
       quando,
     });
   }
@@ -181,4 +185,150 @@ export function tokenVencendo(
   if (!expiraEm) return true;
   const t = new Date(expiraEm).getTime();
   return Number.isNaN(t) || t - agora.getTime() < 10 * 60 * 1000;
+}
+
+// =============================================================
+// Publicação direta com autorização por vídeo (issue #275)
+// =============================================================
+// A análise do TikTok só aprova a publicação direta se, para cada vídeo, a
+// pessoa escolher quem pode ver (sem valor marcado de antemão), as interações
+// (todas desmarcadas no início), declarar conteúdo comercial e aceitar a
+// Confirmação de Uso de Música. Essas escolhas ficam gravadas no post
+// (instagram_carrosseis.tiktok) e são usadas quando ele sair no Instagram.
+
+export const URL_USO_DE_MUSICA =
+  "https://www.tiktok.com/legal/page/global/music-usage-confirmation/en";
+export const URL_CONTEUDO_DE_MARCA =
+  "https://www.tiktok.com/legal/page/global/bc-policy/en";
+
+/** Como o TikTok chama cada opção de privacidade, em português. */
+export const ROTULO_PRIVACIDADE: Record<string, string> = {
+  PUBLIC_TO_EVERYONE: "Todos",
+  MUTUAL_FOLLOW_FRIENDS: "Amigos (quem você segue e te segue)",
+  FOLLOWER_OF_CREATOR: "Seguidores",
+  SELF_ONLY: "Só eu",
+};
+
+export type CriadorTikTok = {
+  nome: string;
+  usuario: string;
+  privacidades: string[];
+  comentarioBloqueado: boolean;
+  duetoBloqueado: boolean;
+  costuraBloqueada: boolean;
+  duracaoMaximaSeg: number;
+};
+
+export type AutorizacaoTikTok = {
+  privacidade: string;
+  comentarios: boolean;
+  dueto: boolean;
+  costura: boolean;
+  /** Conteúdo comercial ligado. */
+  comercial: boolean;
+  /** "Sua marca": promoção do próprio criador. */
+  suaMarca: boolean;
+  /** "Conteúdo de marca": parceria paga com terceiros. */
+  conteudoDeMarca: boolean;
+  legenda: string;
+  /** Quando foi autorizado e para qual conta (aparece no painel). */
+  autorizadoEm?: string;
+  conta?: string;
+};
+
+/**
+ * Confere as escolhas contra as regras do TikTok e contra o que a conta
+ * permite agora. Devolve a lista de problemas (vazia = pode autorizar).
+ */
+export function validarAutorizacao(
+  a: Partial<AutorizacaoTikTok>,
+  criador: CriadorTikTok,
+  duracaoVideoSeg?: number,
+): string[] {
+  const erros: string[] = [];
+  if (!a.privacidade) erros.push("Escolha quem pode ver o vídeo.");
+  else if (!criador.privacidades.includes(a.privacidade))
+    erros.push("Essa opção de privacidade não está disponível para a sua conta agora.");
+  if (a.comentarios && criador.comentarioBloqueado)
+    erros.push("A sua conta não permite comentários.");
+  if (a.dueto && criador.duetoBloqueado) erros.push("A sua conta não permite dueto.");
+  if (a.costura && criador.costuraBloqueada)
+    erros.push("A sua conta não permite costura.");
+  if (a.comercial && !a.suaMarca && !a.conteudoDeMarca)
+    erros.push(
+      'Com conteúdo comercial ligado, marque "Sua marca", "Conteúdo de marca" ou os dois.',
+    );
+  if (a.comercial && a.conteudoDeMarca && a.privacidade === "SELF_ONLY")
+    erros.push('Conteúdo de marca não pode ser "Só eu".');
+  if ((a.legenda ?? "").length > MAX_LEGENDA_TIKTOK)
+    erros.push(`A legenda passa de ${MAX_LEGENDA_TIKTOK} caracteres.`);
+  if (
+    duracaoVideoSeg &&
+    criador.duracaoMaximaSeg &&
+    duracaoVideoSeg > criador.duracaoMaximaSeg
+  )
+    erros.push(
+      `O vídeo tem ${Math.round(duracaoVideoSeg)} s e a sua conta aceita até ${criador.duracaoMaximaSeg} s.`,
+    );
+  return erros;
+}
+
+/** O rótulo que o TikTok põe no vídeo quando há conteúdo comercial. */
+export function avisoDeRotulo(
+  a: Pick<AutorizacaoTikTok, "comercial" | "suaMarca" | "conteudoDeMarca">,
+): string {
+  if (!a.comercial) return "";
+  if (a.conteudoDeMarca) return 'O seu vídeo será marcado como "Parceria paga".';
+  if (a.suaMarca) return 'O seu vídeo será marcado como "Conteúdo promocional".';
+  return "";
+}
+
+/** A declaração que aparece antes do botão de autorizar. */
+export function declaracao(
+  a: Pick<AutorizacaoTikTok, "comercial" | "conteudoDeMarca">,
+): {
+  texto: string;
+  marca: boolean;
+} {
+  const marca = Boolean(a.comercial && a.conteudoDeMarca);
+  return {
+    texto: marca
+      ? "Ao publicar, você concorda com a Política de Conteúdo de Marca e com a Confirmação de Uso de Música do TikTok."
+      : "Ao publicar, você concorda com a Confirmação de Uso de Música do TikTok.",
+    marca,
+  };
+}
+
+/** Os campos de post_info que a API de publicação direta espera. */
+export function postInfo(a: AutorizacaoTikTok) {
+  return {
+    title: a.legenda,
+    privacy_level: a.privacidade,
+    disable_comment: !a.comentarios,
+    disable_duet: !a.dueto,
+    disable_stitch: !a.costura,
+    brand_content_toggle: Boolean(a.comercial && a.conteudoDeMarca),
+    brand_organic_toggle: Boolean(a.comercial && a.suaMarca),
+    video_cover_timestamp_ms: 1000,
+  };
+}
+
+/** Lê a autorização gravada no post, descartando o que não for válido. */
+export function lerAutorizacao(v: unknown): AutorizacaoTikTok | null {
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.privacidade !== "string" || !o.privacidade || !o.autorizadoEm)
+    return null;
+  return {
+    privacidade: o.privacidade,
+    comentarios: o.comentarios === true,
+    dueto: o.dueto === true,
+    costura: o.costura === true,
+    comercial: o.comercial === true,
+    suaMarca: o.suaMarca === true,
+    conteudoDeMarca: o.conteudoDeMarca === true,
+    legenda: typeof o.legenda === "string" ? o.legenda : "",
+    autorizadoEm: String(o.autorizadoEm),
+    conta: typeof o.conta === "string" ? o.conta : undefined,
+  };
 }

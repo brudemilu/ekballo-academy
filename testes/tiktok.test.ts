@@ -181,3 +181,119 @@ describe("urlDeAutorizacao e aviso", () => {
     expect(a).toContain("rascunhos do TikTok");
   });
 });
+
+// =============================================================
+// Autorização por vídeo (issue #275): as regras que a análise do
+// TikTok confere na publicação direta.
+// =============================================================
+import {
+  type CriadorTikTok,
+  declaracao as declaracaoTikTok,
+  lerAutorizacao as lerAutorizacaoTikTok,
+  postInfo as postInfoTikTok,
+  avisoDeRotulo as rotuloTikTok,
+  validarAutorizacao as validarTikTok,
+} from "@/lib/tiktok";
+
+const CRIADOR: CriadorTikTok = {
+  nome: "Bruno Fernandes",
+  usuario: "brunofesantos",
+  privacidades: ["PUBLIC_TO_EVERYONE", "SELF_ONLY"],
+  comentarioBloqueado: false,
+  duetoBloqueado: true,
+  costuraBloqueada: false,
+  duracaoMaximaSeg: 60,
+};
+const BASE = {
+  privacidade: "PUBLIC_TO_EVERYONE",
+  comentarios: false,
+  dueto: false,
+  costura: false,
+  comercial: false,
+  suaMarca: false,
+  conteudoDeMarca: false,
+  legenda: "Permanecer.",
+};
+
+describe("validarAutorizacao", () => {
+  it("sem privacidade escolhida não autoriza (o TikTok proíbe valor padrão)", () => {
+    expect(validarTikTok({ ...BASE, privacidade: "" }, CRIADOR)).toContain(
+      "Escolha quem pode ver o vídeo.",
+    );
+  });
+  it("só aceita privacidades que a conta devolveu", () => {
+    expect(
+      validarTikTok({ ...BASE, privacidade: "FOLLOWER_OF_CREATOR" }, CRIADOR),
+    ).toHaveLength(1);
+  });
+  it("não deixa ligar interação que a conta bloqueou", () => {
+    expect(validarTikTok({ ...BASE, dueto: true }, CRIADOR)).toEqual([
+      "A sua conta não permite dueto.",
+    ]);
+  });
+  it("conteúdo comercial exige marcar ao menos uma opção", () => {
+    expect(validarTikTok({ ...BASE, comercial: true }, CRIADOR)).toHaveLength(1);
+    expect(
+      validarTikTok({ ...BASE, comercial: true, suaMarca: true }, CRIADOR),
+    ).toEqual([]);
+  });
+  it("conteúdo de marca não pode ser só eu", () => {
+    const e = validarTikTok(
+      { ...BASE, privacidade: "SELF_ONLY", comercial: true, conteudoDeMarca: true },
+      CRIADOR,
+    );
+    expect(e).toContain('Conteúdo de marca não pode ser "Só eu".');
+  });
+  it("recusa vídeo mais longo do que a conta aceita", () => {
+    expect(validarTikTok(BASE, CRIADOR, 75)).toHaveLength(1);
+    expect(validarTikTok(BASE, CRIADOR, 38)).toEqual([]);
+  });
+});
+
+describe("textos e envio da publicação direta", () => {
+  it("rótulo e declaração seguem o tipo de conteúdo comercial", () => {
+    expect(
+      rotuloTikTok({ comercial: false, suaMarca: false, conteudoDeMarca: false }),
+    ).toBe("");
+    expect(
+      rotuloTikTok({ comercial: true, suaMarca: true, conteudoDeMarca: false }),
+    ).toContain("Conteúdo promocional");
+    expect(
+      rotuloTikTok({ comercial: true, suaMarca: true, conteudoDeMarca: true }),
+    ).toContain("Parceria paga");
+    expect(declaracaoTikTok({ comercial: false, conteudoDeMarca: false }).marca).toBe(
+      false,
+    );
+    expect(
+      declaracaoTikTok({ comercial: true, conteudoDeMarca: true }).texto,
+    ).toContain("Conteúdo de Marca");
+  });
+  it("interação desmarcada vira desligada na API", () => {
+    const p = postInfoTikTok({ ...BASE, comentarios: true });
+    expect(p).toMatchObject({
+      privacy_level: "PUBLIC_TO_EVERYONE",
+      disable_comment: false,
+      disable_duet: true,
+      disable_stitch: true,
+    });
+    expect(p.brand_content_toggle).toBe(false);
+  });
+  it("só lê autorização completa (com data e privacidade)", () => {
+    expect(lerAutorizacaoTikTok(null)).toBeNull();
+    expect(lerAutorizacaoTikTok({ privacidade: "SELF_ONLY" })).toBeNull();
+    expect(
+      lerAutorizacaoTikTok({ ...BASE, autorizadoEm: "2026-10-19T23:00:00Z" })
+        ?.privacidade,
+    ).toBe("PUBLIC_TO_EVERYONE");
+  });
+  it("a rodada leva a autorização do Reel que foi autorizado", () => {
+    const a = { ...BASE, autorizadoEm: "2026-10-19T23:00:00Z" };
+    const [item] = escolherParaTikTok({
+      midias: [reel("a", "2026-10-21T21:30:00Z")],
+      jaEnviados: new Set(),
+      desde: LIGADO,
+      autorizacoes: new Map([["a", a]]),
+    });
+    expect(item.autorizacao?.privacidade).toBe("PUBLIC_TO_EVERYONE");
+  });
+});
