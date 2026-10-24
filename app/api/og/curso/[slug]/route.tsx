@@ -1184,6 +1184,17 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#C9BBD8",
     rodapeCor: "#C9BBD8",
   },
+  "andando-com-o-tanque-vazio": {
+    preLabel: "WAYNE CORDEIRO",
+    titulo: "Andando com o\nTanque Vazio?",
+    subtitulo: "Encha o tanque e renove a paixão",
+    rodape: "Leitura guiada — o burnout no ministério e o caminho de volta",
+    bg: "linear-gradient(135deg, #1B1A17 0%, #3B3328 52%, #8A5A22 100%)",
+    textoCor: "#F7F1E6",
+    acentoCor: "#F2B33D",
+    preLabelCor: "#D9C7A8",
+    rodapeCor: "#D9C7A8",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;
