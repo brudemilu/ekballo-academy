@@ -1,0 +1,274 @@
+[
+  {
+    "t": "* Andando com o tanque vazio?",
+    "x0": 0.10815260272650896,
+    "y0": 0.024399664005844146,
+    "y1": 0.045851180277790671,
+    "c": 1,
+    "x1": 0.38768403675437479
+  },
+  {
+    "c": 1,
+    "x1": 0.85655737744153282,
+    "t": "e enfatize a importância do descanso de modo que você possa permanecer",
+    "y1": 0.09447674416696028,
+    "y0": 0.07552083333333337,
+    "x0": 0.10450819698004638
+  },
+  {
+    "t": "saudável e entusiasmado em relação à igreja.",
+    "x1": 0.5594262285236995,
+    "x0": 0.10655737772585173,
+    "y0": 0.10029069774372634,
+    "c": 1,
+    "y1": 0.11927083333333333
+  },
+  {
+    "c": 1,
+    "x1": 0.87704917259622495,
+    "y1": 0.14843750030033354,
+    "y0": 0.12790697644385252,
+    "t": "Você pode explicar da seguinte maneira: \"Creio que a igreja se beneficiará",
+    "x0": 0.15163935198827647
+  },
+  {
+    "y1": 0.17785581038366938,
+    "y0": 0.15163859742744468,
+    "t": "muito se, a cada quatro anos, eu puder tirar um periodo sabático de três",
+    "x0": 0.10639313370524034,
+    "c": 1,
+    "x1": 0.817820555797523
+  },
+  {
+    "y0": 0.17864583333333339,
+    "t": "mesesồ. Se essa política não for negociada logo de início, você provavelmente",
+    "x0": 0.10655737770935411,
+    "x1": 0.86270492013229405,
+    "c": 1,
+    "y1": 0.19791666666666663
+  },
+  {
+    "t": "terá de esperar até que bata no muro. Quando isso acontecer, poderá ser tarde",
+    "x0": 0.10450819682022768,
+    "y0": 0.20468750000000002,
+    "x1": 0.87704918077461635,
+    "y1": 0.22395833333333337,
+    "c": 1
+  },
+  {
+    "t": "demais. Você precisa hidratar sua alma antes disso.",
+    "y1": 0.24854651116158044,
+    "y0": 0.22965116324847423,
+    "c": 1,
+    "x1": 0.6127049174141378,
+    "x0": 0.1065573776929154
+  },
+  {
+    "x1": 0.84016393328783734,
+    "x0": 0.15368852391794854,
+    "t": "Descobri que muitas igrejas e ministérios fornecem moradia gratuita",
+    "y1": 0.27761627860246729,
+    "c": 1,
+    "y0": 0.25872093068936097
+  },
+  {
+    "x0": 0.10655737774896537,
+    "y0": 0.28333333333333333,
+    "t": "para pastores em período sabático. Seminários bíblicos podem abrir",
+    "x1": 0.79098360626376174,
+    "y1": 0.3023255809517913,
+    "c": 1
+  },
+  {
+    "x0": 0.10450819681463473,
+    "x1": 0.86475409829724115,
+    "c": 1,
+    "y0": 0.30937499999999996,
+    "y1": 0.32708333333333339,
+    "t": "alojamentos durante o verão e acampamentos cristãos costumam ter alguns"
+  },
+  {
+    "x1": 0.87499999987510479,
+    "y0": 0.33430232539339189,
+    "x0": 0.10655737770731964,
+    "y1": 0.3517441862281494,
+    "c": 1,
+    "t": "quartos disponíveis para que pastores e líderes descansem por algum tempo."
+  },
+  {
+    "y0": 0.37815222829697359,
+    "y1": 0.39926119346496303,
+    "x0": 0.10440273572571884,
+    "x1": 0.7521443882131249,
+    "c": 1,
+    "t": "Obstáculo n° 3 - Quem vai liderar enquanto eu estiver fora?"
+  },
+  {
+    "y1": 0.43692618089660229,
+    "x0": 0.14949864185405451,
+    "c": 1,
+    "y0": 0.41656473366470426,
+    "t": "Eu mesmo tive dificuldades com essa pergunta. Mas então pensei:",
+    "x1": 0.81361428049024598
+  },
+  {
+    "y0": 0.44101542976506192,
+    "y1": 0.46330437372248645,
+    "c": 1,
+    "x1": 0.84025839075160302,
+    "t": "\"Tenho dado aulas de liderança há anos, mentoreado centenas de lideres",
+    "x0": 0.10233434884760703
+  },
+  {
+    "y0": 0.46517041135260828,
+    "y1": 0.48732376681284695,
+    "c": 1,
+    "t": "emergentes sobre gerenciamento e resolução de problemas e, agora, preciso",
+    "x0": 0.10239121691166625,
+    "x1": 0.86072876850458135
+  },
+  {
+    "y1": 0.51062552323666555,
+    "y0": 0.48971605773941174,
+    "c": 1,
+    "x1": 0.39763753576676075,
+    "t": "deixar que eles LIDEREMỊạ",
+    "x0": 0.10231954154403829
+  },
+  {
+    "y0": 0.52031249999999996,
+    "c": 1,
+    "x0": 0.14959016354484467,
+    "y1": 0.53802083333333328,
+    "x1": 0.83196721263247275,
+    "t": "Dê uma olhada ao seu redor. Provavelmente há membros da diretoria"
+  },
+  {
+    "c": 1,
+    "y0": 0.54505813935006309,
+    "t": "que podem liderar - pessoas ligadas ao ramo empresarial que são plenamente",
+    "x1": 0.86680327633953358,
+    "x0": 0.10245901594979216,
+    "y1": 0.56406250018482063
+  },
+  {
+    "y0": 0.56976744167297755,
+    "x0": 0.10040983506829368,
+    "t": "capazes de supervisionar o ministério na sua ausência. Montei uma equipe de",
+    "y1": 0.58720930250773506,
+    "c": 1,
+    "x1": 0.86680327778067567
+  },
+  {
+    "c": 1,
+    "y0": 0.5942708333333333,
+    "t": "ensino a partir do grupo de pastores e três indivíduos se revezam na pregação",
+    "x0": 0.10040983510292814,
+    "x1": 0.86065573926538108,
+    "y1": 0.61354166666666665
+  },
+  {
+    "c": 1,
+    "t": "de sermões. Convidados especiais incrementam essa programação.",
+    "x0": 0.10040983645680752,
+    "x1": 0.75614754233107917,
+    "y0": 0.61918604631865692,
+    "y1": 0.63662790715341444
+  },
+  {
+    "t": "Também montei uma equipe de verão formada por professores e",
+    "x0": 0.14549180318722085,
+    "x1": 0.81352458992860455,
+    "c": 1,
+    "y0": 0.64825581376558616,
+    "y1": 0.66569767460034368
+  },
+  {
+    "t": "líderes de destaque que sabem que, nas férias, terão um período de seis",
+    "x0": 0.098307964750734445,
+    "y1": 0.69270630165793723,
+    "c": 1,
+    "y0": 0.67128734122035638,
+    "x1": 0.83613420773699476
+  },
+  {
+    "x0": 0.098360657015129319,
+    "c": 1,
+    "x1": 0.80122950784512781,
+    "t": "semanas para liderar. Peço-lhes que preparem uma série sobre como",
+    "y1": 0.71511627925062415,
+    "y0": 0.69767441841586664
+  },
+  {
+    "t": "aumentar nosso senso de comunidade e aprofundar nossa comunhão.",
+    "y0": 0.72238372074146584,
+    "x1": 0.82786885087893725,
+    "x0": 0.098360654230843184,
+    "c": 1,
+    "y1": 0.73982558157622336
+  },
+  {
+    "c": 1,
+    "x1": 0.87704918072454607,
+    "x0": 0.10040983645625816,
+    "y0": 0.74687499999999996,
+    "t": "Eles têm o ano todo para pensar nessa série de seis semanas cujo propósito",
+    "y1": 0.76458333333333328
+  },
+  {
+    "t": "é aumentar os relacionamentos, ensinar as pessoas a resolver problemas",
+    "y0": 0.77013271741471356,
+    "c": 1,
+    "x1": 0.84229080492584707,
+    "x0": 0.096238261284366314,
+    "y1": 0.79168256818237148
+  },
+  {
+    "y0": 0.79505813935006309,
+    "c": 1,
+    "t": "e fortalecer a unidade na igreja. Podem trabalhar esse tema em pequenos",
+    "x1": 0.85450819646981357,
+    "y1": 0.81406250018482063,
+    "x0": 0.096311476053350595
+  },
+  {
+    "x1": 0.84016393470992345,
+    "y0": 0.82122093069021529,
+    "x0": 0.096311476119050568,
+    "y1": 0.84011627860332161,
+    "t": "grupos, fazer piqueniques, noites de filmes ou qualquer outra coisa que",
+    "c": 1
+  },
+  {
+    "c": 1,
+    "y0": 0.84583333376089953,
+    "x1": 0.34836065406056221,
+    "y1": 0.86482558094501727,
+    "t": "considerem apropriada.",
+    "x0": 0.096311473333552083
+  },
+  {
+    "t": "Imediatamente após o final de semana em que celebramos o Dia dos",
+    "c": 1,
+    "x1": 0.84221311423441381,
+    "x0": 0.1413934414364833,
+    "y1": 0.89389534837209039,
+    "y0": 0.875
+  },
+  {
+    "x1": 0.83408489032776534,
+    "y1": 0.92145157149678836,
+    "x0": 0.096262207001286251,
+    "t": "Pais (que, aqui, é comemorado no terceiro domingo de junho), saio para",
+    "y0": 0.89936972728164444,
+    "c": 1
+  },
+  {
+    "x1": 0.50204917956249362,
+    "y1": 0.96075581386926268,
+    "y0": 0.94622093017143505,
+    "c": 1,
+    "x0": 0.46311475480226055,
+    "t": "176"
+  }
+]

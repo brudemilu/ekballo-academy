@@ -1,0 +1,170 @@
+[
+  {
+    "t": "Epilogo",
+    "x0": 0.12196091965142333,
+    "x1": 0.30021040778170716,
+    "c": 1,
+    "y0": 0.29735038230217703,
+    "y1": 0.33745372245110272
+  },
+  {
+    "y0": 0.38011080040886469,
+    "t": "Este resumo talvez seja a parte mais importante do livro.",
+    "y1": 0.40121899211340017,
+    "c": 1,
+    "x1": 0.73500337446239072,
+    "x0": 0.16838831332304477
+  },
+  {
+    "t": "Escrevo estes parágrafos finais enquanto me recupero de uma",
+    "y1": 0.43023255832096208,
+    "y0": 0.41279069748620467,
+    "x1": 0.81123595393724546,
+    "x0": 0.16853932629133028,
+    "c": 1
+  },
+  {
+    "y1": 0.45639534837028783,
+    "x0": 0.12134831487176856,
+    "c": 1,
+    "x1": 0.88764045003028746,
+    "t": "cirurgia cardiaca realizada semana passada no Stanford Medical Hospital",
+    "y0": 0.4375
+  },
+  {
+    "c": 1,
+    "x1": 0.83370786476877057,
+    "y0": 0.46354166666666674,
+    "t": "em Menlo Park, Califórnia. Três artérias bloqueadas fizeram que eu",
+    "x0": 0.12134831481918092,
+    "y1": 0.48281249999999998
+  },
+  {
+    "y0": 0.48958333333333326,
+    "y1": 0.50885416666666672,
+    "c": 1,
+    "x1": 0.84719101380685724,
+    "x0": 0.11910112517229374,
+    "t": "viajasse imediatamente do Havai à Califórnia para um procedimento"
+  },
+  {
+    "y0": 0.51598837193130531,
+    "y1": 0.53489583349505143,
+    "x1": 0.874157303121185,
+    "x0": 0.11910112510598561,
+    "c": 1,
+    "t": "realizado por um cirurgião espetacular. Sinto-me muito melhor hoje e a"
+  },
+  {
+    "c": 1,
+    "x0": 0.11910112511146516,
+    "y1": 0.55959302343478157,
+    "x1": 0.54606741496338207,
+    "y0": 0.54215116260002416,
+    "t": "resiliência convida-me a seguir em frente."
+  },
+  {
+    "t": "Ter aprendido as lições não significa que vou recuar. Em vez disso,",
+    "x1": 0.8315690232139219,
+    "y1": 0.59160230845117068,
+    "x0": 0.1639534088312703,
+    "y0": 0.57117758344635527,
+    "c": 1
+  },
+  {
+    "t": "significa que viverei de maneira muito mais profunda, com muito mais",
+    "x0": 0.11677609371311684,
+    "y0": 0.59735225954793469,
+    "c": 1,
+    "y1": 0.6182380289407815,
+    "x1": 0.83155487011769424
+  },
+  {
+    "c": 1,
+    "t": "segurança. Rirei com mais constância, pensarei com mais insight e terei",
+    "y0": 0.625,
+    "x0": 0.11685393234690605,
+    "x1": 0.82921348387197624,
+    "y1": 0.64389534837105011
+  },
+  {
+    "y1": 0.66874999999999996,
+    "x1": 0.54382022526355533,
+    "c": 1,
+    "x0": 0.11685393236911004,
+    "t": "momentos de solidão e sabbath sem culpa.",
+    "y0": 0.64947916666666672
+  },
+  {
+    "x1": 0.88988763974271901,
+    "c": 1,
+    "t": "Atravessei uma longa temporada. Aprendi muitas lições. Descobri o que",
+    "y0": 0.6816860469703645,
+    "x0": 0.16179775410046168,
+    "y1": 0.70058139488347082
+  },
+  {
+    "t": "é mais importante: como viver de maneira intencional e como correr com",
+    "y0": 0.70681914980884197,
+    "y1": 0.72556416948593794,
+    "x0": 0.11453631389271747,
+    "c": 1,
+    "x1": 0.86073189834817809
+  },
+  {
+    "c": 1,
+    "y0": 0.7338541666666667,
+    "x1": 0.8876404492009492,
+    "t": "esperança. Aprendi a importância de dedicar-me completamente à verdade e",
+    "x0": 0.11460673957919343,
+    "y1": 0.75312500000000004
+  },
+  {
+    "t": "a ser honesto em relação a quem sou.",
+    "x0": 0.11427571656658037,
+    "x1": 0.49482554717226401,
+    "y1": 0.78133250514953589,
+    "c": 1,
+    "y0": 0.75881590860948711
+  },
+  {
+    "c": 1,
+    "y0": 0.79215116260292073,
+    "t": "Também aprendi a importância de orientar mais e fazer menos. Dois",
+    "x0": 0.15730337161514446,
+    "y1": 0.80959302343767825,
+    "x1": 0.85617977572189263
+  },
+  {
+    "c": 1,
+    "x1": 0.58651685427014255,
+    "y1": 0.83720930225154977,
+    "x0": 0.11235954983764369,
+    "t": "homens causaram impacto em minha jornada.",
+    "y0": 0.81822916666666667
+  },
+  {
+    "x1": 0.80009095474258196,
+    "y0": 0.84848188866946428,
+    "y1": 0.8699348801887784,
+    "c": 1,
+    "t": "O primeiro é Bob Buford, que me escreveu depois da cirurgia e",
+    "x0": 0.1572150978007241
+  },
+  {
+    "c": 1,
+    "t": "recordou para mim aquilo que Peter Drucker, o grande estrategista",
+    "y0": 0.87645348882985019,
+    "x1": 0.78651685178951725,
+    "x0": 0.1101123601425919,
+    "y1": 0.8953488367429564
+  },
+  {
+    "x1": 0.42493797240468689,
+    "y1": 0.92252139717071324,
+    "c": 1,
+    "x0": 0.10983933087702102,
+    "y0": 0.90164238529012697,
+    "t": "empresarial, disse-lhe certa vez:"
+  }
+]
