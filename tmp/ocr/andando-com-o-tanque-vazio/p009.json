@@ -1,1 +1,186 @@
-[{"x1":0.37372295750925916,"y0":0.29384267450773716,"y1":0.33842476726973048,"t":"Introdução","x0":0.1201295014818179,"c":1},{"y1":0.3984375,"y0":0.38072916666666667,"x0":0.16803278725348358,"t":"Não nos esquecemos de que somos cristãos. Esquecemos que somos","x1":0.8524590157817542,"c":1},{"t":"humanos e que um único equívoco pode afetar o potencial de nosso futuro.","x0":0.12295081925057491,"x1":0.88934426322844229,"y1":0.42447916666666674,"c":1,"y0":0.40552325613738949},{"t":"Essa condição chegou sem aviso, como uma pessoa que não foi","x0":0.16803278725323434,"x1":0.80122950786435321,"y0":0.43437499999999996,"y1":0.4536458333333333,"c":1},{"t":"convidada. Decisões que um dia foram simples de tomar agora recusavam","x1":0.86065573928949968,"x0":0.12295081913414076,"y0":0.46075581376457353,"y1":0.47819767459933094,"c":1},{"y0":0.48541666661739402,"x0":0.12090163935756866,"y1":0.50436046515941679,"x1":0.85450819670070233,"t":"a solução, e percebi que eu me esquivava de tudo o que carecesse de meu","c":1},{"x0":0.1209016382969814,"t":"envolvimento emocional. Minha fé, outrora vigorosa, tornara-se frágil; eu","y1":0.5307291666666667,"x1":0.85860655705970312,"y0":0.51017441904360017,"c":1},{"x1":0.53893442510752554,"t":"evitava tudo aquilo que me exigisse ação.","y1":0.5537790699309918,"c":1,"x0":0.12090163836475699,"y0":0.53633720909623439},{"x1":0.80532786960720293,"c":1,"x0":0.16803278725294415,"t":"Era uma agradável tarde na Califórnia. Sai para caminhar antes","y0":0.56540697655613548,"y1":0.58284883739089299},{"c":1,"x1":0.82786885227893059,"t":"de apresentar uma palestra num congresso sobre liderança. Ainda não","x0":0.12090163964335728,"y0":0.59010416650195885,"y1":0.60901162806570497},{"y0":0.61450548112632786,"y1":0.63603323594588379,"t":"consigo lembrar como cheguei ali, mas vi-me sentado no meio-fio chorando","x0":0.1208305651214712,"c":1,"x1":0.88326334473254464},{"t":"compulsivamente. Não conseguiria dizer se aquilo acontecera de repente ou","y0":0.64098837190416513,"y1":0.65843023273892265,"c":1,"x1":0.8852459014610865,"x0":0.12090163828689461},{"t":"de forma gradual, mas sabia que alguma coisa se havia rompido dentro de","y0":0.66562499969699773,"c":1,"x0":0.11885245876473008,"y1":0.68459302355347862,"x1":0.86475409830208561},{"x0":0.12090163829167259,"y0":0.69040697644385263,"y1":0.70937500030033351,"x1":0.8790983614624257,"c":1,"t":"mim. Lembro-me de erguer minhas mãos trêmulas e perguntar em voz alta:"},{"y0":0.71510416666666665,"x0":0.120901638242306,"x1":0.52459016483942567,"y1":0.7354651157886164,"c":1,"t":"\"Mas o que está acontecendo comigo?\"."},{"t":"Eu vinha andando com o tanque vazio.","y1":0.76358780247047975,"x1":0.53499541652229754,"c":1,"y0":0.74472581718167741,"x0":0.16584411697401075},{"c":1,"x0":0.16598360637404089,"y0":0.77604166666666663,"y1":0.79374999999999996,"t":"Esse incidente numa calçada da Califórnia deu início a uma odisseia","x1":0.87295081900996729},{"y0":0.80087209283318161,"x0":0.11885245884903856,"t":"de três anos que eu jamais havia imaginado. Foi uma jornada por um","x1":0.8360655729738754,"y1":0.81831395366793913,"c":1},{"x1":0.86270491742307132,"t":"período de burnout e recalibragem que mudaria radicalmente meu estilo","c":1,"y0":0.82703488353344268,"x0":0.11885246017335119,"y1":0.84447674436820008},{"x0":0.12090163964299905,"x1":0.86270491742294242,"c":1,"y0":0.8515625,"y1":0.87083333333333335,"t":"de vida, meus valores, meus objetivos e até mesmo meu chamado. Tudo"},{"y1":0.89534883651105901,"t":"aquilo que eu alegremente considerava normal estava prestes a ser","x1":0.80122950260486625,"x0":0.11885247173411342,"c":1,"y0":0.87645348859795269},{"t":"seriamente questionado.","x0":0.11865976461517241,"y1":0.92251609393863099,"c":1,"x1":0.37923657052455911,"y0":0.90233896877257891},{"y1":0.96220930216868128,"t":"13","x0":0.49590163973453849,"x1":0.52049180288841235,"y0":0.94767441847085365,"c":1}]
+[
+  {
+    "x1": 0.37372295750925916,
+    "y0": 0.29384267450773716,
+    "y1": 0.33842476726973048,
+    "t": "Introdução",
+    "x0": 0.1201295014818179,
+    "c": 1
+  },
+  {
+    "y1": 0.3984375,
+    "y0": 0.38072916666666667,
+    "x0": 0.16803278725348358,
+    "t": "Não nos esquecemos de que somos cristãos. Esquecemos que somos",
+    "x1": 0.8524590157817542,
+    "c": 1
+  },
+  {
+    "t": "humanos e que um único equívoco pode afetar o potencial de nosso futuro.",
+    "x0": 0.12295081925057491,
+    "x1": 0.88934426322844229,
+    "y1": 0.42447916666666674,
+    "c": 1,
+    "y0": 0.40552325613738949
+  },
+  {
+    "t": "Essa condição chegou sem aviso, como uma pessoa que não foi",
+    "x0": 0.16803278725323434,
+    "x1": 0.80122950786435321,
+    "y0": 0.43437499999999996,
+    "y1": 0.4536458333333333,
+    "c": 1
+  },
+  {
+    "t": "convidada. Decisões que um dia foram simples de tomar agora recusavam",
+    "x1": 0.86065573928949968,
+    "x0": 0.12295081913414076,
+    "y0": 0.46075581376457353,
+    "y1": 0.47819767459933094,
+    "c": 1
+  },
+  {
+    "y0": 0.48541666661739402,
+    "x0": 0.12090163935756866,
+    "y1": 0.50436046515941679,
+    "x1": 0.85450819670070233,
+    "t": "a solução, e percebi que eu me esquivava de tudo o que carecesse de meu",
+    "c": 1
+  },
+  {
+    "x0": 0.1209016382969814,
+    "t": "envolvimento emocional. Minha fé, outrora vigorosa, tornara-se frágil; eu",
+    "y1": 0.5307291666666667,
+    "x1": 0.85860655705970312,
+    "y0": 0.51017441904360017,
+    "c": 1
+  },
+  {
+    "x1": 0.53893442510752554,
+    "t": "evitava tudo aquilo que me exigisse ação.",
+    "y1": 0.5537790699309918,
+    "c": 1,
+    "x0": 0.12090163836475699,
+    "y0": 0.53633720909623439
+  },
+  {
+    "x1": 0.80532786960720293,
+    "c": 1,
+    "x0": 0.16803278725294415,
+    "t": "Era uma agradável tarde na Califórnia. Sai para caminhar antes",
+    "y0": 0.56540697655613548,
+    "y1": 0.58284883739089299
+  },
+  {
+    "c": 1,
+    "x1": 0.82786885227893059,
+    "t": "de apresentar uma palestra num congresso sobre liderança. Ainda não",
+    "x0": 0.12090163964335728,
+    "y0": 0.59010416650195885,
+    "y1": 0.60901162806570497
+  },
+  {
+    "y0": 0.61450548112632786,
+    "y1": 0.63603323594588379,
+    "t": "consigo lembrar como cheguei ali, mas vi-me sentado no meio-fio chorando",
+    "x0": 0.1208305651214712,
+    "c": 1,
+    "x1": 0.88326334473254464
+  },
+  {
+    "t": "compulsivamente. Não conseguiria dizer se aquilo acontecera de repente ou",
+    "y0": 0.64098837190416513,
+    "y1": 0.65843023273892265,
+    "c": 1,
+    "x1": 0.8852459014610865,
+    "x0": 0.12090163828689461
+  },
+  {
+    "t": "de forma gradual, mas sabia que alguma coisa se havia rompido dentro de",
+    "y0": 0.66562499969699773,
+    "c": 1,
+    "x0": 0.11885245876473008,
+    "y1": 0.68459302355347862,
+    "x1": 0.86475409830208561
+  },
+  {
+    "x0": 0.12090163829167259,
+    "y0": 0.69040697644385263,
+    "y1": 0.70937500030033351,
+    "x1": 0.8790983614624257,
+    "c": 1,
+    "t": "mim. Lembro-me de erguer minhas mãos trêmulas e perguntar em voz alta:"
+  },
+  {
+    "y0": 0.71510416666666665,
+    "x0": 0.120901638242306,
+    "x1": 0.52459016483942567,
+    "y1": 0.7354651157886164,
+    "c": 1,
+    "t": "\"Mas o que está acontecendo comigo?\"."
+  },
+  {
+    "t": "Eu vinha andando com o tanque vazio.",
+    "y1": 0.76358780247047975,
+    "x1": 0.53499541652229754,
+    "c": 1,
+    "y0": 0.74472581718167741,
+    "x0": 0.16584411697401075
+  },
+  {
+    "c": 1,
+    "x0": 0.16598360637404089,
+    "y0": 0.77604166666666663,
+    "y1": 0.79374999999999996,
+    "t": "Esse incidente numa calçada da Califórnia deu início a uma odisseia",
+    "x1": 0.87295081900996729
+  },
+  {
+    "y0": 0.80087209283318161,
+    "x0": 0.11885245884903856,
+    "t": "de três anos que eu jamais havia imaginado. Foi uma jornada por um",
+    "x1": 0.8360655729738754,
+    "y1": 0.81831395366793913,
+    "c": 1
+  },
+  {
+    "x1": 0.86270491742307132,
+    "t": "período de burnout e recalibragem que mudaria radicalmente meu estilo",
+    "c": 1,
+    "y0": 0.82703488353344268,
+    "x0": 0.11885246017335119,
+    "y1": 0.84447674436820008
+  },
+  {
+    "x0": 0.12090163964299905,
+    "x1": 0.86270491742294242,
+    "c": 1,
+    "y0": 0.8515625,
+    "y1": 0.87083333333333335,
+    "t": "de vida, meus valores, meus objetivos e até mesmo meu chamado. Tudo"
+  },
+  {
+    "y1": 0.89534883651105901,
+    "t": "aquilo que eu alegremente considerava normal estava prestes a ser",
+    "x1": 0.80122950260486625,
+    "x0": 0.11885247173411342,
+    "c": 1,
+    "y0": 0.87645348859795269
+  },
+  {
+    "t": "seriamente questionado.",
+    "x0": 0.11865976461517241,
+    "y1": 0.92251609393863099,
+    "c": 1,
+    "x1": 0.37923657052455911,
+    "y0": 0.90233896877257891
+  },
+  {
+    "y1": 0.96220930216868128,
+    "t": "13",
+    "x0": 0.49590163973453849,
+    "x1": 0.52049180288841235,
+    "y0": 0.94767441847085365,
+    "c": 1
+  }
+]

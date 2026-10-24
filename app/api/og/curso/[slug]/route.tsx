@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Gerador de capa pros cursos da plataforma.
 // Cada slug tem identidade visual própria, dentro da paleta da plataforma

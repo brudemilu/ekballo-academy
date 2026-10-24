@@ -1,1 +1,178 @@
-[{"t":"Prólogo","c":1,"x1":0.30220959126705299,"y0":0.29565451341908411,"y1":0.3292957365318262,"x0":0.1199276041846374},{"x1":0.28073770747726873,"x0":0.12295081912251912,"y0":0.35312499968706956,"c":1,"t":"Bob Buford","y1":0.37209302354355056},{"c":1,"y1":0.44331395347769675,"x0":0.16598360668820042,"y0":0.42441860465116277,"x1":0.8606557374432714,"t":"A ambição é boa. O esforço no trabalho também. Lazer, descanso e"},{"y0":0.44895833333333335,"x1":0.84631147598502299,"c":1,"y1":0.4682291666666667,"t":"diversão são coisas boas. Mas há limites para tudo isso. Deixe-me dizer","x0":0.12090163832482705},{"y0":0.47383720930232553,"y1":0.49273255812378869,"c":1,"x1":0.811475409564549,"x0":0.12090163964822402,"t":"a você o que me surpreendeu e me fez pensar muito sobre limites e"},{"x0":0.12090163826238241,"t":"fronteiras. Esta é a história de dois homens bons, homens cujo trabalho","y1":0.51744186064674513,"x1":0.86270492022330103,"y0":0.49843749981198759,"c":1},{"x1":0.80950673244506099,"y0":0.52178952159076519,"c":1,"x0":0.12081503296461059,"t":"conheço e respeito - homens virtuosos cuja vida tem sido gasta no","y1":0.54263556415628267},{"t":"serviço a Deus e ao próximo. Temos um dilúvio de noticiários de televisão","c":1,"x1":0.88729507955813425,"y0":0.54791666661722604,"x0":0.12090163826020124,"y1":0.56686046515924871},{"c":1,"x1":0.86475409828102801,"y1":0.59166666666666667,"t":"falando sobre gente ruim que mente, trapaceia, rouba e quebra as regras","x0":0.12090163826376973,"y0":0.57267441904360017},{"t":"de diversas maneiras indecentes. Contudo, estou falando de bons rapazes.","x1":0.88319672057886434,"y0":0.59738372138733764,"x0":0.12295081988465369,"y1":0.61627906930044385,"c":1},{"x0":0.12295081971183847,"x1":0.84221311423627854,"y1":0.6411458333333333,"t":"A maioria das pessoas que conheço tem boas intenções, leva uma vida","y0":0.62187499999999996,"c":1},{"t":"com propósitos e deseja continuar assim até o último suspiro, assim como","x1":0.88319672057413856,"y1":0.66569767395194457,"c":1,"x0":0.12090163968819061,"y0":0.64680232603883825},{"x0":0.12280328596950511,"x1":0.39160130038764041,"y0":0.6690003466679012,"y1":0.68902325250514596,"c":1,"t":"faziam esses dois homens."},{"y0":0.6979486575294841,"y1":0.72016673649181273,"t":"Todavia, ambos se viram além de seus limites.","c":1,"x0":0.16782137886223253,"x1":0.62718502072235627},{"x1":0.83811475526420032,"y0":0.72965116259973561,"y1":0.74709302343449313,"x0":0.1659836064906075,"c":1,"t":"Os dois são pastores titulares. Ambos são excelentes comunicadores,"},{"t":"amados e respeitados pelas pessoas a quem servem. A verdade é que são quase","y0":0.75416666666666665,"y1":0.7734375,"x0":0.1229508191739163,"x1":0.88524590141796067,"c":1},{"t":"venerados. Os dois estão na casa dos 50 anos, liderando igrejas com uma","x1":0.83401639343643186,"x0":0.12090163840202149,"c":1,"y1":0.79947916668976926,"y0":0.77906976741875789},{"x0":0.12295081915443348,"y1":0.82291666666666663,"t":"frequência semanal de mais de 2 mil pessoas. Pense no estresse desse trabalho:","y0":0.80364583333333328,"c":1,"x1":0.88934426044374537},{"x1":0.86894797201425511,"y0":0.82824858394486178,"c":1,"y1":0.84937333309367524,"t":"primeiramente, a pressão de preparar e pregar uma mensagem a milhares de","x0":0.12285732946215669},{"c":1,"y1":0.87343769718115405,"x0":0.12287979951473244,"t":"pessoas todas as semanas e de ficar bastante tempo debaixo dos holofotes.","x1":0.84226593469119171,"y0":0.85292886083128394},{"y1":0.89839198801687892,"y0":0.87652738589179313,"x0":0.12287490204066039,"c":1,"t":"Isso, combinado à responsabilidade da liderança daquilo que é essencialmente","x1":0.89147052231821322},{"y1":0.92181226691254847,"y0":0.9014839588965271,"t":"uma enorme empresa de serviços altamente exigente.","x0":0.12285969838943633,"x1":0.64564754398344404,"c":1}]
+[
+  {
+    "t": "Prólogo",
+    "c": 1,
+    "x1": 0.30220959126705299,
+    "y0": 0.29565451341908411,
+    "y1": 0.3292957365318262,
+    "x0": 0.1199276041846374
+  },
+  {
+    "x1": 0.28073770747726873,
+    "x0": 0.12295081912251912,
+    "y0": 0.35312499968706956,
+    "c": 1,
+    "t": "Bob Buford",
+    "y1": 0.37209302354355056
+  },
+  {
+    "c": 1,
+    "y1": 0.44331395347769675,
+    "x0": 0.16598360668820042,
+    "y0": 0.42441860465116277,
+    "x1": 0.8606557374432714,
+    "t": "A ambição é boa. O esforço no trabalho também. Lazer, descanso e"
+  },
+  {
+    "y0": 0.44895833333333335,
+    "x1": 0.84631147598502299,
+    "c": 1,
+    "y1": 0.4682291666666667,
+    "t": "diversão são coisas boas. Mas há limites para tudo isso. Deixe-me dizer",
+    "x0": 0.12090163832482705
+  },
+  {
+    "y0": 0.47383720930232553,
+    "y1": 0.49273255812378869,
+    "c": 1,
+    "x1": 0.811475409564549,
+    "x0": 0.12090163964822402,
+    "t": "a você o que me surpreendeu e me fez pensar muito sobre limites e"
+  },
+  {
+    "x0": 0.12090163826238241,
+    "t": "fronteiras. Esta é a história de dois homens bons, homens cujo trabalho",
+    "y1": 0.51744186064674513,
+    "x1": 0.86270492022330103,
+    "y0": 0.49843749981198759,
+    "c": 1
+  },
+  {
+    "x1": 0.80950673244506099,
+    "y0": 0.52178952159076519,
+    "c": 1,
+    "x0": 0.12081503296461059,
+    "t": "conheço e respeito - homens virtuosos cuja vida tem sido gasta no",
+    "y1": 0.54263556415628267
+  },
+  {
+    "t": "serviço a Deus e ao próximo. Temos um dilúvio de noticiários de televisão",
+    "c": 1,
+    "x1": 0.88729507955813425,
+    "y0": 0.54791666661722604,
+    "x0": 0.12090163826020124,
+    "y1": 0.56686046515924871
+  },
+  {
+    "c": 1,
+    "x1": 0.86475409828102801,
+    "y1": 0.59166666666666667,
+    "t": "falando sobre gente ruim que mente, trapaceia, rouba e quebra as regras",
+    "x0": 0.12090163826376973,
+    "y0": 0.57267441904360017
+  },
+  {
+    "t": "de diversas maneiras indecentes. Contudo, estou falando de bons rapazes.",
+    "x1": 0.88319672057886434,
+    "y0": 0.59738372138733764,
+    "x0": 0.12295081988465369,
+    "y1": 0.61627906930044385,
+    "c": 1
+  },
+  {
+    "x0": 0.12295081971183847,
+    "x1": 0.84221311423627854,
+    "y1": 0.6411458333333333,
+    "t": "A maioria das pessoas que conheço tem boas intenções, leva uma vida",
+    "y0": 0.62187499999999996,
+    "c": 1
+  },
+  {
+    "t": "com propósitos e deseja continuar assim até o último suspiro, assim como",
+    "x1": 0.88319672057413856,
+    "y1": 0.66569767395194457,
+    "c": 1,
+    "x0": 0.12090163968819061,
+    "y0": 0.64680232603883825
+  },
+  {
+    "x0": 0.12280328596950511,
+    "x1": 0.39160130038764041,
+    "y0": 0.6690003466679012,
+    "y1": 0.68902325250514596,
+    "c": 1,
+    "t": "faziam esses dois homens."
+  },
+  {
+    "y0": 0.6979486575294841,
+    "y1": 0.72016673649181273,
+    "t": "Todavia, ambos se viram além de seus limites.",
+    "c": 1,
+    "x0": 0.16782137886223253,
+    "x1": 0.62718502072235627
+  },
+  {
+    "x1": 0.83811475526420032,
+    "y0": 0.72965116259973561,
+    "y1": 0.74709302343449313,
+    "x0": 0.1659836064906075,
+    "c": 1,
+    "t": "Os dois são pastores titulares. Ambos são excelentes comunicadores,"
+  },
+  {
+    "t": "amados e respeitados pelas pessoas a quem servem. A verdade é que são quase",
+    "y0": 0.75416666666666665,
+    "y1": 0.7734375,
+    "x0": 0.1229508191739163,
+    "x1": 0.88524590141796067,
+    "c": 1
+  },
+  {
+    "t": "venerados. Os dois estão na casa dos 50 anos, liderando igrejas com uma",
+    "x1": 0.83401639343643186,
+    "x0": 0.12090163840202149,
+    "c": 1,
+    "y1": 0.79947916668976926,
+    "y0": 0.77906976741875789
+  },
+  {
+    "x0": 0.12295081915443348,
+    "y1": 0.82291666666666663,
+    "t": "frequência semanal de mais de 2 mil pessoas. Pense no estresse desse trabalho:",
+    "y0": 0.80364583333333328,
+    "c": 1,
+    "x1": 0.88934426044374537
+  },
+  {
+    "x1": 0.86894797201425511,
+    "y0": 0.82824858394486178,
+    "c": 1,
+    "y1": 0.84937333309367524,
+    "t": "primeiramente, a pressão de preparar e pregar uma mensagem a milhares de",
+    "x0": 0.12285732946215669
+  },
+  {
+    "c": 1,
+    "y1": 0.87343769718115405,
+    "x0": 0.12287979951473244,
+    "t": "pessoas todas as semanas e de ficar bastante tempo debaixo dos holofotes.",
+    "x1": 0.84226593469119171,
+    "y0": 0.85292886083128394
+  },
+  {
+    "y1": 0.89839198801687892,
+    "y0": 0.87652738589179313,
+    "x0": 0.12287490204066039,
+    "c": 1,
+    "t": "Isso, combinado à responsabilidade da liderança daquilo que é essencialmente",
+    "x1": 0.89147052231821322
+  },
+  {
+    "y1": 0.92181226691254847,
+    "y0": 0.9014839588965271,
+    "t": "uma enorme empresa de serviços altamente exigente.",
+    "x0": 0.12285969838943633,
+    "x1": 0.64564754398344404,
+    "c": 1
+  }
+]

@@ -1,1 +1,138 @@
-[{"t":"• Andando com o tanque vazio?","y1":0.047263141095244543,"c":1,"y0":0.0288864002645699,"x0":0.11089908726934661,"x1":0.38911541886867013},{"x0":0.11106452517402859,"y0":0.076874906485539518,"x1":0.22021119472501149,"y1":0.09318323300804876,"t":"Reflexões","c":1},{"y1":0.13385416666666661,"t":"Querido pastor Wayne,","x0":0.15637860169388845,"x1":0.37242798292040402,"y0":0.11614583333333339,"c":1},{"x1":0.87667251960533377,"y1":0.16587559441099242,"c":1,"y0":0.14245147624444998,"t":"Obrigado por permanecer na luta. No decorrer do ano passado, percebi que, no","x0":0.156247495526212},{"c":1,"t":"tempo da minha vida que Deus o usou para finalmente chegar a mim, você estava","y0":0.1713541666666667,"y1":0.18906250000000002,"x1":0.86419753095924512,"x0":0.10905349718876493},{"y1":0.21366279087963569,"x0":0.1090534971786455,"t":"lutando uma batalha particular. Mas você não desistiu. Não entendo exatamente","y0":0.19622093004487828,"x1":0.86008230495966043,"c":1},{"t":"quais foram as suas lutas, mas uma coisa eu sei: no seu ponto mais baixo no","x1":0.81069958886181337,"y1":0.23982558095200568,"x0":0.10905349722233156,"c":1,"y0":0.22083333333333333},{"x1":0.61934156484549485,"y0":0.24563953483751577,"x0":0.1111111130173794,"t":"ministério, Jesus me encontrou porque você não desistiu.","c":1,"y1":0.26458333337953843},{"y0":0.27447916666666661,"x1":0.84362139960366067,"y1":0.29374999999999996,"c":1,"x0":0.15843621468672267,"t":"Você me ensinou como fazer um diário. Ensinou-me a começar cada dia em"},{"c":1,"t":"intimidade com Jesus. Ensinou-me a importância de ter um mentor divino em minha","x0":0.10905349719116827,"x1":0.88477366373109168,"y0":0.2994186044636834,"y1":0.31686046529844081},{"x0":0.10905349718132425,"t":"vida. Em quarenta anos, você foi o primeiro a me mostrar como ouvir Jesus através","y1":0.3432291666666667,"c":1,"x1":0.86625514394734582,"y0":0.32395833333333335},{"c":1,"t":"de sua preciosa Palavra. E eu comecei a mudar. O Senhor Deus abriu meus olhos","x1":0.85185185299540511,"x0":0.11111111087727432,"y0":0.34883720911497718,"y1":0.36627906994973469},{"c":1,"x0":0.11111111165359856,"t":"para muitas coisas que eu gostaria de ter aprendido muito tempo atrás. O Espírito de","y1":0.3911458333333333,"y0":0.37343749999999998,"x1":0.8909465013098522},{"y0":0.39825581376582708,"t":"Deus transborda em sua vida e está claro que você se encontra com ele todos os dias.","x0":0.11111111018979894,"x1":0.87654320893476023,"c":1,"y1":0.4156976746005846},{"x1":0.87448559589471575,"c":1,"y1":0.4447916666666667,"t":"Muito obrigado por permanecer no rumo e ser um amigo e um mentor para mim.","x0":0.15637860169219953,"y0":0.42708333333333326},{"x1":0.88888888320683901,"y0":0.45468749984366097,"y1":0.47093023244800569,"c":1,"t":"- FUNCIONÁRIO E MEMBRO DA NOSSA COMUNIDADE","x0":0.40329218155006857},{"c":1,"x0":0.47736625518007558,"t":"148","x1":0.5123456787705416,"y0":0.94622093032160182,"y1":0.96220930209118904}]
+[
+  {
+    "t": "• Andando com o tanque vazio?",
+    "y1": 0.047263141095244543,
+    "c": 1,
+    "y0": 0.0288864002645699,
+    "x0": 0.11089908726934661,
+    "x1": 0.38911541886867013
+  },
+  {
+    "x0": 0.11106452517402859,
+    "y0": 0.076874906485539518,
+    "x1": 0.22021119472501149,
+    "y1": 0.09318323300804876,
+    "t": "Reflexões",
+    "c": 1
+  },
+  {
+    "y1": 0.13385416666666661,
+    "t": "Querido pastor Wayne,",
+    "x0": 0.15637860169388845,
+    "x1": 0.37242798292040402,
+    "y0": 0.11614583333333339,
+    "c": 1
+  },
+  {
+    "x1": 0.87667251960533377,
+    "y1": 0.16587559441099242,
+    "c": 1,
+    "y0": 0.14245147624444998,
+    "t": "Obrigado por permanecer na luta. No decorrer do ano passado, percebi que, no",
+    "x0": 0.156247495526212
+  },
+  {
+    "c": 1,
+    "t": "tempo da minha vida que Deus o usou para finalmente chegar a mim, você estava",
+    "y0": 0.1713541666666667,
+    "y1": 0.18906250000000002,
+    "x1": 0.86419753095924512,
+    "x0": 0.10905349718876493
+  },
+  {
+    "y1": 0.21366279087963569,
+    "x0": 0.1090534971786455,
+    "t": "lutando uma batalha particular. Mas você não desistiu. Não entendo exatamente",
+    "y0": 0.19622093004487828,
+    "x1": 0.86008230495966043,
+    "c": 1
+  },
+  {
+    "t": "quais foram as suas lutas, mas uma coisa eu sei: no seu ponto mais baixo no",
+    "x1": 0.81069958886181337,
+    "y1": 0.23982558095200568,
+    "x0": 0.10905349722233156,
+    "c": 1,
+    "y0": 0.22083333333333333
+  },
+  {
+    "x1": 0.61934156484549485,
+    "y0": 0.24563953483751577,
+    "x0": 0.1111111130173794,
+    "t": "ministério, Jesus me encontrou porque você não desistiu.",
+    "c": 1,
+    "y1": 0.26458333337953843
+  },
+  {
+    "y0": 0.27447916666666661,
+    "x1": 0.84362139960366067,
+    "y1": 0.29374999999999996,
+    "c": 1,
+    "x0": 0.15843621468672267,
+    "t": "Você me ensinou como fazer um diário. Ensinou-me a começar cada dia em"
+  },
+  {
+    "c": 1,
+    "t": "intimidade com Jesus. Ensinou-me a importância de ter um mentor divino em minha",
+    "x0": 0.10905349719116827,
+    "x1": 0.88477366373109168,
+    "y0": 0.2994186044636834,
+    "y1": 0.31686046529844081
+  },
+  {
+    "x0": 0.10905349718132425,
+    "t": "vida. Em quarenta anos, você foi o primeiro a me mostrar como ouvir Jesus através",
+    "y1": 0.3432291666666667,
+    "c": 1,
+    "x1": 0.86625514394734582,
+    "y0": 0.32395833333333335
+  },
+  {
+    "c": 1,
+    "t": "de sua preciosa Palavra. E eu comecei a mudar. O Senhor Deus abriu meus olhos",
+    "x1": 0.85185185299540511,
+    "x0": 0.11111111087727432,
+    "y0": 0.34883720911497718,
+    "y1": 0.36627906994973469
+  },
+  {
+    "c": 1,
+    "x0": 0.11111111165359856,
+    "t": "para muitas coisas que eu gostaria de ter aprendido muito tempo atrás. O Espírito de",
+    "y1": 0.3911458333333333,
+    "y0": 0.37343749999999998,
+    "x1": 0.8909465013098522
+  },
+  {
+    "y0": 0.39825581376582708,
+    "t": "Deus transborda em sua vida e está claro que você se encontra com ele todos os dias.",
+    "x0": 0.11111111018979894,
+    "x1": 0.87654320893476023,
+    "c": 1,
+    "y1": 0.4156976746005846
+  },
+  {
+    "x1": 0.87448559589471575,
+    "c": 1,
+    "y1": 0.4447916666666667,
+    "t": "Muito obrigado por permanecer no rumo e ser um amigo e um mentor para mim.",
+    "x0": 0.15637860169219953,
+    "y0": 0.42708333333333326
+  },
+  {
+    "x1": 0.88888888320683901,
+    "y0": 0.45468749984366097,
+    "y1": 0.47093023244800569,
+    "c": 1,
+    "t": "- FUNCIONÁRIO E MEMBRO DA NOSSA COMUNIDADE",
+    "x0": 0.40329218155006857
+  },
+  {
+    "c": 1,
+    "x0": 0.47736625518007558,
+    "t": "148",
+    "x1": 0.5123456787705416,
+    "y0": 0.94622093032160182,
+    "y1": 0.96220930209118904
+  }
+]
