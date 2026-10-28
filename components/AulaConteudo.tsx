@@ -1,21 +1,29 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { Destaque } from "@/lib/types";
+import { Figura, Quadro } from "@/components/BlocosLivro";
+import { LeituraAoLado } from "@/components/LeituraAoLado";
+import { atributosRef } from "@/components/TextoComVersiculos";
 import { selecaoConsultavel, type Verbete } from "@/lib/dicionario-comum";
 import {
   acharReferencias,
   ehFigura,
   ehQuadro,
+  type Faixa,
   faixasDeTitulo,
   lerParagrafos,
   nivelDoParagrafo,
   papeisDosParagrafos,
-  parseFigura,
-  parseQuadro,
-  type Faixa,
 } from "@/lib/estrutura-livro";
+import {
+  type AulaTitulo,
+  acharIndicacao,
+  casarLeitura,
+  licaoDoTitulo,
+} from "@/lib/leitura-indicada";
+import type { FaixaRef } from "@/lib/referencia-biblica";
+import { createClient } from "@/lib/supabase/client";
+import type { Destaque } from "@/lib/types";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
@@ -29,75 +37,16 @@ const CORES: Record<Cor, { bg: string; swatch: string; nome: string }> = {
 };
 const CORES_ORDEM: Cor[] = ["amarelo", "verde", "rosa", "azul"];
 
-function Quadro({ bloco }: { bloco: string }) {
-  const { titulo, header, linhas } = parseQuadro(bloco);
-  return (
-    <div className="my-6 overflow-hidden rounded-xl border border-mesa-300">
-      {titulo && (
-        <div className="bg-mesa-100 px-4 py-2.5 text-center text-sm font-semibold uppercase tracking-wide text-mesa-800">
-          {titulo}
-        </div>
-      )}
-      <table className="w-full border-collapse text-sm">
-        {header && (
-          <thead>
-            <tr>
-              {header.map((c, j) => (
-                <th
-                  key={j}
-                  className="border border-mesa-200 bg-mesa-50 px-3 py-2 text-center font-semibold text-mesa-800"
-                >
-                  {c}
-                </th>
-              ))}
-            </tr>
-          </thead>
-        )}
-        <tbody>
-          {linhas.map((linha, i) => (
-            <tr key={i}>
-              {linha.map((c, j) => (
-                <td
-                  key={j}
-                  className={`border border-mesa-200 px-3 py-2 align-top text-mesa-700 ${
-                    linha.length === 2 && j === 0 ? "font-medium text-mesa-800" : ""
-                  }`}
-                >
-                  {c}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-
-function Figura({ bloco }: { bloco: string }) {
-  const { src, legenda } = parseFigura(bloco);
-  return (
-    <figure className="my-6">
-      <img
-        loading="lazy"
-        decoding="async"
-        src={src}
-        alt={legenda || "Figura do livro"}
-        className="mx-auto w-full max-w-2xl rounded-xl border border-mesa-300 bg-white p-3"
-      />
-      {legenda && (
-        <figcaption className="mt-2 text-center text-sm text-mesa-600">{legenda}</figcaption>
-      )}
-    </figure>
-  );
-}
-
 type Segmento = {
   texto: string;
   titulo: boolean;
-  /** trecho que é uma referência bíblica ("Rm 8.28") — só realce visual */
+  /** trecho que é uma referência bíblica ("Rm 8.28") — abre o popup do versículo */
   ref?: boolean;
+  refAlvo?: Pick<FaixaRef, "livroId" | "trechos">;
+  /** "Leia Stott (cap. 3…)": id da mesa que abre na leitura ao lado */
+  leitura?: string;
+  /** último pedaço da indicação — leva a setinha "↗" */
+  leituraFim?: boolean;
   cor?: Cor;
   id?: string;
   comentario?: string | null;
@@ -120,11 +69,22 @@ function normalizarBusca(s: string): string {
 function montarSegmentos(
   texto: string,
   titulos: Faixa[],
-  grifos: { start: number; end: number; cor: Cor; id: string; comentario: string | null }[],
+  grifos: {
+    start: number;
+    end: number;
+    cor: Cor;
+    id: string;
+    comentario: string | null;
+  }[],
   buscas: { start: number; end: number; idx: number }[] = [],
-  refs: Faixa[] = []
+  refs: FaixaRef[] = [],
+  leituras: (Faixa & { aulaId: string })[] = [],
 ): Segmento[] {
   const pontos = new Set<number>([0, texto.length]);
+  for (const f of leituras) {
+    pontos.add(f.start);
+    pontos.add(f.end);
+  }
   for (const f of titulos) {
     pontos.add(f.start);
     pontos.add(f.end);
@@ -141,20 +101,26 @@ function montarSegmentos(
     pontos.add(b.start);
     pontos.add(b.end);
   }
-  const ord = [...pontos].filter((p) => p >= 0 && p <= texto.length).sort((a, b) => a - b);
+  const ord = [...pontos]
+    .filter((p) => p >= 0 && p <= texto.length)
+    .sort((a, b) => a - b);
   const segs: Segmento[] = [];
   for (let i = 0; i < ord.length - 1; i++) {
     const s = ord[i];
     const e = ord[i + 1];
     if (e <= s) continue;
     const titulo = titulos.some((f) => f.start <= s && f.end >= e);
-    const ref = refs.some((f) => f.start <= s && f.end >= e);
+    const r = refs.find((f) => f.start <= s && f.end >= e);
+    const leitura = leituras.find((f) => f.start <= s && f.end >= e);
     const g = grifos.find((x) => x.start <= s && x.end >= e);
     const b = buscas.find((x) => x.start <= s && x.end >= e);
     segs.push({
       texto: texto.slice(s, e),
       titulo,
-      ref,
+      ref: Boolean(r),
+      refAlvo: r?.livroId ? { livroId: r.livroId, trechos: r.trechos } : undefined,
+      leitura: leitura?.aulaId,
+      leituraFim: Boolean(leitura) && e === leitura?.end,
       cor: g?.cor,
       id: g?.id,
       comentario: g?.comentario,
@@ -174,8 +140,23 @@ function offsetNoParagrafo(container: Node, node: Node, offset: number): number 
 }
 
 type ToolbarState =
-  | { tipo: "selecao"; x: number; y: number; paragrafo: number; inicio: number; fim: number; texto: string }
-  | { tipo: "grifo"; x: number; y: number; id: string; texto: string; comentario: string | null }
+  | {
+      tipo: "selecao";
+      x: number;
+      y: number;
+      paragrafo: number;
+      inicio: number;
+      fim: number;
+      texto: string;
+    }
+  | {
+      tipo: "grifo";
+      x: number;
+      y: number;
+      id: string;
+      texto: string;
+      comentario: string | null;
+    }
   | null;
 
 export function AulaConteudo({
@@ -186,6 +167,9 @@ export function AulaConteudo({
   autor,
   destaquesIniciais,
   leituraUrl,
+  cursoSlug,
+  aulaTitulo,
+  mesasDoLivro,
 }: {
   conteudo: string;
   aulaId: string;
@@ -194,6 +178,10 @@ export function AulaConteudo({
   autor: string | null;
   destaquesIniciais: Destaque[];
   leituraUrl?: string | null;
+  /** Os três abaixo ligam "Leia Stott (cap. 3…)" à mesa da leitura (issue #283). */
+  cursoSlug?: string;
+  aulaTitulo?: string;
+  mesasDoLivro?: AulaTitulo[];
 }) {
   // Parágrafos do conteúdo. Os que começam com "[cite] " são citações em
   // bloco (textos bíblicos/citações que o livro destaca) — renderizam como
@@ -202,6 +190,19 @@ export function AulaConteudo({
   const paragrafos = useMemo(() => lerParagrafos(conteudo), [conteudo]);
   // Citações em bloco e as referências que as assinam (ver papeisDosParagrafos).
   const papeis = useMemo(() => papeisDosParagrafos(paragrafos), [paragrafos]);
+  // Indicações de leitura que apontam para outra mesa do mesmo livro. Só
+  // vira link o que casou com uma mesa de verdade (ver lib/leitura-indicada).
+  const indicacoes = useMemo(() => {
+    if (!cursoSlug || !mesasDoLivro?.length) return paragrafos.map(() => null);
+    const licao = aulaTitulo ? licaoDoTitulo(aulaTitulo) : null;
+    const outras = mesasDoLivro.filter((m) => m.id !== aulaId);
+    return paragrafos.map((p) => {
+      const ind = acharIndicacao(p.texto);
+      const alvo = ind ? casarLeitura(ind, outras, licao) : null;
+      return ind && alvo ? { start: ind.start, end: ind.end, aulaId: alvo } : null;
+    });
+  }, [paragrafos, cursoSlug, mesasDoLivro, aulaTitulo, aulaId]);
+  const [leituraAberta, setLeituraAberta] = useState<string | null>(null);
   const [destaques, setDestaques] = useState<Destaque[]>(destaquesIniciais);
   const [toolbar, setToolbar] = useState<ToolbarState>(null);
   const [salvando, setSalvando] = useState(false);
@@ -285,15 +286,16 @@ export function AulaConteudo({
       }
     });
     return out;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [termo, conteudo]);
+  }, [termo, paragrafos]);
 
   // Mantém o índice atual dentro do intervalo quando a busca muda.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o termo é o gatilho — mudou a busca, volta para a 1ª ocorrência.
   useEffect(() => {
     setBuscaAtual(0);
   }, [termo]);
 
   // Rola até a ocorrência ativa.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: buscaAtual é o gatilho — o elemento "busca-ativa" muda de lugar quando ela muda.
   useEffect(() => {
     if (!matches.length) return;
     const el = document.getElementById("busca-ativa");
@@ -313,7 +315,10 @@ export function AulaConteudo({
     if (!alvo) return;
     alvo.scrollIntoView({ behavior: "smooth", block: "center" });
     setGrifoFocado(id);
-    window.setTimeout(() => setGrifoFocado((atual) => (atual === id ? null : atual)), 2000);
+    window.setTimeout(
+      () => setGrifoFocado((atual) => (atual === id ? null : atual)),
+      2000,
+    );
   }, []);
 
   const irMatch = useCallback(
@@ -323,7 +328,7 @@ export function AulaConteudo({
         return (a + dir + matches.length) % matches.length;
       });
     },
-    [matches.length]
+    [matches.length],
   );
   // Espelha o comentEditor pra usar dentro do listener de seleção (sem re-bind).
   const comentEditorRef = useRef<string | null>(null);
@@ -360,6 +365,7 @@ export function AulaConteudo({
   // Detecta seleção via `selectionchange` (com debounce). Funciona no toque do
   // celular e no duplo-clique do desktop — onde `mouseup`/`touchend` falhavam
   // porque disparam antes de a seleção final existir.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o ouvinte é registrado uma vez; detectarSelecao lê o DOM na hora, não o estado capturado.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
     const onSelChange = () => {
@@ -372,7 +378,6 @@ export function AulaConteudo({
       document.removeEventListener("selectionchange", onSelChange);
       if (timer) clearTimeout(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Detecta seleção de texto dentro de um parágrafo do conteúdo.
@@ -427,7 +432,11 @@ export function AulaConteudo({
       comentario,
     };
     if (MOCK) {
-      const novo: Destaque = { id: `mock-${Date.now()}`, criado_em: new Date().toISOString(), ...base };
+      const novo: Destaque = {
+        id: `mock-${Date.now()}`,
+        criado_em: new Date().toISOString(),
+        ...base,
+      };
       setDestaques((p) => [...p, novo]);
     } else {
       const supabase = createClient();
@@ -456,9 +465,14 @@ export function AulaConteudo({
     setSalvando(true);
     if (!MOCK) {
       const supabase = createClient();
-      await supabase.from("destaques_aula").update({ comentario: texto || null }).eq("id", id);
+      await supabase
+        .from("destaques_aula")
+        .update({ comentario: texto || null })
+        .eq("id", id);
     }
-    setDestaques((p) => p.map((d) => (d.id === id ? { ...d, comentario: texto || null } : d)));
+    setDestaques((p) =>
+      p.map((d) => (d.id === id ? { ...d, comentario: texto || null } : d)),
+    );
     setSalvando(false);
     esconder();
   }
@@ -484,7 +498,7 @@ export function AulaConteudo({
     setVerbete({ palavra, carregando: true, dados: null, erro: null });
     try {
       const res = await fetch(
-        `/api/dicionario?q=${encodeURIComponent(palavra)}&ctx=${encodeURIComponent(contexto)}`
+        `/api/dicionario?q=${encodeURIComponent(palavra)}&ctx=${encodeURIComponent(contexto)}`,
       );
       const json = await res.json();
       if (!res.ok || !json?.ok) {
@@ -492,13 +506,26 @@ export function AulaConteudo({
           palavra,
           carregando: false,
           dados: null,
-          erro: typeof json?.erro === "string" ? json.erro : "Não consegui consultar agora.",
+          erro:
+            typeof json?.erro === "string"
+              ? json.erro
+              : "Não consegui consultar agora.",
         });
         return;
       }
-      setVerbete({ palavra, carregando: false, dados: json.verbete as Verbete, erro: null });
+      setVerbete({
+        palavra,
+        carregando: false,
+        dados: json.verbete as Verbete,
+        erro: null,
+      });
     } catch {
-      setVerbete({ palavra, carregando: false, dados: null, erro: "Sem conexão com o dicionário." });
+      setVerbete({
+        palavra,
+        carregando: false,
+        dados: null,
+        erro: "Sem conexão com o dicionário.",
+      });
     }
   }
 
@@ -520,6 +547,7 @@ export function AulaConteudo({
               {audioTocando ? "Acompanhando o texto…" : "Dê play para acompanhar"}
             </span>
           </div>
+          {/* biome-ignore lint/a11y/useMediaCaption: narração do próprio texto da página, que já está escrito logo abaixo */}
           <audio
             controls
             preload="metadata"
@@ -542,13 +570,17 @@ export function AulaConteudo({
 
       <p className="mb-4 flex items-center gap-2 rounded-lg bg-mesa-50 px-3 py-2 text-xs text-mesa-500">
         <span>✨</span>
-        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem. Selecionou só uma palavra? Toque em “Significado” pra ver o sentido e os sinônimos. Para desfazer, toque no grifo e escolha “Desmarcar”.
+        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou
+        gerar uma imagem. Selecionou só uma palavra? Toque em “Significado” pra ver o
+        sentido e os sinônimos. Para desfazer, toque no grifo e escolha “Desmarcar”.
       </p>
 
       {/* Campo de busca de palavras/frases no capítulo */}
       <div className="sticky top-2 z-30 mb-5">
         <div className="flex items-center gap-2 rounded-full border border-mesa-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
-          <span className="text-mesa-400" aria-hidden>🔍</span>
+          <span className="text-mesa-400" aria-hidden>
+            🔍
+          </span>
           <input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
@@ -568,6 +600,7 @@ export function AulaConteudo({
                 {matches.length ? `${buscaAtual + 1}/${matches.length}` : "0"}
               </span>
               <button
+                type="button"
                 onClick={() => irMatch(-1)}
                 disabled={!matches.length}
                 title="Anterior"
@@ -576,6 +609,7 @@ export function AulaConteudo({
                 ↑
               </button>
               <button
+                type="button"
                 onClick={() => irMatch(1)}
                 disabled={!matches.length}
                 title="Próxima"
@@ -587,6 +621,7 @@ export function AulaConteudo({
           )}
           {busca && (
             <button
+              type="button"
               onClick={() => setBusca("")}
               title="Limpar busca"
               className="rounded-full px-2 py-1 text-sm text-mesa-400 hover:bg-mesa-100"
@@ -596,7 +631,9 @@ export function AulaConteudo({
           )}
         </div>
         {termo.length >= 2 && matches.length === 0 && (
-          <p className="mt-1 px-3 text-xs text-mesa-400">Nenhuma ocorrência de “{termo}”.</p>
+          <p className="mt-1 px-3 text-xs text-mesa-400">
+            Nenhuma ocorrência de “{termo}”.
+          </p>
         )}
       </div>
 
@@ -608,7 +645,11 @@ export function AulaConteudo({
               <div
                 key={i}
                 data-paragrafo={i}
-                className={sendoNarrado ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4" : undefined}
+                className={
+                  sendoNarrado
+                    ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4"
+                    : undefined
+                }
               >
                 <Quadro bloco={paragrafo.texto} />
               </div>
@@ -619,26 +660,47 @@ export function AulaConteudo({
               <div
                 key={i}
                 data-paragrafo={i}
-                className={sendoNarrado ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4" : undefined}
+                className={
+                  sendoNarrado
+                    ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4"
+                    : undefined
+                }
               >
                 <Figura bloco={paragrafo.texto} />
               </div>
             );
           }
           const papel = papeis[i];
-          const nivel = papel ? null : nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
+          const nivel = papel
+            ? null
+            : nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
           const titulos = nivel ? [] : faixasDeTitulo(paragrafo.texto);
           // Referência bíblica no corpo do texto: realce só visual, por faixa
           // de caractere, pra não deslocar os grifos já salvos.
           const refs = nivel ? [] : acharReferencias(paragrafo.texto);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
-            .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
+            .map((d) => ({
+              start: d.inicio,
+              end: d.fim,
+              cor: d.cor as Cor,
+              id: d.id,
+              comentario: d.comentario,
+            }));
           const matchesP: { start: number; end: number; idx: number }[] = [];
           matches.forEach((m, gi) => {
-            if (m.paragrafo === i) matchesP.push({ start: m.start, end: m.end, idx: gi });
+            if (m.paragrafo === i)
+              matchesP.push({ start: m.start, end: m.end, idx: gi });
           });
-          const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP, refs);
+          const indicacao = nivel ? null : indicacoes[i];
+          const segs = montarSegmentos(
+            paragrafo.texto,
+            titulos,
+            grifos,
+            matchesP,
+            refs,
+            indicacao ? [indicacao] : [],
+          );
           const Tag = nivel === "titulo" ? "h3" : nivel === "subtitulo" ? "h4" : "p";
           const classePapel =
             papel === "cita" ? "cita-bloco" : papel === "cita-ref" ? "cita-ref" : "";
@@ -648,7 +710,11 @@ export function AulaConteudo({
               data-paragrafo={i}
               aria-current={sendoNarrado ? "true" : undefined}
               className={`whitespace-pre-wrap rounded-md transition-[background-color,box-shadow] duration-500 ${
-                nivel === "titulo" ? "titulo-secao" : nivel === "subtitulo" ? "subtitulo-secao" : classePapel
+                nivel === "titulo"
+                  ? "titulo-secao"
+                  : nivel === "subtitulo"
+                    ? "subtitulo-secao"
+                    : classePapel
               } ${
                 sendoNarrado
                   ? "-mx-2 bg-laranja-50 px-2 shadow-[0_0_0_2px_rgba(251,146,60,0.35)]"
@@ -711,7 +777,16 @@ export function AulaConteudo({
                     >
                       {seg.texto}
                       {seg.comentario ? (
-                        <sup style={{ fontSize: "0.7em", marginLeft: 1, cursor: "pointer" }} aria-label="tem comentário">💬</sup>
+                        <sup
+                          style={{
+                            fontSize: "0.7em",
+                            marginLeft: 1,
+                            cursor: "pointer",
+                          }}
+                          title="tem comentário"
+                        >
+                          💬
+                        </sup>
                       ) : null}
                     </mark>
                   );
@@ -725,7 +800,37 @@ export function AulaConteudo({
                 }
                 if (seg.ref) {
                   return (
-                    <span key={j} className="ref-biblica">
+                    <span
+                      key={j}
+                      className={`ref-biblica${seg.leitura ? " leitura-indicada" : ""}${seg.leituraFim ? " leitura-fim" : ""}`}
+                      {...(seg.refAlvo ? atributosRef(seg.refAlvo) : {})}
+                    >
+                      {seg.texto}
+                    </span>
+                  );
+                }
+                if (seg.leitura) {
+                  const alvo = seg.leitura;
+                  return (
+                    // biome-ignore lint/a11y/useSemanticElements: precisa quebrar linha junto com o parágrafo; <button> é inline-block e não quebra
+                    <span
+                      key={j}
+                      role="button"
+                      tabIndex={0}
+                      title="Abrir a leitura ao lado"
+                      className={`leitura-indicada${seg.leituraFim ? " leitura-fim" : ""}`}
+                      onClick={() => {
+                        const sel = window.getSelection();
+                        if (sel && !sel.isCollapsed && sel.toString().trim()) return;
+                        setLeituraAberta(alvo);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setLeituraAberta(alvo);
+                        }
+                      }}
+                    >
                       {seg.texto}
                     </span>
                   );
@@ -758,6 +863,7 @@ export function AulaConteudo({
                   {/* Volta pro trecho no texto — grifo solto fora do contexto
                       não diz muita coisa. */}
                   <button
+                    type="button"
                     onClick={() => irParaGrifo(d.id, d.paragrafo)}
                     className="block w-full text-left text-sm text-mesa-700 underline decoration-mesa-300 decoration-dotted underline-offset-4 hover:decoration-laranja-500 hover:text-mesa-900"
                     title="Ler no texto"
@@ -773,6 +879,7 @@ export function AulaConteudo({
                 </div>
                 <div className="flex flex-none gap-1.5">
                   <button
+                    type="button"
                     onClick={() => abrirImagem(d.texto)}
                     className="rounded-full border border-mesa-200 bg-white px-3 py-1 text-xs font-medium text-mesa-700 hover:bg-mesa-100"
                     title="Gerar imagem deste trecho"
@@ -780,6 +887,7 @@ export function AulaConteudo({
                     🖼 Imagem
                   </button>
                   <button
+                    type="button"
                     onClick={() => removerGrifo(d.id)}
                     className="rounded-full border border-mesa-200 bg-white px-2.5 py-1 text-xs font-medium text-mesa-400 hover:bg-red-50 hover:text-red-600"
                     title="Desmarcar"
@@ -804,6 +912,7 @@ export function AulaConteudo({
           style={toque ? undefined : { left: toolbar.x, top: toolbar.y - 8 }}
         >
           {verbete ? (
+            // biome-ignore lint/a11y/noStaticElementInteractions: só segura a seleção de texto ao clicar na barra; não é um controle
             <div
               className={`${toque ? "w-full max-w-md" : "w-72"} rounded-2xl border border-mesa-200 bg-white p-3 shadow-lg`}
               onMouseDown={(e) => e.preventDefault()}
@@ -813,6 +922,7 @@ export function AulaConteudo({
                   📖 {verbete.palavra}
                 </p>
                 <button
+                  type="button"
                   onClick={esconder}
                   aria-label="Fechar"
                   className="-mr-1 -mt-1 rounded-full px-2 py-0.5 text-sm text-mesa-400 hover:bg-mesa-100"
@@ -828,7 +938,9 @@ export function AulaConteudo({
               ) : verbete.dados ? (
                 <>
                   {verbete.dados.classe && (
-                    <p className="mt-0.5 text-xs italic text-mesa-400">{verbete.dados.classe}</p>
+                    <p className="mt-0.5 text-xs italic text-mesa-400">
+                      {verbete.dados.classe}
+                    </p>
                   )}
                   {verbete.dados.significado && (
                     <p className="mt-2 text-sm leading-relaxed text-mesa-700">
@@ -862,8 +974,11 @@ export function AulaConteudo({
               ) : null}
             </div>
           ) : comentEditor !== null ? (
-            <div className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}>
+            <div
+              className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}
+            >
               <textarea
+                // biome-ignore lint/a11y/noAutofocus: a caixa de comentário abre para a pessoa escrever na hora
                 autoFocus
                 value={comentEditor}
                 onChange={(e) => setComentEditor(e.target.value)}
@@ -877,12 +992,14 @@ export function AulaConteudo({
               />
               <div className="mt-1.5 flex items-center justify-end gap-1.5">
                 <button
+                  type="button"
                   onClick={() => setComentEditor(null)}
                   className="rounded-full px-2.5 py-1 text-xs font-medium text-mesa-500 hover:bg-mesa-100"
                 >
                   Cancelar
                 </button>
                 <button
+                  type="button"
                   disabled={salvando}
                   onClick={salvarComentario}
                   className="rounded-full bg-laranja-500 px-3 py-1 text-xs font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
@@ -892,6 +1009,7 @@ export function AulaConteudo({
               </div>
             </div>
           ) : toolbar.tipo === "grifo" && toolbar.comentario ? (
+            // biome-ignore lint/a11y/noStaticElementInteractions: só segura a seleção de texto ao clicar na barra; não é um controle
             <div
               className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}
               onMouseDown={(e) => e.preventDefault()}
@@ -902,18 +1020,21 @@ export function AulaConteudo({
               </p>
               <div className="flex items-center justify-end gap-1.5">
                 <button
+                  type="button"
                   onClick={() => setComentEditor(toolbar.comentario ?? "")}
                   className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                 >
                   ✏️ Editar
                 </button>
                 <button
+                  type="button"
                   onClick={() => abrirImagem(toolbar.texto)}
                   className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                 >
                   🖼 Imagem
                 </button>
                 <button
+                  type="button"
                   onClick={() => removerGrifo(toolbar.id)}
                   className={`rounded-full font-medium text-red-600 hover:bg-red-50 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                 >
@@ -922,6 +1043,7 @@ export function AulaConteudo({
               </div>
             </div>
           ) : (
+            // biome-ignore lint/a11y/noStaticElementInteractions: só segura a seleção de texto ao clicar na barra; não é um controle
             <div
               className={`flex items-center gap-1.5 rounded-full border border-mesa-200 bg-white shadow-lg ${toque ? "px-3 py-2" : "px-2 py-1.5"}`}
               onMouseDown={(e) => e.preventDefault()}
@@ -930,6 +1052,7 @@ export function AulaConteudo({
                 <>
                   {CORES_ORDEM.map((cor) => (
                     <button
+                      type="button"
                       key={cor}
                       disabled={salvando}
                       onClick={() => salvarGrifo(cor)}
@@ -940,6 +1063,7 @@ export function AulaConteudo({
                   ))}
                   <span className="mx-0.5 h-5 w-px bg-mesa-200" />
                   <button
+                    type="button"
                     onClick={() => setComentEditor("")}
                     className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
@@ -947,10 +1071,15 @@ export function AulaConteudo({
                   </button>
                   {selecaoConsultavel(toolbar.texto) && (
                     <button
+                      type="button"
                       onClick={() =>
                         consultarSignificado(
                           toolbar.texto,
-                          contextoDoTrecho(toolbar.paragrafo, toolbar.inicio, toolbar.fim)
+                          contextoDoTrecho(
+                            toolbar.paragrafo,
+                            toolbar.inicio,
+                            toolbar.fim,
+                          ),
                         )
                       }
                       title="Significado e sinônimos"
@@ -960,6 +1089,7 @@ export function AulaConteudo({
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={() => abrirImagem(toolbar.texto)}
                     className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
@@ -967,6 +1097,7 @@ export function AulaConteudo({
                   </button>
                   {toque && (
                     <button
+                      type="button"
                       onClick={esconder}
                       aria-label="Fechar"
                       className="ml-0.5 rounded-full px-3 py-2 text-sm font-medium text-mesa-400 hover:bg-mesa-100"
@@ -978,6 +1109,7 @@ export function AulaConteudo({
               ) : (
                 <>
                   <button
+                    type="button"
                     onClick={() => {
                       const d = destaques.find((x) => x.id === toolbar.id);
                       setComentEditor(d?.comentario ?? "");
@@ -988,11 +1120,12 @@ export function AulaConteudo({
                   </button>
                   {selecaoConsultavel(toolbar.texto) && (
                     <button
+                      type="button"
                       onClick={() => {
                         const d = destaques.find((x) => x.id === toolbar.id);
                         consultarSignificado(
                           toolbar.texto,
-                          d ? contextoDoTrecho(d.paragrafo, d.inicio, d.fim) : ""
+                          d ? contextoDoTrecho(d.paragrafo, d.inicio, d.fim) : "",
                         );
                       }}
                       title="Significado e sinônimos"
@@ -1002,6 +1135,7 @@ export function AulaConteudo({
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={() => abrirImagem(toolbar.texto)}
                     className={`rounded-full font-medium text-mesa-700 hover:bg-mesa-100 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
@@ -1009,6 +1143,7 @@ export function AulaConteudo({
                   </button>
                   <span className="mx-0.5 h-5 w-px bg-mesa-200" />
                   <button
+                    type="button"
                     onClick={() => removerGrifo(toolbar.id)}
                     className={`rounded-full font-medium text-red-600 hover:bg-red-50 ${toque ? "px-3 py-2 text-sm" : "px-2.5 py-1 text-xs"}`}
                   >
@@ -1030,6 +1165,15 @@ export function AulaConteudo({
           onClose={() => setModalTexto(null)}
         />
       )}
+
+      {leituraAberta && cursoSlug && (
+        <LeituraAoLado
+          cursoSlug={cursoSlug}
+          aulaId={leituraAberta}
+          tituloInicial={mesasDoLivro?.find((m) => m.id === leituraAberta)?.titulo}
+          onFechar={() => setLeituraAberta(null)}
+        />
+      )}
     </>
   );
 }
@@ -1041,7 +1185,7 @@ function imgUrl(
   livroTitulo: string,
   autor: string | null,
   formato: Formato,
-  download = false
+  download = false,
 ): string {
   const params = new URLSearchParams({
     verso: texto,
@@ -1073,6 +1217,7 @@ function ImagemModal({
 
   // Busca a imagem como blob (estado de carregando/erro confiável; o <img>
   // recebe um object URL, sem depender de timing de onLoad/onError no iOS).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tentativa é o gatilho do botão "tentar de novo".
   useEffect(() => {
     let cancelado = false;
     let urlCriada: string | null = null;
@@ -1136,10 +1281,12 @@ function ImagemModal({
   }
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: fundo do modal: clicar fora fecha (o botão × é o controle acessível)
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/70 p-4"
       onClick={onClose}
     >
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: impede que o clique dentro do cartão chegue ao fundo e feche o modal */}
       <div
         className="my-auto w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -1149,6 +1296,7 @@ function ImagemModal({
             Imagem do trecho
           </p>
           <button
+            type="button"
             onClick={onClose}
             className="text-mesa-400 hover:text-mesa-700"
             aria-label="Fechar"
@@ -1164,6 +1312,7 @@ function ImagemModal({
             { f: "story" as Formato, rotulo: "Story (vertical)" },
           ].map(({ f, rotulo }) => (
             <button
+              type="button"
               key={f}
               onClick={() => setFormato(f)}
               className={`flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition ${
@@ -1191,6 +1340,7 @@ function ImagemModal({
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
               <p className="text-sm text-mesa-200">Não consegui gerar a imagem.</p>
               <button
+                type="button"
                 onClick={() => setTentativa((t) => t + 1)}
                 className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-mesa-800"
               >
@@ -1210,6 +1360,7 @@ function ImagemModal({
 
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={baixar}
             disabled={estado !== "ok"}
             className="flex-1 rounded-full bg-laranja-500 py-2.5 text-center text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
@@ -1217,6 +1368,7 @@ function ImagemModal({
             Baixar
           </button>
           <button
+            type="button"
             onClick={compartilhar}
             disabled={estado !== "ok" || compartilhando}
             className="flex-1 rounded-full border border-mesa-300 bg-white py-2.5 text-center text-sm font-medium text-mesa-700 hover:bg-mesa-50 disabled:opacity-50"
@@ -1226,6 +1378,7 @@ function ImagemModal({
         </div>
 
         <button
+          type="button"
           onClick={onClose}
           className="mt-3 w-full py-1 text-center text-sm font-medium text-mesa-500 hover:text-mesa-700"
         >

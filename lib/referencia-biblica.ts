@@ -30,12 +30,24 @@ const LIVROS: { nome: string; formas: string[] }[] = [
   { nome: "Josué", formas: ["Josué", "Josue", "Js", "Jos"] },
   { nome: "Juízes", formas: ["Juízes", "Juizes", "Jz"] },
   { nome: "Rute", formas: ["Rute", "Rt"] },
-  { nome: "1 Samuel", formas: ["1 Samuel", "1Samuel", "I Samuel", "1 Sm", "1Sm", "1Sam"] },
-  { nome: "2 Samuel", formas: ["2 Samuel", "2Samuel", "II Samuel", "2 Sm", "2Sm", "2Sam"] },
+  {
+    nome: "1 Samuel",
+    formas: ["1 Samuel", "1Samuel", "I Samuel", "1 Sm", "1Sm", "1Sam"],
+  },
+  {
+    nome: "2 Samuel",
+    formas: ["2 Samuel", "2Samuel", "II Samuel", "2 Sm", "2Sm", "2Sam"],
+  },
   { nome: "1 Reis", formas: ["1 Reis", "1Reis", "I Reis", "1 Rs", "1Rs"] },
   { nome: "2 Reis", formas: ["2 Reis", "2Reis", "II Reis", "2 Rs", "2Rs"] },
-  { nome: "1 Crônicas", formas: ["1 Crônicas", "1 Cronicas", "1Crônicas", "I Crônicas", "1 Cr", "1Cr"] },
-  { nome: "2 Crônicas", formas: ["2 Crônicas", "2 Cronicas", "2Crônicas", "II Crônicas", "2 Cr", "2Cr"] },
+  {
+    nome: "1 Crônicas",
+    formas: ["1 Crônicas", "1 Cronicas", "1Crônicas", "I Crônicas", "1 Cr", "1Cr"],
+  },
+  {
+    nome: "2 Crônicas",
+    formas: ["2 Crônicas", "2 Cronicas", "2Crônicas", "II Crônicas", "2 Cr", "2Cr"],
+  },
   { nome: "Esdras", formas: ["Esdras", "Ed"] },
   { nome: "Neemias", formas: ["Neemias", "Ne"] },
   { nome: "Ester", formas: ["Ester", "Et"] },
@@ -43,7 +55,10 @@ const LIVROS: { nome: string; formas: string[] }[] = [
   { nome: "Salmos", formas: ["Salmos", "Salmo", "Sl", "Sal"] },
   { nome: "Provérbios", formas: ["Provérbios", "Proverbios", "Pv", "Prov"] },
   { nome: "Eclesiastes", formas: ["Eclesiastes", "Ec", "Ecl"] },
-  { nome: "Cantares", formas: ["Cantares", "Cânticos", "Canticos", "Cantares de Salomão", "Ct"] },
+  {
+    nome: "Cantares",
+    formas: ["Cantares", "Cânticos", "Canticos", "Cantares de Salomão", "Ct"],
+  },
   { nome: "Isaías", formas: ["Isaías", "Isaias", "Is"] },
   { nome: "Jeremias", formas: ["Jeremias", "Jr", "Jer"] },
   { nome: "Lamentações", formas: ["Lamentações", "Lamentacoes", "Lm"] },
@@ -67,16 +82,64 @@ const LIVROS: { nome: string; formas: string[] }[] = [
   { nome: "João", formas: ["João", "Joao", "Jo"] },
   { nome: "Atos", formas: ["Atos dos Apóstolos", "Atos", "At"] },
   { nome: "Romanos", formas: ["Romanos", "Rm", "Rom"] },
-  { nome: "1 Coríntios", formas: ["1 Coríntios", "1 Corintios", "1Coríntios", "1Corintios", "I Coríntios", "1 Co", "1Co", "1Cor"] },
-  { nome: "2 Coríntios", formas: ["2 Coríntios", "2 Corintios", "2Coríntios", "2Corintios", "II Coríntios", "2 Co", "2Co", "2Cor"] },
+  {
+    nome: "1 Coríntios",
+    formas: [
+      "1 Coríntios",
+      "1 Corintios",
+      "1Coríntios",
+      "1Corintios",
+      "I Coríntios",
+      "1 Co",
+      "1Co",
+      "1Cor",
+    ],
+  },
+  {
+    nome: "2 Coríntios",
+    formas: [
+      "2 Coríntios",
+      "2 Corintios",
+      "2Coríntios",
+      "2Corintios",
+      "II Coríntios",
+      "2 Co",
+      "2Co",
+      "2Cor",
+    ],
+  },
   { nome: "Gálatas", formas: ["Gálatas", "Galatas", "Gl", "Gál"] },
   { nome: "Efésios", formas: ["Efésios", "Efesios", "Ef"] },
   { nome: "Filipenses", formas: ["Filipenses", "Fp", "Fil"] },
   { nome: "Colossenses", formas: ["Colossenses", "Cl", "Col"] },
-  { nome: "1 Tessalonicenses", formas: ["1 Tessalonicenses", "1Tessalonicenses", "I Tessalonicenses", "1 Ts", "1Ts"] },
-  { nome: "2 Tessalonicenses", formas: ["2 Tessalonicenses", "2Tessalonicenses", "II Tessalonicenses", "2 Ts", "2Ts"] },
-  { nome: "1 Timóteo", formas: ["1 Timóteo", "1 Timoteo", "1Timóteo", "I Timóteo", "1 Tm", "1Tm", "1Tim"] },
-  { nome: "2 Timóteo", formas: ["2 Timóteo", "2 Timoteo", "2Timóteo", "II Timóteo", "2 Tm", "2Tm", "2Tim"] },
+  {
+    nome: "1 Tessalonicenses",
+    formas: [
+      "1 Tessalonicenses",
+      "1Tessalonicenses",
+      "I Tessalonicenses",
+      "1 Ts",
+      "1Ts",
+    ],
+  },
+  {
+    nome: "2 Tessalonicenses",
+    formas: [
+      "2 Tessalonicenses",
+      "2Tessalonicenses",
+      "II Tessalonicenses",
+      "2 Ts",
+      "2Ts",
+    ],
+  },
+  {
+    nome: "1 Timóteo",
+    formas: ["1 Timóteo", "1 Timoteo", "1Timóteo", "I Timóteo", "1 Tm", "1Tm", "1Tim"],
+  },
+  {
+    nome: "2 Timóteo",
+    formas: ["2 Timóteo", "2 Timoteo", "2Timóteo", "II Timóteo", "2 Tm", "2Tm", "2Tim"],
+  },
   { nome: "Tito", formas: ["Tito", "Tt"] },
   { nome: "Filemom", formas: ["Filemom", "Filemon", "Fm"] },
   { nome: "Hebreus", formas: ["Hebreus", "Hb", "Heb"] },
@@ -115,8 +178,14 @@ const TODAS_FORMAS = [
 // Maiores primeiro: senão "Jo" casaria antes de "João" e a referência
 // sairia truncada.
 const porTamanho = (a: string, b: string) => b.length - a.length;
-const ALT_LONGAS = TODAS_FORMAS.filter((f) => !ehFormaCurta(f)).sort(porTamanho).map(escapar).join("|");
-const ALT_CURTAS = TODAS_FORMAS.filter(ehFormaCurta).sort(porTamanho).map(escapar).join("|");
+const ALT_LONGAS = TODAS_FORMAS.filter((f) => !ehFormaCurta(f))
+  .sort(porTamanho)
+  .map(escapar)
+  .join("|");
+const ALT_CURTAS = TODAS_FORMAS.filter(ehFormaCurta)
+  .sort(porTamanho)
+  .map(escapar)
+  .join("|");
 
 // Números do trecho: "3", "3.16", "3:16", "3.16-17", "3.16,18", "13.13—14.1".
 const VERSICULOS = String.raw`\s*[:.,]\s*\d{1,3}[a-z]?(?:\s*[-–—]\s*(?:\d{1,3}[:.])?\d{1,3}[a-z]?)?(?:\s*,\s*\d{1,3}[a-z]?)*`;
@@ -132,26 +201,155 @@ const RE_REFERENCIA = new RegExp(
 // Versão entre parênteses no fim da referência: "(NVI)", "ARA", "ACF".
 const VERSOES = /\b(?:ACF|ARA|ARC|NAA|NVI|NVT|NTLH|A21|KJA|BJ|TB|AS21|RA|RC)\b/;
 
-export type FaixaRef = { start: number; end: number };
+// Continuação que herda o livro da referência anterior: em "Gênesis 12.1-3;
+// 18.18; 26.4" o 18.18 e o 26.4 também são Gênesis. Só vale depois de ";"
+// e com capítulo E versículo — "; 3" solto é número de outra coisa.
+const RE_CONTINUACAO = new RegExp(String.raw`^\s*;\s*(${CAPITULO}${VERSICULOS})`, "u");
+
+// O id do livro no banco segue a ordem canônica (Gênesis = 1, Apocalipse =
+// 66) — a mesma ordem da tabela LIVROS. É por ele que o popup pede o trecho,
+// sem depender de como o nome está grafado no banco.
+const ID_POR_FORMA = new Map<string, number>();
+LIVROS.forEach((l, i) => {
+  for (const f of l.formas) {
+    ID_POR_FORMA.set(f, i + 1);
+    ID_POR_FORMA.set(f.toUpperCase(), i + 1);
+  }
+});
+const RE_LIVRO_NO_INICIO = new RegExp(
+  `^(${[...ID_POR_FORMA.keys()].sort(porTamanho).map(escapar).join("|")})\\.?\\s*`,
+  "u",
+);
+
+export type FaixaRef = {
+  start: number;
+  end: number;
+  /** Livro (1 = Gênesis … 66 = Apocalipse), quando deu para ler o trecho. */
+  livroId?: number;
+  /** Trechos no formato de `lerTrechos` ("12:1-3", "13:13-;14:1-1", "23"). */
+  trechos?: string;
+};
 
 /**
  * Onde estão as referências bíblicas dentro do texto. Devolve faixas de
  * caractere — o leitor pinta por cima sem mexer no texto, o que mantém
- * intactos os offsets dos grifos já salvos.
+ * intactos os offsets dos grifos já salvos. Cada faixa diz também que
+ * trecho da Bíblia ela aponta, para o popup buscar o versículo.
  */
 export function acharReferencias(texto: string): FaixaRef[] {
   const faixas: FaixaRef[] = [];
   RE_REFERENCIA.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  while ((m = RE_REFERENCIA.exec(texto)) !== null) {
+  for (let m = RE_REFERENCIA.exec(texto); m !== null; m = RE_REFERENCIA.exec(texto)) {
     const bruto = m[1];
     const start = m.index + m[0].length - bruto.length;
-    faixas.push({ start, end: start + bruto.length });
+    let fim = start + bruto.length;
+    const alvo = alvoDaReferencia(bruto);
+    faixas.push({ start, end: fim, ...alvo });
+
+    if (alvo) {
+      for (
+        let c = RE_CONTINUACAO.exec(texto.slice(fim));
+        c !== null;
+        c = RE_CONTINUACAO.exec(texto.slice(fim))
+      ) {
+        const numeros = c[1];
+        const inicio = fim + c[0].length - numeros.length;
+        fim = inicio + numeros.length;
+        const trechos = trechosDosNumeros(numeros);
+        faixas.push({
+          start: inicio,
+          end: fim,
+          ...(trechos ? { livroId: alvo.livroId, trechos } : {}),
+        });
+      }
+    }
     // O separador consumido pelo (?:^|[^\p{L}\p{N}]) não pode esconder a
     // referência seguinte quando duas vêm coladas ("Rm 8.1; Ef 2.8").
-    RE_REFERENCIA.lastIndex = start + bruto.length;
+    RE_REFERENCIA.lastIndex = fim;
   }
   return faixas;
+}
+
+/** "1Co 13.4-7" → { livroId: 46, trechos: "13:4-7" }. */
+function alvoDaReferencia(
+  bruto: string,
+): { livroId: number; trechos: string } | undefined {
+  const m = RE_LIVRO_NO_INICIO.exec(bruto);
+  if (!m) return undefined;
+  const livroId = ID_POR_FORMA.get(m[1]);
+  const trechos = trechosDosNumeros(bruto.slice(m[0].length));
+  return livroId && trechos ? { livroId, trechos } : undefined;
+}
+
+/** Quantos capítulos um trecho pode atravessar ("13.13—14.1" atravessa 2). */
+const MAX_CAPITULOS = 3;
+
+/**
+ * A parte numérica da referência no formato que a rota /api/biblia/trecho
+ * entende: trechos separados por ";", cada um "cap", "cap:de-ate" ou
+ * "cap:de-" (até o fim do capítulo).
+ *
+ *   "23"          → "23"
+ *   "3.16"        → "3:16-16"
+ *   "3.16-18"     → "3:16-18"
+ *   "3.16,18"     → "3:16-16;3:18-18"
+ *   "13.13—14.1"  → "13:13-;14:1-1"
+ */
+export function trechosDosNumeros(numeros: string): string | null {
+  const m = /^(\d{1,3})(?:\s*[:.,]\s*(.+))?$/.exec(numeros.trim());
+  if (!m) return null;
+  const capitulo = Number(m[1]);
+  if (!m[2]) return String(capitulo);
+
+  const partes: string[] = [];
+  for (const pedaco of m[2].split(/\s*,\s*/)) {
+    const v = /^(\d{1,3})[a-z]?(?:\s*[-–—]\s*(?:(\d{1,3})[:.])?(\d{1,3})[a-z]?)?$/.exec(
+      pedaco,
+    );
+    if (!v) return null;
+    const de = Number(v[1]);
+    const capFim = v[2] ? Number(v[2]) : capitulo;
+    const ate = v[3] ? Number(v[3]) : de;
+    if (capFim === capitulo) {
+      if (ate < de) return null;
+      partes.push(`${capitulo}:${de}-${ate}`);
+      continue;
+    }
+    if (capFim < capitulo || capFim - capitulo >= MAX_CAPITULOS) return null;
+    partes.push(`${capitulo}:${de}-`);
+    for (let c = capitulo + 1; c < capFim; c++) partes.push(String(c));
+    partes.push(`${capFim}:1-${ate}`);
+  }
+  return partes.join(";");
+}
+
+export type Trecho = { capitulo: number; de?: number; ate?: number };
+
+/**
+ * O inverso de `trechosDosNumeros`, com as travas de quem recebe o pedido
+ * pela rede: formato estrito e no máximo MAX_CAPITULOS capítulos.
+ * `ate` ausente com `de` presente = até o fim do capítulo.
+ */
+export function lerTrechos(spec: string): Trecho[] | null {
+  const partes = spec.split(";");
+  if (partes.length === 0 || partes.length > 8) return null;
+  const trechos: Trecho[] = [];
+  for (const p of partes) {
+    const m = /^(\d{1,3})(?::(\d{1,3})-(\d{1,3})?)?$/.exec(p);
+    if (!m) return null;
+    const capitulo = Number(m[1]);
+    if (capitulo < 1) return null;
+    if (!m[2]) {
+      trechos.push({ capitulo });
+      continue;
+    }
+    const de = Number(m[2]);
+    const ate = m[3] ? Number(m[3]) : undefined;
+    if (de < 1 || (ate !== undefined && ate < de)) return null;
+    trechos.push({ capitulo, de, ate });
+  }
+  if (new Set(trechos.map((t) => t.capitulo)).size > MAX_CAPITULOS) return null;
+  return trechos;
 }
 
 /**

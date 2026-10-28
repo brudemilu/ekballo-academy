@@ -235,6 +235,9 @@ export default async function AulaPage({
               autor={curso.autor ?? null}
               destaquesIniciais={destaques}
               leituraUrl={leituraUrl}
+              cursoSlug={curso.slug}
+              aulaTitulo={aula.titulo}
+              mesasDoLivro={aulasStatus.map((a) => ({ id: a.id, titulo: a.titulo }))}
             />
           )}
         </article>
