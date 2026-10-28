@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { MockBanner } from "@/components/MockBanner";
-import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { RegisterSW } from "@/components/RegisterSW";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
+import { VersiculoPopup } from "@/components/VersiculoPopup";
+import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import "./globals.css";
+import "./referencias.css";
 
 export const metadata: Metadata = {
   title: "Ekballo Academy — Famílias fortes. Discípulos maduros.",
@@ -46,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-bege-50 text-bege-900 antialiased">
         <RegisterSW />
         <MockBanner />
+        <VersiculoPopup />
         {children}
         <WhatsAppFloat />
         <UpdatePrompt />

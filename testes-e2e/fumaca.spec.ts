@@ -54,6 +54,30 @@ test.describe("telas do discípulo", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 
+  test("no guia, o versículo e a leitura indicada abrem sem sair da página", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/cursos/perspectivas/aulas/persp-guia-1");
+
+    // Versículo (issue #282): abre perto da referência e fecha com Esc.
+    await page.getByRole("button", { name: "Gênesis 1.1-3" }).click();
+    const popup = page.getByRole("dialog");
+    await expect(popup.getByText(/no princípio criou deus/i)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(popup).toHaveCount(0);
+
+    // "Leia Stott (cap. 3…)" (issue #283): a leitura abre ao lado do guia.
+    await page.getByRole("button", { name: /leia stott/i }).click();
+    const lado = page.getByRole("complementary", { name: /leitura ao lado/i });
+    await expect(lado.getByText(/a promessa feita a abraão/i)).toBeVisible();
+    await expect(page).toHaveURL(/persp-guia-1/);
+    await lado.getByRole("button", { name: /fechar a leitura/i }).click();
+    await expect(lado).toHaveCount(0);
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
   test("a estante abre e explica o que fazer quando está vazia", async ({ page }) => {
     const erros = vigiarErros(page);
     await page.goto("/biblioteca");

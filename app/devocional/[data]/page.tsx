@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
+import { TextoComVersiculos } from "@/components/TextoComVersiculos";
 import { UserMenu } from "@/components/UserMenu";
 import { getCurrentSession } from "@/lib/db";
-import { getDevocionalDoDia, formatDataPt } from "@/lib/devocionais";
+import { formatDataPt, getDevocionalDoDia } from "@/lib/devocionais";
 
 export default async function DevocionalPorDataPage({
   params,
@@ -76,7 +77,7 @@ export default async function DevocionalPorDataPage({
           <div className="prose-mesa mt-6 text-mesa-800">
             {d.reflexao.split("\n\n").map((p, i) => (
               <p key={i} className="whitespace-pre-wrap">
-                {p}
+                <TextoComVersiculos texto={p} />
               </p>
             ))}
           </div>

@@ -1,0 +1,60 @@
+/* Referência bíblica clicável (issue #282) e leitura ao lado (issue #283).
+   Fora do globals.css de propósito: lá as regras de impressão dependem de
+   !important e o portão de estilo reprovaria o arquivo inteiro ao ser tocado. */
+
+/* Referência clicável — abre o VersiculoPopup. Vale em
+   qualquer texto, não só na prosa do livro: enunciado, devocional, leitor. */
+.ref-biblica[data-ref-livro] {
+  color: #b4320c;
+  cursor: pointer;
+  text-decoration: underline dotted rgba(180, 50, 12, 0.45);
+  text-underline-offset: 3px;
+  border-radius: 3px;
+}
+.ref-biblica.ref-herda-cor[data-ref-livro] {
+  color: inherit;
+  text-decoration-color: currentColor;
+}
+.ref-biblica[data-ref-livro]:hover {
+  text-decoration-style: solid;
+  background-color: rgba(255, 90, 44, 0.08);
+}
+.ref-biblica[data-ref-livro]:focus-visible,
+.leitura-indicada:focus-visible {
+  outline: 2px solid #ea580c;
+  outline-offset: 2px;
+}
+
+/* "Leia Stott (cap. 3…)" que abre a leitura ao lado (issue #283). */
+.leitura-indicada {
+  cursor: pointer;
+  font-style: normal;
+  color: #7a3a12;
+  text-decoration: underline solid rgba(234, 88, 12, 0.5);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  border-radius: 3px;
+}
+.leitura-indicada:hover {
+  background-color: rgba(255, 90, 44, 0.1);
+  text-decoration-color: #ea580c;
+}
+.leitura-indicada.leitura-fim::after {
+  content: " ↗";
+  font-size: 0.85em;
+  color: #ea580c;
+}
+
+/* Com a leitura aberta ao lado, o guia cede a direita da tela larga para os
+   dois ficarem visíveis juntos. */
+@media (min-width: 1024px) {
+  body.com-leitura-ao-lado main {
+    padding-right: min(42rem, 48vw);
+    transition: padding-right 200ms ease;
+  }
+}
+@media print {
+  aside.leitura-ao-lado {
+    display: none;
+  }
+}

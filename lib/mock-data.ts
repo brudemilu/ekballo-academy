@@ -174,6 +174,21 @@ export const MOCK_CURSOS: Curso[] = [
     external_path: null,
     created_at: diasAtras(1),
   },
+  {
+    id: "curso-perspectivas",
+    slug: "perspectivas",
+    titulo: "Perspectivas no Movimento Cristão Mundial",
+    descricao:
+      "Guias de estudo e leituras. No modo demonstração, serve para ver o versículo e a leitura indicada abrindo sem sair do guia (issues #282 e #283).",
+    imagem_url: null,
+    is_pago: false,
+    preco_centavos: 0,
+    ordem: 5,
+    publicado: true,
+    categoria: "ensino",
+    external_path: null,
+    created_at: "2026-09-05T00:00:00Z",
+  },
 ];
 
 export const MOCK_AULAS: Aula[] = [
@@ -228,6 +243,31 @@ export const MOCK_AULAS: Aula[] = [
     material_url: null,
     conteudo: "Conteúdo do curso pago em construção.",
     created_at: "2026-04-20T00:00:00Z",
+  },
+  // ===== Perspectivas — guia que indica leitura e cita a Bíblia =====
+  // As frases "Leia …" são as do guia de verdade. Os versículos são os que o
+  // mock da Bíblia tem (Gênesis 1, Salmos 23, Romanos 1).
+  {
+    id: "persp-guia-1",
+    curso_id: "curso-perspectivas",
+    titulo: "Lição 1 · Guia de estudo — Deus é um Deus Missionário",
+    ordem: 1,
+    video_url: null,
+    material_url: null,
+    conteudo:
+      "Nosso Deus tem um propósito global. Ele colocou em nossos corações o desejo de sermos Seus amigos.\n\n[cite] Leia Stott (cap. 3, p. 33-40): O Deus vivo é um Deus missionário.\n\nLeia em sua Bíblia: Gênesis 1.1-3; Salmos 23.1-3. O que esses textos dizem sobre o Deus que cria e cuida?\n\n[cite] Leia na plataforma Bryant: Além de Amar o Mundo.",
+    created_at: "2026-09-05T00:00:00Z",
+  },
+  {
+    id: "persp-leitura-1",
+    curso_id: "curso-perspectivas",
+    titulo: "Lição 1 · Leitura — Stott, cap. 3: O Deus vivo é um Deus missionário",
+    ordem: 2,
+    video_url: null,
+    material_url: null,
+    conteudo:
+      "O Deus vivo é um Deus missionário\n\nA promessa feita a Abraão atravessa a Bíblia inteira. Paulo não se envergonhava do evangelho, porque é o poder de Deus para salvação (Romanos 1.16).",
+    created_at: "2026-09-05T00:00:00Z",
   },
   // ===== Ego Transformado (Keller) — 4 aulas =====
   {

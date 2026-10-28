@@ -8,7 +8,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { parseMesa, type BlocoMesa } from "@/lib/conteudo-mesa";
+import { TextoComVersiculos } from "@/components/TextoComVersiculos";
+import { type BlocoMesa, parseMesa } from "@/lib/conteudo-mesa";
 
 type Tema = "claro" | "sepia" | "escuro";
 type Modo = "rolagem" | "folhas";
@@ -135,6 +136,7 @@ export function LeitorMesa({
   return (
     <>
       <button
+        type="button"
         onClick={() => setAberto(true)}
         className="mb-8 inline-flex items-center gap-2 rounded-full border border-mesa-300 bg-white px-5 py-2.5 text-sm font-medium text-mesa-800 shadow-sm transition hover:border-laranja-300 hover:bg-laranja-50"
       >
@@ -241,6 +243,7 @@ function Overlay({
   }, [modo]);
 
   // Conta as folhas a partir da largura real do conteúdo em colunas.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: escala e blocos mudam a largura do conteúdo — são o gatilho para medir de novo.
   useLayoutEffect(() => {
     if (modo !== "folhas" || dims.w === 0) return;
     const cols = colsRef.current;
@@ -329,6 +332,7 @@ function Overlay({
         style={{ borderBottom: `1px solid ${t.rule}` }}
       >
         <button
+          type="button"
           onClick={onFechar}
           aria-label="Fechar leitura"
           className="flex h-9 w-9 flex-none items-center justify-center rounded-full text-lg"
@@ -350,6 +354,7 @@ function Overlay({
 
         <div className="flex flex-none items-center gap-1">
           <button
+            type="button"
             onClick={onMenos}
             aria-label="Diminuir fonte"
             className="flex h-9 w-9 items-center justify-center rounded-full text-sm"
@@ -358,6 +363,7 @@ function Overlay({
             A−
           </button>
           <button
+            type="button"
             onClick={onMais}
             aria-label="Aumentar fonte"
             className="flex h-9 w-9 items-center justify-center rounded-full text-lg"
@@ -366,6 +372,7 @@ function Overlay({
             A+
           </button>
           <button
+            type="button"
             onClick={onCicloTema}
             aria-label="Trocar tema"
             className="flex h-9 items-center justify-center rounded-full px-3 text-xs font-medium"
@@ -374,6 +381,7 @@ function Overlay({
             {t.nome}
           </button>
           <button
+            type="button"
             onClick={onToggleModo}
             aria-label="Alternar modo de leitura"
             className="flex h-9 items-center justify-center rounded-full px-3 text-xs font-medium"
@@ -438,12 +446,14 @@ function Overlay({
 
           {/* Zonas de toque pra virar (laterais), sem cobrir o miolo */}
           <button
+            type="button"
             aria-label="Página anterior"
             onClick={() => irPara(page - 1)}
             className="absolute left-0 top-0 h-full w-[18%]"
             style={{ display: page > 0 ? "block" : "none" }}
           />
           <button
+            type="button"
             aria-label="Próxima página"
             onClick={() => irPara(page + 1)}
             className="absolute right-0 top-0 h-full w-[18%]"
@@ -497,7 +507,7 @@ function Blocos({ blocos, t }: { blocos: BlocoMesa[]; t: (typeof TEMAS)[Tema] })
                 breakInside: "avoid",
               }}
             >
-              {b.texto}
+              <TextoComVersiculos texto={b.texto} herdarCor />
             </blockquote>
           );
         }
@@ -533,7 +543,7 @@ function Blocos({ blocos, t }: { blocos: BlocoMesa[]; t: (typeof TEMAS)[Tema] })
               } as React.CSSProperties
             }
           >
-            {b.texto}
+            <TextoComVersiculos texto={b.texto} herdarCor />
           </p>
         );
       })}

@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
-import { UserMenu } from "@/components/UserMenu";
 import { MarcarDevocionalForm } from "@/components/MarcarDevocionalForm";
+import { PostarInstagram } from "@/components/PostarInstagram";
 import { ReflexaoDevocionalForm } from "@/components/ReflexaoDevocionalForm";
 import { StoryDevocional } from "@/components/StoryDevocional";
-import { PostarInstagram } from "@/components/PostarInstagram";
+import { TextoComVersiculos } from "@/components/TextoComVersiculos";
+import { UserMenu } from "@/components/UserMenu";
 import { getCurrentSession } from "@/lib/db";
 import {
   getDevocionalAnualByDia,
-  isDevocionalAnualMarcado,
   getReflexaoAnual,
+  isDevocionalAnualMarcado,
 } from "@/lib/devocionais";
 
 const MESES = [
@@ -98,7 +99,7 @@ export default async function DevocionalDiaPage({
           <div className="prose-mesa mt-6 text-mesa-800">
             {devocional.reflexao.split("\n\n").map((p, i) => (
               <p key={i} className="whitespace-pre-wrap text-justify hyphens-auto">
-                {p}
+                <TextoComVersiculos texto={p} />
               </p>
             ))}
           </div>
