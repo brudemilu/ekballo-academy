@@ -40,11 +40,7 @@ export const viewport: Viewport = {
   // Permite zoom — não bloqueia acessibilidade
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <body className="bg-bege-50 text-bege-900 antialiased">

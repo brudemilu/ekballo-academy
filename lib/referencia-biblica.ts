@@ -30,12 +30,24 @@ const LIVROS: { nome: string; formas: string[] }[] = [
   { nome: "Josué", formas: ["Josué", "Josue", "Js", "Jos"] },
   { nome: "Juízes", formas: ["Juízes", "Juizes", "Jz"] },
   { nome: "Rute", formas: ["Rute", "Rt"] },
-  { nome: "1 Samuel", formas: ["1 Samuel", "1Samuel", "I Samuel", "1 Sm", "1Sm", "1Sam"] },
-  { nome: "2 Samuel", formas: ["2 Samuel", "2Samuel", "II Samuel", "2 Sm", "2Sm", "2Sam"] },
+  {
+    nome: "1 Samuel",
+    formas: ["1 Samuel", "1Samuel", "I Samuel", "1 Sm", "1Sm", "1Sam"],
+  },
+  {
+    nome: "2 Samuel",
+    formas: ["2 Samuel", "2Samuel", "II Samuel", "2 Sm", "2Sm", "2Sam"],
+  },
   { nome: "1 Reis", formas: ["1 Reis", "1Reis", "I Reis", "1 Rs", "1Rs"] },
   { nome: "2 Reis", formas: ["2 Reis", "2Reis", "II Reis", "2 Rs", "2Rs"] },
-  { nome: "1 Crônicas", formas: ["1 Crônicas", "1 Cronicas", "1Crônicas", "I Crônicas", "1 Cr", "1Cr"] },
-  { nome: "2 Crônicas", formas: ["2 Crônicas", "2 Cronicas", "2Crônicas", "II Crônicas", "2 Cr", "2Cr"] },
+  {
+    nome: "1 Crônicas",
+    formas: ["1 Crônicas", "1 Cronicas", "1Crônicas", "I Crônicas", "1 Cr", "1Cr"],
+  },
+  {
+    nome: "2 Crônicas",
+    formas: ["2 Crônicas", "2 Cronicas", "2Crônicas", "II Crônicas", "2 Cr", "2Cr"],
+  },
   { nome: "Esdras", formas: ["Esdras", "Ed"] },
   { nome: "Neemias", formas: ["Neemias", "Ne"] },
   { nome: "Ester", formas: ["Ester", "Et"] },
@@ -43,7 +55,10 @@ const LIVROS: { nome: string; formas: string[] }[] = [
   { nome: "Salmos", formas: ["Salmos", "Salmo", "Sl", "Sal"] },
   { nome: "Provérbios", formas: ["Provérbios", "Proverbios", "Pv", "Prov"] },
   { nome: "Eclesiastes", formas: ["Eclesiastes", "Ec", "Ecl"] },
-  { nome: "Cantares", formas: ["Cantares", "Cânticos", "Canticos", "Cantares de Salomão", "Ct"] },
+  {
+    nome: "Cantares",
+    formas: ["Cantares", "Cânticos", "Canticos", "Cantares de Salomão", "Ct"],
+  },
   { nome: "Isaías", formas: ["Isaías", "Isaias", "Is"] },
   { nome: "Jeremias", formas: ["Jeremias", "Jr", "Jer"] },
   { nome: "Lamentações", formas: ["Lamentações", "Lamentacoes", "Lm"] },
@@ -67,16 +82,64 @@ const LIVROS: { nome: string; formas: string[] }[] = [
   { nome: "João", formas: ["João", "Joao", "Jo"] },
   { nome: "Atos", formas: ["Atos dos Apóstolos", "Atos", "At"] },
   { nome: "Romanos", formas: ["Romanos", "Rm", "Rom"] },
-  { nome: "1 Coríntios", formas: ["1 Coríntios", "1 Corintios", "1Coríntios", "1Corintios", "I Coríntios", "1 Co", "1Co", "1Cor"] },
-  { nome: "2 Coríntios", formas: ["2 Coríntios", "2 Corintios", "2Coríntios", "2Corintios", "II Coríntios", "2 Co", "2Co", "2Cor"] },
+  {
+    nome: "1 Coríntios",
+    formas: [
+      "1 Coríntios",
+      "1 Corintios",
+      "1Coríntios",
+      "1Corintios",
+      "I Coríntios",
+      "1 Co",
+      "1Co",
+      "1Cor",
+    ],
+  },
+  {
+    nome: "2 Coríntios",
+    formas: [
+      "2 Coríntios",
+      "2 Corintios",
+      "2Coríntios",
+      "2Corintios",
+      "II Coríntios",
+      "2 Co",
+      "2Co",
+      "2Cor",
+    ],
+  },
   { nome: "Gálatas", formas: ["Gálatas", "Galatas", "Gl", "Gál"] },
   { nome: "Efésios", formas: ["Efésios", "Efesios", "Ef"] },
   { nome: "Filipenses", formas: ["Filipenses", "Fp", "Fil"] },
   { nome: "Colossenses", formas: ["Colossenses", "Cl", "Col"] },
-  { nome: "1 Tessalonicenses", formas: ["1 Tessalonicenses", "1Tessalonicenses", "I Tessalonicenses", "1 Ts", "1Ts"] },
-  { nome: "2 Tessalonicenses", formas: ["2 Tessalonicenses", "2Tessalonicenses", "II Tessalonicenses", "2 Ts", "2Ts"] },
-  { nome: "1 Timóteo", formas: ["1 Timóteo", "1 Timoteo", "1Timóteo", "I Timóteo", "1 Tm", "1Tm", "1Tim"] },
-  { nome: "2 Timóteo", formas: ["2 Timóteo", "2 Timoteo", "2Timóteo", "II Timóteo", "2 Tm", "2Tm", "2Tim"] },
+  {
+    nome: "1 Tessalonicenses",
+    formas: [
+      "1 Tessalonicenses",
+      "1Tessalonicenses",
+      "I Tessalonicenses",
+      "1 Ts",
+      "1Ts",
+    ],
+  },
+  {
+    nome: "2 Tessalonicenses",
+    formas: [
+      "2 Tessalonicenses",
+      "2Tessalonicenses",
+      "II Tessalonicenses",
+      "2 Ts",
+      "2Ts",
+    ],
+  },
+  {
+    nome: "1 Timóteo",
+    formas: ["1 Timóteo", "1 Timoteo", "1Timóteo", "I Timóteo", "1 Tm", "1Tm", "1Tim"],
+  },
+  {
+    nome: "2 Timóteo",
+    formas: ["2 Timóteo", "2 Timoteo", "2Timóteo", "II Timóteo", "2 Tm", "2Tm", "2Tim"],
+  },
   { nome: "Tito", formas: ["Tito", "Tt"] },
   { nome: "Filemom", formas: ["Filemom", "Filemon", "Fm"] },
   { nome: "Hebreus", formas: ["Hebreus", "Hb", "Heb"] },
@@ -115,8 +178,14 @@ const TODAS_FORMAS = [
 // Maiores primeiro: senão "Jo" casaria antes de "João" e a referência
 // sairia truncada.
 const porTamanho = (a: string, b: string) => b.length - a.length;
-const ALT_LONGAS = TODAS_FORMAS.filter((f) => !ehFormaCurta(f)).sort(porTamanho).map(escapar).join("|");
-const ALT_CURTAS = TODAS_FORMAS.filter(ehFormaCurta).sort(porTamanho).map(escapar).join("|");
+const ALT_LONGAS = TODAS_FORMAS.filter((f) => !ehFormaCurta(f))
+  .sort(porTamanho)
+  .map(escapar)
+  .join("|");
+const ALT_CURTAS = TODAS_FORMAS.filter(ehFormaCurta)
+  .sort(porTamanho)
+  .map(escapar)
+  .join("|");
 
 // Números do trecho: "3", "3.16", "3:16", "3.16-17", "3.16,18", "13.13—14.1".
 const VERSICULOS = String.raw`\s*[:.,]\s*\d{1,3}[a-z]?(?:\s*[-–—]\s*(?:\d{1,3}[:.])?\d{1,3}[a-z]?)?(?:\s*,\s*\d{1,3}[a-z]?)*`;

@@ -32,7 +32,7 @@ export function AtividadeForm({
   const [texto, setTexto] = useState(respostaInicial || "");
   const [salvando, startTransition] = useTransition();
   const [salvo, setSalvo] = useState<"idle" | "ok" | "erro">(
-    respostaInicial ? "ok" : "idle"
+    respostaInicial ? "ok" : "idle",
   );
 
   function handleSalvar() {
@@ -55,17 +55,15 @@ export function AtividadeForm({
         return;
       }
       const supabase = createClient();
-      const { error } = await supabase
-        .from("respostas")
-        .upsert(
-          {
-            atividade_id: atividadeId,
-            aluno_id: alunoId,
-            texto: conteudo,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "atividade_id,aluno_id" }
-        );
+      const { error } = await supabase.from("respostas").upsert(
+        {
+          atividade_id: atividadeId,
+          aluno_id: alunoId,
+          texto: conteudo,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "atividade_id,aluno_id" },
+      );
       if (error) {
         setSalvo("erro");
       } else {

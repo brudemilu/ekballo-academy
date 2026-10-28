@@ -74,7 +74,6 @@ function Quadro({ bloco }: { bloco: string }) {
   );
 }
 
-
 function Figura({ bloco }: { bloco: string }) {
   const { src, legenda } = parseFigura(bloco);
   return (
@@ -87,7 +86,9 @@ function Figura({ bloco }: { bloco: string }) {
         className="mx-auto w-full max-w-2xl rounded-xl border border-mesa-300 bg-white p-3"
       />
       {legenda && (
-        <figcaption className="mt-2 text-center text-sm text-mesa-600">{legenda}</figcaption>
+        <figcaption className="mt-2 text-center text-sm text-mesa-600">
+          {legenda}
+        </figcaption>
       )}
     </figure>
   );
@@ -120,9 +121,15 @@ function normalizarBusca(s: string): string {
 function montarSegmentos(
   texto: string,
   titulos: Faixa[],
-  grifos: { start: number; end: number; cor: Cor; id: string; comentario: string | null }[],
+  grifos: {
+    start: number;
+    end: number;
+    cor: Cor;
+    id: string;
+    comentario: string | null;
+  }[],
   buscas: { start: number; end: number; idx: number }[] = [],
-  refs: Faixa[] = []
+  refs: Faixa[] = [],
 ): Segmento[] {
   const pontos = new Set<number>([0, texto.length]);
   for (const f of titulos) {
@@ -141,7 +148,9 @@ function montarSegmentos(
     pontos.add(b.start);
     pontos.add(b.end);
   }
-  const ord = [...pontos].filter((p) => p >= 0 && p <= texto.length).sort((a, b) => a - b);
+  const ord = [...pontos]
+    .filter((p) => p >= 0 && p <= texto.length)
+    .sort((a, b) => a - b);
   const segs: Segmento[] = [];
   for (let i = 0; i < ord.length - 1; i++) {
     const s = ord[i];
@@ -174,8 +183,23 @@ function offsetNoParagrafo(container: Node, node: Node, offset: number): number 
 }
 
 type ToolbarState =
-  | { tipo: "selecao"; x: number; y: number; paragrafo: number; inicio: number; fim: number; texto: string }
-  | { tipo: "grifo"; x: number; y: number; id: string; texto: string; comentario: string | null }
+  | {
+      tipo: "selecao";
+      x: number;
+      y: number;
+      paragrafo: number;
+      inicio: number;
+      fim: number;
+      texto: string;
+    }
+  | {
+      tipo: "grifo";
+      x: number;
+      y: number;
+      id: string;
+      texto: string;
+      comentario: string | null;
+    }
   | null;
 
 export function AulaConteudo({
@@ -313,7 +337,10 @@ export function AulaConteudo({
     if (!alvo) return;
     alvo.scrollIntoView({ behavior: "smooth", block: "center" });
     setGrifoFocado(id);
-    window.setTimeout(() => setGrifoFocado((atual) => (atual === id ? null : atual)), 2000);
+    window.setTimeout(
+      () => setGrifoFocado((atual) => (atual === id ? null : atual)),
+      2000,
+    );
   }, []);
 
   const irMatch = useCallback(
@@ -323,7 +350,7 @@ export function AulaConteudo({
         return (a + dir + matches.length) % matches.length;
       });
     },
-    [matches.length]
+    [matches.length],
   );
   // Espelha o comentEditor pra usar dentro do listener de seleção (sem re-bind).
   const comentEditorRef = useRef<string | null>(null);
@@ -427,7 +454,11 @@ export function AulaConteudo({
       comentario,
     };
     if (MOCK) {
-      const novo: Destaque = { id: `mock-${Date.now()}`, criado_em: new Date().toISOString(), ...base };
+      const novo: Destaque = {
+        id: `mock-${Date.now()}`,
+        criado_em: new Date().toISOString(),
+        ...base,
+      };
       setDestaques((p) => [...p, novo]);
     } else {
       const supabase = createClient();
@@ -456,9 +487,14 @@ export function AulaConteudo({
     setSalvando(true);
     if (!MOCK) {
       const supabase = createClient();
-      await supabase.from("destaques_aula").update({ comentario: texto || null }).eq("id", id);
+      await supabase
+        .from("destaques_aula")
+        .update({ comentario: texto || null })
+        .eq("id", id);
     }
-    setDestaques((p) => p.map((d) => (d.id === id ? { ...d, comentario: texto || null } : d)));
+    setDestaques((p) =>
+      p.map((d) => (d.id === id ? { ...d, comentario: texto || null } : d)),
+    );
     setSalvando(false);
     esconder();
   }
@@ -484,7 +520,7 @@ export function AulaConteudo({
     setVerbete({ palavra, carregando: true, dados: null, erro: null });
     try {
       const res = await fetch(
-        `/api/dicionario?q=${encodeURIComponent(palavra)}&ctx=${encodeURIComponent(contexto)}`
+        `/api/dicionario?q=${encodeURIComponent(palavra)}&ctx=${encodeURIComponent(contexto)}`,
       );
       const json = await res.json();
       if (!res.ok || !json?.ok) {
@@ -492,13 +528,26 @@ export function AulaConteudo({
           palavra,
           carregando: false,
           dados: null,
-          erro: typeof json?.erro === "string" ? json.erro : "Não consegui consultar agora.",
+          erro:
+            typeof json?.erro === "string"
+              ? json.erro
+              : "Não consegui consultar agora.",
         });
         return;
       }
-      setVerbete({ palavra, carregando: false, dados: json.verbete as Verbete, erro: null });
+      setVerbete({
+        palavra,
+        carregando: false,
+        dados: json.verbete as Verbete,
+        erro: null,
+      });
     } catch {
-      setVerbete({ palavra, carregando: false, dados: null, erro: "Sem conexão com o dicionário." });
+      setVerbete({
+        palavra,
+        carregando: false,
+        dados: null,
+        erro: "Sem conexão com o dicionário.",
+      });
     }
   }
 
@@ -542,13 +591,17 @@ export function AulaConteudo({
 
       <p className="mb-4 flex items-center gap-2 rounded-lg bg-mesa-50 px-3 py-2 text-xs text-mesa-500">
         <span>✨</span>
-        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou gerar uma imagem. Selecionou só uma palavra? Toque em “Significado” pra ver o sentido e os sinônimos. Para desfazer, toque no grifo e escolha “Desmarcar”.
+        Selecione um trecho do texto para grifar com uma cor, escrever um comentário ou
+        gerar uma imagem. Selecionou só uma palavra? Toque em “Significado” pra ver o
+        sentido e os sinônimos. Para desfazer, toque no grifo e escolha “Desmarcar”.
       </p>
 
       {/* Campo de busca de palavras/frases no capítulo */}
       <div className="sticky top-2 z-30 mb-5">
         <div className="flex items-center gap-2 rounded-full border border-mesa-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
-          <span className="text-mesa-400" aria-hidden>🔍</span>
+          <span className="text-mesa-400" aria-hidden>
+            🔍
+          </span>
           <input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
@@ -596,7 +649,9 @@ export function AulaConteudo({
           )}
         </div>
         {termo.length >= 2 && matches.length === 0 && (
-          <p className="mt-1 px-3 text-xs text-mesa-400">Nenhuma ocorrência de “{termo}”.</p>
+          <p className="mt-1 px-3 text-xs text-mesa-400">
+            Nenhuma ocorrência de “{termo}”.
+          </p>
         )}
       </div>
 
@@ -608,7 +663,11 @@ export function AulaConteudo({
               <div
                 key={i}
                 data-paragrafo={i}
-                className={sendoNarrado ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4" : undefined}
+                className={
+                  sendoNarrado
+                    ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4"
+                    : undefined
+                }
               >
                 <Quadro bloco={paragrafo.texto} />
               </div>
@@ -619,26 +678,45 @@ export function AulaConteudo({
               <div
                 key={i}
                 data-paragrafo={i}
-                className={sendoNarrado ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4" : undefined}
+                className={
+                  sendoNarrado
+                    ? "rounded-xl bg-laranja-50 ring-2 ring-laranja-300 ring-offset-4"
+                    : undefined
+                }
               >
                 <Figura bloco={paragrafo.texto} />
               </div>
             );
           }
           const papel = papeis[i];
-          const nivel = papel ? null : nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
+          const nivel = papel
+            ? null
+            : nivelDoParagrafo(paragrafo.texto, paragrafos[i + 1]?.texto);
           const titulos = nivel ? [] : faixasDeTitulo(paragrafo.texto);
           // Referência bíblica no corpo do texto: realce só visual, por faixa
           // de caractere, pra não deslocar os grifos já salvos.
           const refs = nivel ? [] : acharReferencias(paragrafo.texto);
           const grifos = destaques
             .filter((d) => d.paragrafo === i)
-            .map((d) => ({ start: d.inicio, end: d.fim, cor: d.cor as Cor, id: d.id, comentario: d.comentario }));
+            .map((d) => ({
+              start: d.inicio,
+              end: d.fim,
+              cor: d.cor as Cor,
+              id: d.id,
+              comentario: d.comentario,
+            }));
           const matchesP: { start: number; end: number; idx: number }[] = [];
           matches.forEach((m, gi) => {
-            if (m.paragrafo === i) matchesP.push({ start: m.start, end: m.end, idx: gi });
+            if (m.paragrafo === i)
+              matchesP.push({ start: m.start, end: m.end, idx: gi });
           });
-          const segs = montarSegmentos(paragrafo.texto, titulos, grifos, matchesP, refs);
+          const segs = montarSegmentos(
+            paragrafo.texto,
+            titulos,
+            grifos,
+            matchesP,
+            refs,
+          );
           const Tag = nivel === "titulo" ? "h3" : nivel === "subtitulo" ? "h4" : "p";
           const classePapel =
             papel === "cita" ? "cita-bloco" : papel === "cita-ref" ? "cita-ref" : "";
@@ -648,7 +726,11 @@ export function AulaConteudo({
               data-paragrafo={i}
               aria-current={sendoNarrado ? "true" : undefined}
               className={`whitespace-pre-wrap rounded-md transition-[background-color,box-shadow] duration-500 ${
-                nivel === "titulo" ? "titulo-secao" : nivel === "subtitulo" ? "subtitulo-secao" : classePapel
+                nivel === "titulo"
+                  ? "titulo-secao"
+                  : nivel === "subtitulo"
+                    ? "subtitulo-secao"
+                    : classePapel
               } ${
                 sendoNarrado
                   ? "-mx-2 bg-laranja-50 px-2 shadow-[0_0_0_2px_rgba(251,146,60,0.35)]"
@@ -711,7 +793,16 @@ export function AulaConteudo({
                     >
                       {seg.texto}
                       {seg.comentario ? (
-                        <sup style={{ fontSize: "0.7em", marginLeft: 1, cursor: "pointer" }} aria-label="tem comentário">💬</sup>
+                        <sup
+                          style={{
+                            fontSize: "0.7em",
+                            marginLeft: 1,
+                            cursor: "pointer",
+                          }}
+                          aria-label="tem comentário"
+                        >
+                          💬
+                        </sup>
                       ) : null}
                     </mark>
                   );
@@ -828,7 +919,9 @@ export function AulaConteudo({
               ) : verbete.dados ? (
                 <>
                   {verbete.dados.classe && (
-                    <p className="mt-0.5 text-xs italic text-mesa-400">{verbete.dados.classe}</p>
+                    <p className="mt-0.5 text-xs italic text-mesa-400">
+                      {verbete.dados.classe}
+                    </p>
                   )}
                   {verbete.dados.significado && (
                     <p className="mt-2 text-sm leading-relaxed text-mesa-700">
@@ -862,7 +955,9 @@ export function AulaConteudo({
               ) : null}
             </div>
           ) : comentEditor !== null ? (
-            <div className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}>
+            <div
+              className={`${toque ? "w-full max-w-md" : "w-64"} rounded-2xl border border-mesa-200 bg-white p-2.5 shadow-lg`}
+            >
               <textarea
                 autoFocus
                 value={comentEditor}
@@ -950,7 +1045,11 @@ export function AulaConteudo({
                       onClick={() =>
                         consultarSignificado(
                           toolbar.texto,
-                          contextoDoTrecho(toolbar.paragrafo, toolbar.inicio, toolbar.fim)
+                          contextoDoTrecho(
+                            toolbar.paragrafo,
+                            toolbar.inicio,
+                            toolbar.fim,
+                          ),
                         )
                       }
                       title="Significado e sinônimos"
@@ -992,7 +1091,7 @@ export function AulaConteudo({
                         const d = destaques.find((x) => x.id === toolbar.id);
                         consultarSignificado(
                           toolbar.texto,
-                          d ? contextoDoTrecho(d.paragrafo, d.inicio, d.fim) : ""
+                          d ? contextoDoTrecho(d.paragrafo, d.inicio, d.fim) : "",
                         );
                       }}
                       title="Significado e sinônimos"
@@ -1041,7 +1140,7 @@ function imgUrl(
   livroTitulo: string,
   autor: string | null,
   formato: Formato,
-  download = false
+  download = false,
 ): string {
   const params = new URLSearchParams({
     verso: texto,
