@@ -1,4 +1,4 @@
--- 323_perspectivas_artigos_licao10.sql
+-- 377_perspectivas_artigos_licao10.sql
 -- Dois artigos de plataforma da Lição 10. Com o primeiro, a lição fica completa:
 -- os sete capítulos do livro já estavam no ar desde setembro.
 --
