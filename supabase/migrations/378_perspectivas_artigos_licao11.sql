@@ -1,4 +1,4 @@
--- 324_perspectivas_artigos_licao11.sql
+-- 378_perspectivas_artigos_licao11.sql
 -- Os quatro artigos de plataforma da Lição 11. Com eles a lição fica completa:
 -- os sete capítulos do livro já estavam no ar desde setembro.
 --
