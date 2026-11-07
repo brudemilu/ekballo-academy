@@ -25,7 +25,11 @@ import {
   systemCortes,
   transcricaoParaIA,
 } from "@/lib/cortes";
-import { atualizarCorteConteudo, getPerfilConteudo } from "@/lib/db";
+import {
+  atualizarCorteConteudo,
+  getMinisterioInstagram,
+  getPerfilConteudo,
+} from "@/lib/db";
 import { chamarLLMLendo } from "@/lib/llm";
 import { converterParaMp3 } from "@/lib/youtube";
 
@@ -177,7 +181,10 @@ export async function processarCorte(id: string, videoId: string): Promise<void>
     // ele a leitura do perfil falhava calada e o pedido ia sem a voz do pastor.
     const perfil = await getPerfilConteudo(true).catch(() => null);
     const momentos = await chamarLLMLendo(
-      systemCortes(perfil ? contextoDoPerfil(perfil) : ""),
+      systemCortes(
+        perfil ? contextoDoPerfil(perfil) : "",
+        await getMinisterioInstagram().catch(() => ""),
+      ),
       `VÍDEO: ${video.title}\n\nTRANSCRIÇÃO:\n${transcricaoParaIA(transcricao)}`,
       6000,
       (bruto) => normalizarMomentos(bruto, transcricao),

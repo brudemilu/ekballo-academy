@@ -201,6 +201,20 @@ describe("mensagemDoPiloto e veto", () => {
     expect(msg.endsWith("https://x/piloto")).toBe(true);
   });
 
+  it("no aviso de outra conta, diz de quem é e não oferece o cancelamento por resposta", () => {
+    const msg = mensagemDoPiloto(
+      { fonte: { tipo: "devocional", titulo: "Dia 12" }, pecas },
+      "https://x/piloto?conta=abc",
+      "@imw2regiao",
+    );
+    expect(msg).toContain("Piloto automático do Instagram — @imw2regiao");
+    // o comando por WhatsApp mexe só na conta principal: prometer aqui cancelaria o post errado
+    expect(msg).not.toContain("responda aqui");
+    expect(msg).toContain("abra o piloto");
+    expect(msg).toContain("https://x/piloto?conta=abc");
+    expect(msg.startsWith("🤖")).toBe(true);
+  });
+
   it("só dá para vetar o que está agendado e ainda não chegou a hora", () => {
     const antes = new Date("2026-10-06T21:00:00Z");
     const depois = new Date("2026-10-06T23:00:00Z");

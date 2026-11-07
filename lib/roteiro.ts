@@ -16,6 +16,7 @@
  *    que quem grava sozinho consegue seguir sem decorar.
  */
 
+import { ministerioParaIA } from "@/lib/instagram-identidade";
 import { lerJSONdaIA } from "@/lib/json-ia";
 
 export const DURACOES = [15, 30, 60, 90] as const;
@@ -147,9 +148,14 @@ export function situacaoDoTamanho(
 // Pedido à IA
 // ---------------------------------------------------------------------------
 
-export function systemRoteiro(duracao: Duracao, contextoPerfil: string): string {
+export function systemRoteiro(
+  duracao: Duracao,
+  contextoPerfil: string,
+  /** Nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+  ministerio = "",
+): string {
   const { min, max } = PALAVRAS_POR_DURACAO[duracao];
-  return `Você escreve roteiros de Reels para o Instagram de um ministério cristão de discipulado (Ekballo).
+  return `Você escreve roteiros de Reels para o Instagram de ${ministerioParaIA(ministerio)}.
 O pastor grava sozinho, olhando para a câmera. Seu roteiro precisa ser fácil de falar e fiel ao que foi ensinado.
 
 FIDELIDADE (a regra que manda nas outras)

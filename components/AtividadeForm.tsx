@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { TextoComVersiculos } from "@/components/TextoComVersiculos";
 import { createClient } from "@/lib/supabase/client";
 
 const MOCK = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
@@ -32,7 +33,7 @@ export function AtividadeForm({
   const [texto, setTexto] = useState(respostaInicial || "");
   const [salvando, startTransition] = useTransition();
   const [salvo, setSalvo] = useState<"idle" | "ok" | "erro">(
-    respostaInicial ? "ok" : "idle"
+    respostaInicial ? "ok" : "idle",
   );
 
   function handleSalvar() {
@@ -55,17 +56,15 @@ export function AtividadeForm({
         return;
       }
       const supabase = createClient();
-      const { error } = await supabase
-        .from("respostas")
-        .upsert(
-          {
-            atividade_id: atividadeId,
-            aluno_id: alunoId,
-            texto: conteudo,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "atividade_id,aluno_id" }
-        );
+      const { error } = await supabase.from("respostas").upsert(
+        {
+          atividade_id: atividadeId,
+          aluno_id: alunoId,
+          texto: conteudo,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "atividade_id,aluno_id" },
+      );
       if (error) {
         setSalvo("erro");
       } else {
@@ -85,7 +84,7 @@ export function AtividadeForm({
         </p>
       </div>
       <h3 className="mb-5 font-serif text-xl font-semibold leading-snug text-mesa-800">
-        {pergunta}
+        <TextoComVersiculos texto={pergunta} />
       </h3>
 
       <textarea
@@ -118,6 +117,7 @@ export function AtividadeForm({
                   : "Sua resposta fica salva e seu líder pode ler."}
         </p>
         <button
+          type="button"
           onClick={handleSalvar}
           disabled={salvando || !texto.trim()}
           className="rounded-full bg-laranja-500 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-laranja-500/20 transition hover:bg-laranja-600 disabled:opacity-50"
@@ -140,7 +140,7 @@ export function AtividadeForm({
             Devolutiva do líder
           </p>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-mesa-800 text-justify hyphens-auto">
-            {comentarioLider}
+            <TextoComVersiculos texto={comentarioLider} />
           </p>
         </div>
       )}

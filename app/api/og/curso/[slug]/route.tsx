@@ -1173,6 +1173,17 @@ const CAPAS: Record<string, CapaConfig> = {
     preLabelCor: "#A9C4DE",
     rodapeCor: "#A9C4DE",
   },
+  "memorias-de-charles-finney": {
+    preLabel: "LEITURA · 33 CAPÍTULOS",
+    titulo: "Memórias de\nCharles G. Finney",
+    subtitulo: "A conversão, o ministério e os avivamentos contados por ele",
+    rodape: "Autobiografia de Charles G. Finney (1792–1875)",
+    bg: "linear-gradient(135deg, #1C1A2E 0%, #3A2F52 52%, #7A5A3A 100%)",
+    textoCor: "#F5F0E8",
+    acentoCor: "#E6C84A",
+    preLabelCor: "#C9BBD8",
+    rodapeCor: "#C9BBD8",
+  },
 };
 
 let cachedCormorantBold: ArrayBuffer | undefined;

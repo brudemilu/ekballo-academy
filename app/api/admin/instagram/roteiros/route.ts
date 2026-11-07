@@ -9,6 +9,7 @@ import {
   atualizarRoteiroConteudo,
   deletarRoteiroConteudo,
   getCurrentSession,
+  getMinisterioInstagram,
   getPerfilConteudo,
   getReferenciaConteudo,
   salvarRoteiroConteudo,
@@ -119,7 +120,11 @@ export async function POST(req: NextRequest) {
     ]);
 
     const roteiro = await chamarLLMLendo(
-      systemRoteiro(pedido.duracao, contextoDoPerfil(perfil, referencia)),
+      systemRoteiro(
+        pedido.duracao,
+        contextoDoPerfil(perfil, referencia),
+        await getMinisterioInstagram().catch(() => ""),
+      ),
       usuarioRoteiro(
         { ...fonte, texto },
         typeof pedido.foco === "string" ? pedido.foco.slice(0, 400) : undefined,

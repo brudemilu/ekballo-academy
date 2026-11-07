@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useIdentidadeInstagram } from "@/components/IdentidadeInstagram";
 import { ESTILOS, type EstiloImagem, FORMATOS, sementes } from "@/lib/imagem-livre";
 import type { FormatoImagem } from "@/lib/instagram";
+import { identidadeNoEndereco } from "@/lib/instagram-identidade";
 
 /**
  * Aba Imagens do Instagram (issue #189).
@@ -241,6 +243,7 @@ function Variacao({ pedido, seed }: { pedido: Pedido; seed: number }) {
 // ---------------------------------------------------------------------------
 
 function CapaDeReel({ tituloInicial }: { tituloInicial?: string }) {
+  const identidade = useIdentidadeInstagram();
   const [titulo, setTitulo] = useState(tituloInicial || "");
   const [descricao, setDescricao] = useState("");
   const [capa, setCapa] = useState<{
@@ -267,15 +270,19 @@ function CapaDeReel({ tituloInicial }: { tituloInicial?: string }) {
     }
   }
 
-  const src = capa
-    ? `/api/og/instagram?${new URLSearchParams({
+  const parametrosDaCapa = capa
+    ? new URLSearchParams({
         f: "story",
         verso: capa.titulo,
         prompt: capa.cena,
         seed: String(capa.seed),
         realce: "dourado",
         tom: "escuro",
-      }).toString()}`
+      })
+    : null;
+  if (parametrosDaCapa) identidadeNoEndereco(parametrosDaCapa, identidade);
+  const src = parametrosDaCapa
+    ? `/api/og/instagram?${parametrosDaCapa.toString()}`
     : "";
 
   return (

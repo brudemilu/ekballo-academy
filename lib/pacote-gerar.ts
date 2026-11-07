@@ -56,6 +56,8 @@ export async function gerarPecasDaFonte(
     /** false = não gasta a chamada (o piloto pode estar com a peça desligada). */
     comPecas?: boolean;
     comRoteiro?: boolean;
+    /** Nome do ministério da conta; vazio = o da conta principal. */
+    ministerio?: string;
   },
 ): Promise<PecasGeradas> {
   const {
@@ -65,11 +67,12 @@ export async function gerarPecasDaFonte(
     duracaoReel,
     comPecas = true,
     comRoteiro = true,
+    ministerio = "",
   } = opcoes;
   const [pecasR, roteiroR] = await Promise.allSettled([
     comPecas
       ? chamarLLMLendo(
-          `${systemPacote(contextoDoPerfil(perfil))}\n\n${instrucaoDoModelo("cinema")}`,
+          `${systemPacote(contextoDoPerfil(perfil), ministerio)}\n\n${instrucaoDoModelo("cinema")}`,
           usuarioPacote(fonte, foco),
           2400,
           normalizarPacote,
@@ -77,7 +80,7 @@ export async function gerarPecasDaFonte(
       : Promise.resolve(null),
     comRoteiro
       ? chamarLLMLendo(
-          systemRoteiro(duracaoReel, contextoDoPerfil(perfil, referencia)),
+          systemRoteiro(duracaoReel, contextoDoPerfil(perfil, referencia), ministerio),
           usuarioRoteiro(fonte, foco),
           2200,
           normalizarRoteiro,

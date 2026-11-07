@@ -1,16 +1,22 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getIdentidadeInstagram } from "@/lib/db";
+import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
+import { credenciaisInstagram } from "@/lib/instagram-credenciais";
 import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
-  instagramConfigurado,
+  type Publicado,
   publicarInstagram,
   publicarReel,
   publicarStory,
+  reservaAte,
 } from "@/lib/instagram-publish";
 import { selfOrigin } from "@/lib/site-url";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// Um Reel pode levar minutos para o Instagram processar (issue #232). No box
+// não há o teto de 60 s da Vercel; o valor fica só como registro da intenção.
+export const maxDuration = 600;
 
 // Publica os carrosséis cujo horário agendado já chegou. Chamado pelo pg_cron
 // do box (job instagram-agendados, migration 320) com ?secret=AGENDA_SYNC_SECRET;
@@ -48,9 +54,6 @@ export async function GET(req: NextRequest) {
   if (!autorizado(req)) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
-  if (!instagramConfigurado()) {
-    return NextResponse.json({ error: "Instagram não configurado" }, { status: 503 });
-  }
 
   // As imagens são geradas pela rota OG do próprio app e sobem para o Storage
   // (é de lá que a Meta busca). A chamada é interna: pelo domínio público,
@@ -61,7 +64,9 @@ export async function GET(req: NextRequest) {
   // pega os que já venceram (limite pequeno por execução)
   const { data: pendentes, error } = await supabase
     .from("instagram_carrosseis")
-    .select("id, slides, legenda, tipo, video_url")
+    .select(
+      "id, slides, legenda, tipo, video_url, agendado_para, colaboradores, conta_id",
+    )
     .eq("status", "agendado")
     .lte("agendado_para", new Date().toISOString())
     .order("agendado_para", { ascending: true })
@@ -72,37 +77,64 @@ export async function GET(req: NextRequest) {
 
   const resultados: { id: string; ok: boolean; erro?: string }[] = [];
   for (const post of pendentes) {
+    // Reserva o post antes de falar com o Instagram: empurra a hora dele para a
+    // frente, e só segue quem conseguiu fazer isso. A publicação de um Reel
+    // pode passar de 5 minutos — sem a reserva, a rodada seguinte do cron
+    // pegaria o mesmo post e ele sairia duas vezes.
+    const { data: reservado } = await supabase
+      .from("instagram_carrosseis")
+      .update({ agendado_para: reservaAte(new Date()) })
+      .eq("id", post.id)
+      .eq("status", "agendado")
+      .eq("agendado_para", post.agendado_para)
+      .select("id");
+    if (!reservado?.length) continue; // outra rodada já está com ele
     const isReel = post.tipo === "reel";
     const slides = Array.isArray(post.slides) ? (post.slides as SlideRow[]) : [];
+    // Story não aceita colaborador; nos outros formatos o convite vai junto.
+    const colaboradores = normalizarColaboradores(post.colaboradores);
     try {
-      const { id: postId } = isReel
+      // Cada post sai pela conta dona dele (issue #264). Conta sem token não
+      // trava a fila das outras: o post vai para "erro", com o motivo à vista.
+      const cred = await credenciaisInstagram(post.conta_id as string);
+      if (!cred) {
+        throw new Error(
+          "a conta deste post não está conectada ao Instagram (aba Contas)",
+        );
+      }
+      const publicado: Publicado = isReel
         ? await (async () => {
             if (!post.video_url) throw new Error("sem vídeo");
             return publicarReel({
-              igUserId: process.env.IG_USER_ID!,
-              token: process.env.META_ACCESS_TOKEN!,
+              ...cred,
               videoUrl: post.video_url,
               legenda: post.legenda || "",
+              colaboradores,
             });
           })()
         : await (async () => {
             if (!slides.length) throw new Error("sem slides");
-            const imageUrls = await prepararImageUrls(origin, slides);
+            // A arte leva a assinatura da conta dona do post.
+            const imageUrls = await prepararImageUrls(
+              origin,
+              slides,
+              await getIdentidadeInstagram(post.conta_id as string),
+            );
             // Story: uma imagem 9:16, sem legenda, que some em 24 h.
             if (ehStory(slides)) {
               return publicarStory({
-                igUserId: process.env.IG_USER_ID!,
-                token: process.env.META_ACCESS_TOKEN!,
+                ...cred,
                 imageUrl: imageUrls[0],
               });
             }
             return publicarInstagram({
-              igUserId: process.env.IG_USER_ID!,
-              token: process.env.META_ACCESS_TOKEN!,
+              ...cred,
               imageUrls,
               legenda: post.legenda || "",
+              colaboradores,
             });
           })();
+      const postId = publicado.id;
       await supabase
         .from("instagram_carrosseis")
         .update({
@@ -110,6 +142,10 @@ export async function GET(req: NextRequest) {
           publicado_em: new Date().toISOString(),
           ig_post_id: postId,
           erro: null,
+          // o post saiu, mas o convite de colaboração não: fica registrado
+          aviso: publicado.aviso ?? null,
+          // devolve a hora que o pastor marcou (a reserva a tinha empurrado)
+          agendado_para: post.agendado_para,
         })
         .eq("id", post.id);
       resultados.push({ id: post.id, ok: true });
@@ -117,7 +153,7 @@ export async function GET(req: NextRequest) {
       const msg = e instanceof Error ? e.message : "falha";
       await supabase
         .from("instagram_carrosseis")
-        .update({ status: "erro", erro: msg })
+        .update({ status: "erro", erro: msg, agendado_para: post.agendado_para })
         .eq("id", post.id);
       resultados.push({ id: post.id, ok: false, erro: msg });
     }

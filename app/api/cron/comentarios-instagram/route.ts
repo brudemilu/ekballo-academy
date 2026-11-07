@@ -1,5 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { responderComentarios } from "@/lib/comentarios-auto-executar";
+import {
+  type ResumoComentarios,
+  responderComentarios,
+} from "@/lib/comentarios-auto-executar";
+import { listContasInstagram } from "@/lib/db";
+import { comConta } from "@/lib/instagram-conta-atual";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -21,7 +26,23 @@ export async function GET(req: NextRequest) {
   if (!autorizado(req))
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   try {
-    return NextResponse.json({ ok: true, ...(await responderComentarios()) });
+    // Uma rodada por conta (issue #264). A falha de uma não impede as outras.
+    const contas: (ResumoComentarios & { conta: string; erro?: string })[] = [];
+    for (const c of await listContasInstagram()) {
+      try {
+        contas.push({
+          conta: c.nome,
+          ...(await comConta(c.id, () => responderComentarios())),
+        });
+      } catch (e) {
+        contas.push({
+          conta: c.nome,
+          rodou: false,
+          erro: e instanceof Error ? e.message : "falha",
+        });
+      }
+    }
+    return NextResponse.json({ ok: true, contas });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "falha ao responder comentários" },

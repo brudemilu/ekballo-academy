@@ -11,6 +11,7 @@
  */
 
 import { somarDias } from "@/lib/conteudo-calendario";
+import { ministerioParaIA } from "@/lib/instagram-identidade";
 import { lerJSONdaIA } from "@/lib/json-ia";
 import type { FonteRoteiro } from "@/lib/roteiro";
 
@@ -76,8 +77,12 @@ export function validarDias(v: unknown): DiasPacote | string {
   return dias;
 }
 
-export function systemPacote(contextoPerfil: string): string {
-  return `Você prepara o conteúdo da semana do Instagram de um ministério cristão de discipulado (Ekballo).
+export function systemPacote(
+  contextoPerfil: string,
+  /** Nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+  ministerio = "",
+): string {
+  return `Você prepara o conteúdo da semana do Instagram de ${ministerioParaIA(ministerio)}.
 De UMA fonte você monta duas peças que se conversam: um CARROSSEL e um STORY com pergunta. (O roteiro do vídeo é feito à parte, da mesma fonte.)
 
 FIDELIDADE (a regra que manda nas outras)

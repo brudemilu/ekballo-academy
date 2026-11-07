@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
+import { telefonesEmCopia } from "@/lib/aviso-respostas-copia";
 import { resumoDaAula } from "@/lib/resumo-aula";
 import { siteBase } from "@/lib/site-url";
 import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
@@ -13,6 +14,10 @@ import { supabaseFunctionsBase } from "@/lib/supabase/functions-url";
 //
 //   • livro     → livro, mesa, resumo do capítulo, pergunta e resposta;
 //   • devocional→ só o dia e a resposta (o devocional o líder já conhece).
+//
+// A mesma mensagem segue em cópia para os telefones de AVISO_RESPOSTAS_COPIA
+// (quem acompanha junto com o líder). O número fica na env do servidor, não
+// aqui: o repositório é público.
 //
 //   GET /api/cron/avisar-respostas                (Bearer CRON_SECRET)
 //   GET /api/cron/avisar-respostas?secret=...     (AGENDA_SYNC_SECRET, manual)
@@ -361,6 +366,7 @@ export async function GET(req: NextRequest) {
       janela,
       corte,
       avisos: mensagens.length,
+      copias: telefonesEmCopia(process.env.AVISO_RESPOSTAS_COPIA).length,
       mensagens: mensagens.map((a) => a.mensagem),
     });
   }
@@ -394,8 +400,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, erro: erroReserva.message }, { status: 500 });
   }
 
+  const copias = telefonesEmCopia(process.env.AVISO_RESPOSTAS_COPIA, para);
+
   let enviados = 0;
+  let enviadosCopia = 0;
   const falhas: string[] = [];
+  const falhasCopia: string[] = [];
   for (const aviso of mensagens) {
     const erro = await enviarTexto(para, aviso.mensagem);
     if (erro) {
@@ -420,6 +430,14 @@ export async function GET(req: NextRequest) {
       continue;
     }
     enviados++;
+    // A cópia só sai depois que o aviso principal saiu, e a falha dela NÃO
+    // desfaz a reserva: desfazer faria o líder receber a mesma mensagem de
+    // novo a cada rodada, até a cópia passar. Fica registrada na resposta.
+    for (const copia of copias) {
+      const erroCopia = await enviarTexto(copia, aviso.mensagem);
+      if (erroCopia) falhasCopia.push(erroCopia);
+      else enviadosCopia++;
+    }
   }
 
   return NextResponse.json({
@@ -427,6 +445,9 @@ export async function GET(req: NextRequest) {
     janela,
     enviados,
     falhas,
+    copias: copias.length,
+    enviadosCopia,
+    falhasCopia,
     horario: new Date().toLocaleString("pt-BR", { timeZone: TZ }),
   });
 }

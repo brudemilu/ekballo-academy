@@ -1,8 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/db";
+import { getCurrentSession, getIdentidadeInstagram } from "@/lib/db";
+import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
+import { contaAtualId } from "@/lib/instagram-conta-atual";
+import { ehIdDeConta } from "@/lib/instagram-contas";
+import { credenciaisInstagram } from "@/lib/instagram-credenciais";
 import { ehStory, prepararImageUrls } from "@/lib/instagram-imagens";
 import {
-  instagramConfigurado,
+  ESPERA_REEL_TELA_SEG,
+  type Publicado,
   publicarInstagram,
   publicarReel,
   publicarStory,
@@ -39,20 +44,16 @@ export async function POST(req: NextRequest) {
   if (!session?.profile?.is_admin) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
-  if (!instagramConfigurado()) {
-    return NextResponse.json(
-      {
-        error: "Instagram ainda não conectado (faltam IG_USER_ID e META_ACCESS_TOKEN).",
-      },
-      { status: 503 },
-    );
-  }
 
   let slides: SlideIn[] = [];
   let legenda = "";
   let postId: string | null = null;
   let tipo = "carrossel";
   let videoUrl = "";
+  let colaboradores: string[] = [];
+  // Post salvo sai pela conta DONA dele, não pela que está aberta no painel:
+  // com duas abas em contas diferentes, a escolhida na hora pode ser outra.
+  let contaId = await contaAtualId();
   try {
     const body = await req.json();
     postId = typeof body.id === "string" ? body.id : null;
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       const supabase = await createClient();
       const { data, error } = await supabase
         .from("instagram_carrosseis")
-        .select("slides, legenda, tipo, video_url")
+        .select("slides, legenda, tipo, video_url, colaboradores, conta_id")
         .eq("id", postId)
         .single();
       if (error || !data) {
@@ -71,11 +72,14 @@ export async function POST(req: NextRequest) {
       legenda = typeof data.legenda === "string" ? data.legenda : "";
       tipo = data.tipo === "reel" ? "reel" : "carrossel";
       videoUrl = typeof data.video_url === "string" ? data.video_url : "";
+      colaboradores = normalizarColaboradores(data.colaboradores);
+      if (ehIdDeConta(data.conta_id)) contaId = data.conta_id;
     } else {
       tipo = body.tipo === "reel" ? "reel" : "carrossel";
       slides = Array.isArray(body.slides) ? body.slides : [];
       legenda = typeof body.legenda === "string" ? body.legenda : "";
       videoUrl = typeof body.videoUrl === "string" ? body.videoUrl : "";
+      colaboradores = normalizarColaboradores(body.colaboradores);
     }
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
@@ -84,6 +88,14 @@ export async function POST(req: NextRequest) {
   const isReel = tipo === "reel";
   if (isReel ? !videoUrl : !slides.length) {
     return NextResponse.json({ error: "Nada pra publicar." }, { status: 400 });
+  }
+
+  const cred = await credenciaisInstagram(contaId);
+  if (!cred) {
+    return NextResponse.json(
+      { error: "Esta conta ainda não está conectada ao Instagram (aba Contas)." },
+      { status: 503 },
+    );
   }
 
   // o Meta busca a mídia por URL pública — usa a origem da requisição (produção).
@@ -99,29 +111,38 @@ export async function POST(req: NextRequest) {
   }
   // imagens: pré-gera e sobe no Storage (estático/rápido) pra o Meta não dar
   // timeout buscando a rota OG (que gera por IA, ~10s). Reel não usa imagens.
-  const imageUrls = isReel ? [] : await prepararImageUrls(origin, slides);
+  // A arte leva a assinatura da conta dona do post.
+  const imageUrls = isReel
+    ? []
+    : await prepararImageUrls(
+        origin,
+        slides,
+        await getIdentidadeInstagram(contaId).catch(() => ({})),
+      );
 
   try {
-    const { id } = isReel
+    const publicado: Publicado = isReel
       ? await publicarReel({
-          igUserId: process.env.IG_USER_ID!,
-          token: process.env.META_ACCESS_TOKEN!,
+          ...cred,
           videoUrl,
           legenda,
+          esperaSeg: ESPERA_REEL_TELA_SEG,
+          colaboradores,
         })
       : ehStory(slides)
         ? // Story: uma imagem 9:16, sem legenda, que some em 24 h.
           await publicarStory({
-            igUserId: process.env.IG_USER_ID!,
-            token: process.env.META_ACCESS_TOKEN!,
+            ...cred,
             imageUrl: imageUrls[0],
           })
         : await publicarInstagram({
-            igUserId: process.env.IG_USER_ID!,
-            token: process.env.META_ACCESS_TOKEN!,
+            ...cred,
             imageUrls,
             legenda,
+            colaboradores,
           });
+    const aviso = publicado.aviso ?? null;
+    const id = publicado.id;
     if (postId) {
       const supabase = await createClient();
       await supabase
@@ -131,10 +152,11 @@ export async function POST(req: NextRequest) {
           publicado_em: new Date().toISOString(),
           ig_post_id: id,
           erro: null,
+          aviso,
         })
         .eq("id", postId);
     }
-    return NextResponse.json({ ok: true, id });
+    return NextResponse.json({ ok: true, id, aviso });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Falha ao publicar.";
     if (postId) {

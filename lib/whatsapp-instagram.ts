@@ -11,6 +11,7 @@
  * Os gatilhos são palavras que a agenda NÃO usa. "agendar…" já é comando da
  * agenda de compromissos — por isso aqui se diz "publicar terça 19h".
  */
+import { interpretarColaboracao } from "@/lib/instagram-colaboradores";
 import { proximaOcorrencia } from "@/lib/piloto";
 import {
   ehTextoMarcado,
@@ -44,6 +45,9 @@ export type ComandoInstagram =
   // Mexe no rascunho que está na tela, sem gerar outro (issue #239). Quem
   // decide que a mensagem é um ajuste é o webhook, que sabe se há rascunho.
   | { tipo: "ajustar"; pedido: string }
+  // Convida perfis a colaborar no post que está na tela (issue #256).
+  // Lista vazia tira a colaboração.
+  | { tipo: "colaborar"; perfis: string[] }
   | {
       tipo: "cancelar";
       alvo: "rascunho" | "carrossel" | "reel" | "tudo";
@@ -142,6 +146,10 @@ export function interpretarComando(
       return { tipo: "cancelar", alvo: "rascunho", motivo };
     return null; // "cancelar a reunião de quinta" não é conosco
   }
+
+  // "colaborar com @fulano", "sem colaboração"
+  const perfis = interpretarColaboracao(original);
+  if (perfis) return { tipo: "colaborar", perfis };
 
   // "refazer", "refazer mais curto", "refaça com um versículo no final"
   const refazer = original.match(RE_REFAZER);
@@ -260,6 +268,7 @@ export const AJUDA_INSTAGRAM = [
   "   (vale para _post único texto: …_ também; a última linha pode ser a referência)",
   "• *publicar* — vai ao ar agora",
   "• *publicar terça 19h* — fica agendado",
+  "• *colaborar com @perfil* — convido o perfil a aparecer junto no post (até 3; *sem colaboração* tira)",
   "• *refazer* — faço outra versão (*refazer mais curto* também vale)",
   '• *ajustar* + o que mudar — mexo só nisso: _ajustar texto: …_, _destacar "eu descerei" em amarelo_, _outra foto_',
   "• *cancelar* — descarto o rascunho",

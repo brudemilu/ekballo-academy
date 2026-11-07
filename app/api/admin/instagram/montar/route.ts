@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { systemCarrosselDaIdeia, validarIdeia } from "@/lib/carrossel-ideia";
 import { contextoDoPerfil } from "@/lib/conteudo-perfil";
-import { getCurrentSession, getPerfilConteudo } from "@/lib/db";
+import { getCurrentSession, getMinisterioInstagram, getPerfilConteudo } from "@/lib/db";
 import { gerarCarrosselIA, systemCarrosselPadrao } from "@/lib/instagram";
 import { instrucaoDoModelo, lerModelo } from "@/lib/instagram-modelos";
 
@@ -49,10 +49,14 @@ export async function POST(req: NextRequest) {
     const v = validarIdeia(conteudo);
     if (!v.ok) return NextResponse.json({ error: v.erro }, { status: 400 });
     try {
-      const perfil = await getPerfilConteudo().catch(() => null);
+      const [perfil, ministerio] = await Promise.all([
+        getPerfilConteudo().catch(() => null),
+        getMinisterioInstagram().catch(() => ""),
+      ]);
       const system = `${systemCarrosselDaIdeia(
         tipo,
         perfil ? contextoDoPerfil(perfil) : "",
+        ministerio,
       )}${formato ? `\n\n${formato}` : ""}`;
       return NextResponse.json(
         await gerarCarrosselIA(`IDEIA DO PASTOR: ${v.valor}`, tipo, system),
@@ -73,10 +77,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Com modelo escolhido ou em outra conta, o pedido é montado aqui; sem
+    // nenhum dos dois, vale o padrão de `gerarCarrosselIA`.
+    const ministerio = await getMinisterioInstagram().catch(() => "");
     const carrossel = await gerarCarrosselIA(
       conteudo,
       tipo,
-      formato ? `${systemCarrosselPadrao(tipo)}\n\n${formato}` : undefined,
+      formato || ministerio
+        ? `${systemCarrosselPadrao(tipo, ministerio)}${formato ? `\n\n${formato}` : ""}`
+        : undefined,
     );
     return NextResponse.json(carrossel);
   } catch (e) {

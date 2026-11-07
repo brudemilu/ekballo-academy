@@ -15,9 +15,11 @@ import {
   atualizarExecucaoPiloto,
   criarIdeiaConteudo,
   getCorteConteudo,
+  getMinisterioInstagram,
   getPerfilConteudo,
   getPilotoConfig,
   listAulasByCurso,
+  listContasInstagram,
   listCortesConteudo,
   listCursosPublicados,
   salvarCarrosselInstagram,
@@ -25,6 +27,8 @@ import {
   salvarRoteiroConteudo,
 } from "@/lib/db";
 import { diaAnoFromDateStr, getDevocionalDoDia } from "@/lib/devocionais";
+import { contaAtualId } from "@/lib/instagram-conta-atual";
+import { CONTA_PRINCIPAL_ID, rotuloDaConta } from "@/lib/instagram-contas";
 import { isMockMode } from "@/lib/mock-data";
 import { gerarPecasDaFonte, slidesParaSalvar } from "@/lib/pacote-gerar";
 import {
@@ -230,6 +234,7 @@ export async function executarPiloto(
       comPecas: config.pecas.carrossel,
       // O Reel da IA é montado em cima do roteiro, mesmo que o pastor não queira gravá-lo.
       comRoteiro: config.pecas.roteiro || config.pecas.reel_ia,
+      ministerio: await getMinisterioInstagram().catch(() => ""),
     });
     const horarios = horariosDaExecucao(agora, config);
 
@@ -359,11 +364,20 @@ export async function executarPiloto(
     );
     await atualizarExecucaoPiloto(execucaoId, { status: "pronto", pecas, erro: null });
 
-    const link = `${siteBase()}/admin/instagram?aba=piloto`;
+    // O link já abre na conta certa; e o aviso de outra conta diz de quem é.
+    const contaId = await contaAtualId();
+    const outraConta =
+      contaId === CONTA_PRINCIPAL_ID
+        ? ""
+        : await listContasInstagram()
+            .then((cs) => cs.find((c) => c.id === contaId))
+            .then((c) => (c ? rotuloDaConta(c) : "outra conta"))
+            .catch(() => "outra conta");
+    const link = `${siteBase()}/admin/instagram?aba=piloto&conta=${contaId}`;
     const falhaNoAviso = config.telefone
       ? await enviarTextoWhatsApp(
           config.telefone,
-          mensagemDoPiloto({ fonte: origem, pecas }, link),
+          mensagemDoPiloto({ fonte: origem, pecas }, link, outraConta),
         )
       : "sem telefone configurado";
     await atualizarExecucaoPiloto(execucaoId, {

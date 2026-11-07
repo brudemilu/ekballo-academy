@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useIdentidadeInstagram } from "@/components/IdentidadeInstagram";
+import { type Identidade, identidadeNoEndereco } from "@/lib/instagram-identidade";
 import { TEMA_PADRAO, TEMAS, type TemaKey } from "@/lib/instagram-render";
 import { createClient } from "@/lib/supabase/client";
 
@@ -65,7 +67,7 @@ function novoSeed() {
   return Math.floor(Math.random() * 1_000_000);
 }
 
-function ogSrc(s: EdSlide, tema: TemaKey): string {
+function ogSrc(s: EdSlide, tema: TemaKey, identidade?: Identidade): string {
   const p = new URLSearchParams({
     verso: s.texto || "",
     prompt: s.prompt || "",
@@ -79,6 +81,7 @@ function ogSrc(s: EdSlide, tema: TemaKey): string {
   if (s.tom) p.set("tom", s.tom);
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
+  identidadeNoEndereco(p, identidade);
   return `/api/og/instagram?${p.toString()}`;
 }
 
@@ -94,7 +97,8 @@ function SlidePreview({
 }) {
   const W = size;
   const H = Math.round(size * 1.25);
-  const alvo = ogSrc(slide, tema);
+  const identidade = useIdentidadeInstagram();
+  const alvo = ogSrc(slide, tema, identidade);
   const [src, setSrc] = useState(alvo);
   const [carregando, setCarregando] = useState(true);
   useEffect(() => {

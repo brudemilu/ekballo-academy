@@ -3,7 +3,7 @@ import {
   MAX_REFERENCIAS,
   normalizarDNAReferencia,
   podeAnalisar,
-  SYSTEM_ANALISE_REFERENCIA,
+  systemAnaliseReferencia,
   usuarioAnaliseReferencia,
   validarReferencia,
 } from "@/lib/conteudo-perfil";
@@ -12,6 +12,7 @@ import {
   criarReferenciaConteudo,
   deletarReferenciaConteudo,
   getCurrentSession,
+  getMinisterioInstagram,
   getReferenciaConteudo,
   listReferenciasConteudo,
 } from "@/lib/db";
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
         );
       }
       const bruto = await chamarLLM(
-        SYSTEM_ANALISE_REFERENCIA,
+        systemAnaliseReferencia(await getMinisterioInstagram().catch(() => "")),
         usuarioAnaliseReferencia(ref),
         1400,
       );

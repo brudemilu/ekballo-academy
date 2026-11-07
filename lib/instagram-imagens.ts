@@ -6,6 +6,7 @@
 // (público, CDN rápido) e manda pro Meta a URL estática. Aí o Meta baixa rápido.
 
 import { ehPng, pngParaJpeg } from "@/lib/imagem-jpeg";
+import { type Identidade, identidadeNoEndereco } from "@/lib/instagram-identidade";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const BUCKET = "instagram";
@@ -35,7 +36,12 @@ export function ehStory(slides: { formato?: string }[]): boolean {
   return slides.length === 1 && slides[0]?.formato === "story";
 }
 
-export function ogUrlDoSlide(origin: string, s: SlidePub): string {
+export function ogUrlDoSlide(
+  origin: string,
+  s: SlidePub,
+  /** A assinatura da conta dona do post; sem ela, sai a da conta principal. */
+  identidade?: Identidade,
+): string {
   const p = new URLSearchParams({
     verso: s.texto,
     prompt: s.prompt,
@@ -55,6 +61,7 @@ export function ogUrlDoSlide(origin: string, s: SlidePub): string {
   if (s.formato === "story") p.set("f", "story");
   if (s.top?.trim()) p.set("top", s.top.trim());
   if (s.ref?.trim()) p.set("ref", s.ref.trim());
+  identidadeNoEndereco(p, identidade);
   return `${origin}/api/og/instagram?${p.toString()}`;
 }
 
@@ -66,6 +73,7 @@ export function ogUrlDoSlide(origin: string, s: SlidePub): string {
 export async function prepararImageUrls(
   origin: string,
   slides: SlidePub[],
+  identidade?: Identidade,
 ): Promise<string[]> {
   const sb = createServiceClient();
   const urls: string[] = new Array(slides.length);
@@ -76,7 +84,7 @@ export async function prepararImageUrls(
         urls[i] = s.imageUrl;
         return;
       }
-      const res = await fetch(ogUrlDoSlide(origin, s));
+      const res = await fetch(ogUrlDoSlide(origin, s, identidade));
       if (!res.ok)
         throw new Error(
           `falha ao gerar a imagem do slide ${i + 1} (HTTP ${res.status})`,

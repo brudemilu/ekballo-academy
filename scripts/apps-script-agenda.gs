@@ -68,6 +68,16 @@ function testarConexao() {
  * uma senha errada devolvia 401 e a execução terminava "com sucesso" sem fazer
  * nada — foi assim que a sincronização ficou meses parada sem ninguém notar.
  */
+// Mesmo título (sem diferenciar maiúsculas nem espaços nas pontas) em algum
+// evento do mesmo dia, na agenda padrão.
+function jaExisteNoGoogle(cal, titulo, inicio) {
+  const alvo = String(titulo || "").trim().toLowerCase();
+  if (!alvo) return false;
+  return cal
+    .getEventsForDay(inicio)
+    .some((ev) => String(ev.getTitle() || "").trim().toLowerCase() === alvo);
+}
+
 function checar(resp, oque) {
   const codigo = resp.getResponseCode();
   if (codigo === 401) {
@@ -127,7 +137,12 @@ function criarNoGoogleDoEkballo() {
   for (const c of lista) {
     try {
       const inicio = new Date(c.inicio);
-      if (c.dia_todo) {
+      // Já existe no Google um evento com o mesmo título nesse dia (criado à
+      // mão, ou por uma rodada cuja remoção da fila falhou)? Não cria outro —
+      // só tira da fila. Sem isto, cada falha vira uma cópia a mais na agenda.
+      if (jaExisteNoGoogle(cal, c.titulo, inicio)) {
+        console.log("Já estava no Google, não dupliquei: " + c.titulo);
+      } else if (c.dia_todo) {
         cal.createAllDayEvent(c.titulo, inicio);
       } else {
         const fim = c.fim ? new Date(c.fim) : new Date(inicio.getTime() + 36e5); // +1h padrão

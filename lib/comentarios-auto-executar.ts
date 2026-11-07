@@ -24,7 +24,7 @@ import {
   listRegrasComentario,
   reservarComentario,
 } from "@/lib/db";
-import { instagramConfigurado } from "@/lib/instagram-publish";
+import { credenciaisInstagram } from "@/lib/instagram-credenciais";
 
 const GRAPH = process.env.META_GRAPH_BASE || "https://graph.instagram.com/v21.0";
 
@@ -89,13 +89,12 @@ export async function responderComentarios(
   agora = new Date(),
 ): Promise<ResumoComentarios> {
   if (!(await getComentariosAtivo(true))) return { rodou: false, motivo: "desligado" };
-  if (!instagramConfigurado())
-    return { rodou: false, motivo: "Instagram não conectado" };
+  const cred = await credenciaisInstagram();
+  if (!cred) return { rodou: false, motivo: "Instagram não conectado" };
   const regras = (await listRegrasComentario(true)).filter((r) => r.ativo);
   if (!regras.length) return { rodou: false, motivo: "nenhuma regra" };
 
-  const igUserId = process.env.IG_USER_ID as string;
-  const token = process.env.META_ACCESS_TOKEN as string;
+  const { igUserId, token } = cred;
 
   const eu = await graphGet<{ username?: string }>(
     `${igUserId}?fields=username`,

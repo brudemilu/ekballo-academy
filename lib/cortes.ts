@@ -16,6 +16,7 @@
  * transcrição realmente tem.
  */
 
+import { ministerioParaIA } from "@/lib/instagram-identidade";
 import { lerJSONdaIA } from "@/lib/json-ia";
 
 /** Um pedaço da transcrição, como o Whisper devolve. Tempos em segundos. */
@@ -112,8 +113,12 @@ export function transcricaoParaIA(segmentos: Segmento[]): string {
   return segmentos.map((s) => `[${Math.floor(s.i)}] ${s.t}`).join("\n");
 }
 
-export function systemCortes(contextoPerfil: string): string {
-  return `Você é editor de vídeo de um ministério cristão de discipulado (Ekballo).
+export function systemCortes(
+  contextoPerfil: string,
+  /** Nome do ministério da conta; vazio = o da conta principal (Ekballo). */
+  ministerio = "",
+): string {
+  return `Você é editor de vídeo de ${ministerioParaIA(ministerio)}.
 Recebe a transcrição de uma pregação ou aula, com o tempo de início de cada trecho em SEGUNDOS entre colchetes.
 Sua tarefa é achar os melhores momentos para virar vídeos curtos (Reels), de ${DURACAO_MIN} a ${DURACAO_MAX} segundos cada.
 

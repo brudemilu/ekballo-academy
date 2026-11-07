@@ -7,6 +7,7 @@ import {
   salvarCarrosselInstagram,
   vincularIdeiaAoPost,
 } from "@/lib/db";
+import { normalizarColaboradores } from "@/lib/instagram-colaboradores";
 
 export const runtime = "nodejs";
 
@@ -128,6 +129,8 @@ export async function PATCH(req: NextRequest) {
     legenda?: string;
     conteudo?: string;
     videoUrl?: string;
+    /** Perfis convidados a colaborar: texto ("@a, @b") ou lista. Vazio tira. */
+    colaboradores?: unknown;
   };
   try {
     body = await req.json();
@@ -142,7 +145,8 @@ export async function PATCH(req: NextRequest) {
     body.slides !== undefined ||
     body.legenda !== undefined ||
     body.conteudo !== undefined ||
-    body.videoUrl !== undefined;
+    body.videoUrl !== undefined ||
+    body.colaboradores !== undefined;
   if (!body.agendadoPara && !temConteudo) {
     return NextResponse.json({ error: "Nada para atualizar." }, { status: 400 });
   }
@@ -164,6 +168,10 @@ export async function PATCH(req: NextRequest) {
         legenda: typeof body.legenda === "string" ? body.legenda : undefined,
         conteudo: typeof body.conteudo === "string" ? body.conteudo : undefined,
         videoUrl: typeof body.videoUrl === "string" ? body.videoUrl : undefined,
+        colaboradores:
+          body.colaboradores !== undefined
+            ? normalizarColaboradores(body.colaboradores)
+            : undefined,
       });
     }
 

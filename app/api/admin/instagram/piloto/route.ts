@@ -9,6 +9,7 @@ import {
   listExecucoesPiloto,
   salvarPilotoConfig,
 } from "@/lib/db";
+import { comConta, contaAtualId } from "@/lib/instagram-conta-atual";
 import { podeVetar, validarPiloto } from "@/lib/piloto";
 import { executarPiloto } from "@/lib/piloto-executar";
 
@@ -105,7 +106,9 @@ export async function POST(req: NextRequest) {
         return recusa("O piloto já está preparando uma semana. Aguarde terminar.");
       }
       const execucao = await criarExecucaoPiloto();
-      void executarPiloto(execucao.id);
+      // Segue depois da resposta, quando já não há cookie para dizer a conta.
+      const conta = await contaAtualId();
+      void comConta(conta, () => executarPiloto(execucao.id));
       return NextResponse.json({ ok: true, execucao });
     } catch (e) {
       return recusa(e instanceof Error ? e.message : "Falha ao começar.", 500);

@@ -8,7 +8,7 @@ import {
 import { dataPorExtenso, proximasDatas } from "@/lib/calendario-cristao";
 import { diaSP } from "@/lib/conteudo-calendario";
 import { contextoDoPerfil } from "@/lib/conteudo-perfil";
-import { getCurrentSession, getPerfilConteudo } from "@/lib/db";
+import { getCurrentSession, getMinisterioInstagram, getPerfilConteudo } from "@/lib/db";
 import { chamarLLMLendo } from "@/lib/llm";
 
 export const runtime = "nodejs";
@@ -41,7 +41,12 @@ export async function POST(req: NextRequest) {
       .map((d) => `- ${dataPorExtenso(d)}`)
       .join("\n");
     const resposta = await chamarLLMLendo(
-      systemAssistente(perfil ? contextoDoPerfil(perfil) : "", hoje, datas),
+      systemAssistente(
+        perfil ? contextoDoPerfil(perfil) : "",
+        hoje,
+        datas,
+        await getMinisterioInstagram().catch(() => ""),
+      ),
       conversaParaIA(v.valor),
       1800,
       normalizarResposta,
