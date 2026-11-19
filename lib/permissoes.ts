@@ -99,7 +99,7 @@ export function permissaoDaRota(path: string): Permissao | null {
   const match = ROTA_PERMISSAO.filter(
     (r) =>
       path === r.prefixo ||
-      path.startsWith(r.prefixo + "/") ||
+      path.startsWith(`${r.prefixo}/`) ||
       path.startsWith(r.prefixo),
   ).sort((a, b) => b.prefixo.length - a.prefixo.length)[0];
   return match ? match.permissao : null;
