@@ -591,3 +591,51 @@ test.describe("Instagram do ministério (admin)", () => {
     expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
   });
 });
+
+// Teste de Dons Ministeriais (issue #289): a pessoa responde por um link,
+// sem conta; o master acompanha no painel.
+test.describe("teste de dons", () => {
+  test("o link abre sem cadastro, avisa o que falta e mostra as perguntas", async ({
+    page,
+  }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/dons/demo-aberto");
+
+    await expect(
+      page.getByRole("heading", { name: "Teste de Dons Ministeriais" }),
+    ).toBeVisible();
+    // Sem nome, não começa.
+    await page.getByRole("button", { name: "Começar o teste" }).click();
+    await expect(page.getByText("Escreva o seu nome para começar.")).toBeVisible();
+
+    await page.getByLabel("Nome completo").fill("Pessoa de Teste");
+    await page.getByRole("button", { name: "Começar o teste" }).click();
+    await expect(page.getByText("Preocupo-me em dirigir")).toBeVisible();
+    await expect(page.getByRole("radiogroup")).toHaveCount(10);
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+
+  test("link inexistente explica o que fazer", async ({ page }) => {
+    await page.goto("/dons/link-que-nao-existe");
+    await expect(
+      page.getByRole("heading", { name: "Link não encontrado" }),
+    ).toBeVisible();
+  });
+
+  test("o painel lista as pessoas e abre a ficha com o histórico", async ({ page }) => {
+    const erros = vigiarErros(page);
+    await page.goto("/admin/dons");
+
+    await expect(
+      page.getByRole("heading", { name: "Dons ministeriais" }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: /Maria Exemplo/ }).click();
+    await expect(page.getByRole("heading", { name: "Maria Exemplo" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Histórico de testes" }),
+    ).toBeVisible();
+
+    expect(erros, `erros de JS: ${erros.join(" | ")}`).toHaveLength(0);
+  });
+});

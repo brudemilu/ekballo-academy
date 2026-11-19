@@ -90,16 +90,26 @@ const ROTA_PERMISSAO: { prefixo: string; permissao: Permissao }[] = [
   { prefixo: "/admin/youtube", permissao: "comunicacao" },
 ];
 
-// /admin/permissoes é exclusivo do master
+// Exclusivos do master. /admin/dons guarda autoavaliação espiritual de
+// pessoas de fora da plataforma (inclusive menores) — é a ferramenta de
+// discipulado do pastor, não do coordenador nem do líder (issue #289).
 export function rotaSoMaster(path: string): boolean {
-  return path.startsWith("/admin/permissoes");
+  return path.startsWith("/admin/permissoes") || path.startsWith("/admin/dons");
+}
+
+/** Master de verdade. Registro antigo com is_admin e sem papel conta como master. */
+export function ehMaster(
+  papel: string | null | undefined,
+  isAdmin: boolean | null | undefined,
+): boolean {
+  return papel === "master" || (!papel && !!isAdmin);
 }
 
 export function permissaoDaRota(path: string): Permissao | null {
   const match = ROTA_PERMISSAO.filter(
     (r) =>
       path === r.prefixo ||
-      path.startsWith(r.prefixo + "/") ||
+      path.startsWith(`${r.prefixo}/`) ||
       path.startsWith(r.prefixo),
   ).sort((a, b) => b.prefixo.length - a.prefixo.length)[0];
   return match ? match.permissao : null;
