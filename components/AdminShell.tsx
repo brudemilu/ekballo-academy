@@ -16,6 +16,7 @@ export type AdminTab =
   | "devocionais"
   | "respostas"
   | "alunos"
+  | "dons"
   | "mensagens"
   | "whatsapp"
   | "imagens"
@@ -133,6 +134,7 @@ const ICONE: Partial<Record<AdminTab, string>> = {
   cursos: "📚",
   respostas: "💬",
   alunos: "👥",
+  dons: "🕊️",
   mensagens: "✉️",
   imagens: "🖼️",
   instagram: "📸",
@@ -188,6 +190,15 @@ export async function AdminShell({
   });
 
   if (papel === "master") {
+    // Teste de Dons (issue #289): ferramenta de discipulado do pastor, com
+    // dados de pessoas de fora da plataforma — só o master vê.
+    itens.push({
+      key: "dons",
+      label: "Dons ministeriais",
+      href: "/admin/dons",
+      hint: "Teste de Efésios 4.11 por link",
+      grupo: "discipulado",
+    });
     itens.push(itemAgenda);
     itens.push({
       key: "permissoes",

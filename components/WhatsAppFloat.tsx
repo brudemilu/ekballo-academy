@@ -17,7 +17,16 @@ const MENSAGEM_PADRAO =
 // /english entra pelo mesmo motivo do canto inferior: a lição tem o botão de
 // avançar fixo no rodapé, e o flutuante caía bem em cima dele — atrapalhava
 // justamente o toque que o aluno repete dezenas de vezes por lição.
-const ESCONDER_PREFIXOS = ["/cursos", "/biblia", "/planos", "/admin", "/english"];
+// /dons: quem responde o Teste de Dons é de fora; o botão cobriria o
+// "Continuar" do rodapé e convida para outra conversa no meio do teste.
+const ESCONDER_PREFIXOS = [
+  "/cursos",
+  "/biblia",
+  "/planos",
+  "/admin",
+  "/english",
+  "/dons",
+];
 
 export function WhatsAppFloat() {
   const pathname = usePathname();
